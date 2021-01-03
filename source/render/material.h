@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #pragma once
 
 #include "uniform_buffer.h"
@@ -23,7 +19,7 @@ namespace Render
 
 		struct Sampler {
 			std::string m_name;
-			uint32_t m_handle;		// can be anything really
+			uint32_t m_handle = -1;		// can be anything really
 		};
 		using Samplers = std::unordered_map<uint32_t, Sampler>;
 		void SetSampler(std::string name, uint32_t handle);

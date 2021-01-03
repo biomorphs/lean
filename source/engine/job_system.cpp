@@ -30,21 +30,6 @@ namespace Engine
 
 	bool JobSystem::PostInit()
 	{
-		// Create shared GL contexts for each job thread on the main thread
-		// This allows us to call *some* gl functions from workers
-		//auto renderDevice = m_renderSystem->GetDevice();
-		//std::vector<void*> workerContexts;
-		//for (int w = 0; w < m_threadCount; ++w)
-		//{
-		//	workerContexts.push_back(renderDevice->CreateSharedGLContext());
-		//}
-		//// Creating a context sets it by default, so make sure we reset the main thread context
-		//renderDevice->SetGLContext(renderDevice->GetGLContext());
-		//auto jobInit = [this, workerContexts](uint32_t threadIndex)
-		//{
-		//	m_renderSystem->GetDevice()->SetGLContext(workerContexts[threadIndex]);
-		//};
-
 		auto jobThread = [this](uint32_t threadIndex)
 		{
 			if (m_jobThreadStopRequested == 0)	// This is to stop deadlock on the semaphore when shutting down
@@ -54,7 +39,6 @@ namespace Engine
 				Job currentJob;
 				if (m_pendingJobs.PopJob(currentJob))
 				{
-					SDE_PROF_EVENT("RunJob");
 					currentJob.Run();
 				}
 				else
@@ -64,7 +48,7 @@ namespace Engine
 				}
 			}
 		};
-		m_threadPool.Start("SDEJobSystem", m_threadCount, jobThread, m_threadInitFn);
+		m_threadPool.Start("JobSystem", m_threadCount, jobThread, m_threadInitFn);
 		return true;
 	}
 

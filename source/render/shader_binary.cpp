@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "shader_binary.h"
 #include "utils.h"
 #include "core/file_io.h"
@@ -12,6 +8,7 @@ namespace Render
 {
 	ShaderBinary::ShaderBinary()
 		: m_handle(0)
+		, m_type(ShaderType::VertexShader)
 	{
 	}
 

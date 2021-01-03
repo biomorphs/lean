@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "vertex_array.h"
 #include "utils.h"
 #include "render_buffer.h"

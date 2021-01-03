@@ -202,7 +202,6 @@ bool Graphics::Tick()
 	}	
 	m_renderer->SetCamera(c);
 
-	// debug render
 	m_debugRender->PushToRenderer(*m_renderer);
 	m_debugGui->MainMenuBar(g_graphicsMenu);
 	if (g_showTextureGui)

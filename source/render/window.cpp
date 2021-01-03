@@ -1,7 +1,3 @@
-/*
-SDLEngine
-	Matt Hoyle
-*/
 #include "window.h"
 #include "utils.h"
 #include <SDL.h>

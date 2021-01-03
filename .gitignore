@@ -32,3 +32,15 @@
 *.app
 
 build/*
+
+# Assets
+*.fbx
+*.png
+*.jpg
+*.bmp
+*.psd
+*.blend
+*.blend1
+*.mtl
+*.obj
+*.txt

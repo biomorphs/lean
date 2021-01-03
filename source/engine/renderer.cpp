@@ -261,7 +261,7 @@ namespace Engine
 			}
 			else
 			{
-				globals.m_lights[l].m_shadowParams.y = 0.0f;
+				globals.m_lights[l].m_shadowParams.x = 0.0f;
 			}
 		}
 		globals.m_lightCount = static_cast<int>(std::min(m_lights.size(), c_maxLights));

@@ -1,5 +1,6 @@
 #include "render_system.h"
 #include "system_enumerator.h"
+#include "job_system.h"
 #include "render/window.h"
 #include "render/device.h"
 #include "core/profiler.h"
@@ -19,9 +20,7 @@ namespace Engine
 	bool RenderSystem::PreInit(SystemEnumerator& systemEnumerator)
 	{
 		SDE_PROF_EVENT();
-
-		// todo: create contexts for job threads
-
+		m_jobSystem = (JobSystem*)systemEnumerator.GetSystem("Jobs");
 		return true;
 	}
 
@@ -44,6 +43,22 @@ namespace Engine
 			SDE_LOGC(SDE, "Failed to create render device");
 			return false;
 		}
+
+		// We need to create a opengl context for each job thread before the job system starts in PostInit
+		auto threadCount = m_jobSystem->GetThreadCount();
+		for (int i = 0; i < threadCount; ++i)
+		{
+			m_renderContexts.push_back(m_device->CreateSharedGLContext());
+		}
+		// Creating a context sets it by default, so make sure we reset the main thread context
+		m_device->SetGLContext(m_device->GetGLContext());
+
+		// Finally tell the job system threads about our contexts
+		auto jobThreadInit = [this](uint32_t threadIndex)
+		{
+			m_device->SetGLContext(m_renderContexts[threadIndex]);
+		};
+		m_jobSystem->SetThreadInitFn(jobThreadInit);
 
 		return true;
 	}

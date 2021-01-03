@@ -1,8 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
-
 #include "graph_data_buffer.h"
 #include <algorithm>
 

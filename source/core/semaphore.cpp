@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "semaphore.h"
 #include <cassert>
 #include <SDL_mutex.h>

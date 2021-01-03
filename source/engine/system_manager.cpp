@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "system_manager.h"
 #include "system.h"
 #include "core/string_hashing.h"

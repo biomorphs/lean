@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #pragma once
 
 #include "core/glm_headers.h"
@@ -14,8 +10,8 @@ namespace Render
 	class MeshBuilder
 	{
 	public:
-		MeshBuilder();
-		~MeshBuilder();
+		MeshBuilder() = default;
+		~MeshBuilder() = default;
 
 		bool HasData();
 
@@ -48,7 +44,7 @@ namespace Render
 
 		struct StreamDesc
 		{
-			int32_t m_componentCount;
+			int32_t m_componentCount = 0;
 			std::vector<float> m_streamData;
 		};
 		struct ChunkDesc
@@ -57,9 +53,9 @@ namespace Render
 			uint32_t m_lastVertex;
 		};
 
-		ChunkDesc m_currentChunk;
+		ChunkDesc m_currentChunk = { 0,0 };
+		int m_currentVertexIndex = 0;
 		std::vector<StreamDesc> m_streams;
 		std::vector<ChunkDesc> m_chunks;
-		int m_currentVertexIndex;
 	};
 }

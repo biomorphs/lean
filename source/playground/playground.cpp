@@ -17,59 +17,52 @@ Playground::~Playground()
 {
 }
 
-void Playground::InitScript()
+void Playground::CallScriptInit()
 {
 	SDE_PROF_EVENT();
 	try
 	{
-		if (m_scriptSystem->Globals()["g_playground"] != nullptr)
+		if(m_scriptFunctions.valid() && m_scriptFunctions["Init"] != nullptr)
 		{
-			sol::function initFn = m_scriptSystem->Globals()["g_playground"]["Init"];
+			sol::function initFn = m_scriptFunctions["Init"];
 			initFn();
 		}
-		else
+	}
+	catch (const sol::error& err)
+	{
+		SDE_LOG("Lua Error - %s", err.what());
+		CallScriptShutdown();
+	}
+}
+
+void Playground::CallScriptTick()
+{
+	SDE_PROF_EVENT();
+	try
+	{
+		if (m_scriptFunctions.valid() && m_scriptFunctions["Tick"] != nullptr)
 		{
-			m_scriptErrorText = "Error: g_playground global not found";
+			sol::function tickFn = m_scriptFunctions["Tick"];
+			tickFn(m_deltaTime);
 		}
 	}
 	catch (const sol::error& err)
 	{
 		SDE_LOG("Lua Error - %s", err.what());
-		ShutdownScript();
+		CallScriptShutdown();
 	}
 }
 
-void Playground::TickScript()
+void Playground::CallScriptShutdown()
 {
 	SDE_PROF_EVENT();
 	try
 	{
-		m_scriptSystem->Globals()["Playground"].get_or_create<sol::table>();
-		m_scriptSystem->Globals()["Playground"]["DeltaTime"] = m_deltaTime;
-		if (m_scriptSystem->Globals()["g_playground"] != nullptr)
+		if (m_scriptFunctions.valid() && m_scriptFunctions["Shutdown"] != nullptr)
 		{
-			sol::function tickFn = m_scriptSystem->Globals()["g_playground"]["Tick"];
-			tickFn();
-		}
-	}
-	catch (const sol::error& err)
-	{
-		SDE_LOG("Lua Error - %s", err.what());
-		ShutdownScript();
-	}
-}
-
-void Playground::ShutdownScript()
-{
-	SDE_PROF_EVENT();
-	try
-	{
-		if (m_scriptSystem->Globals()["g_playground"] != nullptr)
-		{
-			sol::function shutdownFn = m_scriptSystem->Globals()["g_playground"]["Shutdown"];
+			sol::function shutdownFn = m_scriptFunctions["Shutdown"];
 			shutdownFn();
 		}
-		m_scriptSystem->Globals()["g_playground"] = nullptr;
 	}
 	catch (const sol::error& err)
 	{
@@ -80,11 +73,13 @@ void Playground::ShutdownScript()
 void Playground::ReloadScript()
 {
 	SDE_PROF_EVENT();
-	ShutdownScript();
+	CallScriptShutdown();
 	m_scriptErrorText = "";
-	if (m_scriptSystem->RunScriptFromFile(m_scriptPath.c_str(), m_scriptErrorText))
+	sol::table resultTable;
+	if (m_scriptSystem->RunScriptFromFile(m_scriptPath.c_str(), m_scriptErrorText, resultTable))
 	{
-		InitScript();
+		m_scriptFunctions = resultTable;
+		CallScriptInit();
 	}
 	else
 	{
@@ -136,7 +131,7 @@ bool Playground::Tick()
 	{
 		m_deltaTime = 0.0f;
 	}
-	TickScript();
+	CallScriptTick();
 	m_lastFrameTime = thisFrameTime;
 
 	return g_keepRunning;
@@ -145,5 +140,5 @@ bool Playground::Tick()
 void Playground::Shutdown()
 {
 	SDE_PROF_EVENT();
-	ShutdownScript();
+	CallScriptShutdown();
 }

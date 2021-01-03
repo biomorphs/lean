@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "time.h"
 #include <sdl_timer.h>
 

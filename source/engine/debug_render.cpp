@@ -16,12 +16,17 @@ namespace Engine
 		};
 
 		void* rawBuffer = _aligned_malloc(c_maxLines * sizeof(glm::vec4) * 2, 16);
-		memset(rawBuffer, 0, c_maxLines * sizeof(glm::vec4) * 2);
-		m_posBuffer = std::unique_ptr<glm::vec4, decltype(deleter)>((glm::vec4*)rawBuffer, deleter);
-
+		if (rawBuffer != nullptr)
+		{
+			memset(rawBuffer, 0, c_maxLines * sizeof(glm::vec4) * 2);
+			m_posBuffer = std::unique_ptr<glm::vec4[], decltype(deleter)>((glm::vec4*)rawBuffer, deleter);
+		}
 		rawBuffer = _aligned_malloc(c_maxLines * sizeof(glm::vec4) * 2, 16);
-		memset(rawBuffer, 0, c_maxLines * sizeof(glm::vec4) * 2);
-		m_colBuffer = std::unique_ptr<glm::vec4, decltype(deleter)>((glm::vec4*)rawBuffer, deleter);
+		if (rawBuffer != nullptr)
+		{
+			memset(rawBuffer, 0, c_maxLines * sizeof(glm::vec4) * 2);
+			m_colBuffer = std::unique_ptr<glm::vec4[], decltype(deleter)>((glm::vec4*)rawBuffer, deleter);
+		}
 
 		m_shader = sm->LoadShader("DebugRender", "DebugRender.vs", "DebugRender.fs");
 

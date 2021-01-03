@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "event_system.h"
 #include <algorithm>
 #include <SDL_events.h>

@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "material.h"
 #include "core/string_hashing.h"
 

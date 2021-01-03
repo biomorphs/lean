@@ -1,6 +1,6 @@
 #pragma once
 
-//#define SDE_USE_OPTICK
+#define SDE_USE_OPTICK
 
 // Assume any macros in here are active for the current scope
 #ifdef SDE_USE_OPTICK

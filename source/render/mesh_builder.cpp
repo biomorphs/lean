@@ -1,8 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
-
 #include "mesh_builder.h"
 #include "utils.h"
 #include "core/glm_headers.h"
@@ -11,15 +6,6 @@ Matt Hoyle
 
 namespace Render
 {
-	MeshBuilder::MeshBuilder()
-		: m_currentVertexIndex(0)
-	{
-	}
-
-	MeshBuilder::~MeshBuilder()
-	{
-	}
-
 	bool MeshBuilder::HasData()
 	{
 		if (m_chunks.size() > 0)

@@ -39,7 +39,7 @@ private:
 	std::unique_ptr<Engine::ShaderManager> m_shaders;
 	std::unique_ptr<Engine::DebugCamera> m_debugCamera;
 	std::unique_ptr<Engine::ArcballCamera> m_arcballCamera;
-	glm::ivec2 m_windowSize;
+	glm::ivec2 m_windowSize = { 0,0 };
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
 	Engine::RenderSystem* m_renderSystem = nullptr;

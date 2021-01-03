@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #pragma once
 #include "core/glm_headers.h"
 #include <stdint.h>
@@ -18,6 +14,7 @@ namespace Render
 		Texture(Texture&& other) {
 			m_isArray = other.m_isArray;
 			m_handle = other.m_handle;
+			m_componentCount = other.m_componentCount;
 			other.m_handle = -1;
 		}
 		~Texture();

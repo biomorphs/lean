@@ -26,6 +26,9 @@ namespace Engine
 
 		sol::state& Globals() { return *m_globalState; }
 		
+		template<class T>
+		bool RunScriptFromFile(const char* filename, std::string& errorText, T& result) noexcept;
+
 		bool RunScriptFromFile(const char* filename, std::string& errorText) noexcept;
 		bool RunScript(const char* scriptSource, std::string& errorText) noexcept;
 

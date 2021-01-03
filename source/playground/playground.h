@@ -2,6 +2,7 @@
 #include "engine/system.h"
 #include "core/timer.h"
 #include <string>
+#include <sol.hpp>
 
 namespace Engine
 {
@@ -19,9 +20,10 @@ public:
 	virtual void Shutdown();
 private:
 	void ReloadScript();
-	void InitScript();
-	void TickScript();
-	void ShutdownScript();
+	void CallScriptInit();
+	void CallScriptTick();
+	void CallScriptShutdown();
+	sol::table m_scriptFunctions;
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
 	std::string m_scriptPath = "playground.lua";

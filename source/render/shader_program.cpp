@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "shader_program.h"
 #include "shader_binary.h"
 #include "utils.h"

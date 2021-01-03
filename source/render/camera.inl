@@ -1,8 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
-
 #include "core/glm_headers.h"
 
 namespace Render

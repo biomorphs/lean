@@ -19,9 +19,9 @@ namespace Engine
 
 		void PushJob(Job::JobThreadFunction threadFn);
 		void SetThreadInitFn(std::function<void(uint32_t)> fn);
+		int32_t inline GetThreadCount() const { return m_threadCount; }
 
 	private:
-		class RenderSystem* m_renderSystem;
 		Core::ThreadPool m_threadPool;
 		JobQueue m_pendingJobs;
 		Kernel::Semaphore m_jobThreadTrigger;

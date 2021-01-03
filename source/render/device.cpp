@@ -1,8 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
-
 #include "device.h"
 #include "window.h"
 #include "texture.h"

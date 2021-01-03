@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "texture.h"
 #include "texture_source.h"
 #include "utils.h"
@@ -12,6 +8,8 @@ namespace Render
 {
 	Texture::Texture()
 		: m_handle(-1)
+		, m_componentCount(0)
+		, m_isArray(false)
 	{
 	}
 

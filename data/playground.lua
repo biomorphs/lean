@@ -5,13 +5,13 @@
 
 Playground = {}
 
-local LightShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
-local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs")
-local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
-local Sponza = Graphics.LoadModel("sponza.obj")
-local LightModel = Graphics.LoadModel("sphere.fbx")
-local IslandModel = Graphics.LoadModel("islands_low.fbx")
-local Container = Graphics.LoadModel("container.fbx")
+local LightShader = {}
+local DiffuseShader = {}
+local ShadowShader = {}
+local Sponza = {}
+local LightModel = {}
+local IslandModel = {}
+local Container = {}
 
 local Lights = {}
 local lightCount = 1
@@ -50,11 +50,11 @@ local lightAttenuationTable = {
 	{3250,1.0,0.0014,0.000007}
 }
 
-function Playground:Vec3Length(v)
+function Playground.Vec3Length(self,v)
 	return math.sqrt((v[1] * v[1]) + (v[2] * v[2]) + (v[3] * v[3]));
 end
 
-function Playground:pushLightHistory(i,x,y,z)
+function Playground.pushLightHistory(self,i,x,y,z)
 	local historySize = #Lights[i].History
 	if(historySize == lightHistoryMaxValues) then
 		table.remove(Lights[i].History,1)
@@ -62,7 +62,7 @@ function Playground:pushLightHistory(i,x,y,z)
 	Lights[i].History[#Lights[i].History + 1] = {x,y,z}
 end
 
-function Playground:GetAttenuation(lightRadius)
+function Playground.GetAttenuation(self,lightRadius)
 	local closestDistance = 10000
 	local closestValue = {1,1,0.1,0.1}
 	for i=1,#lightAttenuationTable do
@@ -75,7 +75,7 @@ function Playground:GetAttenuation(lightRadius)
 	return { closestValue[2], closestValue[3], closestValue[4] }
 end
 
-function Playground:GenerateLightCol(i)
+function Playground.GenerateLightCol(self,i)
 	local colour = {0.0,0.0,0.0}
 	while colour[1] == 0 and colour[2] == 0 and colour[3] == 0 do
 		colour = { lightBrightness * math.random(0,10) / 10, lightBrightness * math.random(0,10) / 10, lightBrightness * math.random(0,10) / 10 }
@@ -83,7 +83,7 @@ function Playground:GenerateLightCol(i)
 	Lights[i].Colour = colour
 end
 
-function Playground:InitLight(i)
+function Playground.InitLight(self,i)
 	Lights[i] = {}
 	Lights[i].Position = {math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3])}
 	Playground:GenerateLightCol(i)
@@ -94,7 +94,15 @@ function Playground:InitLight(i)
 	Playground:pushLightHistory(i,Lights[i].Position[1], Lights[i].Position[2], Lights[i].Position[3])
 end
 
-function Playground:Init()
+function Playground.Init()
+	LightShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
+	DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs")
+	ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
+	Sponza = Graphics.LoadModel("sponza.obj")
+	LightModel = Graphics.LoadModel("sphere.fbx")
+	IslandModel = Graphics.LoadModel("islands_low.fbx")
+	Container = Graphics.LoadModel("container.fbx")
+
 	local lightColourAccum = {0.0,0.0,0.0}
 	for i=1,lightMaxCount do
 		Playground:InitLight(i)
@@ -113,7 +121,7 @@ function DrawGrid(startX,endX,stepX,startZ,endZ,stepZ,yAxis)
 	end
 end
 
-function Playground:Tick()
+function Playground.Tick(DeltaTime)
 	local isOpen = true
 	DebugGui.BeginWindow(isOpen, "Script Stuff")
 	timeMulti = DebugGui.DragFloat("Time Multi", timeMulti, 0.002, 0.0, 10.0)
@@ -122,7 +130,7 @@ function Playground:Tick()
 	SunPosition[3] = DebugGui.DragFloat("Sun Z", SunPosition[3], 0.25,-200,200)
 	lightCount = DebugGui.DragFloat("Light Count", lightCount, 1,1,lightMaxCount)
 	DebugGui.EndWindow()
-	local timeDelta = Playground.DeltaTime * timeMulti
+	local timeDelta = DeltaTime * timeMulti
 
 	Graphics.DrawModel(SunPosition[1],SunPosition[2],SunPosition[3],SunMulti * SunColour[1],SunMulti * SunColour[2], SunMulti * SunColour[3],1.0,20.0,LightModel,LightShader)
 	Graphics.DirectionalLight(SunPosition[1],SunPosition[2],SunPosition[3], SunMulti * SunColour[1], SunMulti * SunColour[2], SunMulti * SunColour[3], SunAmbient)
@@ -219,12 +227,7 @@ function Playground:Tick()
 	end
 end
 
-function Playground:Shutdown()
+function Playground.Shutdown()
 end
 
-function Playground:new()
-	newPlayground = {}
-	self.__index = self
-	return setmetatable(newPlayground, self)
-end
-g_playground = Playground:new()
+return Playground

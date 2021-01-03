@@ -17,6 +17,8 @@ namespace Render
 
 namespace Engine
 {
+	class JobSystem;
+
 	// Main renderer owns device and submits passes to gpu
 	class RenderSystem : public System
 	{
@@ -38,8 +40,8 @@ namespace Engine
 	private:
 		struct Config
 		{
-			uint32_t m_windowWidth = 1280;
-			uint32_t m_windowHeight = 720;
+			uint32_t m_windowWidth = 1440;
+			uint32_t m_windowHeight = 900;
 			std::string m_windowTitle = "LEAN";
 			bool m_fullscreen = false;
 		} m_config;
@@ -50,5 +52,7 @@ namespace Engine
 
 		std::unique_ptr<Render::Window> m_window;
 		std::unique_ptr<Render::Device> m_device;
+		std::vector<void*> m_renderContexts;	// per-thread contexts
+		JobSystem* m_jobSystem = nullptr;
 	};
 }

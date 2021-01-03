@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "render_buffer.h"
 #include "utils.h"
 #include "core/profiler.h"
@@ -15,6 +11,7 @@ namespace Render
 		: m_bufferSize(0)
 		, m_handle(0)
 		, m_persistentMappedBuffer(nullptr)
+		, m_type(RenderBufferType::VertexData)
 	{
 	}
 

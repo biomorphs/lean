@@ -1,8 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
-
 #include <cassert>
 
 namespace Render

@@ -13,6 +13,7 @@ set(CommonIncludePaths
 	external/glm/include/
 	external/glew-2.1.0/include/
 	external/fork-awesome/
+	external/Optick_1.3.1/include
 )
 set(LuaAndSolIncludePaths
 	external/lua-5.3.5_Win64_vc16_lib/include/
@@ -181,6 +182,8 @@ target_compile_options(Playground PRIVATE ${CommonCompilerOptions})
 
 add_executable(Lean Source/main/main.cpp)
 target_include_directories(Lean PRIVATE ${CommonIncludePaths})
+target_include_directories(Lean PRIVATE ${LuaAndSolIncludePaths})
+set_target_properties(Lean PROPERTIES VS_DPI_AWARE "ON")
 target_link_libraries(Lean PRIVATE Core)
 target_link_libraries(Lean PRIVATE Engine)
 target_link_libraries(Lean PRIVATE Playground)
@@ -188,5 +191,6 @@ target_link_libraries(Lean PRIVATE ../external/assimp-5.0.1/lib/release/assimp-v
 target_link_libraries(Lean PRIVATE ../external/glew-2.1.0/lib/Release/x64/glew32)
 target_link_libraries(Lean PRIVATE ../external/lua-5.3.5_Win64_vc16_lib/lua53)
 target_link_libraries(Lean PRIVATE ../external/SDL2-2.0.12/lib/x64/SDL2 ../external/SDL2-2.0.12/lib/x64/SDL2main)
+target_link_libraries(Lean PRIVATE ../external/Optick_1.3.1/lib/x64/release/OptickCore)
 target_link_libraries(Lean PRIVATE opengl32)
 target_compile_options(Lean PRIVATE ${CommonCompilerOptions})

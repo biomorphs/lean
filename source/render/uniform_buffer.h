@@ -24,7 +24,7 @@ namespace Render
 		template <class T>
 		struct Uniform {
 			std::string m_name;
-			T m_value;
+			T m_value = {};
 		};
 		using FloatUniforms = std::unordered_map<uint32_t, Uniform<float>>;
 		using Vec4Uniforms = std::unordered_map<uint32_t, Uniform<glm::vec4>>;
