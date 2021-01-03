@@ -1,4 +1,5 @@
 #include "playground.h"
+#include "core/file_io.h"
 #include "core/time.h"
 #include "core/log.h"
 #include "core/profiler.h"
@@ -17,73 +18,74 @@ Playground::~Playground()
 {
 }
 
-void Playground::CallScriptInit()
+void Playground::NewScene()
 {
-	SDE_PROF_EVENT();
-	try
+
+}
+
+void Playground::ReloadScripts()
+{
+	std::string scriptErrors;
+	m_loadedSceneScripts.clear();
+	for (auto it : m_scene.Scripts())
 	{
-		if(m_scriptFunctions.valid() && m_scriptFunctions["Init"] != nullptr)
+		sol::table scriptTable;
+		m_scriptSystem->RunScriptFromFile(it.c_str(), scriptErrors, scriptTable);
+		if (scriptTable.valid() && scriptTable["Init"] != nullptr)
 		{
-			sol::function initFn = m_scriptFunctions["Init"];
-			initFn();
+			try
+			{
+				scriptTable["Init"]();
+			}
+			catch (const sol::error& err)
+			{
+				SDE_LOG("Lua Error - %s", err.what());
+			}
 		}
+		m_loadedSceneScripts.push_back(std::move(scriptTable));
 	}
-	catch (const sol::error& err)
+	if (scriptErrors.length() > 0)
 	{
-		SDE_LOG("Lua Error - %s", err.what());
-		CallScriptShutdown();
+		SDE_LOG("Script failure: %s", scriptErrors.c_str());
 	}
 }
 
-void Playground::CallScriptTick()
+void Playground::LoadScene(std::string filename)
 {
-	SDE_PROF_EVENT();
-	try
+	std::string fileContents;
+	m_scene = {};
+	if (Core::LoadTextFromFile(filename, fileContents))
 	{
-		if (m_scriptFunctions.valid() && m_scriptFunctions["Tick"] != nullptr)
-		{
-			sol::function tickFn = m_scriptFunctions["Tick"];
-			tickFn(m_deltaTime);
-		}
-	}
-	catch (const sol::error& err)
-	{
-		SDE_LOG("Lua Error - %s", err.what());
-		CallScriptShutdown();
+		nlohmann::json json = nlohmann::json::parse(fileContents);
+		m_scene.Serialise(json, Engine::Serialiser::Reader);
+
+		ReloadScripts();
 	}
 }
 
-void Playground::CallScriptShutdown()
+void Playground::SaveScene(std::string filename)
 {
-	SDE_PROF_EVENT();
-	try
-	{
-		if (m_scriptFunctions.valid() && m_scriptFunctions["Shutdown"] != nullptr)
-		{
-			sol::function shutdownFn = m_scriptFunctions["Shutdown"];
-			shutdownFn();
-		}
-	}
-	catch (const sol::error& err)
-	{
-		SDE_LOG("Lua Error - %s", err.what());
-	}
+	nlohmann::json json;
+	m_scene.Serialise(json, Engine::Serialiser::Writer);
+	Core::SaveTextToFile(filename, json.dump(2));
 }
 
-void Playground::ReloadScript()
+void Playground::TickScene()
 {
-	SDE_PROF_EVENT();
-	CallScriptShutdown();
-	m_scriptErrorText = "";
-	sol::table resultTable;
-	if (m_scriptSystem->RunScriptFromFile(m_scriptPath.c_str(), m_scriptErrorText, resultTable))
+	for (int script=0;script< m_scene.Scripts().size();++script)
 	{
-		m_scriptFunctions = resultTable;
-		CallScriptInit();
-	}
-	else
-	{
-		SDE_LOG("Lua Error - %s", m_scriptErrorText.c_str());
+		sol::table& cachedTable = m_loadedSceneScripts[script];
+		if (cachedTable.valid() && cachedTable["Tick"] != nullptr)
+		{
+			try
+			{
+				cachedTable["Tick"](m_deltaTime);
+			}
+			catch (const sol::error& err)
+			{
+				SDE_LOG("Lua Error - %s", err.what());
+			}
+		}
 	}
 }
 
@@ -100,11 +102,22 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 
 	DebugGuiScriptBinding::Go(m_debugGui, m_scriptSystem->Globals());
 
+	Scene testScene;
+	testScene.Name() = "Playground Test Scene";
+	testScene.Scripts().push_back("playground.lua");
+	m_sceneFilename = "playground.scene";
+	nlohmann::json json;
+	testScene.Serialise(json, Engine::Serialiser::Writer);
+	Core::SaveTextToFile(m_sceneFilename, json.dump(2));
+
+	m_sceneEditor.Init(&m_scene, m_debugGui);
+
 	auto& fileMenu = g_menuBar.AddSubmenu(ICON_FK_FILE_O " File");
 	fileMenu.AddItem("Exit", []() { g_keepRunning = false; });
 
-	auto& scriptMenu = g_menuBar.AddSubmenu(ICON_FK_COG " Scripts");
-	scriptMenu.AddItem("Reload", [this]() {ReloadScript(); }, "R");
+	auto& scriptMenu = g_menuBar.AddSubmenu(ICON_FK_GLOBE " Scene");
+	scriptMenu.AddItem("Load Scene", [this] { LoadScene(m_sceneFilename); });
+	scriptMenu.AddItem("Toggle Editor", [this] { m_sceneEditor.ToggleEnabled(); });
 	scriptMenu.AddItem("Toggle Paused", [] { g_pauseScriptDelta = !g_pauseScriptDelta; });
 
 	return true;
@@ -113,14 +126,12 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 bool Playground::Tick()
 {
 	SDE_PROF_EVENT();
-	static bool s_firstTick = true;
-	if (s_firstTick)
-	{
-		s_firstTick = false;
-		ReloadScript();
-	}
 
 	m_debugGui->MainMenuBar(g_menuBar);
+	if (m_sceneEditor.Tick())
+	{
+		ReloadScripts();
+	}
 
 	double thisFrameTime = m_timer.GetSeconds();
 	if (!g_pauseScriptDelta)
@@ -131,7 +142,7 @@ bool Playground::Tick()
 	{
 		m_deltaTime = 0.0f;
 	}
-	CallScriptTick();
+	TickScene();
 	m_lastFrameTime = thisFrameTime;
 
 	return g_keepRunning;
@@ -140,5 +151,5 @@ bool Playground::Tick()
 void Playground::Shutdown()
 {
 	SDE_PROF_EVENT();
-	CallScriptShutdown();
+	m_loadedSceneScripts.clear();
 }

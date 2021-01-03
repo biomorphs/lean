@@ -5,6 +5,7 @@
 #include <IconsForkAwesome.h>	// expose fork-awesome icons to all users
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace Render
 {
@@ -32,8 +33,11 @@ namespace Engine
 		bool IsCapturingKeyboard();	// if true the gui is interacting with keyboard
 		bool BeginWindow(bool& windowOpen, const char* windowName, glm::vec2 size=glm::vec2(-1.f));
 		void EndWindow();
+		void ItemWidth(float w);
+		void SameLine(float xOffset = 0.0f, float spacing = -1.0f);
 		void Text(const char* txt);
 		bool TextInput(const char* label, char* textBuffer, size_t bufferSize);
+		bool TextInput(const char* label, std::string& str);
 		bool Button(const char* txt);
 		bool Selectable(const char* txt, bool selected = false);
 		void Separator();

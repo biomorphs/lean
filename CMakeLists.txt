@@ -5,6 +5,8 @@ project(Lean
   DESCRIPTION "C++/Lua engine"
   LANGUAGES CXX)
   
+set(CMAKE_CXX_STANDARD 17)
+  
 find_package(OpenGL REQUIRED)
 
 set(CommonIncludePaths 
@@ -19,6 +21,10 @@ set(LuaAndSolIncludePaths
 	external/lua-5.3.5_Win64_vc16_lib/include/
 	external/sol2-2.20.6/
 )
+set(JSONIncludePaths
+	external/json-3.9.1/include/
+)
+
 set(CommonCompilerOptions /WX /MP)
 
 add_library(Core STATIC)
@@ -156,10 +162,13 @@ set(ENGINE_SOURCES
 	Source/engine/material_helpers.h
 	Source/engine/debug_render.cpp
 	Source/engine/debug_render.h
+	Source/engine/serialisation.inl
+	Source/engine/serialisation.h
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})
 target_include_directories(Engine PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Engine PRIVATE ${JSONIncludePaths})
 target_include_directories(Engine PRIVATE external/imgui-docking/)
 target_include_directories(Engine PRIVATE external/assimp-5.0.1/include/)
 target_link_libraries(Engine PRIVATE Core)
@@ -174,15 +183,21 @@ set(PLAYGROUND_SOURCES
 	Source/playground/graphics.h
 	Source/playground/graphics.cpp
 	Source/playground/debug_gui_script_binding.h
-	Source/playground/debug_gui_script_binding.cpp)
+	Source/playground/debug_gui_script_binding.cpp
+	Source/playground/scene.h
+	Source/playground/scene.cpp
+	Source/playground/scene_editor.h
+	Source/playground/scene_editor.cpp)
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Playground PRIVATE ${JSONIncludePaths})
 target_compile_options(Playground PRIVATE ${CommonCompilerOptions})
 
 add_executable(Lean Source/main/main.cpp)
 target_include_directories(Lean PRIVATE ${CommonIncludePaths})
 target_include_directories(Lean PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Lean PRIVATE ${JSONIncludePaths})
 set_target_properties(Lean PROPERTIES VS_DPI_AWARE "ON")
 target_link_libraries(Lean PRIVATE Core)
 target_link_libraries(Lean PRIVATE Engine)

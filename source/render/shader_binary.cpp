@@ -107,7 +107,7 @@ namespace Render
 				if (std::find(includedFiles.begin(), includedFiles.end(), includePath) == includedFiles.end())
 				{
 					std::string includeSrc;
-					if (!Kernel::FileIO::LoadTextFromFile(includePath.c_str(), includeSrc))
+					if (!Core::LoadTextFromFile(includePath.c_str(), includeSrc))
 					{
 						SDE_RENDER_ASSERT(false, "Failed to include shader source from %s", includeSrc.c_str());
 						return;
@@ -129,7 +129,7 @@ namespace Render
 		SDE_PROF_EVENT_DYN(debugName);
 
 		std::string shaderSource;
-		if (!Kernel::FileIO::LoadTextFromFile(srcLocation, shaderSource))
+		if (!Core::LoadTextFromFile(srcLocation, shaderSource))
 		{
 			SDE_RENDER_ASSERT(false, "Failed to load shader source from %s", srcLocation);
 			return false;

@@ -130,8 +130,8 @@ bool Graphics::PostInit()
 	m_arcballCamera->SetUp({ 0.0f,1.0f,0.0f });
 
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
-	gMenu.AddItem("Reload Shaders", [this]() { m_shaders->ReloadAll(); });
-	gMenu.AddItem("Reload Textures", [this]() { m_textures->ReloadAll(); });
+	gMenu.AddItem("Reload Shaders", [this]() { m_renderer->Reset(); m_shaders->ReloadAll(); });
+	gMenu.AddItem("Reload Textures", [this]() { m_renderer->Reset(); m_textures->ReloadAll(); });
 	gMenu.AddItem("Reload Models", [this]() { m_renderer->Reset(); m_models->ReloadAll(); });
 	gMenu.AddItem("TextureManager", [this]() { g_showTextureGui = true; });
 	gMenu.AddItem("ModelManager", [this]() { g_showModelGui = true; });

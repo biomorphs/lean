@@ -1,6 +1,8 @@
 #pragma once
 #include "engine/system.h"
 #include "core/timer.h"
+#include "scene.h"
+#include "scene_editor.h"
 #include <string>
 #include <sol.hpp>
 
@@ -19,15 +21,20 @@ public:
 	virtual bool Tick();
 	virtual void Shutdown();
 private:
-	void ReloadScript();
-	void CallScriptInit();
-	void CallScriptTick();
-	void CallScriptShutdown();
-	sol::table m_scriptFunctions;
+	void NewScene();
+	void LoadScene(std::string filename);
+	void SaveScene(std::string filename);
+	void TickScene();
+	void ReloadScripts();
+
+	Scene m_scene;
+	SceneEditor m_sceneEditor;
+
+	std::vector<sol::table> m_loadedSceneScripts;
+	std::string m_sceneFilename;
+
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
-	std::string m_scriptPath = "playground.lua";
-	std::string m_scriptErrorText;
 	Core::Timer m_timer;
 	double m_lastFrameTime = 0.0;
 	double m_deltaTime = 0.0;

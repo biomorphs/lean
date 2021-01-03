@@ -102,6 +102,16 @@ namespace Engine
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 
+	void DebugGuiSystem::ItemWidth(float w)
+	{
+		ImGui::PushItemWidth(w);
+	}
+
+	void DebugGuiSystem::SameLine(float xOffset, float spacing)
+	{
+		ImGui::SameLine(xOffset, spacing);
+	}
+
 	bool DebugGuiSystem::BeginWindow(bool& windowOpen, const char* windowName, glm::vec2 size)
 	{
 		bool ret = ImGui::Begin(windowName, &windowOpen, 0);
@@ -135,6 +145,18 @@ namespace Engine
 	bool DebugGuiSystem::DragVector(const char* label, glm::vec4& v, float step, float min, float max)
 	{
 		return ImGui::DragFloat4(label, glm::value_ptr(v), step, min, max);
+	}
+
+	bool DebugGuiSystem::TextInput(const char* label, std::string& str)
+	{
+		char textBuffer[1024] = { '\0' };
+		strcpy_s(textBuffer, str.c_str());
+		if (ImGui::InputText(label, textBuffer, sizeof(textBuffer)))
+		{
+			str = textBuffer;
+			return true;
+		}
+		return false;
 	}
 
 	bool DebugGuiSystem::TextInput(const char* label, char* textBuffer, size_t bufferSize)

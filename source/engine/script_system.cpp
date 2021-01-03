@@ -29,7 +29,7 @@ namespace Engine
 			SDE_PROF_EVENT_DYN(debugName);
 
 			std::string scriptText;
-			if (Kernel::FileIO::LoadTextFromFile(filename, scriptText))
+			if (Core::LoadTextFromFile(filename, scriptText))
 			{
 				result = m_globalState->script(scriptText.data());
 			}
@@ -52,7 +52,7 @@ namespace Engine
 			SDE_PROF_EVENT_DYN(debugName);
 
 			std::string scriptText;
-			if (Kernel::FileIO::LoadTextFromFile(filename, scriptText))
+			if (Core::LoadTextFromFile(filename, scriptText))
 			{
 				m_globalState->script(scriptText.data());
 			}
