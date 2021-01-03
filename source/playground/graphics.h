@@ -18,12 +18,7 @@ namespace Engine
 	class TextureManager;
 	class ModelManager;
 	class ShaderManager;
-}
-
-namespace smol 
-{
 	class Renderer;
-	class Renderer2D;
 	class DebugRender;
 }
 
@@ -37,8 +32,8 @@ public:
 	virtual bool Tick();
 	virtual void Shutdown();
 private:
-	//std::unique_ptr<smol::DebugRender> m_debugRender;
-	//std::unique_ptr<smol::Renderer> m_renderer;
+	std::unique_ptr<Engine::DebugRender> m_debugRender;
+	std::unique_ptr<Engine::Renderer> m_renderer;
 	std::unique_ptr<Engine::TextureManager> m_textures;
 	std::unique_ptr<Engine::ModelManager> m_models;
 	std::unique_ptr<Engine::ShaderManager> m_shaders;

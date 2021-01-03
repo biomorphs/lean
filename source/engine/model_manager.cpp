@@ -88,7 +88,7 @@ namespace Engine
 	std::unique_ptr<Model> ModelManager::CreateModel(Assets::Model& model, const std::vector<std::unique_ptr<Render::MeshBuilder>>& meshBuilders)
 	{
 		char debugName[1024] = { '\0' };
-		sprintf_s(debugName, "smol::ModelManager::ProcessModel(\"%s\")", model.GetPath().c_str());
+		sprintf_s(debugName, "Engine::ModelManager::ProcessModel(\"%s\")", model.GetPath().c_str());
 		SDE_PROF_EVENT_DYN(debugName);
 
 		auto resultModel = std::make_unique<Model>();

@@ -14,7 +14,7 @@ namespace Engine
 	{
 		class Model;
 	}
-	class Renderer;
+
 	class Model
 	{
 	public:

@@ -6,8 +6,7 @@ project(Lean
   LANGUAGES CXX)
   
 find_package(OpenGL REQUIRED)
-set(SDL2Libs 
-)
+
 set(CommonIncludePaths 
 	Source
 	external/SDL2-2.0.12/include/
@@ -76,7 +75,9 @@ set(RENDER_SOURCES
 	Source/render/vertex_array.cpp
 	Source/render/vertex_array.h
 	Source/render/window.cpp
-	Source/render/window.h)
+	Source/render/window.h
+	Source/render/render_target_blitter.cpp
+	Source/render/render_target_blitter.h)
 target_sources(Render PRIVATE ${RENDER_SOURCES})
 target_include_directories(Render PRIVATE ${CommonIncludePaths})
 target_compile_options(Render PRIVATE ${CommonCompilerOptions})
@@ -145,7 +146,16 @@ set(ENGINE_SOURCES
 	Source/engine/model.h
 	Source/engine/model.cpp
 	Source/engine/model_asset.h
-	Source/engine/model_asset.cpp)
+	Source/engine/model_asset.cpp
+	Source/engine/renderer.h
+	Source/engine/renderer.cpp
+	Source/engine/light.h
+	Source/engine/mesh_instance.h
+	Source/engine/material_helpers.cpp
+	Source/engine/material_helpers.h
+	Source/engine/debug_render.cpp
+	Source/engine/debug_render.h
+	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})
 target_include_directories(Engine PRIVATE ${LuaAndSolIncludePaths})
