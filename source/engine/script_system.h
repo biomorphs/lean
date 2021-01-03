@@ -1,6 +1,7 @@
 #pragma once
 
 #include "system.h"
+#include <sol.hpp>
 #include <string>
 #include <memory>
 

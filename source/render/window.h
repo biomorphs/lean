@@ -4,6 +4,7 @@ SDLEngine
 */
 #pragma once
 
+#include "core/glm_headers.h"
 #include <string>
 
 struct SDL_Window;
@@ -44,6 +45,7 @@ namespace Render
 
 		void Show();
 		void Hide();
+		glm::ivec2 GetSize() const { return { m_properties.m_sizeX, m_properties .m_sizeY}; }
 
 		SDL_Window* GetWindowHandle();
 		inline const Properties& GetProperties() { return m_properties; }

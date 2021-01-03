@@ -4,7 +4,7 @@ Matt Hoyle
 */
 #pragma once
 
-#include "math/glm_headers.h"
+#include "core/glm_headers.h"
 
 namespace Render
 {

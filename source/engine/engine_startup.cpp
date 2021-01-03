@@ -39,7 +39,7 @@ namespace Engine
 		sysManager.RegisterSystem("Events", new EventSystem);
 		sysManager.RegisterSystem("Jobs", new JobSystem);
 		sysManager.RegisterSystem("Input", new InputSystem);
-		sysManager.RegisterSystem("Scripts", new ScriptSystem);
+		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
 
 		SDE_LOGC(Engine, "Creating systems...");

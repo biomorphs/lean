@@ -1,17 +1,11 @@
-
-//#include "debug_gui/debug_gui_system.h"
 #include "engine/engine_startup.h"
-//#include "core/system_registrar.h"
-//#include "playground.h"
-//#include "graphics.h"
-
-#include "platform.h"
+#include "playground/playground.h"
+#include "playground/graphics.h"
 
 void CreateSystems(Engine::SystemRegister& r)
 {
-	//systemManager.RegisterSystem("DebugGui", new DebugGui::DebugGuiSystem());
-	//systemManager.RegisterSystem("Playground", new Playground());
-	//systemManager.RegisterSystem("Graphics", new Graphics());
+	r.Register("Playground", new Playground());
+	r.Register("Graphics", new Graphics());
 }
 
 int main()
