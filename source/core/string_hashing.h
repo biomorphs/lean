@@ -1,0 +1,24 @@
+#pragma once
+
+#include <stdint.h>
+
+namespace Core
+{
+	class StringHashing
+	{
+	public:
+		// djb2 hash
+		static inline uint32_t GetHash(const char* str)
+		{
+			uint32_t hash = 5381;
+
+			int c = 0;
+			while (c = *str++)
+			{
+				hash = ((hash << 5) + hash) + c;
+			}
+
+			return hash;
+		}
+	};
+}
