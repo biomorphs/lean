@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #include "file_io.h"
 #include <cassert>
 #include <fstream>

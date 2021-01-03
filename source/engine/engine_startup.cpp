@@ -1,6 +1,11 @@
 #include "engine_startup.h"
 #include "system_manager.h"
 #include "event_system.h"
+#include "job_system.h"
+#include "input_system.h"
+#include "render_system.h"
+#include "script_system.h"
+#include "debug_gui_system.h"
 #include "platform.h"
 #include "core/log.h"
 #include <cassert>
@@ -32,10 +37,16 @@ namespace Engine
 		// Create the system manager and register systems
 		SystemManager sysManager;
 		sysManager.RegisterSystem("Events", new EventSystem);
+		sysManager.RegisterSystem("Jobs", new JobSystem);
+		sysManager.RegisterSystem("Input", new InputSystem);
+		sysManager.RegisterSystem("Scripts", new ScriptSystem);
+		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
 
 		SDE_LOGC(Engine, "Creating systems...");
 		EngineSystemRegister registerSystems(sysManager);
 		systemCreation(registerSystems);
+
+		sysManager.RegisterSystem("Render", new RenderSystem);
 
 		// Run the engine
 		SDE_LOGC(Engine, "Initialising systems...");

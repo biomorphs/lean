@@ -13,8 +13,7 @@
 #else
 	#define SDE_PROF_FRAME(...)
 	#define SDE_PROF_EVENT(...)
+	#define SDE_PROF_EVENT_DYN(str)
 	#define SDE_PROF_STALL(...)
-	#define SDE_PROF_PUSH(name)	
-	#define SDE_PROF_POP()
 	#define SDE_PROF_THREAD(name)
 #endif

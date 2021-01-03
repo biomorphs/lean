@@ -1,7 +1,3 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #pragma once
 
 #include "system.h"
