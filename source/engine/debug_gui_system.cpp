@@ -202,10 +202,6 @@ namespace Engine
 			ImGui::NewFrame();
 		}
 
-		bool isopen = true;
-		BeginWindow(isopen, "Test");
-		EndWindow();
-
 		return true;
 	}
 

@@ -30,12 +30,12 @@ namespace Engine
 		void AddLinesInternal(const __m128* posBuffer, const __m128* colBuffer, uint32_t count);
 
 		static const uint32_t c_maxLines = 1024 * 1024 * 1;
-		uint32_t m_currentLines;
+		uint32_t m_currentLines = 0;
+		uint32_t m_currentWriteMesh = 0;
 		std::unique_ptr<glm::vec4, std::function<void(glm::vec4*)>> m_posBuffer;
 		std::unique_ptr<glm::vec4, std::function<void(glm::vec4*)>> m_colBuffer;
 		ShaderHandle m_shader;
 		static const uint32_t c_meshBuffers = 2;	// triple-buffered
 		std::unique_ptr<Render::Mesh> m_renderMesh[c_meshBuffers];		
-		uint32_t m_currentWriteMesh;
 	};
 }

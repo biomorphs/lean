@@ -17,7 +17,6 @@
 #include "render/render_pass.h"
 #include "render/window.h"
 #include "render/camera.h"
-//#include "smol/renderer_2d.h"
 #include "core/profiler.h"
 #include "core/timer.h"
 #include "engine/arcball_camera.h"
@@ -102,22 +101,22 @@ bool Graphics::PostInit()
 	graphics["DirectionalLight"] = [this](float dx, float dy, float dz, float r, float g, float b, float ambient) {
 		m_renderer->SetLight(glm::vec4(dx, dy, dz, 0.0f), glm::vec3(r, g, b), ambient, { 0.0f,0.0f,0.0f });
 	};
-	//graphics["DebugDrawAxis"] = [this](float px, float py, float pz, float size) {
-	//	m_debugRender->AddAxisAtPoint({ px,py,pz,1.0f }, size);
-	//};
-	//graphics["DebugDrawBox"] = [this](float px, float py, float pz, float size, float r, float g, float b, float a) {
-	//	m_debugRender->AddBox({ px,py,pz }, { size,size,size }, { r, g, b, a });
-	//};
-	//graphics["DebugDrawLine"] = [this](float p0x, float p0y, float p0z, float p1x, float p1y, float p1z, float p0r, float p0g, float p0b, float p0a, float p1r, float p1g, float p1b, float p1a) {
-	//	glm::vec4 positions[] = {
-	//		{p0x,p0y,p0z,0.0f}, {p1x,p1y,p1z,0.0f}
-	//	};
-	//	glm::vec4 colours[] = {
-	//		{p0r,p0g,p0b,p0a},{p1r,p1g,p1b,p1a}
-	//	};
-	//	m_debugRender->AddLines(positions, colours, 1);
-	//};
-	//m_debugRender = std::make_unique<smol::DebugRender>(m_shaders.get());
+	graphics["DebugDrawAxis"] = [this](float px, float py, float pz, float size) {
+		m_debugRender->AddAxisAtPoint({ px,py,pz,1.0f }, size);
+	};
+	graphics["DebugDrawBox"] = [this](float px, float py, float pz, float size, float r, float g, float b, float a) {
+		m_debugRender->AddBox({ px,py,pz }, { size,size,size }, { r, g, b, a });
+	};
+	graphics["DebugDrawLine"] = [this](float p0x, float p0y, float p0z, float p1x, float p1y, float p1z, float p0r, float p0g, float p0b, float p0a, float p1r, float p1g, float p1b, float p1a) {
+		glm::vec4 positions[] = {
+			{p0x,p0y,p0z,0.0f}, {p1x,p1y,p1z,0.0f}
+		};
+		glm::vec4 colours[] = {
+			{p0r,p0g,p0b,p0a},{p1r,p1g,p1b,p1a}
+		};
+		m_debugRender->AddLines(positions, colours, 1);
+	};
+	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
 
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();
 	m_debugCamera->SetPosition({99.f,47.0f,2.4f});
@@ -204,7 +203,7 @@ bool Graphics::Tick()
 	m_renderer->SetCamera(c);
 
 	// debug render
-	//m_debugRender->PushToRenderer(*m_renderer);
+	m_debugRender->PushToRenderer(*m_renderer);
 	m_debugGui->MainMenuBar(g_graphicsMenu);
 	if (g_showTextureGui)
 	{
@@ -243,7 +242,7 @@ void Graphics::Shutdown()
 	SDE_PROF_EVENT();
 
 	m_scriptSystem->Globals()["Graphics"] = nullptr;
-	//m_debugRender = nullptr;
+	m_debugRender = nullptr;
 	m_renderer = nullptr;
 	m_models = nullptr;
 	m_textures = nullptr;
