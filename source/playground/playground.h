@@ -29,10 +29,7 @@ private:
 
 	Scene m_scene;
 	SceneEditor m_sceneEditor;
-
 	std::vector<sol::table> m_loadedSceneScripts;
-	std::string m_sceneFilename;
-
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
 	Core::Timer m_timer;

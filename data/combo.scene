@@ -1,0 +1,9 @@
+{
+  "ClassName": "Scene",
+  "Name": "Multi Script Scene",
+  "Scripts": [
+    "playground.lua",
+    "island.lua",
+    "bouncylights.lua"
+  ]
+}

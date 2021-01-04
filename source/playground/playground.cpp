@@ -7,6 +7,7 @@
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
+#include "engine/file_picker_dialog.h"
 #include "debug_gui_script_binding.h"
 
 Playground::Playground()
@@ -20,7 +21,7 @@ Playground::~Playground()
 
 void Playground::NewScene()
 {
-
+	m_scene = {};
 }
 
 void Playground::ReloadScripts()
@@ -101,22 +102,21 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_lastFrameTime = m_timer.GetSeconds();
 
 	DebugGuiScriptBinding::Go(m_debugGui, m_scriptSystem->Globals());
-
-	Scene testScene;
-	testScene.Name() = "Playground Test Scene";
-	testScene.Scripts().push_back("playground.lua");
-	m_sceneFilename = "playground.scene";
-	nlohmann::json json;
-	testScene.Serialise(json, Engine::Serialiser::Writer);
-	Core::SaveTextToFile(m_sceneFilename, json.dump(2));
-
 	m_sceneEditor.Init(&m_scene, m_debugGui);
 
 	auto& fileMenu = g_menuBar.AddSubmenu(ICON_FK_FILE_O " File");
 	fileMenu.AddItem("Exit", []() { g_keepRunning = false; });
 
 	auto& scriptMenu = g_menuBar.AddSubmenu(ICON_FK_GLOBE " Scene");
-	scriptMenu.AddItem("Load Scene", [this] { LoadScene(m_sceneFilename); });
+	scriptMenu.AddItem("New Scene", [this]() { NewScene(); });
+	scriptMenu.AddItem("Load Scene", [this] { 
+		std::string sceneFile = Engine::ShowFilePicker("Load Scene", "", "Scene Files (.scene)\0*.scene\0");
+		LoadScene(sceneFile);
+	});
+	scriptMenu.AddItem("Save Scene", [this] {
+		std::string sceneFile = Engine::ShowFilePicker("Save Scene", "", "Scene Files (.scene)\0*.scene\0", true);
+		SaveScene(sceneFile);
+	});
 	scriptMenu.AddItem("Toggle Editor", [this] { m_sceneEditor.ToggleEnabled(); });
 	scriptMenu.AddItem("Toggle Paused", [] { g_pauseScriptDelta = !g_pauseScriptDelta; });
 

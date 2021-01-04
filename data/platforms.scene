@@ -1,0 +1,8 @@
+{
+  "ClassName": "Scene",
+  "Name": "Platforms",
+  "Scripts": [
+    "platforms.lua",
+    "bouncylights.lua"
+  ]
+}

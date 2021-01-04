@@ -164,6 +164,8 @@ set(ENGINE_SOURCES
 	Source/engine/debug_render.h
 	Source/engine/serialisation.inl
 	Source/engine/serialisation.h
+	Source/engine/file_picker_dialog.cpp
+	Source/engine/file_picker_dialog.h
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})
