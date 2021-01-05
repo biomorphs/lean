@@ -28,7 +28,7 @@ public:
 	Graphics();
 	virtual ~Graphics();
 	virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
-	virtual bool PostInit();
+	virtual bool Initialise();
 	virtual bool Tick();
 	virtual void Shutdown();
 private:

@@ -51,6 +51,8 @@ namespace Engine
 		void GraphLines(const char* label, glm::vec2 size, GraphDataBuffer& buffer);
 		void GraphHistogram(const char* label, glm::vec2 size, GraphDataBuffer& buffer);
 		void MainMenuBar(MenuBar&);
+		bool TreeNode(const char* label, bool forceExpanded = false);
+		void TreePop();
 
 	private:
 		RenderSystem* m_renderSystem;

@@ -91,6 +91,7 @@ target_compile_options(Render PRIVATE ${CommonCompilerOptions})
 
 add_library(ImguiLib STATIC)
 set(IMGUILIB_SOURCES
+	external/imgui-docking/imgui/imgui.h
 	external/imgui-docking/imgui/imgui.cpp
 	external/imgui-docking/imgui/imgui_demo.cpp
 	external/imgui-docking/imgui/imgui_draw.cpp
@@ -178,6 +179,23 @@ target_link_libraries(Engine PRIVATE Render)
 target_link_libraries(Engine PRIVATE ImguiLib)
 target_compile_options(Engine PRIVATE ${CommonCompilerOptions})
 
+add_library(Entity STATIC)
+set(ENTITY_SOURCES
+	Source/engine/entity/entity_handle.h
+	Source/engine/entity/world.h
+	Source/engine/entity/world.cpp
+	Source/engine/entity/entity_system.h
+	Source/engine/entity/entity_system.cpp
+	Source/engine/entity/component.h
+	Source/engine/entity/component.cpp
+	Source/engine/entity/component_storage.h
+	Source/engine/entity/component_storage.inl
+)
+target_sources(Entity PRIVATE ${ENTITY_SOURCES})
+target_include_directories(Entity PRIVATE ${CommonIncludePaths})
+target_include_directories(Entity PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Entity PRIVATE ${JSONIncludePaths})
+
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
 	Source/playground/playground.h
@@ -203,6 +221,7 @@ target_include_directories(Lean PRIVATE ${JSONIncludePaths})
 set_target_properties(Lean PROPERTIES VS_DPI_AWARE "ON")
 target_link_libraries(Lean PRIVATE Core)
 target_link_libraries(Lean PRIVATE Engine)
+target_link_libraries(Lean PRIVATE Entity)
 target_link_libraries(Lean PRIVATE Playground)
 target_link_libraries(Lean PRIVATE ../external/assimp-5.0.1/lib/release/assimp-vc142-mt)
 target_link_libraries(Lean PRIVATE ../external/glew-2.1.0/lib/Release/x64/glew32)

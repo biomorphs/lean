@@ -1,7 +1,8 @@
 {
   "ClassName": "Scene",
-  "Name": "Playground Test Scene",
+  "Name": "Sponza and bouncy lights",
   "Scripts": [
+    "bouncylights.lua",
     "playground.lua"
   ]
 }

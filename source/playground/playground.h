@@ -18,6 +18,7 @@ public:
 	Playground();
 	virtual ~Playground();
 	virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
+	virtual bool PostInit();
 	virtual bool Tick();
 	virtual void Shutdown();
 private:

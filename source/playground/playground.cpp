@@ -8,7 +8,20 @@
 #include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
 #include "engine/file_picker_dialog.h"
+#include "engine/serialisation.h"
 #include "debug_gui_script_binding.h"
+#include <cassert>
+
+std::string g_configFile = "playground_config.json";
+struct PlaygroundConfig
+{
+	std::string m_lastLoadedScene = "";
+	SERIALISED_CLASS();
+} g_playgroundConfig;
+SERIALISE_BEGIN(PlaygroundConfig)
+SERIALISE_PROPERTY("LastLoadedScene", m_lastLoadedScene);
+SERIALISE_END()
+
 
 Playground::Playground()
 {
@@ -19,9 +32,29 @@ Playground::~Playground()
 {
 }
 
+void LoadConfig()
+{
+	std::string configText;
+	if (Core::LoadTextFromFile(g_configFile, configText))
+	{
+		nlohmann::json json = nlohmann::json::parse(configText);
+		g_playgroundConfig = {};
+		g_playgroundConfig.Serialise(json, Engine::SerialiseType::Read);
+	}
+}
+
+void SaveConfig()
+{
+	nlohmann::json json;
+	g_playgroundConfig.Serialise(json, Engine::SerialiseType::Write);
+	Core::SaveTextToFile(g_configFile, json.dump(2));
+}
+
 void Playground::NewScene()
 {
 	m_scene = {};
+	g_playgroundConfig.m_lastLoadedScene = "";
+	SaveConfig();
 }
 
 void Playground::ReloadScripts()
@@ -41,6 +74,7 @@ void Playground::ReloadScripts()
 			catch (const sol::error& err)
 			{
 				SDE_LOG("Lua Error - %s", err.what());
+				assert(false);
 			}
 		}
 		m_loadedSceneScripts.push_back(std::move(scriptTable));
@@ -48,6 +82,7 @@ void Playground::ReloadScripts()
 	if (scriptErrors.length() > 0)
 	{
 		SDE_LOG("Script failure: %s", scriptErrors.c_str());
+		assert(false);
 	}
 }
 
@@ -58,17 +93,23 @@ void Playground::LoadScene(std::string filename)
 	if (Core::LoadTextFromFile(filename, fileContents))
 	{
 		nlohmann::json json = nlohmann::json::parse(fileContents);
-		m_scene.Serialise(json, Engine::Serialiser::Reader);
+		m_scene.Serialise(json, Engine::SerialiseType::Read);
 
 		ReloadScripts();
+		
+		g_playgroundConfig.m_lastLoadedScene = filename;
+		SaveConfig();
 	}
 }
 
 void Playground::SaveScene(std::string filename)
 {
 	nlohmann::json json;
-	m_scene.Serialise(json, Engine::Serialiser::Writer);
+	m_scene.Serialise(json, Engine::SerialiseType::Write);
 	Core::SaveTextToFile(filename, json.dump(2));
+
+	g_playgroundConfig.m_lastLoadedScene = filename;
+	SaveConfig();
 }
 
 void Playground::TickScene()
@@ -85,6 +126,7 @@ void Playground::TickScene()
 			catch (const sol::error& err)
 			{
 				SDE_LOG("Lua Error - %s", err.what());
+				assert(false);
 			}
 		}
 	}
@@ -120,6 +162,16 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	scriptMenu.AddItem("Toggle Editor", [this] { m_sceneEditor.ToggleEnabled(); });
 	scriptMenu.AddItem("Toggle Paused", [] { g_pauseScriptDelta = !g_pauseScriptDelta; });
 
+	return true;
+}
+
+bool Playground::PostInit()
+{
+	LoadConfig();
+	if (g_playgroundConfig.m_lastLoadedScene.length() > 0)
+	{
+		LoadScene(g_playgroundConfig.m_lastLoadedScene);
+	}
 	return true;
 }
 

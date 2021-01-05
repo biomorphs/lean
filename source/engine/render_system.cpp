@@ -21,13 +21,8 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		m_jobSystem = (JobSystem*)systemEnumerator.GetSystem("Jobs");
-		return true;
-	}
 
-	bool RenderSystem::Initialise()
-	{
-		SDE_PROF_EVENT();
-
+		// Create the window + device asap
 		Render::Window::Properties winProps(m_config.m_windowTitle, m_config.m_windowWidth, m_config.m_windowHeight);
 		winProps.m_flags = m_config.m_fullscreen ? Render::Window::CreateFullscreen : 0;
 		m_window = std::make_unique<Render::Window>(winProps);
@@ -43,6 +38,13 @@ namespace Engine
 			SDE_LOGC(SDE, "Failed to create render device");
 			return false;
 		}
+
+		return true;
+	}
+
+	bool RenderSystem::Initialise()
+	{
+		SDE_PROF_EVENT();
 
 		// We need to create a opengl context for each job thread before the job system starts in PostInit
 		auto threadCount = m_jobSystem->GetThreadCount();

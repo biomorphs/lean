@@ -92,6 +92,23 @@ namespace Engine
 		}
 	}
 
+	bool DebugGuiSystem::TreeNode(const char* label, bool forceExpanded)
+	{
+		if (forceExpanded)
+		{
+			return ImGui::TreeNodeEx(label, ImGuiTreeNodeFlags_DefaultOpen);
+		}
+		else
+		{
+			return ImGui::TreeNode(label);
+		}
+	}
+
+	void DebugGuiSystem::TreePop()
+	{
+		ImGui::TreePop();
+	}
+
 	bool DebugGuiSystem::IsCapturingMouse()
 	{
 		return ImGui::GetIO().WantCaptureMouse;

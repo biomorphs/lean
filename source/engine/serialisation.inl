@@ -52,7 +52,7 @@ namespace Engine
 	{
 		if constexpr (Serialisation::HasSerialiser<T>::value)	// I'm in love
 		{
-			v.Serialise(json, SDE::Serialiser::Writer);
+			v.Serialise(json, Engine::SerialiseType::Write);
 		}
 		else
 		{
@@ -65,7 +65,7 @@ namespace Engine
 	{
 		if constexpr (Serialisation::HasSerialiser<T>::value)
 		{
-			v.Serialise(json, SDE::Serialiser::Writer);
+			v.Serialise(json, Engine::SerialiseType::Write);
 		}
 		else
 		{
@@ -102,7 +102,7 @@ namespace Engine
 			// Get the actual class name from json
 			std::string classTypeName = json["SDE_ClassName"];
 			T* object = Serialisation::ObjectFactory<T>::CreateObject(classTypeName);
-			object->Serialise(json, SDE::Serialiser::Reader);
+			object->Serialise(json, Engine::SerialiseType::Read);
 			v.reset(object);
 		}
 		else
@@ -120,7 +120,7 @@ namespace Engine
 			// Get the actual class name from json
 			std::string classTypeName = json["SDE_ClassName"];
 			T* object = Serialisation::ObjectFactory<T>::CreateObject(classTypeName);
-			object->Serialise(json, SDE::Serialiser::Reader);
+			object->Serialise(json, Engine::SerialiseType::Read);
 			v.reset(object);
 		}
 		else
@@ -135,7 +135,7 @@ namespace Engine
 	{
 		if constexpr (Serialisation::HasSerialiser<T>::value)
 		{
-			v.Serialise(json, SDE::Serialiser::Reader);
+			v.Serialise(json, Engine::SerialiseType::Read);
 		}
 		else
 		{
@@ -161,7 +161,7 @@ namespace Engine
 	{
 		if constexpr (Serialisation::HasSerialiser<T>::value)
 		{
-			v.Serialise(json[name], SDE::Serialiser::Reader);
+			v.Serialise(json[name], Engine::SerialiseType::Read);
 		}
 		else
 		{

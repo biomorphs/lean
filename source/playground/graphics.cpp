@@ -40,6 +40,11 @@ bool Graphics::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_jobSystem = (Engine::JobSystem*)systemEnumerator.GetSystem("Jobs");
 	m_debugGui = (Engine::DebugGuiSystem*)systemEnumerator.GetSystem("DebugGui");
 
+	// Create managers
+	m_shaders = std::make_unique<Engine::ShaderManager>();
+	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);
+	m_models = std::make_unique<Engine::ModelManager>(m_textures.get(), m_jobSystem);
+
 	return true;
 }
 
@@ -49,14 +54,9 @@ bool g_showModelGui = false;
 bool g_useArcballCam = false;
 bool g_showCameraInfo = false;
 
-bool Graphics::PostInit()
+bool Graphics::Initialise()
 {
 	SDE_PROF_EVENT();
-
-	// Create managers
-	m_shaders = std::make_unique<Engine::ShaderManager>();
-	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);
-	m_models = std::make_unique<Engine::ModelManager>(m_textures.get(), m_jobSystem);
 
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);

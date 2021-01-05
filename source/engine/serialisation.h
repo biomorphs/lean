@@ -4,27 +4,27 @@
 namespace Engine
 {
 	// Specify read/write from json. I don't like this name
-	enum class Serialiser
+	enum class SerialiseType
 	{
-		Reader,
-		Writer
+		Read,
+		Write
 	};
 }
 
 // add this to the public interface of your class
 #define SERIALISED_CLASS()	\
-	void Serialise(nlohmann::json& json, Engine::Serialiser op);
+	void Serialise(nlohmann::json& json, Engine::SerialiseType op);
 
 // add this to your cpp, generates serialise function + registers factories
 #define SERIALISE_BEGIN(classname)	\
-	Engine::Serialisation::ObjectFactory<classname>::Register s_registerFactory_(#classname,[](){ return new classname; });	\
-	void classname::Serialise(nlohmann::json& json, Engine::Serialiser op)	\
+	Engine::Serialisation::ObjectFactory<classname>::Register s_registerFactory_##classname(#classname,[](){ return new classname; });	\
+	void classname::Serialise(nlohmann::json& json, Engine::SerialiseType op)	\
 	{	\
 		const char* c_myClassName = #classname;
 
 // add this to your cpp, generates serialise function + registers factories
 #define SERIALISE_BEGIN_WITH_PARENT(classname,parent)	\
-	Engine::Serialisation::ObjectFactory<parent>::Register s_registerFactory_parent_(#classname,[]() {	\
+	Engine::Serialisation::ObjectFactory<parent>::Register s_registerFactory_parent_##classname(#classname,[]() {	\
 		return reinterpret_cast<parent*>(new classname);	\
 	});	\
 	SERIALISE_BEGIN(classname)	\
@@ -32,7 +32,7 @@ namespace Engine
 
 // properties (can handle almost anything)
 #define SERIALISE_PROPERTY(name,p)	\
-		if(op == Engine::Serialiser::Writer) {	\
+		if(op == Engine::SerialiseType::Write) {	\
 			Engine::ToJson(name, p, json);	\
 		}	\
 		else    \

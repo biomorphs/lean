@@ -1,0 +1,7 @@
+{
+  "ClassName": "Scene",
+  "Name": "Entity Test",
+  "Scripts": [
+    "entitytest.lua"
+  ]
+}
