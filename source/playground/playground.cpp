@@ -66,6 +66,7 @@ void Playground::ReloadScripts()
 	SDE_PROF_EVENT();
 	std::string scriptErrors;
 	m_loadedSceneScripts.clear();
+	m_entitySystem->NewWorld();
 	for (auto it : m_scene.Scripts())
 	{
 		sol::table scriptTable;
