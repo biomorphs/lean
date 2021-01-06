@@ -198,6 +198,12 @@ target_include_directories(Entity PRIVATE ${JSONIncludePaths})
 
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
+	Source/playground/components/model.h
+	Source/playground/components/model.cpp
+	Source/playground/components/transform.h
+	Source/playground/components/transform.cpp
+	Source/playground/components/light.h
+	Source/playground/components/light.cpp
 	Source/playground/playground.h
 	Source/playground/playground.cpp
 	Source/playground/graphics.h

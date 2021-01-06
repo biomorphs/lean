@@ -39,12 +39,13 @@ namespace Engine
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 		Render::FrameBuffer& GetMainFramebuffer() { return m_mainFramebuffer; }
 		struct FrameStats {
-			size_t m_instancesSubmitted;
-			size_t m_shaderBinds;
-			size_t m_vertexArrayBinds;
-			size_t m_batchesDrawn;
-			size_t m_drawCalls;
-			size_t m_totalVertices;
+			size_t m_instancesSubmitted = 0;
+			size_t m_shaderBinds = 0;
+			size_t m_vertexArrayBinds = 0;
+			size_t m_batchesDrawn = 0;
+			size_t m_drawCalls = 0;
+			size_t m_totalVertices = 0;
+			size_t m_activeLights = 0;
 		};
 		const FrameStats& GetStats() const { return m_frameStats; }
 		float& GetExposure() { return m_hdrExposure; }

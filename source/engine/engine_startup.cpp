@@ -35,19 +35,17 @@ namespace Engine
 			return 1;
 		}
 
-		// Create the system manager and register systems
 		SystemManager sysManager;
 		sysManager.RegisterSystem("Events", new EventSystem);
 		sysManager.RegisterSystem("Jobs", new JobSystem);
 		sysManager.RegisterSystem("Input", new InputSystem);
 		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
-		sysManager.RegisterSystem("Entities", new EntitySystem);
-
-		SDE_LOGC(Engine, "Creating systems...");
+		
 		EngineSystemRegister registerSystems(sysManager);
 		systemCreation(registerSystems);
 
+		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("Render", new RenderSystem);
 
 		// Run the engine

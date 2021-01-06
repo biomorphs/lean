@@ -2,45 +2,61 @@
 #include "world.h"
 #include "engine/system_enumerator.h"
 #include "engine/debug_gui_system.h"
+#include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
+
+Engine::MenuBar g_entityMenu;
+bool g_showWindow = false;
 
 EntitySystem::EntitySystem()
 {
 	m_world = std::make_unique<World>();
 }
 
+void EntitySystem::NewWorld()
+{
+	SDE_PROF_EVENT();
+	m_world->RemoveAllEntities();
+}
+
 void EntitySystem::ShowDebugGui()
 {
-	bool isOpen = true;
-	m_debugGui->BeginWindow(isOpen, "Entity System");
+	SDE_PROF_EVENT();
 
-	if (m_debugGui->TreeNode("All Entities", true))
+	if(g_showWindow)
 	{
-		const auto& allEntities = m_world->AllEntities();
-		for (auto entityID : allEntities)
+		m_debugGui->BeginWindow(g_showWindow, "Entity System");
+		if (m_debugGui->TreeNode("All Entities", true))
 		{
-			char text[256] = "";
-			sprintf_s(text, "Entity %d", entityID);
-			if (m_debugGui->TreeNode(text, true))
+			const auto& allEntities = m_world->AllEntities();
+			for (auto entityID : allEntities)
 			{
-				std::vector<Component*> components = m_world->GetAllComponents(entityID);
-				for (const auto& cmp : components)
+				char text[256] = "";
+				sprintf_s(text, "Entity %d", entityID);
+				if (m_debugGui->TreeNode(text))
 				{
-					if (m_debugGui->TreeNode(cmp->GetType().c_str()))
+					std::vector<Component*> components = m_world->GetAllComponents(entityID);
+					for (const auto& cmp : components)
 					{
-						m_debugGui->TreePop();
+						if (m_debugGui->TreeNode(cmp->GetType().c_str()))
+						{
+							m_debugGui->TreePop();
+						}
 					}
+					m_debugGui->TreePop();
 				}
-				m_debugGui->TreePop();
 			}
 		}
 		m_debugGui->TreePop();
+		m_debugGui->EndWindow();
 	}
-	m_debugGui->EndWindow();
+	m_debugGui->MainMenuBar(g_entityMenu);
 }
 
 bool EntitySystem::PreInit(Engine::SystemEnumerator& s)
 {
+	SDE_PROF_EVENT();
+
 	m_scriptSystem = (Engine::ScriptSystem*)s.GetSystem("Script");
 	assert(m_scriptSystem);
 	m_debugGui = (Engine::DebugGuiSystem*)s.GetSystem("DebugGui");
@@ -62,16 +78,23 @@ bool EntitySystem::PreInit(Engine::SystemEnumerator& s)
 
 bool EntitySystem::Initialise()
 {
+	SDE_PROF_EVENT();
+
+	auto& menu = g_entityMenu.AddSubmenu(ICON_FK_EYE " Entities");
+	menu.AddItem("List", []() {	g_showWindow = true; });
+
 	return true;
 }
 
 bool EntitySystem::Tick()
 {
+	SDE_PROF_EVENT();
 	ShowDebugGui();
 	return true;
 }
 
 void EntitySystem::Shutdown()
 {
+	SDE_PROF_EVENT();
 	m_world = nullptr;
 }

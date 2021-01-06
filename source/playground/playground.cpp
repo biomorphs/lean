@@ -23,31 +23,6 @@ SERIALISE_BEGIN(PlaygroundConfig)
 SERIALISE_PROPERTY("LastLoadedScene", m_lastLoadedScene);
 SERIALISE_END()
 
-class TestComponent : public Component
-{
-public:
-	COMPONENT(TestComponent);
-
-	std::string GetString() { return m_string; }
-	void SetString(std::string s) { m_string = s; }
-
-private:
-	std::string m_string = "Testing 1 2 3";
-};
-COMPONENT_BEGIN(TestComponent,
-	"GetString", &TestComponent::GetString,
-	"SetString", &TestComponent::SetString
-)
-COMPONENT_END()
-
-class ScriptedComponent : public Component
-{
-public:
-	COMPONENT(ScriptedComponent);
-};
-COMPONENT_BEGIN(ScriptedComponent)
-COMPONENT_END()
-
 Playground::Playground()
 {
 	srand((uint32_t)Kernel::Time::HighPerformanceCounterTicks());
@@ -59,6 +34,7 @@ Playground::~Playground()
 
 void LoadConfig()
 {
+	SDE_PROF_EVENT();
 	std::string configText;
 	if (Core::LoadTextFromFile(g_configFile, configText))
 	{
@@ -70,6 +46,7 @@ void LoadConfig()
 
 void SaveConfig()
 {
+	SDE_PROF_EVENT();
 	nlohmann::json json;
 	g_playgroundConfig.Serialise(json, Engine::SerialiseType::Write);
 	Core::SaveTextToFile(g_configFile, json.dump(2));
@@ -77,13 +54,16 @@ void SaveConfig()
 
 void Playground::NewScene()
 {
+	SDE_PROF_EVENT();
 	m_scene = {};
+	m_entitySystem->NewWorld();
 	g_playgroundConfig.m_lastLoadedScene = "";
 	SaveConfig();
 }
 
 void Playground::ReloadScripts()
 {
+	SDE_PROF_EVENT();
 	std::string scriptErrors;
 	m_loadedSceneScripts.clear();
 	for (auto it : m_scene.Scripts())
@@ -99,7 +79,6 @@ void Playground::ReloadScripts()
 			catch (const sol::error& err)
 			{
 				SDE_LOG("Lua Error - %s", err.what());
-				assert(false);
 			}
 		}
 		m_loadedSceneScripts.push_back(std::move(scriptTable));
@@ -107,14 +86,15 @@ void Playground::ReloadScripts()
 	if (scriptErrors.length() > 0)
 	{
 		SDE_LOG("Script failure: %s", scriptErrors.c_str());
-		assert(false);
 	}
 }
 
 void Playground::LoadScene(std::string filename)
 {
+	SDE_PROF_EVENT();
 	std::string fileContents;
 	m_scene = {};
+	m_entitySystem->NewWorld();
 	if (Core::LoadTextFromFile(filename, fileContents))
 	{
 		nlohmann::json json = nlohmann::json::parse(fileContents);
@@ -129,6 +109,7 @@ void Playground::LoadScene(std::string filename)
 
 void Playground::SaveScene(std::string filename)
 {
+	SDE_PROF_EVENT();
 	nlohmann::json json;
 	m_scene.Serialise(json, Engine::SerialiseType::Write);
 	Core::SaveTextToFile(filename, json.dump(2));
@@ -139,6 +120,7 @@ void Playground::SaveScene(std::string filename)
 
 void Playground::TickScene()
 {
+	SDE_PROF_EVENT();
 	for (int script=0;script< m_scene.Scripts().size();++script)
 	{
 		sol::table& cachedTable = m_loadedSceneScripts[script];
@@ -151,7 +133,6 @@ void Playground::TickScene()
 			catch (const sol::error& err)
 			{
 				SDE_LOG("Lua Error - %s", err.what());
-				assert(false);
 			}
 		}
 	}
@@ -194,10 +175,6 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 bool Playground::PostInit()
 {
 	LoadConfig();
-
-	m_entitySystem->RegisterComponentType<TestComponent>("TestComponent");
-	m_entitySystem->RegisterComponentType<ScriptedComponent>("ScriptedComponent");
-
 	if (g_playgroundConfig.m_lastLoadedScene.length() > 0)
 	{
 		LoadScene(g_playgroundConfig.m_lastLoadedScene);

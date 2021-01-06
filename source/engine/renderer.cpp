@@ -129,8 +129,6 @@ namespace Engine
 
 	void Renderer::SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader)
 	{
-		SDE_PROF_EVENT();
-
 		float distanceToCamera = glm::length(glm::vec3(transform[3]) - cameraPos);
 		const auto foundShader = m_shaders->GetShader(shader);
 		list.m_instances.push_back({ transform, colour, foundShader, &mesh, distanceToCamera });
@@ -138,8 +136,6 @@ namespace Engine
 
 	void Renderer::SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader)
 	{
-		SDE_PROF_EVENT();
-
 		bool castShadow = true;
 		if (castShadow)
 		{
@@ -161,8 +157,6 @@ namespace Engine
 
 	void Renderer::SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader)
 	{
-		SDE_PROF_EVENT();
-
 		const auto theModel = m_models->GetModel(model);
 		const auto theShader = m_shaders->GetShader(shader);
 		ShaderHandle shadowShader = ShaderHandle::Invalid();
@@ -448,7 +442,10 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		auto totalInstances = m_opaqueInstances.m_instances.size() + m_transparentInstances.m_instances.size();
-		m_frameStats = { totalInstances,0,0,0,0 };
+		m_frameStats = {};
+		m_frameStats.m_instancesSubmitted = totalInstances;
+		m_frameStats.m_activeLights = std::min(m_lights.size(), c_maxLights);
+
 		{
 			SDE_PROF_EVENT("Clear main framebuffer");
 			// clear targets asap

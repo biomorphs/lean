@@ -149,7 +149,7 @@ namespace Engine
 		{
 			char debugName[1024] = { '\0' };
 			sprintf_s(debugName, "Assets::Model::Load(\"%s\")", path);
-			SDE_PROF_EVENT_DYN(debugName);
+			SDE_PROF_EVENT();
 
 			Assimp::Importer importer;
 			const aiScene* scene = importer.ReadFile(path,

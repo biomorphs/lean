@@ -21,6 +21,7 @@ namespace Engine
 	class Renderer;
 	class DebugRender;
 }
+class EntitySystem;
 
 class Graphics : public Engine::System
 {
@@ -32,6 +33,7 @@ public:
 	virtual bool Tick();
 	virtual void Shutdown();
 private:
+	void RenderEntities();
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
 	std::unique_ptr<Engine::TextureManager> m_textures;
@@ -45,4 +47,5 @@ private:
 	Engine::RenderSystem* m_renderSystem = nullptr;
 	Engine::JobSystem* m_jobSystem = nullptr;
 	Engine::InputSystem* m_inputSystem = nullptr;
+	EntitySystem* m_entitySystem = nullptr;
 };

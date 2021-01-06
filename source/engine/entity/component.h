@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/serialisation.h"
+#include <sol.hpp>
 #include <string>
 
 namespace Engine
@@ -13,7 +14,7 @@ public:
 	Component() = default;
 	virtual ~Component() = default;
 	virtual SERIALISED_CLASS();
-	static void RegisterScripts(Engine::ScriptSystem&);
+	static void RegisterScripts(sol::state&);
 
 	using Type = std::string;
 	virtual Type GetType() const { return "Component"; }
@@ -22,7 +23,7 @@ public:
 // add this to the class declaration (make sure its public!)
 #define COMPONENT(className)	\
 	virtual Type GetType() const { return #className; }	\
-	static void RegisterScripts(Engine::ScriptSystem& s);	\
+	static void RegisterScripts(sol::state& s);	\
 	virtual SERIALISED_CLASS();
 
 // Pass script bindings in COMPONENT_BEGIN
@@ -33,9 +34,9 @@ public:
 // COMPONENT_END()
 
 #define COMPONENT_BEGIN(className, ...)	\
-	void className::RegisterScripts(Engine::ScriptSystem& s)	\
+	void className::RegisterScripts(sol::state& s)	\
 	{	\
-		s.Globals().new_usertype<className>(#className, sol::constructors<className()>(),	\
+		s.new_usertype<className>(#className, sol::constructors<className()>(),	\
 			"GetType", &Component::GetType,	\
 			__VA_ARGS__	\
 			);	\

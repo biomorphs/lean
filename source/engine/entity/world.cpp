@@ -2,6 +2,7 @@
 #include "component.h"
 #include "component_storage.h"
 #include "engine/script_system.h"
+#include "core/profiler.h"
 #include <algorithm>
 
 SERIALISE_BEGIN(World)
@@ -10,13 +11,25 @@ SERIALISE_END()
 
 EntityHandle World::AddEntity()
 {
+	SDE_PROF_EVENT();
 	auto newId = m_entityIDCounter++;
 	m_allEntities.push_back(newId);
 	return EntityHandle(newId);
 }
 
+void World::RemoveAllEntities()
+{
+	SDE_PROF_EVENT();
+	m_allEntities.clear();
+	for (auto& components : m_components)
+	{
+		components.second->DestroyAll();
+	}
+}
+
 void World::RemoveEntity(EntityHandle h)
 {
+	SDE_PROF_EVENT();
 	if (h.IsValid())
 	{
 		auto foundIt = std::find(m_allEntities.begin(), m_allEntities.end(), h.GetID());
@@ -34,6 +47,7 @@ void World::RemoveEntity(EntityHandle h)
 
 void World::RemoveComponent(EntityHandle owner, Component::Type type)
 {
+	SDE_PROF_EVENT();
 	if (owner.IsValid())
 	{
 		auto foundStorage = m_components.find(type);
@@ -46,6 +60,7 @@ void World::RemoveComponent(EntityHandle owner, Component::Type type)
 
 Component* World::GetComponent(EntityHandle owner, Component::Type type)
 {
+	SDE_PROF_EVENT();
 	if (owner.IsValid())
 	{
 		auto foundStorage = m_components.find(type);
@@ -59,6 +74,7 @@ Component* World::GetComponent(EntityHandle owner, Component::Type type)
 
 Component* World::AddComponent(EntityHandle owner, Component::Type type)
 {
+	SDE_PROF_EVENT();
 	if (!owner.IsValid())
 	{
 		return nullptr;
@@ -74,6 +90,7 @@ Component* World::AddComponent(EntityHandle owner, Component::Type type)
 
 std::vector<Component*> World::GetAllComponents(EntityHandle owner)
 {
+	SDE_PROF_EVENT();
 	std::vector<Component*> foundComponents;
 	for (const auto& it : m_components)
 	{

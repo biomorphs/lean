@@ -23,6 +23,9 @@ public:
 	template<class T>
 	void RegisterComponentType(Component::Type type);
 
+	World* GetWorld() { return m_world.get(); }
+	void NewWorld();
+
 private:
 	void ShowDebugGui();
 	std::unique_ptr<World> m_world;
@@ -36,7 +39,7 @@ template<class T>
 inline void EntitySystem::RegisterComponentType(Component::Type type)
 {
 	m_world->RegisterComponentType<T>(type);
-	T::RegisterScripts(*m_scriptSystem);
+	T::RegisterScripts(m_scriptSystem->Globals());
 
 	auto world = m_scriptSystem->Globals()["World"].get_or_create<sol::table>();
 	world["AddComponent_" + type] = [this, type](EntityHandle h) -> T*

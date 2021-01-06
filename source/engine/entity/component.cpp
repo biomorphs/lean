@@ -4,8 +4,8 @@
 SERIALISE_BEGIN(Component)
 SERIALISE_END()
 
-void Component::RegisterScripts(Engine::ScriptSystem& s)
+void Component::RegisterScripts(sol::state& s)
 {
-	s.Globals().new_usertype<Component>("Component", sol::constructors<Component()>(),
+	s.new_usertype<Component>("Component", sol::constructors<Component()>(),
 										"GetType", &Component::GetType);
 }

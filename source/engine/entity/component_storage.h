@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 
 class Component;
 class EntityHandle;
@@ -14,6 +15,10 @@ public:
 	virtual Component* Find(EntityHandle owner) = 0;
 	virtual Component* Create(EntityHandle owner) = 0;
 	virtual void Destroy(EntityHandle owner) = 0;
+	virtual void DestroyAll() = 0;
+
+	// iteration
+	virtual void ForEach(std::function<void(Component&, EntityHandle)> fn) = 0;
 };
 
 // very basic, slow lookup
@@ -24,7 +29,10 @@ public:
 	virtual Component* Find(EntityHandle owner);
 	virtual Component* Create(EntityHandle owner);
 	virtual void Destroy(EntityHandle owner);
+	virtual void DestroyAll();
+	virtual void ForEach(std::function<void(Component&,EntityHandle)> fn);
 private:
+	std::map<EntityHandle, uint32_t> m_entityToComponent;
 	std::vector<EntityHandle> m_owners;
 	std::vector<ComponentType> m_components;
 };

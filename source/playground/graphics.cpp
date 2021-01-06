@@ -20,6 +20,10 @@
 #include "core/profiler.h"
 #include "core/timer.h"
 #include "engine/arcball_camera.h"
+#include "engine/entity/entity_system.h"
+#include "components/light.h"
+#include "components/transform.h"
+#include "components/model.h"
 #include <sol.hpp>
 
 Graphics::Graphics()
@@ -39,6 +43,7 @@ bool Graphics::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_inputSystem = (Engine::InputSystem*)systemEnumerator.GetSystem("Input");
 	m_jobSystem = (Engine::JobSystem*)systemEnumerator.GetSystem("Jobs");
 	m_debugGui = (Engine::DebugGuiSystem*)systemEnumerator.GetSystem("DebugGui");
+	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
 
 	// Create managers
 	m_shaders = std::make_unique<Engine::ShaderManager>();
@@ -60,6 +65,10 @@ bool Graphics::Initialise()
 
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
+
+	m_entitySystem->RegisterComponentType<Transform>("Transform");
+	m_entitySystem->RegisterComponentType<Light>("Light");
+	m_entitySystem->RegisterComponentType<Model>("Model");
 	
 	//// add our renderer to the global passes
 	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_windowSize);
@@ -152,6 +161,39 @@ bool Graphics::Initialise()
 	return true;
 }
 
+void Graphics::RenderEntities()
+{
+	SDE_PROF_EVENT();
+
+	auto world = m_entitySystem->GetWorld();
+
+	// submit all lights
+	{
+		SDE_PROF_EVENT("SubmitLights");
+		world->ForEachComponent<Light>("Light", [this, &world](Component& c, EntityHandle owner) {
+			const auto& light = static_cast<const Light&>(c);
+			const Transform* transform = (Transform*)world->GetComponent(owner, "Transform");
+			const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
+			const glm::vec4 posAndType = { position, light.IsPointLight() ? 1.0f : 0.0f };
+			const glm::vec3 attenuation = light.GetAttenuation();
+			m_renderer->SetLight(posAndType, light.GetColour(), light.GetAmbient(), attenuation);
+			});
+	}
+
+	// submit all models
+	{
+		SDE_PROF_EVENT("SubmitEntities");
+		world->ForEachComponent<Model>("Model", [this, &world](Component& c, EntityHandle owner) {
+			const auto& model = static_cast<Model&>(c);
+			const Transform* transform = (Transform*)world->GetComponent(owner, "Transform");
+			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
+			{
+				m_renderer->SubmitInstance(transform->GetMatrix(), glm::vec4(1.0f), model.GetModel(), model.GetShader());
+			}
+			});
+	}
+}
+
 bool Graphics::Tick()
 {
 	SDE_PROF_EVENT();
@@ -169,6 +211,8 @@ bool Graphics::Tick()
 		framesThisSecond = 0;
 		startTime = currentTime;
 	}
+
+	RenderEntities();
 
 	if (g_showCameraInfo)
 	{
@@ -218,6 +262,7 @@ bool Graphics::Tick()
 	bool forceOpen = true;
 	m_debugGui->BeginWindow(forceOpen,"Render Stats");
 	sprintf_s(statText, "Total Instances: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Active Lights: %zu", fs.m_activeLights);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
 	sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Batches Drawn: %zu", fs.m_batchesDrawn);	m_debugGui->Text(statText);
