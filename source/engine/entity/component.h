@@ -19,7 +19,7 @@ public:
 	virtual Type GetType() const { return "Component"; }
 };
 
-// helper macros
+// add this to the class declaration (make sure its public!)
 #define COMPONENT(className)	\
 	virtual Type GetType() const { return #className; }	\
 	static void RegisterScripts(Engine::ScriptSystem& s);	\

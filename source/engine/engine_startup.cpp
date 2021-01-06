@@ -6,6 +6,7 @@
 #include "render_system.h"
 #include "script_system.h"
 #include "debug_gui_system.h"
+#include "entity/entity_system.h"
 #include "platform.h"
 #include "core/log.h"
 #include <cassert>
@@ -41,6 +42,7 @@ namespace Engine
 		sysManager.RegisterSystem("Input", new InputSystem);
 		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
+		sysManager.RegisterSystem("Entities", new EntitySystem);
 
 		SDE_LOGC(Engine, "Creating systems...");
 		EngineSystemRegister registerSystems(sysManager);

@@ -7,7 +7,6 @@ void CreateSystems(Engine::SystemRegister& r)
 {
 	r.Register("Playground", new Playground());
 	r.Register("Graphics", new Graphics());
-	r.Register("EntitySystem", new EntitySystem);
 }
 
 int main()

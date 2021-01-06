@@ -10,6 +10,7 @@
 #include "engine/file_picker_dialog.h"
 #include "engine/serialisation.h"
 #include "debug_gui_script_binding.h"
+#include "engine/entity/entity_system.h"
 #include <cassert>
 
 std::string g_configFile = "playground_config.json";
@@ -22,6 +23,30 @@ SERIALISE_BEGIN(PlaygroundConfig)
 SERIALISE_PROPERTY("LastLoadedScene", m_lastLoadedScene);
 SERIALISE_END()
 
+class TestComponent : public Component
+{
+public:
+	COMPONENT(TestComponent);
+
+	std::string GetString() { return m_string; }
+	void SetString(std::string s) { m_string = s; }
+
+private:
+	std::string m_string = "Testing 1 2 3";
+};
+COMPONENT_BEGIN(TestComponent,
+	"GetString", &TestComponent::GetString,
+	"SetString", &TestComponent::SetString
+)
+COMPONENT_END()
+
+class ScriptedComponent : public Component
+{
+public:
+	COMPONENT(ScriptedComponent);
+};
+COMPONENT_BEGIN(ScriptedComponent)
+COMPONENT_END()
 
 Playground::Playground()
 {
@@ -141,6 +166,7 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	SDE_PROF_EVENT();
 	m_debugGui = (Engine::DebugGuiSystem*)systemEnumerator.GetSystem("DebugGui");
 	m_scriptSystem = (Engine::ScriptSystem*)systemEnumerator.GetSystem("Script");
+	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
 	m_lastFrameTime = m_timer.GetSeconds();
 
 	DebugGuiScriptBinding::Go(m_debugGui, m_scriptSystem->Globals());
@@ -168,6 +194,10 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 bool Playground::PostInit()
 {
 	LoadConfig();
+
+	m_entitySystem->RegisterComponentType<TestComponent>("TestComponent");
+	m_entitySystem->RegisterComponentType<ScriptedComponent>("ScriptedComponent");
+
 	if (g_playgroundConfig.m_lastLoadedScene.length() > 0)
 	{
 		LoadScene(g_playgroundConfig.m_lastLoadedScene);

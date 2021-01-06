@@ -4,18 +4,6 @@
 #include "engine/debug_gui_system.h"
 #include "engine/script_system.h"
 
-#define REGISTER_COMPONENT_TYPE(className)	\
-	m_world->RegisterComponentType<className>(#className);	\
-	className::RegisterScripts(*m_scriptSystem);	\
-	world["AddComponent_" #className] = [this](EntityHandle h) -> className* \
-	{	\
-		return static_cast<className*>(m_world->AddComponent(h, #className));	\
-	};	\
-	world["GetComponent_" #className] = [this](EntityHandle h) -> className* \
-	{	\
-		return static_cast<className*>(m_world->GetComponent(h, #className));	\
-	};
-
 EntitySystem::EntitySystem()
 {
 	m_world = std::make_unique<World>();
@@ -51,32 +39,6 @@ void EntitySystem::ShowDebugGui()
 	m_debugGui->EndWindow();
 }
 
-class TestComponent : public Component
-{
-public:
-	COMPONENT(TestComponent);
-	
-	std::string GetString() { return m_string; }
-	void SetString(std::string s) { m_string = s; }
-
-private:
-	std::string m_string = "Testing 1 2 3";
-};
-COMPONENT_BEGIN(TestComponent, 
-				"GetString", &TestComponent::GetString,
-				"SetString", &TestComponent::SetString
-)
-COMPONENT_END()
-
-class ScriptedComponent : public Component
-{
-public:
-	COMPONENT(ScriptedComponent);
-};
-COMPONENT_BEGIN(ScriptedComponent)
-COMPONENT_END()
-
-
 bool EntitySystem::PreInit(Engine::SystemEnumerator& s)
 {
 	m_scriptSystem = (Engine::ScriptSystem*)s.GetSystem("Script");
@@ -94,11 +56,6 @@ bool EntitySystem::PreInit(Engine::SystemEnumerator& s)
 	// World is a global singleton in script land for simplicity
 	auto world = scripts["World"].get_or_create<sol::table>();
 	world["AddEntity"] = [this]() { return m_world->AddEntity(); };
-
-	// Component types are registered here
-	// World.AddComponent_(type) and World.GetComponent_(type) are defined in lua
-	REGISTER_COMPONENT_TYPE(TestComponent);
-	REGISTER_COMPONENT_TYPE(ScriptedComponent);
 
 	return true;
 }

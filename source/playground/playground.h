@@ -11,6 +11,7 @@ namespace Engine
 	class DebugGuiSystem;
 	class ScriptSystem;
 }
+class EntitySystem;
 
 class Playground : public Engine::System
 {
@@ -33,6 +34,7 @@ private:
 	std::vector<sol::table> m_loadedSceneScripts;
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
+	EntitySystem* m_entitySystem = nullptr;
 	Core::Timer m_timer;
 	double m_lastFrameTime = 0.0;
 	double m_deltaTime = 0.0;
