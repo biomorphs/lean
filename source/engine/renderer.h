@@ -37,6 +37,7 @@ namespace Engine
 		void SetLight(glm::vec4 positionOrDir,glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
+		void SetShadowUpdateEnabled(bool b) { m_updateShadowMaps = b; }
 		Render::FrameBuffer& GetMainFramebuffer() { return m_mainFramebuffer; }
 		struct FrameStats {
 			size_t m_instancesSubmitted = 0;
@@ -70,14 +71,15 @@ namespace Engine
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 
 		FrameStats m_frameStats;
+		bool m_updateShadowMaps = true;
 		float m_hdrExposure = 1.0f;
 		std::vector<Light> m_lights;
 		InstanceList m_opaqueInstances;
 		InstanceList m_transparentInstances;
 		InstanceList m_shadowCasterInstances;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
-		float m_shadowBias = 0.01f;
-		float m_cubeShadowBias = 0.7f;
+		float m_shadowBias = 0.002f;
+		float m_cubeShadowBias = 0.2f;
 		ShadowShaders m_shadowShaders;	// map of lighting shader handle index -> shadow shader
 		ShaderManager* m_shaders;
 		TextureManager* m_textures;

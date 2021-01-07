@@ -27,8 +27,21 @@ namespace Render
 		}
 
 		// properties to set before window creation
-		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+		// Request opengl 4.5 context.
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+		// We want all contexts created by us to share resources
+		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+
+		// Vsync
+		SDL_GL_SetSwapInterval(1);
+
+		//24 bit depth
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 		m_windowHandle = SDL_CreateWindow(props.m_title.c_str(), windowPosX, windowPosY, props.m_sizeX, props.m_sizeY, windowFlags);
 		SDE_RENDER_ASSERT(m_windowHandle);

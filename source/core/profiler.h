@@ -10,10 +10,12 @@
 	#define SDE_PROF_EVENT_DYN(str) OPTICK_EVENT_DYNAMIC(str)
 	#define SDE_PROF_STALL(...)		OPTICK_CATEGORY(__VA_ARGS__, Optick::Category::Wait)
 	#define SDE_PROF_THREAD(name)	OPTICK_THREAD(name)
+	#define SDE_PROF_IS_ACTIVE()	Optick::IsActive()
 #else
 	#define SDE_PROF_FRAME(...)
 	#define SDE_PROF_EVENT(...)
 	#define SDE_PROF_EVENT_DYN(str)
 	#define SDE_PROF_STALL(...)
 	#define SDE_PROF_THREAD(name)
+	#define SDE_PROF_IS_ACTIVE()
 #endif

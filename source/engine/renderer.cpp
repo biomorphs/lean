@@ -20,7 +20,7 @@ namespace Engine
 	const uint64_t c_maxInstances = 1024 * 128;
 	const uint64_t c_maxLights = 64;
 	const int c_shadowMapSize = 2048;
-	const int c_cubeShadowMapSize = 512;
+	const int c_cubeShadowMapSize = 1024;
 
 	struct LightInfo
 	{
@@ -480,7 +480,7 @@ namespace Engine
 				cubeShadowLight = &m_lights[l];
 			}
 		}
-		if (cubeShadowLight)
+		if (m_updateShadowMaps && cubeShadowLight)
 		{
 			Render::UniformBuffer uniforms;
 			SDE_PROF_EVENT("RenderShadowCubemap");
@@ -497,11 +497,12 @@ namespace Engine
 				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
 				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
 			};
+			
 			for (uint32_t cubeFace = 0; cubeFace < 6; ++cubeFace)
 			{
 				d.DrawToFramebuffer(m_shadowCubeDepthBuffer, cubeFace);
-				d.SetViewport(glm::ivec2(0, 0), m_shadowCubeDepthBuffer.Dimensions());
 				d.ClearFramebufferDepth(m_shadowCubeDepthBuffer, FLT_MAX);
+				d.SetViewport(glm::ivec2(0, 0), m_shadowCubeDepthBuffer.Dimensions());
 				d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 				d.SetBlending(false);				// no blending, opaques only (maybe with discard)
 				d.SetScissorEnabled(false);			// (don't) scissor me timbers
@@ -513,6 +514,7 @@ namespace Engine
 
 		// shadow maps
 		Render::UniformBuffer lightMatUniforms;
+		if (m_updateShadowMaps) 
 		{
 			SDE_PROF_EVENT("RenderShadowmap");
 			d.DrawToFramebuffer(m_shadowDepthBuffer);

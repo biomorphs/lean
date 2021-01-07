@@ -147,8 +147,6 @@ namespace Engine
 
 		std::unique_ptr<Model> Model::Load(const char* path)
 		{
-			char debugName[1024] = { '\0' };
-			sprintf_s(debugName, "Assets::Model::Load(\"%s\")", path);
 			SDE_PROF_EVENT();
 
 			Assimp::Importer importer;

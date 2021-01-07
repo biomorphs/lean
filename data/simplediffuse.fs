@@ -70,7 +70,7 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	// pcf
 	float shadow = 0.0;
 	int samples  = 20;
-	float diskRadius = 0.05;
+	float diskRadius = 0.1;
 	float currentDepth = length(fragToLight);
 	for(int i = 0; i < samples; ++i)
 	{

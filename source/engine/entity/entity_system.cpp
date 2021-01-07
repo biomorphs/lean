@@ -46,8 +46,8 @@ void EntitySystem::ShowDebugGui()
 					m_debugGui->TreePop();
 				}
 			}
+			m_debugGui->TreePop();
 		}
-		m_debugGui->TreePop();
 		m_debugGui->EndWindow();
 	}
 	m_debugGui->MainMenuBar(g_entityMenu);

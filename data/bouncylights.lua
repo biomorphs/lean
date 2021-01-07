@@ -101,9 +101,9 @@ function BouncyLights.Tick(DeltaTime)
 	local timeDelta = DeltaTime * timeMulti
 	for i=1,lightCount do
 		if(BouncyLights:Vec3Length(Lights[i].Velocity) < 16.0) then
-			Lights[i].Velocity[1] = (math.random(-100,100) / 100.0)  * lightXZSpeed
+			Lights[i].Velocity[1] = (math.random(-200,200) / 100.0)  * lightXZSpeed
 			Lights[i].Velocity[2] = (math.random(200,400) / 100.0)  * lightYSpeed
-			Lights[i].Velocity[3] = (math.random(-100,100) / 100.0)  * lightXZSpeed
+			Lights[i].Velocity[3] = (math.random(-200,200) / 100.0)  * lightXZSpeed
 			BouncyLights:GenerateLightCol(i)
 		end
 

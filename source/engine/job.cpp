@@ -1,4 +1,5 @@
 #include "job.h"
+#include "core/profiler.h"
 #include <cassert>
 
 namespace Engine
@@ -12,6 +13,7 @@ namespace Engine
 
 	void Job::Run()
 	{
+		SDE_PROF_EVENT();
 		m_threadFn();
 	}
 }

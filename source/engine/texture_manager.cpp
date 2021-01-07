@@ -126,7 +126,7 @@ namespace Engine
 		std::string pathString = path;
 		m_jobSystem->PushJob([this, pathString, newHandle]() {
 			char debugName[1024] = { '\0' };
-			sprintf_s(debugName, "LoadTexture(\"%s\")", pathString.c_str());
+			sprintf_s(debugName, "LoadTexture %s", pathString.c_str());
 			SDE_PROF_EVENT_DYN(debugName);
 
 			int w, h, components;

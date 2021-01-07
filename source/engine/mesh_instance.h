@@ -2,6 +2,12 @@
 #include <stdint.h>
 #include "core/glm_headers.h"
 
+namespace Render
+{
+	class ShaderProgram;
+	class Mesh;
+}
+
 namespace Engine
 {
 	class Mesh;

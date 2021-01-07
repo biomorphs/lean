@@ -18,6 +18,8 @@ namespace Engine
 
 	bool ModelManager::ShowGui(DebugGuiSystem& gui)
 	{
+		SDE_PROF_EVENT();
+
 		static bool s_showWindow = true;
 		gui.BeginWindow(s_showWindow, "ModelManager");
 		char text[1024] = { '\0' };
@@ -87,9 +89,7 @@ namespace Engine
 
 	std::unique_ptr<Model> ModelManager::CreateModel(Assets::Model& model, const std::vector<std::unique_ptr<Render::MeshBuilder>>& meshBuilders)
 	{
-		char debugName[1024] = { '\0' };
-		sprintf_s(debugName, "Engine::ModelManager::ProcessModel(\"%s\")", model.GetPath().c_str());
-		SDE_PROF_EVENT_DYN(debugName);
+		SDE_PROF_EVENT();
 
 		auto resultModel = std::make_unique<Model>();
 		const auto& builder = meshBuilders.begin();
@@ -177,6 +177,8 @@ namespace Engine
 
 	ModelHandle ModelManager::LoadModel(const char* path)
 	{
+		SDE_PROF_EVENT();
+
 		for (uint64_t i = 0; i < m_models.size(); ++i)
 		{
 			if (m_models[i].m_name == path)
@@ -192,6 +194,10 @@ namespace Engine
 
 		std::string pathString = path;
 		m_jobSystem->PushJob([this, pathString, newHandle]() {
+			char debugName[1024] = { '\0' };
+			sprintf_s(debugName, "LoadModel %s", pathString.c_str());
+			SDE_PROF_EVENT_DYN(debugName);
+
 			auto loadedAsset = Assets::Model::Load(pathString.c_str());
 			if (loadedAsset != nullptr)
 			{

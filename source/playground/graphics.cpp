@@ -58,6 +58,7 @@ bool g_showTextureGui = false;
 bool g_showModelGui = false;
 bool g_useArcballCam = false;
 bool g_showCameraInfo = false;
+bool g_enableShadowUpdate = true;
 
 bool Graphics::Initialise()
 {
@@ -137,13 +138,17 @@ bool Graphics::Initialise()
 	m_arcballCamera->SetPosition({ 7.1f,8.0f,15.0f });
 	m_arcballCamera->SetTarget({ 0.0f,5.0f,0.0f });
 	m_arcballCamera->SetUp({ 0.0f,1.0f,0.0f });
-
+ 
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
 	gMenu.AddItem("Reload Shaders", [this]() { m_renderer->Reset(); m_shaders->ReloadAll(); });
 	gMenu.AddItem("Reload Textures", [this]() { m_renderer->Reset(); m_textures->ReloadAll(); });
 	gMenu.AddItem("Reload Models", [this]() { m_renderer->Reset(); m_models->ReloadAll(); });
 	gMenu.AddItem("TextureManager", [this]() { g_showTextureGui = true; });
 	gMenu.AddItem("ModelManager", [this]() { g_showModelGui = true; });
+	gMenu.AddItem("Toggle shadow update", [this]() { 
+		g_enableShadowUpdate = !g_enableShadowUpdate; 
+		m_renderer->SetShadowUpdateEnabled(g_enableShadowUpdate);
+	});
 	auto& camMenu = g_graphicsMenu.AddSubmenu(ICON_FK_CAMERA " Camera (Arcball)");
 	camMenu.AddItem("Toggle Camera Mode", [this,&camMenu]() {
 		g_useArcballCam = !g_useArcballCam; 
@@ -212,7 +217,9 @@ bool Graphics::Tick()
 		startTime = currentTime;
 	}
 
+	double renderEntitiesStart = timer.GetSeconds();
 	RenderEntities();
+	double renderEntitiesTime = timer.GetSeconds() - renderEntitiesStart;
 
 	if (g_showCameraInfo)
 	{
@@ -261,13 +268,14 @@ bool Graphics::Tick()
 	char statText[1024] = { '\0' };
 	bool forceOpen = true;
 	m_debugGui->BeginWindow(forceOpen,"Render Stats");
+	sprintf_s(statText, "RenderEntities time: %.2fms", renderEntitiesTime * 1000.0f);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Total Instances: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Active Lights: %zu", fs.m_activeLights);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
 	sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Batches Drawn: %zu", fs.m_batchesDrawn);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Draw calls: %zu", fs.m_drawCalls);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Total Verts: %zu", fs.m_totalVertices);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
 	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
 	m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f);
 	m_debugGui->DragFloat("Shadow Bias", m_renderer->GetShadowBias(), 0.00001f, 0.0000001f, 1.0f);

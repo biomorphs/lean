@@ -21,20 +21,10 @@ namespace Render
 		SDL_Window* windowHandle = theWindow.GetWindowHandle();
 		SDE_RENDER_ASSERT(windowHandle);
 
-		// Request opengl 4.5 context.
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-
-		// We want all contexts created by us to share resources
-		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-
-		//24 bit depth
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
 		m_context = SDL_GL_CreateContext(windowHandle);
 		SDE_RENDER_ASSERT(m_context);
 
-		SDL_GL_SetSwapInterval(1);
+		
 
 		// glew initialises GL function pointers
 		glewExperimental = true;		// must be set for core profile and above
