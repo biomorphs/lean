@@ -16,6 +16,7 @@ set(CommonIncludePaths
 	external/glew-2.1.0/include/
 	external/fork-awesome/
 	external/Optick_1.3.1/include
+	external/robin-hood-hashing/src/include/
 )
 set(LuaAndSolIncludePaths
 	external/lua-5.3.5_Win64_vc16_lib/include/
@@ -167,6 +168,7 @@ set(ENGINE_SOURCES
 	Source/engine/serialisation.h
 	Source/engine/file_picker_dialog.cpp
 	Source/engine/file_picker_dialog.h
+	Source/engine/frustum.h
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})

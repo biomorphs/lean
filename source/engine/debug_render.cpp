@@ -43,7 +43,7 @@ namespace Engine
 		auto meshToDraw = (m_currentWriteMesh - 1) % c_meshBuffers;
 		if (lineCount > 0)
 		{
-			r.SubmitInstance(glm::identity<glm::mat4>(), glm::vec4(0.9999999f), *m_renderMesh[meshToDraw], m_shader);
+			r.SubmitInstance(glm::identity<glm::mat4>(), glm::vec4(1.0f), *m_renderMesh[meshToDraw], m_shader);
 		}
 		m_currentWriteMesh = (m_currentWriteMesh + 1) % c_meshBuffers;
 	}

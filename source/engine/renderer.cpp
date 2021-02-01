@@ -60,7 +60,8 @@ namespace Engine
 			SDE_PROF_EVENT("Create Buffers");
 			CreateInstanceList(m_opaqueInstances, c_maxInstances);
 			CreateInstanceList(m_transparentInstances, c_maxInstances);
-			CreateInstanceList(m_shadowCasterInstances, c_maxInstances);
+			CreateInstanceList(m_allShadowCasterInstances, c_maxInstances);
+			CreateInstanceList(m_visibleShadowInstances, c_maxInstances);
 			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferType::UniformData, Render::RenderBufferModification::Dynamic, true);
 		}
 		{
@@ -101,7 +102,7 @@ namespace Engine
 	{ 
 		m_opaqueInstances.m_instances.clear();
 		m_transparentInstances.m_instances.clear();
-		m_shadowCasterInstances.m_instances.clear();
+		m_allShadowCasterInstances.m_instances.clear();
 		m_lights.clear();
 	}
 
@@ -142,7 +143,7 @@ namespace Engine
 			const auto& foundShadowShader = m_shadowShaders.find(shader.m_index);
 			if (foundShadowShader != m_shadowShaders.end())
 			{
-				SubmitInstance(m_shadowCasterInstances, m_camera.Position(), transform, colour, mesh, foundShadowShader->second);
+				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, mesh, foundShadowShader->second);
 			}
 		}
 
@@ -178,7 +179,7 @@ namespace Engine
 			{
 				if (shadowShader.m_index != -1)
 				{
-					SubmitInstance(m_shadowCasterInstances, m_camera.Position(), transform, colour, *part.m_mesh, shadowShader);
+					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, *part.m_mesh, shadowShader);
 				}
 
 				bool isTransparent = colour.a != 1.0f;
@@ -266,6 +267,28 @@ namespace Engine
 		m_globalsUniformBuffer.SetData(0, sizeof(globals), &globals);
 	}
 
+	void Renderer::PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances)
+	{
+		SDE_PROF_EVENT();
+		{
+			SDE_PROF_EVENT("FrustumCull");
+			visibleInstances.m_instances.clear();
+			visibleInstances.m_instances.reserve(m_allShadowCasterInstances.m_instances.size() >> 1);
+			for (const auto& it : m_allShadowCasterInstances.m_instances)
+			{
+				visibleInstances.m_instances.push_back(it);
+			}
+		}
+		{
+			SDE_PROF_EVENT("Sort");
+			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
+				if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
+				{
+					return true;
+				}
+				else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
+				{
+					return false;
 	void Renderer::PrepareShadowInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
@@ -298,9 +321,15 @@ namespace Engine
 	void Renderer::PrepareTransparentInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
+			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
+			for (const auto& it : list.m_instances)
+			{
+				visibleInstances.m_instances.push_back(it);
+			}
+		}
 		{
 			SDE_PROF_EVENT("Sort");
-			std::sort(list.m_instances.begin(), list.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
+			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
 				if (q1.m_distanceToCamera < q2.m_distanceToCamera)	// back to front
 				{
 					return false;
@@ -330,14 +359,27 @@ namespace Engine
 				return false;
 			});
 		}
+		list.m_instances = std::move(visibleInstances.m_instances);
+		PopulateInstanceBuffers(list);
 	}
 
 	void Renderer::PrepareOpaqueInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
+		InstanceList visibleInstances;
+
+		{
+			SDE_PROF_EVENT("FrustumCull");
+			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
+			for (const auto& it : list.m_instances)
+			{
+				visibleInstances.m_instances.push_back(it);
+			}
+		}
+
 		{
 			SDE_PROF_EVENT("Sort");
-			std::sort(list.m_instances.begin(), list.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
+			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
 				if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
 				{
 					return true;
@@ -367,6 +409,8 @@ namespace Engine
 				return false;
 			});
 		}
+		list.m_instances = std::move(visibleInstances.m_instances);
+		PopulateInstanceBuffers(list);
 	}
 
 	void Renderer::DrawInstances(Render::Device& d, const InstanceList& list, Render::UniformBuffer* uniforms)
@@ -448,25 +492,16 @@ namespace Engine
 
 		{
 			SDE_PROF_EVENT("Clear main framebuffer");
-			// clear targets asap
 			d.SetDepthState(true, true);	// make sure depth write is enabled before clearing!
 			d.ClearFramebufferColourDepth(m_mainFramebuffer, m_clearColour, FLT_MAX);
 		}
-
-		// prepare instance lists for passes
-		PrepareShadowInstances(m_shadowCasterInstances);
-		PrepareOpaqueInstances(m_opaqueInstances);
-		PrepareTransparentInstances(m_transparentInstances);
-
-		// copy instance data to gpu
-		PopulateInstanceBuffers(m_shadowCasterInstances);
-		PopulateInstanceBuffers(m_opaqueInstances);
-		PopulateInstanceBuffers(m_transparentInstances);
 
 		// setup global constants
 		auto projectionMat = glm::perspectiveFov(glm::radians(70.0f), (float)m_windowSize.x, (float)m_windowSize.y, 0.1f, 1000.0f);
 		auto viewMat = glm::lookAt(m_camera.Position(), m_camera.Target(), m_camera.Up());
 		UpdateGlobals(projectionMat, viewMat);
+
+		// find shadow casting lights
 		const Light* shadowLight = nullptr;
 		const Light* cubeShadowLight = nullptr;
 		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
@@ -480,37 +515,11 @@ namespace Engine
 				cubeShadowLight = &m_lights[l];
 			}
 		}
-		if (m_updateShadowMaps && cubeShadowLight)
-		{
-			Render::UniformBuffer uniforms;
-			SDE_PROF_EVENT("RenderShadowCubemap");
-			auto lightPos = glm::vec3(cubeShadowLight->m_position);
-			float aspect = (float)c_cubeShadowMapSize / (float)c_cubeShadowMapSize;
-			float near = 0.1f;
-			float far = 500.0f;
-			glm::mat4 lightSpaceMatrix = glm::perspective(glm::radians(90.0f), aspect, near, far);
-			const glm::mat4 shadowTransforms[] = {
-				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
-				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
-				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)),
-				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)),
-				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
-				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
-			};
-			
-			for (uint32_t cubeFace = 0; cubeFace < 6; ++cubeFace)
-			{
-				d.DrawToFramebuffer(m_shadowCubeDepthBuffer, cubeFace);
-				d.ClearFramebufferDepth(m_shadowCubeDepthBuffer, FLT_MAX);
-				d.SetViewport(glm::ivec2(0, 0), m_shadowCubeDepthBuffer.Dimensions());
-				d.SetBackfaceCulling(true, true);	// backface culling, ccw order
-				d.SetBlending(false);				// no blending, opaques only (maybe with discard)
-				d.SetScissorEnabled(false);			// (don't) scissor me timbers
-				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
-				uniforms.SetValue("ShadowLightIndex", (int32_t)(cubeShadowLight - &m_lights[0]));
-				DrawInstances(d, m_shadowCasterInstances, &uniforms);
-			}
-		}
+
+		// prepare instance lists for passes
+		PrepareOpaqueInstances(m_opaqueInstances);
+		PrepareShadowInstances(m_allShadowCasterInstances);
+		PrepareTransparentInstances(m_transparentInstances);
 
 		// shadow maps
 		Render::UniformBuffer lightMatUniforms;
@@ -531,9 +540,44 @@ namespace Engine
 				glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, c_farPlane);
 				glm::mat4 lightView = glm::lookAt(glm::vec3(shadowLight->m_position), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
 				lightMatUniforms.SetValue("ShadowLightSpaceMatrix", lightSpaceMatrix);
 				lightMatUniforms.SetValue("ShadowLightIndex", (int32_t)(shadowLight - &m_lights[0]));
-				DrawInstances(d, m_shadowCasterInstances, &lightMatUniforms);
+				PrepareShadowInstances(lightSpaceMatrix, m_visibleShadowInstances);
+				DrawInstances(d, m_visibleShadowInstances, &lightMatUniforms);
+			}
+		}
+
+		// cubemap shadows
+		if (m_updateShadowMaps && cubeShadowLight)
+		{
+			Render::UniformBuffer uniforms;
+			SDE_PROF_EVENT("RenderShadowCubemap");
+			auto lightPos = glm::vec3(cubeShadowLight->m_position);
+			float aspect = (float)c_cubeShadowMapSize / (float)c_cubeShadowMapSize;
+			float near = 0.1f;
+			float far = 500.0f;
+			glm::mat4 lightSpaceMatrix = glm::perspective(glm::radians(90.0f), aspect, near, far);
+			const glm::mat4 shadowTransforms[] = {
+				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)),
+				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)),
+				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
+				lightSpaceMatrix * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
+			};
+
+			for (uint32_t cubeFace = 0; cubeFace < 6; ++cubeFace)
+			{
+				d.DrawToFramebuffer(m_shadowCubeDepthBuffer, cubeFace);
+				d.ClearFramebufferDepth(m_shadowCubeDepthBuffer, FLT_MAX);
+				d.SetViewport(glm::ivec2(0, 0), m_shadowCubeDepthBuffer.Dimensions());
+				d.SetBackfaceCulling(true, true);	// backface culling, ccw order
+				d.SetBlending(false);				// no blending, opaques only (maybe with discard)
+				d.SetScissorEnabled(false);			// (don't) scissor me timbers
+				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
+				uniforms.SetValue("ShadowLightIndex", (int32_t)(cubeShadowLight - &m_lights[0]));
+				DrawInstances(d, m_allShadowCasterInstances, &uniforms);
 			}
 		}
 

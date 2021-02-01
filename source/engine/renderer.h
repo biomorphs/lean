@@ -66,6 +66,7 @@ namespace Engine
 		void PrepareOpaqueInstances(InstanceList& list);
 		void PrepareTransparentInstances(InstanceList& list);
 		void PrepareShadowInstances(InstanceList& list);
+		void PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
 		void PopulateInstanceBuffers(InstanceList& list);
 		void DrawInstances(Render::Device& d, const InstanceList& list, Render::UniformBuffer* uniforms = nullptr);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
@@ -76,7 +77,8 @@ namespace Engine
 		std::vector<Light> m_lights;
 		InstanceList m_opaqueInstances;
 		InstanceList m_transparentInstances;
-		InstanceList m_shadowCasterInstances;
+		InstanceList m_allShadowCasterInstances;
+		InstanceList m_visibleShadowInstances;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		float m_shadowBias = 0.002f;
 		float m_cubeShadowBias = 0.2f;

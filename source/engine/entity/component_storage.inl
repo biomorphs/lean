@@ -14,7 +14,7 @@ void LinearComponentStorage<ComponentType>::ForEach(std::function<void(Component
 template<class ComponentType>
 Component* LinearComponentStorage<ComponentType>::Find(EntityHandle owner)
 {
-	auto foundEntity = m_entityToComponent.find(owner);
+	auto foundEntity = m_entityToComponent.find(owner.GetID());
 	if (foundEntity == m_entityToComponent.end())
 	{
 		return nullptr;
@@ -36,7 +36,7 @@ Component* LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
 		m_owners.push_back(owner);
 		m_components.push_back(ComponentType());
 		uint32_t newIndex = m_components.size() - 1;
-		m_entityToComponent.insert({ owner, newIndex });
+		m_entityToComponent.insert({ owner.GetID(), newIndex });
 		return &m_components[newIndex];
 	}
 
@@ -57,7 +57,7 @@ void LinearComponentStorage<ComponentType>::Destroy(EntityHandle owner)
 {
 	SDE_PROF_EVENT();
 	assert(false && "test this");
-	auto foundEntity= m_entityToComponent.find(owner);
+	auto foundEntity= m_entityToComponent.find(owner.GetID());
 	if (foundEntity != m_entityToComponent.begin())
 	{
 		m_owners.erase(m_owners.begin() + foundEntity->second);

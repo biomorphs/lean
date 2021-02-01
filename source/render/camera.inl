@@ -89,6 +89,6 @@ namespace Render
 
 	inline void Camera::RebuildProjectionMatrix()
 	{
-		m_projectionMatrix = glm::perspective(m_fov, m_aspect, m_nearPlane, m_farPlane);
+		m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_aspect, m_nearPlane, m_farPlane);
 	}
 }

@@ -14,6 +14,7 @@
 #include "engine/shader_manager.h"
 #include "engine/renderer.h"
 #include "engine/debug_render.h"
+#include "engine/frustum.h"
 #include "render/render_pass.h"
 #include "render/window.h"
 #include "render/camera.h"
@@ -166,18 +167,76 @@ bool Graphics::Initialise()
 	return true;
 }
 
+void Graphics::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
+{
+	SDE_PROF_EVENT();
+	for (const auto& part : m.Parts())
+	{
+		const auto bmin = part.m_boundsMin;
+		const auto bmax = part.m_boundsMax;
+		glm::vec4 v[] = {
+			{bmin.x,bmin.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmax.z,1.0f},
+			{bmax.x,bmin.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmin.z,1.0f},
+			{bmin.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmax.y,bmax.z,1.0f},
+			{bmax.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmax.y,bmin.z,1.0f},
+			{bmin.x,bmin.y,bmin.z,1.0f},
+			{bmin.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmin.z,1.0f},
+			{bmax.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmax.z,1.0f},
+			{bmax.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmax.z,1.0f},
+			{bmin.x,bmax.y,bmax.z,1.0f},
+		};
+		const glm::vec4 c[] = {
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+		};
+
+		for (auto& vert : v)
+		{
+			vert = transform * vert;
+		}
+
+		m_debugRender->AddLines(v, c, 12);
+	}
+}
+
 void Graphics::RenderEntities()
 {
 	SDE_PROF_EVENT();
 
 	auto world = m_entitySystem->GetWorld();
+	auto transforms = world->GetComponentStorage("Transform");
 
 	// submit all lights
 	{
 		SDE_PROF_EVENT("SubmitLights");
-		world->ForEachComponent<Light>("Light", [this, &world](Component& c, EntityHandle owner) {
+		world->ForEachComponent<Light>("Light", [this, &world, &transforms](Component& c, EntityHandle owner) {
 			const auto& light = static_cast<const Light&>(c);
-			const Transform* transform = (Transform*)world->GetComponent(owner, "Transform");
+			const Transform* transform = (Transform*)transforms->Find(owner);
 			const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
 			const glm::vec4 posAndType = { position, light.IsPointLight() ? 1.0f : 0.0f };
 			const glm::vec3 attenuation = light.GetAttenuation();
@@ -188,9 +247,9 @@ void Graphics::RenderEntities()
 	// submit all models
 	{
 		SDE_PROF_EVENT("SubmitEntities");
-		world->ForEachComponent<Model>("Model", [this, &world](Component& c, EntityHandle owner) {
+		world->ForEachComponent<Model>("Model", [this, &world, &transforms](Component& c, EntityHandle owner) {
 			const auto& model = static_cast<Model&>(c);
-			const Transform* transform = (Transform*)world->GetComponent(owner, "Transform");
+			const Transform* transform = (Transform*)transforms->Find(owner);
 			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
 			{
 				m_renderer->SubmitInstance(transform->GetMatrix(), glm::vec4(1.0f), model.GetModel(), model.GetShader());
@@ -198,82 +257,20 @@ void Graphics::RenderEntities()
 		});
 	}
 
+	Render::Camera fakeCamera;
+	m_debugCamera->ApplyToCamera(fakeCamera);
+	Frustum debugCamFrustum(fakeCamera.ViewMatrix() * fakeCamera.ProjectionMatrix());
+	const auto& p = debugCamFrustum.GetPoints();
+
 	if(m_showBounds)
 	{
 		SDE_PROF_EVENT("ShowBounds");
-		world->ForEachComponent<Model>("Model", [this, &world](Component& c, EntityHandle owner) {
-			const auto& model = static_cast<Model&>(c);
-			const Transform* transform = (Transform*)world->GetComponent(owner, "Transform");
-			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
+		world->ForEachComponent<Model>("Model", [this, &world, &transforms](Component& c, EntityHandle owner) {
+			const auto renderModel = m_models->GetModel(static_cast<Model&>(c).GetModel());
+			const Transform* transform = (Transform*)transforms->Find(owner);
+			if (transform && renderModel)
 			{
-				const auto renderModel = m_models->GetModel(model.GetModel());
-				if (renderModel != nullptr)
-				{
-					for (const auto& part : renderModel->Parts())
-					{
-						const auto bmin = part.m_boundsMin;
-						const auto bmax = part.m_boundsMax;
-						glm::vec4 v[] = { 
-							{bmin.x,bmin.y,bmin.z,1.0f},
-							{bmax.x,bmin.y,bmin.z,1.0f},
-
-							{bmax.x,bmin.y,bmin.z,1.0f},
-							{bmax.x,bmin.y,bmax.z,1.0f},
-
-							{bmax.x,bmin.y,bmax.z,1.0f},
-							{bmin.x,bmin.y,bmax.z,1.0f},
-
-							{bmin.x,bmin.y,bmax.z,1.0f},
-							{bmin.x,bmin.y,bmin.z,1.0f},
-
-							{bmin.x,bmax.y,bmin.z,1.0f},
-							{bmax.x,bmax.y,bmin.z,1.0f},
-
-							{bmax.x,bmax.y,bmin.z,1.0f},
-							{bmax.x,bmax.y,bmax.z,1.0f},
-
-							{bmax.x,bmax.y,bmax.z,1.0f},
-							{bmin.x,bmax.y,bmax.z,1.0f},
-
-							{bmin.x,bmax.y,bmax.z,1.0f},
-							{bmin.x,bmax.y,bmin.z,1.0f},
-
-							{bmin.x,bmin.y,bmin.z,1.0f},
-							{bmin.x,bmax.y,bmin.z,1.0f},
-
-							{bmax.x,bmin.y,bmin.z,1.0f},
-							{bmax.x,bmax.y,bmin.z,1.0f},
-
-							{bmax.x,bmin.y,bmax.z,1.0f},
-							{bmax.x,bmax.y,bmax.z,1.0f},
-
-							{bmin.x,bmin.y,bmax.z,1.0f},
-							{bmin.x,bmax.y,bmax.z,1.0f},
-						};
-						const glm::vec4 c[] = {
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-						};
-
-						auto finalTransform = transform->GetMatrix();
-						for (auto& vert : v)
-						{
-							vert = finalTransform * vert;
-						}
-
-						m_debugRender->AddLines(v, c, 12);
-					}
-				}
+				DrawModelBounds(*renderModel, transform->GetMatrix());
 			}
 		});
 	}

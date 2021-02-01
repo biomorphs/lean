@@ -102,3 +102,13 @@ std::vector<Component*> World::GetAllComponents(EntityHandle owner)
 	}
 	return foundComponents;
 }
+
+ComponentStorage* World::GetComponentStorage(Component::Type type)
+{
+	auto foundStorage = m_components.find(type);
+	if (foundStorage != m_components.end())
+	{
+		return foundStorage->second.get();
+	}
+	return nullptr;
+}

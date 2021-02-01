@@ -3,7 +3,7 @@
 #include "entity_handle.h"
 #include "component.h"
 #include "component_storage.h"
-#include <unordered_map>
+#include "robin_hood.h"
 #include <string>
 
 namespace Engine
@@ -32,13 +32,14 @@ public:
 	
 	Component* AddComponent(EntityHandle owner, Component::Type type);
 	void RemoveComponent(EntityHandle owner, Component::Type type);
+	ComponentStorage* GetComponentStorage(Component::Type type);
 	Component* GetComponent(EntityHandle owner, Component::Type type);
 	std::vector<Component*> GetAllComponents(EntityHandle owner);
 
 private:
 	uint32_t m_entityIDCounter;
 	std::vector<uint32_t> m_allEntities;	// all active entity IDs
-	std::unordered_map<Component::Type, std::unique_ptr<ComponentStorage>> m_components;	// all component data
+	robin_hood::unordered_map<Component::Type, std::unique_ptr<ComponentStorage>> m_components;	// all component data
 };
 
 template<class ComponentType>

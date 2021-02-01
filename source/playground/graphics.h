@@ -20,6 +20,7 @@ namespace Engine
 	class ShaderManager;
 	class Renderer;
 	class DebugRender;
+	class Model;	
 }
 class EntitySystem;
 
@@ -34,6 +35,7 @@ public:
 	virtual void Shutdown();
 private:
 	void RenderEntities();
+	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform );
 	bool m_showBounds = true;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;

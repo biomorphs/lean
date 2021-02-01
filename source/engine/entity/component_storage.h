@@ -1,5 +1,7 @@
 #pragma once
+#include <unordered_map>
 #include <map>
+#include "robin_hood.h"
 
 class Component;
 class EntityHandle;
@@ -32,7 +34,7 @@ public:
 	virtual void DestroyAll();
 	virtual void ForEach(std::function<void(Component&,EntityHandle)> fn);
 private:
-	std::map<EntityHandle, uint32_t> m_entityToComponent;
+	robin_hood::unordered_map<uint32_t, uint32_t> m_entityToComponent;
 	std::vector<EntityHandle> m_owners;
 	std::vector<ComponentType> m_components;
 };
