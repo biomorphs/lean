@@ -148,15 +148,37 @@ namespace Render
 		const bool shouldGenerateMips = src.MipCount() <=1 && src.ShouldGenerateMips();
 		const uint32_t mipCount = shouldGenerateMips ? GetGeneratedMipCount(src) : src.MipCount();
 
-		glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
-		if (mipCount > 1)
+		if (src.UseNearestFiltering())
 		{
-			glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		}
 		else
 		{
-			glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+		if (mipCount > 1)
+		{
+			if (src.UseNearestFiltering())
+			{
+				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+			}
+			else
+			{
+				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			}
+		}
+		else
+		{
+			if (src.UseNearestFiltering())
+			{
+				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
+			else
+			{
+				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			}
 		}
 		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
 

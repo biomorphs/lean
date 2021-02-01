@@ -4,7 +4,7 @@ local DiffuseShader = {}
 local Floor4x4Model = {}
 local Wall1x4x4Model = {}
 
-local PlatformCount = 8
+local PlatformCount = 6
 local SunMulti = 2.0
 local SunPosition = {250,400,-200}
 local SunColour = {0.55, 0.711, 1.0}

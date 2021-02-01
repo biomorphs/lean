@@ -45,7 +45,8 @@ namespace Render
 		inline void SetGenerateMips(bool g) { m_generateMips = g; }
 		inline bool ShouldGenerateMips() const { return m_generateMips; }
 		inline bool ContainsSourceData() const { return m_rawBuffer.size() > 0; }
-
+		inline bool& UseNearestFiltering() { return m_useNearestFiltering; }
+		inline const bool& UseNearestFiltering() const { return m_useNearestFiltering; }
 	private:
 		Format m_format;
 		uint32_t m_width;
@@ -53,6 +54,7 @@ namespace Render
 		std::vector<MipDesc> m_mipDescriptors;
 		std::vector<uint8_t> m_rawBuffer;
 		bool m_generateMips = false;
+		bool m_useNearestFiltering = false;
 	};
 }
 

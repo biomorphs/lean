@@ -19,7 +19,7 @@ namespace Engine
 {
 	const uint64_t c_maxInstances = 1024 * 128;
 	const uint64_t c_maxLights = 64;
-	const int c_shadowMapSize = 2048;
+	const int c_shadowMapSize = 4096;
 	const int c_cubeShadowMapSize = 1024;
 
 	struct LightInfo

@@ -58,6 +58,7 @@ namespace Render
 	bool FrameBuffer::AddDepth()
 	{
 		TextureSource ts(m_dimensions.x, m_dimensions.y, Render::TextureSource::Format::Depth32);
+		ts.UseNearestFiltering() = true;
 		auto newTexture = std::make_unique<Render::Texture>();
 		if (newTexture->Create(ts))
 		{

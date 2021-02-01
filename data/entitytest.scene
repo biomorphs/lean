@@ -2,6 +2,7 @@
   "ClassName": "Scene",
   "Name": "Entity Test",
   "Scripts": [
+    "bouncylights.lua",
     "entitytest.lua"
   ]
 }
