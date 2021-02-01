@@ -34,6 +34,7 @@ public:
 	virtual void Shutdown();
 private:
 	void RenderEntities();
+	bool m_showBounds = true;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
 	std::unique_ptr<Engine::TextureManager> m_textures;

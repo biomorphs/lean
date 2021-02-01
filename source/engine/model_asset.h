@@ -89,11 +89,19 @@ namespace Engine
 			glm::mat4& Transform() { return m_transform; }
 			const glm::mat4& Transform() const { return m_transform; }
 
+			glm::vec3& BoundsMin() { return m_boundsMin; }
+			const glm::vec3& BoundsMin() const { return m_boundsMin; }
+
+			glm::vec3& BoundsMax() { return m_boundsMax; }
+			const glm::vec3& BoundsMax() const { return m_boundsMax; }
+
 		private:
 			std::vector<MeshVertex> m_vertices;
 			std::vector<uint32_t> m_indices;
 			MeshMaterial m_material;
 			glm::mat4 m_transform;
+			glm::vec3 m_boundsMin;
+			glm::vec3 m_boundsMax;
 		};
 
 		// A render-agnostic model

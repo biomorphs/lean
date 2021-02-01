@@ -182,7 +182,7 @@ void Graphics::RenderEntities()
 			const glm::vec4 posAndType = { position, light.IsPointLight() ? 1.0f : 0.0f };
 			const glm::vec3 attenuation = light.GetAttenuation();
 			m_renderer->SetLight(posAndType, light.GetColour(), light.GetAmbient(), attenuation);
-			});
+		});
 	}
 
 	// submit all models
@@ -195,7 +195,87 @@ void Graphics::RenderEntities()
 			{
 				m_renderer->SubmitInstance(transform->GetMatrix(), glm::vec4(1.0f), model.GetModel(), model.GetShader());
 			}
-			});
+		});
+	}
+
+	if(m_showBounds)
+	{
+		SDE_PROF_EVENT("ShowBounds");
+		world->ForEachComponent<Model>("Model", [this, &world](Component& c, EntityHandle owner) {
+			const auto& model = static_cast<Model&>(c);
+			const Transform* transform = (Transform*)world->GetComponent(owner, "Transform");
+			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
+			{
+				const auto renderModel = m_models->GetModel(model.GetModel());
+				if (renderModel != nullptr)
+				{
+					for (const auto& part : renderModel->Parts())
+					{
+						const auto bmin = part.m_boundsMin;
+						const auto bmax = part.m_boundsMax;
+						glm::vec4 v[] = { 
+							{bmin.x,bmin.y,bmin.z,1.0f},
+							{bmax.x,bmin.y,bmin.z,1.0f},
+
+							{bmax.x,bmin.y,bmin.z,1.0f},
+							{bmax.x,bmin.y,bmax.z,1.0f},
+
+							{bmax.x,bmin.y,bmax.z,1.0f},
+							{bmin.x,bmin.y,bmax.z,1.0f},
+
+							{bmin.x,bmin.y,bmax.z,1.0f},
+							{bmin.x,bmin.y,bmin.z,1.0f},
+
+							{bmin.x,bmax.y,bmin.z,1.0f},
+							{bmax.x,bmax.y,bmin.z,1.0f},
+
+							{bmax.x,bmax.y,bmin.z,1.0f},
+							{bmax.x,bmax.y,bmax.z,1.0f},
+
+							{bmax.x,bmax.y,bmax.z,1.0f},
+							{bmin.x,bmax.y,bmax.z,1.0f},
+
+							{bmin.x,bmax.y,bmax.z,1.0f},
+							{bmin.x,bmax.y,bmin.z,1.0f},
+
+							{bmin.x,bmin.y,bmin.z,1.0f},
+							{bmin.x,bmax.y,bmin.z,1.0f},
+
+							{bmax.x,bmin.y,bmin.z,1.0f},
+							{bmax.x,bmax.y,bmin.z,1.0f},
+
+							{bmax.x,bmin.y,bmax.z,1.0f},
+							{bmax.x,bmax.y,bmax.z,1.0f},
+
+							{bmin.x,bmin.y,bmax.z,1.0f},
+							{bmin.x,bmax.y,bmax.z,1.0f},
+						};
+						const glm::vec4 c[] = {
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+							{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
+						};
+
+						auto finalTransform = transform->GetMatrix();
+						for (auto& vert : v)
+						{
+							vert = finalTransform * vert;
+						}
+
+						m_debugRender->AddLines(v, c, 12);
+					}
+				}
+			}
+		});
 	}
 }
 
@@ -277,6 +357,7 @@ bool Graphics::Tick()
 	sprintf_s(statText, "Draw calls: %zu", fs.m_drawCalls);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
 	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
+	m_debugGui->Checkbox("Draw Bounds", &m_showBounds);
 	m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f);
 	m_debugGui->DragFloat("Shadow Bias", m_renderer->GetShadowBias(), 0.00001f, 0.0000001f, 1.0f);
 	m_debugGui->DragFloat("Cube Shadow Bias", m_renderer->GetCubeShadowBias(), 0.1f, 0.1f, 5.0f);

@@ -61,7 +61,8 @@ namespace Engine
 			}
 			boundsMin = glm::vec3(transform * glm::vec4(boundsMin, 1.0f));
 			boundsMax = glm::vec3(transform * glm::vec4(boundsMax, 1.0f));
-			//newMesh.Bounds() = Math::Box3(boundsMin, boundsMax);
+			newMesh.BoundsMin() = boundsMin;
+			newMesh.BoundsMax() = boundsMax;
 
 			// Process indices
 			auto& indices = newMesh.Indices();

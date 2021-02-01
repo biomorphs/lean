@@ -113,7 +113,8 @@ namespace Engine
 			Model::Part newPart;
 			newPart.m_mesh = std::move(newMesh);
 			newPart.m_transform = mesh.Transform();
-			//newPart.m_bounds = mesh.Bounds();
+			newPart.m_boundsMin = mesh.BoundsMin();
+			newPart.m_boundsMax = mesh.BoundsMax();
 			resultModel->Parts().push_back(std::move(newPart));
 		}
 

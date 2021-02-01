@@ -27,9 +27,12 @@ namespace Engine
 		{
 			std::unique_ptr<Render::Mesh> m_mesh;
 			glm::mat4 m_transform;
+			glm::vec3 m_boundsMin;
+			glm::vec3 m_boundsMax;
 		};
 		const std::vector<Part>& Parts() const { return m_parts; }
 		std::vector<Part>& Parts() { return m_parts; }
+
 	private:
 		std::vector<Part> m_parts;
 	};

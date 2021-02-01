@@ -53,7 +53,7 @@ namespace Engine
 			material.SetSampler("DiffuseTexture", tm.LoadTexture(diffusePath.c_str()).m_index);
 			material.SetSampler("NormalsTexture", tm.LoadTexture(normalPath.c_str()).m_index);
 			material.SetSampler("SpecularTexture", tm.LoadTexture(specPath.c_str()).m_index);
-			resultModel->m_parts.push_back({ std::move(newMesh), mesh.Transform() /*, mesh.Bounds()*/ });
+			resultModel->m_parts.push_back({ std::move(newMesh), mesh.Transform(), mesh.BoundsMin(), mesh.BoundsMax() });
 		}
 		return resultModel;
 	}
