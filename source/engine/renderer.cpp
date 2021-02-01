@@ -289,6 +289,23 @@ namespace Engine
 				else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
 				{
 					return false;
+				}
+				auto q1Mesh = reinterpret_cast<uintptr_t>(q1.m_mesh);	// mesh
+				auto q2Mesh = reinterpret_cast<uintptr_t>(q2.m_mesh);
+				if (q1Mesh < q2Mesh)
+				{
+					return true;
+				}
+				else if (q1Mesh > q2Mesh)
+				{
+					return false;
+				}
+				return false;
+				});
+		}
+		PopulateInstanceBuffers(visibleInstances);
+	}
+
 	void Renderer::PrepareShadowInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
@@ -316,11 +333,15 @@ namespace Engine
 				return false;
 			});
 		}
+		PopulateInstanceBuffers(list);
 	}
 
 	void Renderer::PrepareTransparentInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
+		InstanceList visibleInstances;
+		{
+			SDE_PROF_EVENT("FrustumCull");
 			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
 			for (const auto& it : list.m_instances)
 			{
