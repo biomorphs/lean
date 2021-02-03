@@ -258,15 +258,23 @@ namespace Engine
 		GlobalUniforms globals;
 		globals.m_viewProjMat = projectionMat * viewMat;
 		uint32_t shadowMapIndex = 0;		// precalculate shadow map sampler indices
+		uint32_t cubeShadowMapIndex = 0;
 		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
 			globals.m_lights[l].m_colourAndAmbient = m_lights[l].m_colour;
 			globals.m_lights[l].m_position = m_lights[l].m_position;
 			globals.m_lights[l].m_attenuation = m_lights[l].m_attenuation;
-			globals.m_lights[l].m_shadowParams.x = m_lights[l].m_shadowMap != nullptr ? 1.0f : 0.0f;
-			globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 0.0f ? 1000.0f : 500.0f;		// far plane hacks todo
-			globals.m_lights[l].m_shadowParams.z = m_lights[l].m_shadowMap != nullptr ? shadowMapIndex++ : -1;
-			globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
+			if (m_lights[l].m_shadowMap)
+			{
+				globals.m_lights[l].m_shadowParams.x = 1.0f;
+				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 0.0f ? 1000.0f : 500.0f;		// far plane hacks todo
+				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_position.w == 0.0f ? shadowMapIndex++ : cubeShadowMapIndex++;
+				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
+			}
+			else
+			{
+				globals.m_lights[l].m_shadowParams = { 0.0f,0.0f,0.0f };
+			}
 		}
 		globals.m_lightCount = static_cast<int>(std::min(m_lights.size(), c_maxLights));
 		globals.m_cameraPosition = glm::vec4(m_camera.Position(), 0.0);
@@ -279,16 +287,29 @@ namespace Engine
 	uint32_t Renderer::BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit)
 	{
 		uint32_t shadowMapIndex = 0;
+		uint32_t cubeShadowMapIndex = 0;
 		char samplerNameBuffer[256] = { '\0' };
-		for (int l = 0; l < m_lights.size() && l < c_maxLights && shadowMapIndex < c_maxShadowMaps; ++l)
+		for (int l = 0; l < m_lights.size() && l < c_maxLights && shadowMapIndex < c_maxShadowMaps && cubeShadowMapIndex < c_maxShadowMaps; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
-				sprintf_s(samplerNameBuffer, "ShadowMaps[%d]", shadowMapIndex++);
-				uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
-				if (uniformHandle != -1)
+				if (m_lights[l].m_position.w == 0.0f)
 				{
-					d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
+					sprintf_s(samplerNameBuffer, "ShadowMaps[%d]", shadowMapIndex++);
+					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+					if (uniformHandle != -1)
+					{
+						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
+					}
+				}
+				else
+				{
+					sprintf_s(samplerNameBuffer, "ShadowCubeMaps", cubeShadowMapIndex++);
+					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+					if (uniformHandle != -1)
+					{
+						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
+					}
 				}
 			}
 		}

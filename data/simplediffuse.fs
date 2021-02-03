@@ -16,8 +16,9 @@ uniform sampler2D DiffuseTexture;
 uniform sampler2D NormalsTexture;
 uniform sampler2D SpecularTexture;
 
-uniform samplerCube ShadowCubeMapTexture;
 uniform sampler2D ShadowMaps[8];
+uniform samplerCube ShadowCubeMaps;
+
 
 float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform)
 {
@@ -51,7 +52,7 @@ float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform)
 	return shadow;
 }
 
-float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition, float cubeDepthFarPlane)
+float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition, float cubeDepthFarPlane, float shadowIndex)
 {
 	vec3 fragToLight = pixelWorldSpace - lightPosition;  
 	vec3 sampleOffsetDirections[20] = vec3[]
@@ -76,7 +77,7 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	float currentDepth = length(fragToLight);
 	for(int i = 0; i < samples; ++i)
 	{
-		float closestDepth = texture(ShadowCubeMapTexture, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+		float closestDepth = texture(ShadowCubeMaps, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
 		closestDepth *= cubeDepthFarPlane;   // undo mapping [0;1]
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
@@ -124,7 +125,7 @@ void main()
 			lightDir = normalize(Lights[i].Position.xyz - vs_out_position);
 			if(Lights[i].ShadowParams.x != 0.0)
 			{
-				shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y);
+				shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
 			}
 		}
 

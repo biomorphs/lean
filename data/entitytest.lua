@@ -24,22 +24,6 @@ function MakeSunEntity()
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
 	newModel:SetShader(BasicShader)
-	
-	local newEntity = World.AddEntity()
-	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(100,400,500)
-	transform:SetScale(16,16,16)
-	
-	local light = World.AddComponent_Light(newEntity)
-	light:SetIsPointLight(false);
-	light:SetColour(0.165, 0.2133, 0.3)
-	light:SetAmbient(0.3)
-	light:SetCastsShadows(true)
-	light:SetShadowmapSize(1024,1024)
-
-	local newModel = World.AddComponent_Model(newEntity)
-	newModel:SetModel(SphereModel)
-	newModel:SetShader(BasicShader)
 end
 
 function MakeLightEntity()
@@ -53,7 +37,7 @@ function MakeLightEntity()
 	light:SetColour(0.8,0.7,0.7)
 	light:SetAmbient(0.0)
 	light:SetDistance(400)
-	light:SetCastsShadows(false)
+	light:SetCastsShadows(true)
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -73,7 +57,7 @@ end
 function EntityTest.Init()
 	MakeSunEntity()
 
-	for i=1,1 do 
+	for i=1,2 do 
 		MakeLightEntity()
 	end
 	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)
