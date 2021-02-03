@@ -304,7 +304,7 @@ namespace Engine
 				}
 				else
 				{
-					sprintf_s(samplerNameBuffer, "ShadowCubeMaps", cubeShadowMapIndex++);
+					sprintf_s(samplerNameBuffer, "ShadowCubeMaps[%d]", cubeShadowMapIndex++);
 					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
 					if (uniformHandle != -1)
 					{

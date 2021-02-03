@@ -6,7 +6,16 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 0
+local InstancingTestCount = 12
+local LightColours = {
+	{1.0,0.0,0.0},
+	{0.0,1.0,0.0},
+	{0.0,0.0,1.0},
+	{1.0,0.0,1.0},
+	{1.0,1.0,0.0},
+	{0.0,1.0,1.0},
+}
+local LightColourIndex = 0
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
@@ -32,9 +41,13 @@ function MakeLightEntity()
 	transform:SetPosition(math.random(-48,48),math.random(16,64),math.random(-48,48))
 	transform:SetScale(2,2,2)
 	
+	LightColourIndex = LightColourIndex + 1
+	if(LightColourIndex>#LightColours) then
+		LightColourIndex = 1
+	end
 	local light = World.AddComponent_Light(newEntity)
 	light:SetIsPointLight(true);
-	light:SetColour(0.8,0.7,0.7)
+	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
 	light:SetAmbient(0.0)
 	light:SetDistance(400)
 	light:SetCastsShadows(true)
@@ -57,21 +70,21 @@ end
 function EntityTest.Init()
 	MakeSunEntity()
 
-	for i=1,2 do 
+	for i=1,3 do 
 		MakeLightEntity()
 	end
 	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)
-	-- 
-	-- local gap = 7
-	-- local offset = -(InstancingTestCount * gap) / 2
-	-- 
-	-- for x=0,InstancingTestCount do
-	-- 	for y=0,InstancingTestCount do
-	-- 		for z=0,InstancingTestCount do
-	-- 			MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 6,1,SphereModel,DiffuseShader)
-	-- 		end
-	-- 	end		
-	-- end
+	
+	local gap = 7
+	local offset = -(InstancingTestCount * gap) / 2
+	
+	for x=0,InstancingTestCount do
+		for y=0,InstancingTestCount do
+			for z=0,InstancingTestCount do
+				MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 6,1,SphereModel,DiffuseShader)
+			end
+		end		
+	end
 end
 
 function EntityTest.Tick(deltaTime)

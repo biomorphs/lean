@@ -17,8 +17,7 @@ uniform sampler2D NormalsTexture;
 uniform sampler2D SpecularTexture;
 
 uniform sampler2D ShadowMaps[8];
-uniform samplerCube ShadowCubeMaps;
-
+uniform samplerCube ShadowCubeMaps[8];
 
 float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform)
 {
@@ -77,7 +76,7 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	float currentDepth = length(fragToLight);
 	for(int i = 0; i < samples; ++i)
 	{
-		float closestDepth = texture(ShadowCubeMaps, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+		float closestDepth = texture(ShadowCubeMaps[int(shadowIndex)], fragToLight + sampleOffsetDirections[i] * diskRadius).r;
 		closestDepth *= cubeDepthFarPlane;   // undo mapping [0;1]
 		if(currentDepth - bias > closestDepth)
 			shadow += 1.0;
