@@ -3,7 +3,6 @@
 
 in vec4 vs_out_colour;
 in vec3 vs_out_normal;
-in vec4 vs_out_positionLightSpace;
 in vec2 vs_out_uv;
 in vec3 vs_out_position;
 in mat3 vs_out_tbnMatrix;
@@ -16,13 +15,16 @@ uniform float MeshShininess;
 uniform sampler2D DiffuseTexture;
 uniform sampler2D NormalsTexture;
 uniform sampler2D SpecularTexture;
-uniform sampler2D ShadowMapTexture;
-uniform samplerCube ShadowCubeMapTexture;
 
-float CalculateShadows(vec3 normal, vec4 lightSpacePos)
+uniform samplerCube ShadowCubeMapTexture;
+uniform sampler2D ShadowMaps[8];
+
+float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform)
 {
+	vec4 positionLightSpace = lightSpaceTransform * vec4(vs_out_position,1.0); 
+	
 	// perform perspective divide
-	vec3 projCoords = vs_out_positionLightSpace.xyz / vs_out_positionLightSpace.w;
+	vec3 projCoords = positionLightSpace.xyz / positionLightSpace.w;
 	
 	// transform from ndc space since depth map is 0-1
 	projCoords = projCoords * 0.5 + 0.5;	
@@ -36,12 +38,12 @@ float CalculateShadows(vec3 normal, vec4 lightSpacePos)
 	// simple pcf
 	float currentDepth = projCoords.z;
 	float shadow = 0.0;
-	vec2 texelSize = 1.0 / textureSize(ShadowMapTexture, 0);
+	vec2 texelSize = 1.0 / textureSize(ShadowMaps[int(shadowIndex)], 0);
 	for(int x = -1; x <= 1; ++x)
 	{
 		for(int y = -1; y <= 1; ++y)
 		{
-			float pcfDepth = texture(ShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r; 
+			float pcfDepth = texture(ShadowMaps[int(shadowIndex)], projCoords.xy + vec2(x, y) * texelSize).r; 
 			shadow += currentDepth - ShadowBias > pcfDepth ? 1.0 : 0.0;        
 		}    
 	}
@@ -110,7 +112,7 @@ void main()
 			lightDir = normalize(Lights[i].Position.xyz);
 			if(Lights[i].ShadowParams.x != 0.0)
 			{
-				shadow = CalculateShadows(finalNormal, vs_out_positionLightSpace);
+				shadow = CalculateShadows(finalNormal, Lights[i].ShadowParams.z, Lights[i].LightspaceTransform);
 			}
 		}
 		else	// point light

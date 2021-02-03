@@ -146,11 +146,7 @@ bool Graphics::Initialise()
 	gMenu.AddItem("Reload Models", [this]() { m_renderer->Reset(); m_models->ReloadAll(); });
 	gMenu.AddItem("TextureManager", [this]() { g_showTextureGui = true; });
 	gMenu.AddItem("ModelManager", [this]() { g_showModelGui = true; });
-	gMenu.AddItem("Toggle shadow update", [this]() { 
-		g_enableShadowUpdate = !g_enableShadowUpdate; 
-		m_renderer->SetShadowUpdateEnabled(g_enableShadowUpdate);
-	});
-	auto& camMenu = g_graphicsMenu.AddSubmenu(ICON_FK_CAMERA " Camera (Arcball)");
+	auto& camMenu = g_graphicsMenu.AddSubmenu(ICON_FK_CAMERA " Camera (Flycam)");
 	camMenu.AddItem("Toggle Camera Mode", [this,&camMenu]() {
 		g_useArcballCam = !g_useArcballCam; 
 		if (g_useArcballCam)
@@ -235,12 +231,37 @@ void Graphics::RenderEntities()
 	{
 		SDE_PROF_EVENT("SubmitLights");
 		world->ForEachComponent<Light>("Light", [this, &world, &transforms](Component& c, EntityHandle owner) {
-			const auto& light = static_cast<const Light&>(c);
+			auto& light = static_cast<Light&>(c);
 			const Transform* transform = (Transform*)transforms->Find(owner);
 			const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
 			const glm::vec4 posAndType = { position, light.IsPointLight() ? 1.0f : 0.0f };
 			const glm::vec3 attenuation = light.GetAttenuation();
-			m_renderer->SetLight(posAndType, light.GetColour(), light.GetAmbient(), attenuation);
+			if (light.CastsShadows())	
+			{
+				if (!light.GetShadowMap())
+				{
+					auto& sm = light.GetShadowMap();
+					sm = std::make_unique<Render::FrameBuffer>(light.GetShadowmapSize());
+					if (light.IsPointLight())
+					{
+						sm->AddDepthCube();
+					}
+					else
+					{
+						sm->AddDepth();
+					}
+					if (!sm->Create())
+					{
+						SDE_LOG("Failed to create shadow depth buffer");
+					}
+				}
+				// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
+				m_renderer->SetLight(posAndType, light.GetColour(), light.GetAmbient(), attenuation, *light.GetShadowMap());
+			}
+			else
+			{
+				m_renderer->SetLight(posAndType, light.GetColour(), light.GetAmbient(), attenuation);
+			}
 		});
 	}
 

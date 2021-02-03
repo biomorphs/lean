@@ -34,11 +34,11 @@ namespace Engine
 		void SetCamera(const Render::Camera& c);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader);
-		void SetLight(glm::vec4 positionOrDir,glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
+		void SetLight(glm::vec4 positionOrDir, glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
+		void SetLight(glm::vec4 positionOrDir, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
-		void SetShadowUpdateEnabled(bool b) { m_updateShadowMaps = b; }
-		Render::FrameBuffer& GetMainFramebuffer() { return m_mainFramebuffer; }
+
 		struct FrameStats {
 			size_t m_instancesSubmitted = 0;
 			size_t m_shaderBinds = 0;
@@ -61,6 +61,8 @@ namespace Engine
 		};
 		using ShadowShaders = std::unordered_map<uint32_t, ShaderHandle>;
 
+		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
+		void RenderShadowmap(Render::Device& d, Light& l);
 		void SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
 		void CreateInstanceList(InstanceList& newlist, uint32_t maxInstances);
 		void PrepareOpaqueInstances(InstanceList& list);
@@ -68,11 +70,10 @@ namespace Engine
 		void PrepareShadowInstances(InstanceList& list);
 		void PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
 		void PopulateInstanceBuffers(InstanceList& list);
-		void DrawInstances(Render::Device& d, const InstanceList& list, Render::UniformBuffer* uniforms = nullptr);
+		void DrawInstances(Render::Device& d, const InstanceList& list, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 
 		FrameStats m_frameStats;
-		bool m_updateShadowMaps = true;
 		float m_hdrExposure = 1.0f;
 		std::vector<Light> m_lights;
 		InstanceList m_opaqueInstances;
@@ -90,8 +91,6 @@ namespace Engine
 		Engine::ShaderHandle m_blitShader;
 		Render::RenderBuffer m_globalsUniformBuffer;
 		Render::FrameBuffer m_mainFramebuffer;
-		Render::FrameBuffer m_shadowDepthBuffer;
-		Render::FrameBuffer m_shadowCubeDepthBuffer;
 		Render::Camera m_camera;
 		glm::ivec2 m_windowSize;
 	};

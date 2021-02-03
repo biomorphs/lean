@@ -58,7 +58,7 @@ namespace Render
 		glGetShaderiv(m_handle, GL_COMPILE_STATUS, &compileResult);
 		glGetShaderiv(m_handle, GL_INFO_LOG_LENGTH, &resultLogSize);
 
-		char errorLogResult[2048] = { '\0' };
+		char errorLogResult[4096] = { '\0' };
 		SDE_RENDER_ASSERT(resultLogSize < sizeof(errorLogResult));
 
 		glGetShaderInfoLog(m_handle, resultLogSize, nullptr, errorLogResult);

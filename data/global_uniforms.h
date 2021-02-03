@@ -5,7 +5,8 @@ struct LightInfo
 	vec4 ColourAndAmbient;
 	vec4 Position;
 	vec3 Attenuation;
-	vec3 ShadowParams;		// enabled, far plane
+	vec3 ShadowParams;		// enabled, far plane, shadowmap index
+	mat4 LightspaceTransform;
 };
 
 layout(std140, binding = 0) uniform Globals

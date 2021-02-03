@@ -1,10 +1,13 @@
 #include "light.h"
+#include "render/frame_buffer.h"
 
 COMPONENT_BEGIN(Light,
 	"SetIsPointLight", &Light::SetIsPointLight,
 	"SetColour", &Light::SetColour,
 	"SetDistance", &Light::SetDistance,
-	"SetAmbient", &Light::SetAmbient
+	"SetAmbient", &Light::SetAmbient,
+	"SetCastsShadows", &Light::SetCastsShadows,
+	"SetShadowmapSize", &Light::SetShadowmapSize
 )
 COMPONENT_END()
 
