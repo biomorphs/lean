@@ -19,7 +19,7 @@ namespace Engine
 {
 	const uint64_t c_maxInstances = 1024 * 128;
 	const uint64_t c_maxLights = 64;
-	const uint32_t c_maxShadowMaps = 8;
+	const uint32_t c_maxShadowMaps = 16;
 
 	struct LightInfo
 	{
@@ -383,7 +383,7 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		if (l.m_position.w == 0.0f)
+		if (l.m_position.w == 0.0f)		// directional
 		{
 			PrepareShadowInstances(l.m_lightspaceMatrix, m_visibleShadowInstances);
 
@@ -447,12 +447,19 @@ namespace Engine
 		auto viewMat = glm::lookAt(m_camera.Position(), m_camera.Target(), m_camera.Up());
 		UpdateGlobals(projectionMat, viewMat);
 
-		// render shadow maps
-		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
+		static int s_lastShadowmapDrawn = 0;
+		static int s_updatesPerFrame = 2;
+		int updatesRemaining = m_lights.size();
+		for (int l = s_lastShadowmapDrawn; l < m_lights.size() && l < c_maxLights && updatesRemaining > 0; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
 				RenderShadowmap(d, m_lights[l]);
+				updatesRemaining--;
+				if (++s_lastShadowmapDrawn > m_lights.size()-1)
+				{
+					s_lastShadowmapDrawn = 0;
+				}
 			}
 		}
 

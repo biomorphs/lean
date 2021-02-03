@@ -85,6 +85,12 @@ bool Graphics::Initialise()
 	// expose ShaderHandle to lua
 	m_scriptSystem->Globals().new_usertype<Engine::ShaderHandle>("ShaderHandle", sol::constructors<Engine::ShaderHandle()>());
 
+	// expose vec3 to lua
+	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3()>(), 
+		"x", &glm::vec3::x,
+		"y", &glm::vec3::y,
+		"z", &glm::vec3::z);
+
 	//// expose Graphics namespace functions
 	auto graphics = m_scriptSystem->Globals()["Graphics"].get_or_create<sol::table>();
 	graphics["SetClearColour"] = [this](float r, float g, float b) {

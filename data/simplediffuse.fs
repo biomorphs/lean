@@ -16,8 +16,8 @@ uniform sampler2D DiffuseTexture;
 uniform sampler2D NormalsTexture;
 uniform sampler2D SpecularTexture;
 
-uniform sampler2D ShadowMaps[8];
-uniform samplerCube ShadowCubeMaps[8];
+uniform sampler2D ShadowMaps[16];
+uniform samplerCube ShadowCubeMaps[16];
 
 float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform)
 {
