@@ -264,11 +264,21 @@ namespace Engine
 			globals.m_lights[l].m_colourAndAmbient = m_lights[l].m_colour;
 			globals.m_lights[l].m_position = m_lights[l].m_position;
 			globals.m_lights[l].m_attenuation = m_lights[l].m_attenuation;
+			bool hasShadowMap = m_lights[l].m_position.w == 0.0f ? shadowMapIndex < c_maxShadowMaps : cubeShadowMapIndex < c_maxShadowMaps;
 			if (m_lights[l].m_shadowMap)
 			{
 				globals.m_lights[l].m_shadowParams.x = 1.0f;
 				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 0.0f ? 1000.0f : 500.0f;		// far plane hacks todo
-				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_position.w == 0.0f ? shadowMapIndex++ : cubeShadowMapIndex++;
+				uint32_t smIndex = 0;
+				if (m_lights[l].m_position.w == 0.0f)
+				{
+					smIndex = shadowMapIndex++;
+				}
+				else
+				{
+					smIndex = cubeShadowMapIndex++;
+				}
+				globals.m_lights[l].m_shadowParams.z = smIndex;
 				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
 			}
 			else
@@ -289,11 +299,11 @@ namespace Engine
 		uint32_t shadowMapIndex = 0;
 		uint32_t cubeShadowMapIndex = 0;
 		char samplerNameBuffer[256] = { '\0' };
-		for (int l = 0; l < m_lights.size() && l < c_maxLights && shadowMapIndex < c_maxShadowMaps && cubeShadowMapIndex < c_maxShadowMaps; ++l)
+		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
-				if (m_lights[l].m_position.w == 0.0f)
+				if (m_lights[l].m_position.w == 0.0f && shadowMapIndex < c_maxShadowMaps)
 				{
 					sprintf_s(samplerNameBuffer, "ShadowMaps[%d]", shadowMapIndex++);
 					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
@@ -302,7 +312,7 @@ namespace Engine
 						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
 					}
 				}
-				else
+				else if(cubeShadowMapIndex < c_maxShadowMaps)
 				{
 					sprintf_s(samplerNameBuffer, "ShadowCubeMaps[%d]", cubeShadowMapIndex++);
 					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
@@ -313,6 +323,7 @@ namespace Engine
 				}
 			}
 		}
+
 		return textureUnit;
 	}
 
@@ -348,6 +359,14 @@ namespace Engine
 					lastShaderUsed = theShader;
 				}
 
+				// apply mesh material uniforms and samplers
+				uint32_t textureUnit = 0;
+				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, g_defaultTextures, textureUnit);
+				if (bindShadowmaps)
+				{
+					textureUnit = BindShadowmaps(d, *theShader, textureUnit+1);
+				}
+
 				// bind vertex array + instancing streams immediately after mesh vertex streams
 				m_frameStats.m_vertexArrayBinds++;
 				int instancingSlotIndex = theMesh->GetVertexArray().GetStreamCount();
@@ -357,14 +376,6 @@ namespace Engine
 				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_transforms, instancingSlotIndex++, 4, sizeof(float) * 8, 4);
 				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_transforms, instancingSlotIndex++, 4, sizeof(float) * 12, 4);
 				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_colours, instancingSlotIndex++, 4, 0);
-
-				// apply mesh material uniforms and samplers
-				uint32_t textureUnit = 0;
-				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, g_defaultTextures, textureUnit++);
-				if (bindShadowmaps)
-				{
-					textureUnit = BindShadowmaps(d, *theShader, textureUnit);
-				}
 
 				// draw the chunks
 				for (const auto& chunk : theMesh->GetChunks())
@@ -447,19 +458,11 @@ namespace Engine
 		auto viewMat = glm::lookAt(m_camera.Position(), m_camera.Target(), m_camera.Up());
 		UpdateGlobals(projectionMat, viewMat);
 
-		static int s_lastShadowmapDrawn = 0;
-		static int s_updatesPerFrame = 2;
-		int updatesRemaining = m_lights.size();
-		for (int l = s_lastShadowmapDrawn; l < m_lights.size() && l < c_maxLights && updatesRemaining > 0; ++l)
+		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
 				RenderShadowmap(d, m_lights[l]);
-				updatesRemaining--;
-				if (++s_lastShadowmapDrawn > m_lights.size()-1)
-				{
-					s_lastShadowmapDrawn = 0;
-				}
 			}
 		}
 
@@ -530,36 +533,6 @@ namespace Engine
 				});
 		}
 		PopulateInstanceBuffers(visibleInstances);
-	}
-
-	void Renderer::PrepareShadowInstances(InstanceList& list)
-	{
-		SDE_PROF_EVENT();
-		{
-			SDE_PROF_EVENT("Sort");
-			std::sort(list.m_instances.begin(), list.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
-				if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
-				{
-					return true;
-				}
-				else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
-				{
-					return false;
-				}
-				auto q1Mesh = reinterpret_cast<uintptr_t>(q1.m_mesh);	// mesh
-				auto q2Mesh = reinterpret_cast<uintptr_t>(q2.m_mesh);
-				if (q1Mesh < q2Mesh)
-				{
-					return true;
-				}
-				else if (q1Mesh > q2Mesh)
-				{
-					return false;
-				}
-				return false;
-				});
-		}
-		PopulateInstanceBuffers(list);
 	}
 
 	void Renderer::PrepareTransparentInstances(InstanceList& list)

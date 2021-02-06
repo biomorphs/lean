@@ -257,7 +257,6 @@ namespace Render
 	void Device::SetSampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit)
 	{
 		assert(uniformHandle != -1);
-		assert(textureHandle != 0);
 
 		glBindTextureUnit(textureUnit, textureHandle);
 		SDE_RENDER_PROCESS_GL_ERRORS("glBindTextureUnit");

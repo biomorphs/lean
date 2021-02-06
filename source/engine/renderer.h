@@ -67,7 +67,6 @@ namespace Engine
 		void CreateInstanceList(InstanceList& newlist, uint32_t maxInstances);
 		void PrepareOpaqueInstances(InstanceList& list);
 		void PrepareTransparentInstances(InstanceList& list);
-		void PrepareShadowInstances(InstanceList& list);
 		void PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
 		void PopulateInstanceBuffers(InstanceList& list);
 		void DrawInstances(Render::Device& d, const InstanceList& list, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
@@ -82,7 +81,7 @@ namespace Engine
 		InstanceList m_visibleShadowInstances;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		float m_shadowBias = 0.002f;
-		float m_cubeShadowBias = 0.2f;
+		float m_cubeShadowBias = 0.3f;
 		ShadowShaders m_shadowShaders;	// map of lighting shader handle index -> shadow shader
 		ShaderManager* m_shaders;
 		TextureManager* m_textures;

@@ -15,8 +15,8 @@ namespace Engine
 
 	struct TextureHandle
 	{
-		uint16_t m_index = -1;
-		static TextureHandle Invalid() { return { (uint16_t)-1 }; };
+		uint32_t m_index = -1;
+		static TextureHandle Invalid() { return { (uint32_t)-1 }; };
 	};
 
 	class TextureManager

@@ -6,7 +6,7 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 11
+local InstancingTestCount = 14
 local LightColours = {
 	{1.0,0.0,0.0},
 	{0.0,1.0,0.0},
@@ -16,7 +16,7 @@ local LightColours = {
 	{0.0,1.0,1.0},
 }
 local LightColourIndex = math.random(0,#LightColours)
-local lightBoxMin = {-284,6,-125}
+local lightBoxMin = {-284,4,-125}
 local lightBoxMax = {256,128,113}
 local lightGravity = -4096.0
 local lightBounceMul = 0.5
@@ -34,8 +34,7 @@ function MakeSunEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetIsPointLight(false);
 	light:SetColour(0.165, 0.2133, 0.3)
-	light:SetColour(0,0,0)
-	light:SetAmbient(0.1)
+	light:SetAmbient(0.05)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
 
@@ -58,7 +57,7 @@ function MakeLightEntity()
 	light:SetIsPointLight(true);
 	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
 	light:SetAmbient(0.0)
-	light:SetDistance(math.random(64,256))
+	light:SetDistance(math.random(128,256))
 	light:SetShadowmapSize(512,512)
 	light:SetCastsShadows(true)
 	
@@ -82,7 +81,7 @@ end
 function EntityTest.Init()
 	MakeSunEntity()
 
-	for i=1,8 do 
+	for i=1,4 do 
 		MakeLightEntity()
 	end
 	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)
@@ -104,7 +103,7 @@ function Vec3Length(v)
 end
 
 function EntityTest.Tick(deltaTime)
-	deltaTime = deltaTime * 0.1
+	deltaTime = deltaTime * 0.2
 	for b=1,#bouncyLights do 
 		local entity = bouncyLights[b][1]
 		local velocity = bouncyLights[b][2]
