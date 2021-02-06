@@ -13,11 +13,11 @@ class Light : public Component
 public:
 	COMPONENT(Light);
 	
-	void SetIsPointLight(bool b) { m_isPointLight = b; }
+	void SetIsPointLight(bool b);
 	void SetColour(float r, float g, float b) { m_colour = { r,g,b }; }
 	void SetDistance(float d) { m_distance = d; }
 	void SetAmbient(float a) { m_ambient = a; }
-	void SetCastsShadows(bool c) { m_castShadows = c; }
+	void SetCastsShadows(bool c);
 	void SetShadowmapSize(int w, int h) { m_shadowMapSize = { w,h }; }
 
 	std::unique_ptr<Render::FrameBuffer>& GetShadowMap() { return m_shadowMap; }
@@ -26,6 +26,7 @@ public:
 	bool IsPointLight() const { return m_isPointLight; }
 	glm::vec3 GetColour() const { return m_colour; }
 	float GetAmbient() const { return m_ambient; }
+	float GetDistance() const { return m_distance; }
 	glm::vec3 GetAttenuation() const;
 
 private:

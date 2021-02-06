@@ -7,6 +7,7 @@
 
 SERIALISE_BEGIN(World)
 SERIALISE_PROPERTY("AllEntities", m_allEntities)
+//SERIALISE_PROPERTY("ComponentStorage", m_components)
 SERIALISE_END()
 
 EntityHandle World::AddEntity()

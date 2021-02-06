@@ -16,6 +16,7 @@
 #include "engine/debug_render.h"
 #include "engine/frustum.h"
 #include "render/render_pass.h"
+#include "engine/file_picker_dialog.h"
 #include "render/window.h"
 #include "render/camera.h"
 #include "core/profiler.h"
@@ -69,8 +70,53 @@ bool Graphics::Initialise()
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
 	m_entitySystem->RegisterComponentType<Transform>("Transform");
+	m_entitySystem->RegisterComponentUi("Transform", [](Component& c, Engine::DebugGuiSystem& dbg) {
+		auto& t = static_cast<Transform&>(c);
+		auto p = t.GetPosition();
+		if(dbg.DragVector("Position", p, 0.25f, -100000.0f, 100000.0f))
+			t.SetPosition(p.x,p.y,p.z);
+		auto s = t.GetScale();
+		auto angleDegrees = glm::degrees(t.GetRotationRadians());
+		dbg.DragVector("Rotation", angleDegrees, 0.1f, 0.0f, 360.0f);
+		t.SetRotationDegrees(angleDegrees);
+		dbg.DragVector("Scale", s, 0.05f, 0.0f);
+		t.SetScale(s.x,s.y,s.z);
+	});
+
 	m_entitySystem->RegisterComponentType<Light>("Light");
+	m_entitySystem->RegisterComponentUi("Light", [](Component& c, Engine::DebugGuiSystem& dbg) {
+		auto& l = static_cast<Light&>(c);
+		bool isPointLight = l.IsPointLight();
+		dbg.Checkbox("Point Light", &isPointLight);
+		l.SetIsPointLight(isPointLight);
+		auto col = glm::vec4(l.GetColour(),1.0f);
+		dbg.ColourEdit("Colour", col, false);
+		l.SetColour(col.r,col.g,col.b);
+		auto ambient = l.GetAmbient();
+		dbg.DragFloat("Ambient", ambient, 0.001f, 0.0f, 1.0f);
+		l.SetAmbient(ambient);
+		auto radius = l.GetDistance();
+		dbg.DragFloat("Radius", radius, 0.1f, 0.0f, 3250.0f);
+		l.SetDistance(radius);
+		bool castShadow = l.CastsShadows();
+		dbg.Checkbox("Cast Shadows", &castShadow);
+		l.SetCastsShadows(castShadow);
+	});
+
 	m_entitySystem->RegisterComponentType<Model>("Model");
+	m_entitySystem->RegisterComponentUi("Model", [this](Component& c, Engine::DebugGuiSystem& dbg) {
+		auto& m = static_cast<Model&>(c);
+		std::string modelPath = m_models->GetModelPath(m.GetModel());
+		if (dbg.Button(modelPath.c_str()))
+		{
+			std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
+			if (newFile != "")
+			{
+				auto loadedModel = m_models->LoadModel(newFile.c_str());
+				m.SetModel(loadedModel);
+			}
+		}
+	});
 	
 	//// add our renderer to the global passes
 	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_windowSize);

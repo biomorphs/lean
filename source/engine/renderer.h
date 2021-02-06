@@ -81,7 +81,7 @@ namespace Engine
 		InstanceList m_visibleShadowInstances;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		float m_shadowBias = 0.002f;
-		float m_cubeShadowBias = 0.3f;
+		float m_cubeShadowBias = 0.5f;
 		ShadowShaders m_shadowShaders;	// map of lighting shader handle index -> shadow shader
 		ShaderManager* m_shaders;
 		TextureManager* m_textures;

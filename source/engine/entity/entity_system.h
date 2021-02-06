@@ -23,11 +23,15 @@ public:
 	template<class T>
 	void RegisterComponentType(Component::Type type);
 
+	using UiRenderFn = std::function<void(Component&, Engine::DebugGuiSystem&)>;
+	void RegisterComponentUi(Component::Type, UiRenderFn fn);
+
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();
 
 private:
 	void ShowDebugGui();
+	std::map<Component::Type, UiRenderFn> m_componentUiRenderers;
 	std::unique_ptr<World> m_world;
 	Engine::ScriptSystem* m_scriptSystem;
 	Engine::DebugGuiSystem* m_debugGui;

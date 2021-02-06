@@ -6,7 +6,7 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 14
+local InstancingTestCount = 17
 local LightColours = {
 	{1.0,0.0,0.0},
 	{0.0,1.0,0.0},
@@ -16,7 +16,7 @@ local LightColours = {
 	{0.0,1.0,1.0},
 }
 local LightColourIndex = math.random(0,#LightColours)
-local lightBoxMin = {-284,4,-125}
+local lightBoxMin = {-284,8,-125}
 local lightBoxMax = {256,128,113}
 local lightGravity = -4096.0
 local lightBounceMul = 0.5
@@ -34,7 +34,7 @@ function MakeSunEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetIsPointLight(false);
 	light:SetColour(0.165, 0.2133, 0.3)
-	light:SetAmbient(0.05)
+	light:SetAmbient(0.08)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
 
@@ -47,7 +47,7 @@ function MakeLightEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
-	transform:SetScale(2,2,2)
+	transform:SetScale(1,1,1)
 	
 	LightColourIndex = LightColourIndex + 1
 	if(LightColourIndex>#LightColours) then

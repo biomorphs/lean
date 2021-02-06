@@ -11,6 +11,24 @@ COMPONENT_BEGIN(Light,
 )
 COMPONENT_END()
 
+void Light::SetIsPointLight(bool b)
+{
+	if (m_isPointLight != b)
+	{
+		m_shadowMap = nullptr;	// safe?!
+		m_isPointLight = b;
+	}
+}
+
+void Light::SetCastsShadows(bool c)
+{
+	m_castShadows = c; 
+	if (!m_castShadows)
+	{
+		m_shadowMap = nullptr;	// safe?! 
+	}
+}
+
 glm::vec3 Light::GetAttenuation() const
 {
 	const glm::vec4 c_lightAttenuationTable[] = {

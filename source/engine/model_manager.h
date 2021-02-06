@@ -28,10 +28,9 @@ namespace Engine
 
 		ModelHandle LoadModel(const char* path);
 		Model* GetModel(const ModelHandle& h);
+		std::string GetModelPath(const ModelHandle& h);
 		void ProcessLoadedModels();
-
 		bool ShowGui(DebugGuiSystem& gui);
-
 		void ReloadAll();
 
 	private:

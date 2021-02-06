@@ -19,6 +19,11 @@ void EntitySystem::NewWorld()
 	m_world->RemoveAllEntities();
 }
 
+void EntitySystem::RegisterComponentUi(Component::Type type, UiRenderFn fn)
+{
+	m_componentUiRenderers[type] = fn;
+}
+
 void EntitySystem::ShowDebugGui()
 {
 	SDE_PROF_EVENT();
@@ -40,6 +45,12 @@ void EntitySystem::ShowDebugGui()
 					{
 						if (m_debugGui->TreeNode(cmp->GetType().c_str()))
 						{
+							auto uiRenderer = m_componentUiRenderers.find(cmp->GetType());
+							if (uiRenderer != m_componentUiRenderers.end())
+							{
+								auto fn = uiRenderer->second;
+								fn(*cmp, *m_debugGui);
+							}
 							m_debugGui->TreePop();
 						}
 					}

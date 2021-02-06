@@ -220,6 +220,18 @@ namespace Engine
 		return newHandle;
 	}
 
+	std::string ModelManager::GetModelPath(const ModelHandle& h)
+	{
+		if (h.m_index != -1 && h.m_index < m_models.size())
+		{
+			return m_models[h.m_index].m_name;
+		}
+		else
+		{
+			return "<Empty Handle>";
+		}
+	}
+
 	Model* ModelManager::GetModel(const ModelHandle& h)
 	{
 		if (h.m_index != -1 && h.m_index < m_models.size())
