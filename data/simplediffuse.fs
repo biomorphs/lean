@@ -122,9 +122,12 @@ void main()
 								(Lights[i].Attenuation[1] * lightDistance) + 
 								(Lights[i].Attenuation[2] * (lightDistance * lightDistance)));
 			lightDir = normalize(Lights[i].Position.xyz - vs_out_position);
-			if(Lights[i].ShadowParams.x != 0.0)
+			if(attenuation > 0.001)		// won't hit zero?
 			{
-				shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
+				if(Lights[i].ShadowParams.x != 0.0)
+				{
+					shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
+				}
 			}
 		}
 

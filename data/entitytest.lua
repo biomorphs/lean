@@ -6,18 +6,18 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 17
+local InstancingTestCount = 12
 local LightColours = {
-	{1.0,0.0,0.0},
-	{0.0,1.0,0.0},
-	{0.0,0.0,1.0},
-	{1.0,0.0,1.0},
-	{1.0,1.0,0.0},
-	{0.0,1.0,1.0},
+	{2.0,0.0,0.0},
+	{0.0,2.0,0.0},
+	{0.0,0.0,2.0},
+	{2.0,0.0,2.0},
+	{2.0,2.0,0.0},
+	{0.0,2.0,2.0},
 }
 local LightColourIndex = math.random(0,#LightColours)
-local lightBoxMin = {-284,8,-125}
-local lightBoxMax = {256,128,113}
+local lightBoxMin = {-284,2,-125}
+local lightBoxMax = {256,64,113}
 local lightGravity = -4096.0
 local lightBounceMul = 0.5
 local lightFriction = 0.95
@@ -33,8 +33,8 @@ function MakeSunEntity()
 	
 	local light = World.AddComponent_Light(newEntity)
 	light:SetIsPointLight(false);
-	light:SetColour(0.165, 0.2133, 0.3)
-	light:SetAmbient(0.08)
+	light:SetColour(0.96, 0.95, 0.9)
+	light:SetAmbient(0.04)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
 
@@ -56,9 +56,9 @@ function MakeLightEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetIsPointLight(true);
 	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
-	light:SetAmbient(0.0)
-	light:SetDistance(math.random(128,256))
-	light:SetShadowmapSize(512,512)
+	light:SetAmbient(0.1)
+	light:SetDistance(math.random(64,64))
+	light:SetShadowmapSize(256,256)
 	light:SetCastsShadows(true)
 	
 	local newModel = World.AddComponent_Model(newEntity)
@@ -81,12 +81,12 @@ end
 function EntityTest.Init()
 	MakeSunEntity()
 
-	for i=1,4 do 
+	for i=1,8 do 
 		MakeLightEntity()
 	end
 	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)
 	
-	local gap = 7
+	local gap = 10
 	local offset = -(InstancingTestCount * gap) / 2
 	
 	for x=0,InstancingTestCount do
