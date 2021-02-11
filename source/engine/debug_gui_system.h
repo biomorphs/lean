@@ -41,6 +41,7 @@ namespace Engine
 		bool Button(const char* txt);
 		bool Selectable(const char* txt, bool selected = false);
 		void Separator();
+		bool ComboBox(const char* label, const char* items[], int itemCount, int &currentItem);
 		bool Checkbox(const char* text, bool* val);
 		bool ColourEdit(const char* label, glm::vec4& c, bool showAlpha = true);
 		bool DragFloat(const char* label, float& f, float step = 1.0f, float min = 0.0f, float max = 0.0f);

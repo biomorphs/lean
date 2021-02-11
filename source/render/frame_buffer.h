@@ -31,11 +31,13 @@ namespace Render
 		inline const Texture& GetColourAttachment(int index) const { return *m_colourAttachments[index]; }
 		const std::unique_ptr<Texture>& GetDepthStencil() const { return m_depthStencil; }
 		glm::ivec2 Dimensions() const {	return m_dimensions; }
+		bool IsCubemap() const { return m_isCubemap; }
 
 	private:
 		std::vector<std::unique_ptr<Texture>> m_colourAttachments;
 		std::unique_ptr<Texture> m_depthStencil;
 		glm::ivec2 m_dimensions;
+		bool m_isCubemap = false;
 		uint32_t m_fboHandle = 0;
 	};
 }

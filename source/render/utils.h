@@ -34,7 +34,6 @@ inline const char* TranslateGLError(uint32_t errorCode)
 		while (error  != GL_NO_ERROR)	\
 		{\
 			SDE_LOGC(Render, "%s returned %d (%s)", ##__VA_ARGS__, error, TranslateGLError(error)); \
-			assert(false); \
 			error = glGetError();	\
 		}\
 	}
@@ -47,7 +46,6 @@ inline const char* TranslateGLError(uint32_t errorCode)
 		while (error  != GL_NO_ERROR)	\
 		{\
 			SDE_LOGC(Render, "%s returned %d (%s)", ##__VA_ARGS__, error, TranslateGLError(error)); \
-			assert(false); \
 			error = glGetError();	\
 			shouldReturn = true;	\
 		}\

@@ -2,7 +2,8 @@
 #include "render/frame_buffer.h"
 
 COMPONENT_BEGIN(Light,
-	"SetIsPointLight", &Light::SetIsPointLight,
+	"SetPointLight", &Light::SetPointLight,
+	"SetDirectional", &Light::SetDirectional,
 	"SetColour", &Light::SetColour,
 	"SetBrightness", &Light::SetBrightness,
 	"SetDistance", &Light::SetDistance,
@@ -13,22 +14,24 @@ COMPONENT_BEGIN(Light,
 )
 COMPONENT_END()
 
-void Light::SetIsPointLight(bool b)
+void Light::SetType(Type newType)
 {
-	if (m_isPointLight != b)
-	{
-		m_shadowMap = nullptr;	// safe?!
-		m_isPointLight = b;
-	}
+	m_type = newType;
+}
+
+void Light::SetDirectional()
+{
+	SetType(Type::Directional);
+}
+
+void Light::SetPointLight()
+{
+	SetType(Type::Point);
 }
 
 void Light::SetCastsShadows(bool c)
 {
 	m_castShadows = c; 
-	if (!m_castShadows)
-	{
-		m_shadowMap = nullptr;	// safe?! 
-	}
 }
 
 glm::vec3 Light::GetAttenuation() const

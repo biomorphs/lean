@@ -7,7 +7,7 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 8
+local InstancingTestCount = 4
 local LightColours = {
 	{1.0,0.0,0.0},
 	{0.0,1.0,0.0},
@@ -34,7 +34,7 @@ function MakeSunEntity()
 	transform:SetScale(4,16,4)
 	
 	local light = World.AddComponent_Light(newEntity)
-	light:SetIsPointLight(false);
+	light:SetDirectional();
 	light:SetColour(0.96, 0.94, 0.9)
 	light:SetAmbient(0.15)
 	light:SetCastsShadows(true)
@@ -57,13 +57,13 @@ function MakeLightEntity()
 		LightColourIndex = 1
 	end
 	local light = World.AddComponent_Light(newEntity)
-	light:SetIsPointLight(true);
+	light:SetPointLight();
 	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
-	light:SetAmbient(0.1)
+	light:SetAmbient(0.0)
 	light:SetDistance(math.random(64,64))
-	light:SetShadowmapSize(256,256)
 	light:SetCastsShadows(true)
-	light:SetShadowBias(0.5)
+	light:SetShadowmapSize(256,256)
+	light:SetShadowBias(1.0)
 	light:SetBrightness(math.random(2,4))
 	
 	local newModel = World.AddComponent_Model(newEntity)

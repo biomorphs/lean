@@ -187,7 +187,7 @@ namespace Engine
 		{
 			// todo - parameterise
 			static float c_nearPlane = 0.1f;
-			static float c_farPlane = 600.0f;
+			static float c_farPlane = 1000.0f;
 			static float c_orthoDims = 400.0f;
 			const glm::vec3 up = l.m_direction.y == -1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
 			glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, c_farPlane);
@@ -205,11 +205,11 @@ namespace Engine
 		}
 	}
 
-	void Renderer::SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation,	Render::FrameBuffer& sm, float bias)
+	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation,	Render::FrameBuffer& sm, float bias)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
-		newLight.m_position = positionOrDir;
+		newLight.m_position = posAndType;
 		newLight.m_direction = direction;
 		newLight.m_attenuation = attenuation;
 		newLight.m_shadowMap = &sm;
@@ -218,11 +218,11 @@ namespace Engine
 		m_lights.push_back(newLight);
 	}
 
-	void Renderer::SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation)
+	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
-		newLight.m_position = positionOrDir;
+		newLight.m_position = posAndType;
 		newLight.m_direction = direction;
 		newLight.m_attenuation = attenuation;
 		m_lights.push_back(newLight);

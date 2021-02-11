@@ -50,6 +50,7 @@ namespace Render
 		if (newTexture->CreateCubemap(ts))
 		{
 			m_depthStencil = std::move(newTexture);
+			m_isCubemap = true;
 			return true;
 		}
 		return true;
@@ -63,6 +64,7 @@ namespace Render
 		if (newTexture->Create(ts))
 		{
 			m_depthStencil = std::move(newTexture);
+			m_isCubemap = false;
 			return true;
 		}
 		return false;
@@ -75,6 +77,7 @@ namespace Render
 		if (newTexture->Create(ts))
 		{
 			m_depthStencil = std::move(newTexture);
+			m_isCubemap = false;
 			return true;
 		}
 		return false;

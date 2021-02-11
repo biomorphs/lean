@@ -86,9 +86,6 @@ bool Graphics::Initialise()
 	m_entitySystem->RegisterComponentType<Light>("Light");
 	m_entitySystem->RegisterComponentUi("Light", [](Component& c, Engine::DebugGuiSystem& dbg) {
 		auto& l = static_cast<Light&>(c);
-		bool isPointLight = l.IsPointLight();
-		dbg.Checkbox("Point Light", &isPointLight);
-		l.SetIsPointLight(isPointLight);
 		auto col = glm::vec4(l.GetColour(),1.0f);
 		dbg.ColourEdit("Colour", col, false);
 		l.SetColour(col.r,col.g,col.b);
@@ -98,18 +95,30 @@ bool Graphics::Initialise()
 		auto ambient = l.GetAmbient();
 		dbg.DragFloat("Ambient", ambient, 0.001f, 0.0f, 1.0f);
 		l.SetAmbient(ambient);
-		auto radius = l.GetDistance();
-		dbg.DragFloat("Radius", radius, 0.1f, 0.0f, 3250.0f);
-		l.SetDistance(radius);
+		int typeIndex = static_cast<int>(l.GetLightType());
+		const char* types[] = { "Directional", "Point", "Spot" };
+		if (dbg.ComboBox("Type", types, 3, typeIndex))
+		{
+			l.SetType(static_cast<Light::Type>(typeIndex));
+		}
+		if (l.GetLightType() == Light::Type::Point)
+		{
+			auto radius = l.GetDistance();
+			dbg.DragFloat("Radius", radius, 0.1f, 0.0f, 3250.0f);
+			l.SetDistance(radius);
+		}
 		bool castShadow = l.CastsShadows();
 		dbg.Checkbox("Cast Shadows", &castShadow);
 		l.SetCastsShadows(castShadow);
-		float bias = l.GetShadowBias();
-		dbg.DragFloat("Shadow Bias", bias, 0.001f, 0.0f, 10.0f);
-		l.SetShadowBias(bias);
-		if (!l.IsPointLight() && l.GetShadowMap() != nullptr)
+		if (castShadow)
 		{
-			dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
+			float bias = l.GetShadowBias();
+			dbg.DragFloat("Shadow Bias", bias, 0.001f, 0.0f, 10.0f);
+			l.SetShadowBias(bias);
+			if (!l.IsPointLight() && l.GetShadowMap() != nullptr && !l.GetShadowMap()->IsCubemap())
+			{
+				dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
+			}
 		}
 	});
 
@@ -233,30 +242,18 @@ void Graphics::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
 		const auto bmin = part.m_boundsMin;
 		const auto bmax = part.m_boundsMax;
 		glm::vec4 v[] = {
-			{bmin.x,bmin.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmax.z,1.0f},
-			{bmax.x,bmin.y,bmax.z,1.0f},
-			{bmin.x,bmin.y,bmax.z,1.0f},
-			{bmin.x,bmin.y,bmax.z,1.0f},
-			{bmin.x,bmin.y,bmin.z,1.0f},
-			{bmin.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmax.y,bmax.z,1.0f},
-			{bmax.x,bmax.y,bmax.z,1.0f},
-			{bmin.x,bmax.y,bmax.z,1.0f},
-			{bmin.x,bmax.y,bmax.z,1.0f},
-			{bmin.x,bmax.y,bmin.z,1.0f},
-			{bmin.x,bmin.y,bmin.z,1.0f},
-			{bmin.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmin.z,1.0f},
-			{bmax.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmax.z,1.0f},
-			{bmax.x,bmax.y,bmax.z,1.0f},
-			{bmin.x,bmin.y,bmax.z,1.0f},
-			{bmin.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmin.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmin.y,bmax.z,1.0f},
+			{bmax.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmin.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmin.y,bmin.z,1.0f},
+			{bmin.x,bmax.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmax.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmax.z,1.0f},
+			{bmax.x,bmax.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmax.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmin.z,1.0f},
+			{bmin.x,bmin.y,bmin.z,1.0f},	{bmin.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmax.z,1.0f},	{bmax.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmax.z,1.0f},
 		};
 		const glm::vec4 c[] = {
 			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
@@ -282,6 +279,53 @@ void Graphics::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
 	}
 }
 
+void Graphics::ProcessLight(Light& l, const Transform* transform)
+{
+	SDE_PROF_EVENT();
+	const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
+	const glm::vec4 posAndType = { position, static_cast<float>(l.GetLightType()) };
+	const glm::vec3 attenuation = l.GetAttenuation();
+	glm::vec3 direction = { 0.0f,-1.0f,0.0f };
+	if (!l.IsPointLight())
+	{
+		// direction is based on entity transform, default is (0,-1,0)
+		auto transformRot = glm::mat3(transform->GetMatrix());
+		direction = glm::normalize(transformRot * direction);
+	}
+	if (l.CastsShadows())
+	{
+		bool recreateShadowmap = l.GetShadowMap() == nullptr;
+		if (l.GetShadowMap())
+		{
+			recreateShadowmap = l.GetShadowMap()->IsCubemap() != l.IsPointLight();
+		}
+		if (recreateShadowmap)
+		{
+			auto& sm = l.GetShadowMap();
+			sm = std::make_unique<Render::FrameBuffer>(l.GetShadowmapSize());
+			if (l.IsPointLight())
+			{
+				sm->AddDepthCube();
+			}
+			else
+			{
+				sm->AddDepth();
+			}
+			if (!sm->Create())
+			{
+				SDE_LOG("Failed to create shadow depth buffer");
+			}
+		}
+		// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
+		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation, *l.GetShadowMap(), l.GetShadowBias());
+	}
+	else
+	{
+		l.GetShadowMap() = nullptr;	// this is a safe spot to destroy unused shadow maps
+		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation);
+	}
+};
+
 void Graphics::RenderEntities()
 {
 	SDE_PROF_EVENT();
@@ -295,42 +339,7 @@ void Graphics::RenderEntities()
 		world->ForEachComponent<Light>("Light", [this, &world, &transforms](Component& c, EntityHandle owner) {
 			auto& light = static_cast<Light&>(c);
 			const Transform* transform = (Transform*)transforms->Find(owner);
-			const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
-			const glm::vec4 posAndType = { position, light.IsPointLight() ? 1.0f : 0.0f };
-			const glm::vec3 attenuation = light.GetAttenuation();
-			glm::vec3 direction = { 0.0f,-1.0f,0.0f };
-			if (!light.IsPointLight())
-			{
-				// direction is based on parent entity transform, default is (0,-1,0)
-				auto transformRot = glm::mat3(transform->GetMatrix());
-				direction = glm::normalize(transformRot * direction);
-			}
-			if (light.CastsShadows())	
-			{
-				if (!light.GetShadowMap())
-				{
-					auto& sm = light.GetShadowMap();
-					sm = std::make_unique<Render::FrameBuffer>(light.GetShadowmapSize());
-					if (light.IsPointLight())
-					{
-						sm->AddDepthCube();
-					}
-					else
-					{
-						sm->AddDepth();
-					}
-					if (!sm->Create())
-					{
-						SDE_LOG("Failed to create shadow depth buffer");
-					}
-				}
-				// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
-				m_renderer->SetLight(posAndType, direction, light.GetColour() * light.GetBrightness(), light.GetAmbient(), attenuation, *light.GetShadowMap(), light.GetShadowBias());
-			}
-			else
-			{
-				m_renderer->SetLight(posAndType, direction, light.GetColour() * light.GetBrightness(), light.GetAmbient(), attenuation);
-			}
+			ProcessLight(light, transform);
 		});
 	}
 

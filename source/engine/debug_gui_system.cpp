@@ -144,6 +144,11 @@ namespace Engine
 		ImGui::End();
 	}
 
+	bool DebugGuiSystem::ComboBox(const char* label, const char* items[], int itemCount, int& currentItem)
+	{
+		return ImGui::Combo(label, &currentItem, items, itemCount);
+	}
+
 	bool DebugGuiSystem::DragFloat(const char* label, float& f, float step, float min, float max)
 	{
 		return ImGui::DragFloat(label, &f, step, min, max);

@@ -34,8 +34,8 @@ namespace Engine
 		void SetCamera(const Render::Camera& c);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader);
-		void SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
-		void SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float shadowBias);
+		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
+		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float shadowBias);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 
