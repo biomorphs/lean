@@ -1,22 +1,23 @@
 EntityTest = {}
 
+local CubeModel = Graphics.LoadModel("cube.fbx")
 local SphereModel = Graphics.LoadModel("sphere_low.fbx")
 local SponzaModel = Graphics.LoadModel("sponza.obj")
 local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs")
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 12
+local InstancingTestCount = 8
 local LightColours = {
-	{2.0,0.0,0.0},
-	{0.0,2.0,0.0},
-	{0.0,0.0,2.0},
-	{2.0,0.0,2.0},
-	{2.0,2.0,0.0},
-	{0.0,2.0,2.0},
+	{1.0,0.0,0.0},
+	{0.0,1.0,0.0},
+	{0.0,0.0,1.0},
+	{1.0,0.0,1.0},
+	{1.0,1.0,0.0},
+	{0.0,1.0,1.0},
 }
 local LightColourIndex = math.random(0,#LightColours)
-local lightBoxMin = {-284,2,-125}
+local lightBoxMin = {-284,4,-125}
 local lightBoxMax = {256,64,113}
 local lightGravity = -4096.0
 local lightBounceMul = 0.5
@@ -28,18 +29,20 @@ local bouncyLights = {}		-- array of {entityHandle, velocity{xyz}}
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(300,600,-40)
-	transform:SetScale(16,16,16)
+	transform:SetPosition(-54,500,0)
+	transform:SetRotation(0,7,15)
+	transform:SetScale(4,16,4)
 	
 	local light = World.AddComponent_Light(newEntity)
 	light:SetIsPointLight(false);
-	light:SetColour(0.96, 0.95, 0.9)
-	light:SetAmbient(0.04)
+	light:SetColour(0.96, 0.94, 0.9)
+	light:SetAmbient(0.15)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
+	light:SetShadowBias(0.002)
 
 	local newModel = World.AddComponent_Model(newEntity)
-	newModel:SetModel(SphereModel)
+	newModel:SetModel(CubeModel)
 	newModel:SetShader(BasicShader)
 end
 
@@ -60,6 +63,8 @@ function MakeLightEntity()
 	light:SetDistance(math.random(64,64))
 	light:SetShadowmapSize(256,256)
 	light:SetCastsShadows(true)
+	light:SetShadowBias(0.5)
+	light:SetBrightness(math.random(2,4))
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -92,7 +97,7 @@ function EntityTest.Init()
 	for x=0,InstancingTestCount do
 		for y=0,InstancingTestCount do
 			for z=0,InstancingTestCount do
-				MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 6,1,SphereModel,DiffuseShader)
+				MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 8,1,SphereModel,DiffuseShader)
 			end
 		end		
 	end

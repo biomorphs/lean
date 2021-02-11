@@ -34,8 +34,8 @@ namespace Engine
 		void SetCamera(const Render::Camera& c);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader);
-		void SetLight(glm::vec4 positionOrDir, glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
-		void SetLight(glm::vec4 positionOrDir, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm);
+		void SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
+		void SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float shadowBias);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 
@@ -50,8 +50,6 @@ namespace Engine
 		};
 		const FrameStats& GetStats() const { return m_frameStats; }
 		float& GetExposure() { return m_hdrExposure; }
-		float& GetShadowBias() { return m_shadowBias; }
-		float& GetCubeShadowBias() { return m_cubeShadowBias; }
 	private:
 		struct InstanceList
 		{
@@ -80,8 +78,6 @@ namespace Engine
 		InstanceList m_allShadowCasterInstances;
 		InstanceList m_visibleShadowInstances;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
-		float m_shadowBias = 0.002f;
-		float m_cubeShadowBias = 0.5f;
 		ShadowShaders m_shadowShaders;	// map of lighting shader handle index -> shadow shader
 		ShaderManager* m_shaders;
 		TextureManager* m_textures;

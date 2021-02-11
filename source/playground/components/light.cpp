@@ -4,10 +4,12 @@
 COMPONENT_BEGIN(Light,
 	"SetIsPointLight", &Light::SetIsPointLight,
 	"SetColour", &Light::SetColour,
+	"SetBrightness", &Light::SetBrightness,
 	"SetDistance", &Light::SetDistance,
 	"SetAmbient", &Light::SetAmbient,
 	"SetCastsShadows", &Light::SetCastsShadows,
-	"SetShadowmapSize", &Light::SetShadowmapSize
+	"SetShadowmapSize", &Light::SetShadowmapSize,
+	"SetShadowBias", &Light::SetShadowBias
 )
 COMPONENT_END()
 

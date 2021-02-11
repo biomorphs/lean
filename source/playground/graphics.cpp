@@ -77,7 +77,7 @@ bool Graphics::Initialise()
 			t.SetPosition(p.x,p.y,p.z);
 		auto s = t.GetScale();
 		auto angleDegrees = glm::degrees(t.GetRotationRadians());
-		dbg.DragVector("Rotation", angleDegrees, 0.1f, 0.0f, 360.0f);
+		dbg.DragVector("Rotation", angleDegrees, 0.1f, -360.0f, 360.0f);
 		t.SetRotationDegrees(angleDegrees);
 		dbg.DragVector("Scale", s, 0.05f, 0.0f);
 		t.SetScale(s.x,s.y,s.z);
@@ -92,6 +92,9 @@ bool Graphics::Initialise()
 		auto col = glm::vec4(l.GetColour(),1.0f);
 		dbg.ColourEdit("Colour", col, false);
 		l.SetColour(col.r,col.g,col.b);
+		auto brightness = l.GetBrightness();
+		dbg.DragFloat("Brightness", brightness, 0.001f, 0.0f, 10000.0f);
+		l.SetBrightness(brightness);
 		auto ambient = l.GetAmbient();
 		dbg.DragFloat("Ambient", ambient, 0.001f, 0.0f, 1.0f);
 		l.SetAmbient(ambient);
@@ -101,6 +104,13 @@ bool Graphics::Initialise()
 		bool castShadow = l.CastsShadows();
 		dbg.Checkbox("Cast Shadows", &castShadow);
 		l.SetCastsShadows(castShadow);
+		float bias = l.GetShadowBias();
+		dbg.DragFloat("Shadow Bias", bias, 0.001f, 0.0f, 10.0f);
+		l.SetShadowBias(bias);
+		if (!l.IsPointLight() && l.GetShadowMap() != nullptr)
+		{
+			dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
+		}
 	});
 
 	m_entitySystem->RegisterComponentType<Model>("Model");
@@ -159,10 +169,10 @@ bool Graphics::Initialise()
 		m_renderer->SubmitInstance(transform, glm::vec4(r,g,b,a), h, sh);
 	};
 	graphics["PointLight"] = [this](float px, float py, float pz, float r, float g, float b, float ambient, float attenConst, float attenLinear, float attenQuad) {
-		m_renderer->SetLight(glm::vec4(px, py, pz,1.0f), glm::vec3(r, g, b), ambient, { attenConst , attenLinear , attenQuad });
+		m_renderer->SetLight(glm::vec4(px, py, pz,1.0f), glm::vec3(0.0f), glm::vec3(r, g, b), ambient, { attenConst , attenLinear , attenQuad });
 	};
 	graphics["DirectionalLight"] = [this](float dx, float dy, float dz, float r, float g, float b, float ambient) {
-		m_renderer->SetLight(glm::vec4(dx, dy, dz, 0.0f), glm::vec3(r, g, b), ambient, { 0.0f,0.0f,0.0f });
+		m_renderer->SetLight(glm::vec4(0.0f), { dx,dy,dz }, glm::vec3(r, g, b), ambient, { 0.0f,0.0f,0.0f });
 	};
 	graphics["DebugDrawAxis"] = [this](float px, float py, float pz, float size) {
 		m_debugRender->AddAxisAtPoint({ px,py,pz,1.0f }, size);
@@ -288,6 +298,13 @@ void Graphics::RenderEntities()
 			const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
 			const glm::vec4 posAndType = { position, light.IsPointLight() ? 1.0f : 0.0f };
 			const glm::vec3 attenuation = light.GetAttenuation();
+			glm::vec3 direction = { 0.0f,-1.0f,0.0f };
+			if (!light.IsPointLight())
+			{
+				// direction is based on parent entity transform, default is (0,-1,0)
+				auto transformRot = glm::mat3(transform->GetMatrix());
+				direction = glm::normalize(transformRot * direction);
+			}
 			if (light.CastsShadows())	
 			{
 				if (!light.GetShadowMap())
@@ -308,11 +325,11 @@ void Graphics::RenderEntities()
 					}
 				}
 				// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
-				m_renderer->SetLight(posAndType, light.GetColour(), light.GetAmbient(), attenuation, *light.GetShadowMap());
+				m_renderer->SetLight(posAndType, direction, light.GetColour() * light.GetBrightness(), light.GetAmbient(), attenuation, *light.GetShadowMap(), light.GetShadowBias());
 			}
 			else
 			{
-				m_renderer->SetLight(posAndType, light.GetColour(), light.GetAmbient(), attenuation);
+				m_renderer->SetLight(posAndType, direction, light.GetColour() * light.GetBrightness(), light.GetAmbient(), attenuation);
 			}
 		});
 	}
@@ -429,8 +446,6 @@ bool Graphics::Tick()
 	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
 	m_debugGui->Checkbox("Draw Bounds", &m_showBounds);
 	m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f);
-	m_debugGui->DragFloat("Shadow Bias", m_renderer->GetShadowBias(), 0.00001f, 0.0000001f, 1.0f);
-	m_debugGui->DragFloat("Cube Shadow Bias", m_renderer->GetCubeShadowBias(), 0.1f, 0.1f, 5.0f);
 	m_debugGui->EndWindow();
 
 	// Process loaded data on main thread

@@ -19,7 +19,7 @@ uniform sampler2D SpecularTexture;
 uniform sampler2D ShadowMaps[16];
 uniform samplerCube ShadowCubeMaps[16];
 
-float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform)
+float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform, float bias)
 {
 	vec4 positionLightSpace = lightSpaceTransform * vec4(vs_out_position,1.0); 
 	
@@ -44,14 +44,14 @@ float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform)
 		for(int y = -1; y <= 1; ++y)
 		{
 			float pcfDepth = texture(ShadowMaps[int(shadowIndex)], projCoords.xy + vec2(x, y) * texelSize).r; 
-			shadow += currentDepth - ShadowBias > pcfDepth ? 1.0 : 0.0;        
+			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
 		}    
 	}
 	shadow /= 9.0;
 	return shadow;
 }
 
-float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition, float cubeDepthFarPlane, float shadowIndex)
+float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition, float cubeDepthFarPlane, float shadowIndex, float bias)
 {
 	vec3 fragToLight = pixelWorldSpace - lightPosition;  
 	vec3 sampleOffsetDirections[20] = vec3[]
@@ -63,11 +63,11 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
 	);   
 	
-	float bias = max(0.004 * (1.0 - dot(normal, normalize(fragToLight))), CubeShadowBias);  
+	//float bias = max(0.004 * (1.0 - dot(normal, normalize(fragToLight))), CubeShadowBias);  
 
 	// scale bias based on distance to light (munge factor)
-	float distanceToLight = length(fragToLight);
-	bias = min(bias * max(distanceToLight * 0.1, 0.0),2.5);
+	//float distanceToLight = length(fragToLight);
+	//bias = min(bias * max(distanceToLight * 0.1, 0.0),2.5);
 
 	// pcf
 	float shadow = 0.0;
@@ -109,10 +109,10 @@ void main()
 		if(Lights[i].Position.w == 0.0)		// directional light
 		{
 			attenuation = 1.0;
-			lightDir = normalize(Lights[i].Position.xyz);
+			lightDir = normalize(-Lights[i].Direction);
 			if(Lights[i].ShadowParams.x != 0.0)
 			{
-				shadow = CalculateShadows(finalNormal, Lights[i].ShadowParams.z, Lights[i].LightspaceTransform);
+				shadow = CalculateShadows(finalNormal, Lights[i].ShadowParams.z, Lights[i].LightspaceTransform, Lights[i].ShadowParams.w);
 			}
 		}
 		else	// point light
@@ -126,7 +126,7 @@ void main()
 			{
 				if(Lights[i].ShadowParams.x != 0.0)
 				{
-					shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
+					shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z, Lights[i].ShadowParams.w);
 				}
 			}
 		}

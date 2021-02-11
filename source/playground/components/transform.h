@@ -8,6 +8,7 @@ class Transform : public Component
 public:
 	COMPONENT(Transform);
 
+	void SetRotation(float x, float y, float z) { SetRotationDegrees({ x,y,z }); };
 	void SetRotationDegrees(glm::vec3 rotation) { m_rotation = glm::radians(rotation); }
 	void SetPosition(float x, float y, float z) { m_position = { x, y, z }; }
 	void SetScale(float x, float y, float z) { m_scale = { x, y, z }; }

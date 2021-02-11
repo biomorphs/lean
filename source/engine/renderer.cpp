@@ -25,8 +25,9 @@ namespace Engine
 	{
 		glm::vec4 m_colourAndAmbient;	// rgb=colour, a=ambient multiplier
 		glm::vec4 m_position;
-		glm::vec3 m_attenuation;		// const, linear, quad
-		glm::vec3 m_shadowParams;		// enabled, far plane, index?
+		glm::vec3 m_direction;			// w = spotlight angle or pointlight radius used for attenuation	
+		glm::vec3 m_attenuation;		// todo - delete
+		glm::vec4 m_shadowParams;		// enabled, far plane, index, bias
 		glm::mat4 m_lightSpaceMatrix;	// for shadow calculations
 	};
 
@@ -37,8 +38,6 @@ namespace Engine
 		LightInfo m_lights[c_maxLights];
 		int m_lightCount;
 		float m_hdrExposure;
-		float m_shadowBias;
-		float m_cubeShadowBias;
 	};
 
 	std::map<std::string, TextureHandle> g_defaultTextures;
@@ -187,11 +186,12 @@ namespace Engine
 		if (l.m_position.w == 0.0f)
 		{
 			// todo - parameterise
-			static float c_nearPlane = 1.0f;
-			static float c_farPlane = 1000.0f;
+			static float c_nearPlane = 0.1f;
+			static float c_farPlane = 600.0f;
 			static float c_orthoDims = 400.0f;
+			const glm::vec3 up = l.m_direction.y == -1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
 			glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, c_farPlane);
-			glm::mat4 lightView = glm::lookAt(glm::vec3(l.m_position), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 lightView = glm::lookAt(glm::vec3(l.m_position), glm::vec3(l.m_position) + l.m_direction, up);
 			return lightProjection * lightView;
 		}
 		else
@@ -205,22 +205,25 @@ namespace Engine
 		}
 	}
 
-	void Renderer::SetLight(glm::vec4 positionOrDir, glm::vec3 colour, float ambientStr, glm::vec3 attenuation,	Render::FrameBuffer& sm)
+	void Renderer::SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation,	Render::FrameBuffer& sm, float bias)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
 		newLight.m_position = positionOrDir;
+		newLight.m_direction = direction;
 		newLight.m_attenuation = attenuation;
 		newLight.m_shadowMap = &sm;
 		newLight.m_lightspaceMatrix = GetLightspaceTransform(newLight);
+		newLight.m_shadowBias = bias;
 		m_lights.push_back(newLight);
 	}
 
-	void Renderer::SetLight(glm::vec4 positionOrDir, glm::vec3 colour, float ambientStr, glm::vec3 attenuation)
+	void Renderer::SetLight(glm::vec4 positionOrDir, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
 		newLight.m_position = positionOrDir;
+		newLight.m_direction = direction;
 		newLight.m_attenuation = attenuation;
 		m_lights.push_back(newLight);
 	}
@@ -263,6 +266,7 @@ namespace Engine
 		{
 			globals.m_lights[l].m_colourAndAmbient = m_lights[l].m_colour;
 			globals.m_lights[l].m_position = m_lights[l].m_position;
+			globals.m_lights[l].m_direction = m_lights[l].m_direction;
 			globals.m_lights[l].m_attenuation = m_lights[l].m_attenuation;
 			bool hasShadowMap = m_lights[l].m_position.w == 0.0f ? shadowMapIndex < c_maxShadowMaps : cubeShadowMapIndex < c_maxShadowMaps;
 			if (m_lights[l].m_shadowMap)
@@ -279,18 +283,17 @@ namespace Engine
 					smIndex = cubeShadowMapIndex++;
 				}
 				globals.m_lights[l].m_shadowParams.z = smIndex;
+				globals.m_lights[l].m_shadowParams.w = m_lights[l].m_shadowBias;
 				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
 			}
 			else
 			{
-				globals.m_lights[l].m_shadowParams = { 0.0f,0.0f,0.0f };
+				globals.m_lights[l].m_shadowParams = { 0.0f,0.0f,0.0f,0.0f };
 			}
 		}
 		globals.m_lightCount = static_cast<int>(std::min(m_lights.size(), c_maxLights));
 		globals.m_cameraPosition = glm::vec4(m_camera.Position(), 0.0);
 		globals.m_hdrExposure = m_hdrExposure;
-		globals.m_shadowBias = m_shadowBias;
-		globals.m_cubeShadowBias = m_cubeShadowBias;
 		m_globalsUniformBuffer.SetData(0, sizeof(globals), &globals);
 	}
 
@@ -458,7 +461,8 @@ namespace Engine
 		auto viewMat = glm::lookAt(m_camera.Position(), m_camera.Target(), m_camera.Up());
 		UpdateGlobals(projectionMat, viewMat);
 
-		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
+		static int s_maxPerFrame = 16;
+		for (int l = 0; l < m_lights.size() && l < c_maxLights && l < s_maxPerFrame; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
