@@ -50,6 +50,7 @@ namespace Engine
 		};
 		const FrameStats& GetStats() const { return m_frameStats; }
 		float& GetExposure() { return m_hdrExposure; }
+		bool& GetCullingEnabled() { return m_cullingEnabled; }
 	private:
 		struct InstanceList
 		{
@@ -79,6 +80,7 @@ namespace Engine
 		Render::RenderBuffer m_transforms;	// global instance transforms
 		Render::RenderBuffer m_colours;		// global instance colours
 		int m_nextInstance = 0;				// index into buffers above
+		bool m_cullingEnabled = true;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		ShadowShaders m_shadowShaders;	// map of lighting shader handle index -> shadow shader
 		ShaderManager* m_shaders;

@@ -420,6 +420,7 @@ bool Graphics::Tick()
 	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
 	m_debugGui->Checkbox("Draw Bounds", &m_showBounds);
 	m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f);
+	m_debugGui->Checkbox("Culling Enabled", &m_renderer->GetCullingEnabled());
 	m_debugGui->EndWindow();
 
 	// Process loaded data on main thread

@@ -554,7 +554,7 @@ namespace Engine
 			visibleInstances.m_instances.reserve(m_allShadowCasterInstances.m_instances.size() >> 1);
 			for (const auto& it : m_allShadowCasterInstances.m_instances)
 			{
-				if (viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				if (!m_cullingEnabled || viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
 				{
 					visibleInstances.m_instances.push_back(it);
 				}
@@ -599,7 +599,7 @@ namespace Engine
 			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
 			for (const auto& it : list.m_instances)
 			{
-				if (viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				if (!m_cullingEnabled || viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
 				{
 					visibleInstances.m_instances.push_back(it);
 				}
@@ -653,7 +653,7 @@ namespace Engine
 			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
 			for (const auto& it : list.m_instances)
 			{
-				if (viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				if (!m_cullingEnabled || viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
 				{
 					visibleInstances.m_instances.push_back(it);
 				}

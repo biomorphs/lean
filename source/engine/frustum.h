@@ -13,7 +13,7 @@ namespace Engine
 		Frustum(glm::mat4 m);
 
 		// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
-		bool IsBoxVisible(const glm::vec3& minp, const glm::vec3& maxp) const;
+		bool IsBoxVisible(const glm::vec3 minp, const glm::vec3 maxp) const;
 
 		glm::vec3* GetPoints() { return m_points; }
 		const glm::vec3* GetPoints() const { return m_points; }
@@ -84,7 +84,7 @@ namespace Engine
 	}
 
 	// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
-	inline bool Frustum::IsBoxVisible(const glm::vec3& minp, const glm::vec3& maxp) const
+	inline bool Frustum::IsBoxVisible(const glm::vec3 minp, const glm::vec3 maxp) const
 	{
 		// check box outside/inside of frustum
 		for (int i = 0; i < Count; i++)
