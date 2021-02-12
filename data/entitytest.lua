@@ -7,7 +7,7 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 4
+local InstancingTestCount = 10
 local LightColours = {
 	{1.0,0.0,0.0},
 	{0.0,1.0,0.0},
@@ -63,7 +63,7 @@ function MakeLightEntity()
 	light:SetDistance(math.random(64,64))
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(256,256)
-	light:SetShadowBias(1.0)
+	light:SetShadowBias(1.2)
 	light:SetBrightness(math.random(2,4))
 	
 	local newModel = World.AddComponent_Model(newEntity)

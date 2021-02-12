@@ -7,6 +7,7 @@
 #include "render/device.h"
 #include "render/mesh.h"
 #include "render/material.h"
+#include "frustum.h"
 #include "mesh_instance.h"
 #include "model_manager.h"
 #include "shader_manager.h"
@@ -55,6 +56,10 @@ namespace Engine
 		m_blitShader = m_shaders->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
+
+			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
+			m_colours.Create(c_maxInstances * sizeof(glm::vec4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
+
 			CreateInstanceList(m_opaqueInstances, c_maxInstances);
 			CreateInstanceList(m_transparentInstances, c_maxInstances);
 			CreateInstanceList(m_allShadowCasterInstances, c_maxInstances);
@@ -81,8 +86,6 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		newlist.m_instances.reserve(maxInstances);
-		newlist.m_transforms.Create(maxInstances * sizeof(glm::mat4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
-		newlist.m_colours.Create(maxInstances * sizeof(glm::vec4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
 	}
 
 	void Renderer::Reset() 
@@ -91,6 +94,7 @@ namespace Engine
 		m_transparentInstances.m_instances.clear();
 		m_allShadowCasterInstances.m_instances.clear();
 		m_lights.clear();
+		m_nextInstance = 0;
 	}
 
 	void Renderer::SetCamera(const Render::Camera& c)
@@ -115,11 +119,19 @@ namespace Engine
 		return false;
 	}
 
+	void Renderer::SubmitInstance(InstanceList& list, glm::vec3 cam, glm::mat4 trns, glm::vec4 col, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 aabbMin, glm::vec3 aabbMax)
+	{
+		float distanceToCamera = glm::length(glm::vec3(trns[3]) - cam);
+		const auto foundShader = m_shaders->GetShader(shader);
+		list.m_instances.push_back({ trns, col, aabbMin, aabbMax, foundShader, &mesh, distanceToCamera });
+	}
+
 	void Renderer::SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader)
 	{
-		float distanceToCamera = glm::length(glm::vec3(transform[3]) - cameraPos);
-		const auto foundShader = m_shaders->GetShader(shader);
-		list.m_instances.push_back({ transform, colour, foundShader, &mesh, distanceToCamera });
+		// objects submitted with no bounds have infinite aabb
+		const auto boundsMin = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		const auto boundsMax = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+		SubmitInstance(list, cameraPos, transform, colour, mesh, shader, boundsMin, boundsMax);
 	}
 
 	void Renderer::SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader)
@@ -143,6 +155,30 @@ namespace Engine
 		SubmitInstance(instances, m_camera.Position(), transform, colour, mesh, shader);
 	}
 
+	void MakeAABBFromBounds(glm::vec3 oobbMin, glm::vec3 oobbMax, glm::mat4 transform, glm::vec3& aabbMin, glm::vec3& aabbMax)
+	{
+		glm::vec4 v[] = {
+			{oobbMin.x,oobbMin.y,oobbMin.z,1.0f},	
+			{oobbMax.x,oobbMin.y,oobbMin.z,1.0f},
+			{oobbMax.x,oobbMin.y,oobbMax.z,1.0f},
+			{oobbMin.x,oobbMin.y,oobbMax.z,1.0f},
+			{oobbMin.x,oobbMax.y,oobbMin.z,1.0f},	
+			{oobbMax.x,oobbMax.y,oobbMin.z,1.0f},
+			{oobbMax.x,oobbMax.y,oobbMax.z,1.0f},
+			{oobbMin.x,oobbMax.y,oobbMax.z,1.0f},
+		};
+		glm::vec4 bMin = { FLT_MAX,FLT_MAX ,FLT_MAX, 1.0f };
+		glm::vec4 bMax = { -FLT_MAX,-FLT_MAX ,-FLT_MAX, 1.0f };
+		for (auto& vert : v)
+		{
+			vert = transform * vert;
+			bMin = glm::min(vert, bMin);
+			bMax = glm::max(vert, bMax);
+		}
+		aabbMin = glm::vec3(bMin);
+		aabbMax = glm::vec3(bMax);
+	}
+
 	void Renderer::SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader)
 	{
 		const auto theModel = m_models->GetModel(model);
@@ -164,9 +200,13 @@ namespace Engine
 			uint16_t meshPartIndex = 0;
 			for (const auto& part : theModel->Parts())
 			{
+				const glm::mat4 instanceTransform = transform * part.m_transform;
+				glm::vec3 boundsMin, boundsMax;
+				MakeAABBFromBounds(part.m_boundsMin, part.m_boundsMax, instanceTransform, boundsMin, boundsMax);
+
 				if (shadowShader.m_index != -1)
 				{
-					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, *part.m_mesh, shadowShader);
+					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, *part.m_mesh, shadowShader, boundsMin, boundsMax);
 				}
 
 				bool isTransparent = colour.a != 1.0f;
@@ -175,8 +215,8 @@ namespace Engine
 					isTransparent = IsMeshTransparent(*part.m_mesh, *m_textures);
 				}
 				InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-				const glm::mat4 instanceTransform = transform * part.m_transform;
-				SubmitInstance(instances, m_camera.Position(), instanceTransform, colour, *part.m_mesh, shader);
+				
+				SubmitInstance(instances, m_camera.Position(), instanceTransform, colour, *part.m_mesh, shader, boundsMin, boundsMax);
 			}
 		}
 	}
@@ -200,7 +240,7 @@ namespace Engine
 			auto lightPos = glm::vec3(l.m_position);
 			float aspect = l.m_shadowMap->Dimensions().x / (float)l.m_shadowMap->Dimensions().y;
 			float near = 0.1f;
-			float far = 500.0f;
+			float far = 300.0f;
 			return glm::perspective(glm::radians(90.0f), aspect, near, far);
 		}
 	}
@@ -228,7 +268,7 @@ namespace Engine
 		m_lights.push_back(newLight);
 	}
 
-	void Renderer::PopulateInstanceBuffers(InstanceList& list)
+	int Renderer::PopulateInstanceBuffers(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
 
@@ -239,7 +279,6 @@ namespace Engine
 		static std::vector<glm::vec4> instanceColours;
 		instanceColours.reserve(list.m_instances.size());
 		instanceColours.clear();
-
 		for (const auto& c : list.m_instances)
 		{
 			instanceTransforms.push_back(c.m_transform);
@@ -247,11 +286,15 @@ namespace Engine
 		}
 
 		// copy the instance buffers to gpu
-		if (list.m_instances.size() > 0)
+		int instanceIndex = -1;
+		if (list.m_instances.size() > 0 && m_nextInstance + list.m_instances.size() < c_maxInstances)
 		{
-			list.m_transforms.SetData(0, instanceTransforms.size() * sizeof(glm::mat4), instanceTransforms.data());
-			list.m_colours.SetData(0, instanceColours.size() * sizeof(glm::vec4), instanceColours.data());
+			m_transforms.SetData(m_nextInstance * sizeof(glm::mat4), instanceTransforms.size() * sizeof(glm::mat4), instanceTransforms.data());
+			m_colours.SetData(m_nextInstance * sizeof(glm::vec4), instanceColours.size() * sizeof(glm::vec4), instanceColours.data());
+			instanceIndex = m_nextInstance;
+			m_nextInstance += list.m_instances.size();
 		}
+		return instanceIndex;
 	}
 
 	void Renderer::UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat)
@@ -330,8 +373,10 @@ namespace Engine
 		return textureUnit;
 	}
 
-	void Renderer::DrawInstances(Render::Device& d, const InstanceList& list, bool bindShadowmaps, Render::UniformBuffer* uniforms)
+	void Renderer::DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps, Render::UniformBuffer* uniforms)
 	{
+		// populate the global instance buffers
+
 		SDE_PROF_EVENT();
 		auto firstInstance = list.m_instances.begin();
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
@@ -374,17 +419,17 @@ namespace Engine
 				m_frameStats.m_vertexArrayBinds++;
 				int instancingSlotIndex = theMesh->GetVertexArray().GetStreamCount();
 				d.BindVertexArray(theMesh->GetVertexArray());
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_transforms, instancingSlotIndex++, 4, 0, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_transforms, instancingSlotIndex++, 4, sizeof(float) * 4, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_transforms, instancingSlotIndex++, 4, sizeof(float) * 8, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_transforms, instancingSlotIndex++, 4, sizeof(float) * 12, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), list.m_colours, instancingSlotIndex++, 4, 0);
+				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, 0, 4);
+				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 4, 4);
+				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 8, 4);
+				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 12, 4);
+				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_colours, instancingSlotIndex++, 4, 0);
 
 				// draw the chunks
 				for (const auto& chunk : theMesh->GetChunks())
 				{
 					uint32_t firstIndex = (uint32_t)(firstInstance - list.m_instances.begin());
-					d.DrawPrimitivesInstanced(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount, instanceCount, firstIndex);
+					d.DrawPrimitivesInstanced(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount, instanceCount, firstIndex + baseIndex);
 					m_frameStats.m_drawCalls++;
 					m_frameStats.m_totalVertices += (uint64_t)chunk.m_vertexCount * instanceCount;
 				}
@@ -399,8 +444,7 @@ namespace Engine
 
 		if (l.m_position.w == 0.0f)		// directional
 		{
-			PrepareShadowInstances(l.m_lightspaceMatrix, m_visibleShadowInstances);
-
+			int baseIndex = PrepareShadowInstances(l.m_lightspaceMatrix, m_visibleShadowInstances);
 			Render::UniformBuffer lightMatUniforms;
 			lightMatUniforms.SetValue("ShadowLightSpaceMatrix", l.m_lightspaceMatrix);
 			lightMatUniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
@@ -410,7 +454,7 @@ namespace Engine
 			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 			d.SetBlending(false);
 			d.SetScissorEnabled(false);
-			DrawInstances(d, m_visibleShadowInstances, false, &lightMatUniforms);
+			DrawInstances(d, m_visibleShadowInstances, baseIndex, false, &lightMatUniforms);
 		}
 		else
 		{
@@ -428,7 +472,7 @@ namespace Engine
 			};
 			for (uint32_t cubeFace = 0; cubeFace < 6; ++cubeFace)
 			{
-				PrepareShadowInstances(shadowTransforms[cubeFace], m_visibleShadowInstances);
+				int baseIndex = PrepareShadowInstances(shadowTransforms[cubeFace], m_visibleShadowInstances);
 				d.DrawToFramebuffer(*l.m_shadowMap, cubeFace);
 				d.ClearFramebufferDepth(*l.m_shadowMap, FLT_MAX);
 				d.SetViewport(glm::ivec2(0, 0), l.m_shadowMap->Dimensions());
@@ -437,7 +481,7 @@ namespace Engine
 				d.SetScissorEnabled(false);	
 				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
 				uniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
-				DrawInstances(d, m_visibleShadowInstances, false, &uniforms);
+				DrawInstances(d, m_visibleShadowInstances, baseIndex, false, &uniforms);
 			}
 		}
 	}
@@ -457,8 +501,8 @@ namespace Engine
 		}
 
 		// setup global constants
-		auto projectionMat = glm::perspectiveFov(glm::radians(70.0f), (float)m_windowSize.x, (float)m_windowSize.y, 0.1f, 1000.0f);
-		auto viewMat = glm::lookAt(m_camera.Position(), m_camera.Target(), m_camera.Up());
+		auto projectionMat = m_camera.ProjectionMatrix();
+		auto viewMat = m_camera.ViewMatrix();
 		UpdateGlobals(projectionMat, viewMat);
 
 		static int s_maxPerFrame = 16;
@@ -477,17 +521,17 @@ namespace Engine
 			d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
 
 			// render opaques
-			PrepareOpaqueInstances(m_opaqueInstances);
+			int baseIndex = PrepareOpaqueInstances(m_opaqueInstances);
 			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 			d.SetBlending(false);				// no blending for opaques
 			d.SetScissorEnabled(false);			// (don't) scissor me timbers
-			DrawInstances(d, m_opaqueInstances, true);
+			DrawInstances(d, m_opaqueInstances, baseIndex, true);
 
 			// render transparents
-			PrepareTransparentInstances(m_transparentInstances);
+			baseIndex = PrepareTransparentInstances(m_transparentInstances);
 			d.SetDepthState(true, false);		// enable z-test, disable write
 			d.SetBlending(true);
-			DrawInstances(d, m_transparentInstances, true);
+			DrawInstances(d, m_transparentInstances, baseIndex, true);
 		}
 
 		// blit main buffer to backbuffer
@@ -500,16 +544,20 @@ namespace Engine
 		}
 	}
 
-	void Renderer::PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances)
+	int Renderer::PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances)
 	{
 		SDE_PROF_EVENT();
 		{
 			SDE_PROF_EVENT("FrustumCull");
+			Frustum viewFrustum(lightViewProj);
 			visibleInstances.m_instances.clear();
 			visibleInstances.m_instances.reserve(m_allShadowCasterInstances.m_instances.size() >> 1);
 			for (const auto& it : m_allShadowCasterInstances.m_instances)
 			{
-				visibleInstances.m_instances.push_back(it);
+				if (viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				{
+					visibleInstances.m_instances.push_back(it);
+				}
 			}
 		}
 		{
@@ -534,21 +582,27 @@ namespace Engine
 					return false;
 				}
 				return false;
-				});
+			});
 		}
-		PopulateInstanceBuffers(visibleInstances);
+		return PopulateInstanceBuffers(visibleInstances);
 	}
 
-	void Renderer::PrepareTransparentInstances(InstanceList& list)
+	int Renderer::PrepareTransparentInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
 		InstanceList visibleInstances;
 		{
 			SDE_PROF_EVENT("FrustumCull");
+			const auto projectionMat = m_camera.ProjectionMatrix();
+			const auto viewMat = m_camera.ViewMatrix();
+			Frustum viewFrustum(projectionMat * viewMat);
 			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
 			for (const auto& it : list.m_instances)
 			{
-				visibleInstances.m_instances.push_back(it);
+				if (viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				{
+					visibleInstances.m_instances.push_back(it);
+				}
 			}
 		}
 		{
@@ -581,26 +635,30 @@ namespace Engine
 					return false;
 				}
 				return false;
-				});
+			});
 		}
 		list.m_instances = std::move(visibleInstances.m_instances);
-		PopulateInstanceBuffers(list);
+		return PopulateInstanceBuffers(list);
 	}
 
-	void Renderer::PrepareOpaqueInstances(InstanceList& list)
+	int Renderer::PrepareOpaqueInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
 		InstanceList visibleInstances;
-
 		{
 			SDE_PROF_EVENT("FrustumCull");
+			const auto projectionMat = m_camera.ProjectionMatrix();
+			const auto viewMat = m_camera.ViewMatrix();
+			Frustum viewFrustum(projectionMat * viewMat);
 			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
 			for (const auto& it : list.m_instances)
 			{
-				visibleInstances.m_instances.push_back(it);
+				if (viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				{
+					visibleInstances.m_instances.push_back(it);
+				}
 			}
 		}
-
 		{
 			SDE_PROF_EVENT("Sort");
 			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
@@ -631,9 +689,9 @@ namespace Engine
 					return false;
 				}
 				return false;
-				});
+			});
 		}
 		list.m_instances = std::move(visibleInstances.m_instances);
-		PopulateInstanceBuffers(list);
+		return PopulateInstanceBuffers(list);
 	}
 }

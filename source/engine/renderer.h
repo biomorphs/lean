@@ -54,20 +54,19 @@ namespace Engine
 		struct InstanceList
 		{
 			std::vector<MeshInstance> m_instances;
-			Render::RenderBuffer m_transforms;
-			Render::RenderBuffer m_colours;
 		};
 		using ShadowShaders = std::unordered_map<uint32_t, ShaderHandle>;
 
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
 		void RenderShadowmap(Render::Device& d, Light& l);
 		void SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
+		void SubmitInstance(InstanceList& list, glm::vec3 cam, glm::mat4 trns, glm::vec4 col, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 aabbMin, glm::vec3 aabbMax);
 		void CreateInstanceList(InstanceList& newlist, uint32_t maxInstances);
-		void PrepareOpaqueInstances(InstanceList& list);
-		void PrepareTransparentInstances(InstanceList& list);
-		void PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
-		void PopulateInstanceBuffers(InstanceList& list);
-		void DrawInstances(Render::Device& d, const InstanceList& list, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
+		int PrepareOpaqueInstances(InstanceList& list);
+		int PrepareTransparentInstances(InstanceList& list);
+		int PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
+		int PopulateInstanceBuffers(InstanceList& list);	// returns offset to start of index data in global gpu buffers
+		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 
 		FrameStats m_frameStats;
@@ -77,6 +76,9 @@ namespace Engine
 		InstanceList m_transparentInstances;
 		InstanceList m_allShadowCasterInstances;
 		InstanceList m_visibleShadowInstances;
+		Render::RenderBuffer m_transforms;	// global instance transforms
+		Render::RenderBuffer m_colours;		// global instance colours
+		int m_nextInstance = 0;				// index into buffers above
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		ShadowShaders m_shadowShaders;	// map of lighting shader handle index -> shadow shader
 		ShaderManager* m_shaders;

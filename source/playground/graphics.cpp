@@ -241,41 +241,7 @@ void Graphics::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
 	{
 		const auto bmin = part.m_boundsMin;
 		const auto bmax = part.m_boundsMax;
-		glm::vec4 v[] = {
-			{bmin.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmin.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmin.y,bmax.z,1.0f},
-			{bmax.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmin.y,bmax.z,1.0f},
-			{bmin.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmin.y,bmin.z,1.0f},
-			{bmin.x,bmax.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmax.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmax.z,1.0f},
-			{bmax.x,bmax.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmax.z,1.0f},
-			{bmin.x,bmax.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmin.z,1.0f},
-			{bmin.x,bmin.y,bmin.z,1.0f},	{bmin.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmin.z,1.0f},
-			{bmax.x,bmin.y,bmax.z,1.0f},	{bmax.x,bmax.y,bmax.z,1.0f},
-			{bmin.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmax.z,1.0f},
-		};
-		const glm::vec4 c[] = {
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f},
-		};
-
-		for (auto& vert : v)
-		{
-			vert = transform * vert;
-		}
-
-		m_debugRender->AddLines(v, c, 12);
+		m_debugRender->DrawBox(bmin, bmax, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), transform);
 	}
 }
 
@@ -356,11 +322,6 @@ void Graphics::RenderEntities()
 		});
 	}
 
-	Render::Camera fakeCamera;
-	m_debugCamera->ApplyToCamera(fakeCamera);
-	Frustum debugCamFrustum(fakeCamera.ViewMatrix() * fakeCamera.ProjectionMatrix());
-	const auto& p = debugCamFrustum.GetPoints();
-
 	if(m_showBounds)
 	{
 		SDE_PROF_EVENT("ShowBounds");
@@ -406,6 +367,10 @@ bool Graphics::Tick()
 	}
 
 	Render::Camera c;
+	auto windowSize = m_renderSystem->GetWindow()->GetSize();
+	float aspect = (float)windowSize.x / (float)windowSize.y;
+	c.SetProjection(70.0f, aspect, 0.1f, 1000.0f);
+
 	if (g_useArcballCam)
 	{
 		if (!m_debugGui->IsCapturingMouse())

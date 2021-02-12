@@ -36,7 +36,7 @@ public:
 private:
 	void ProcessLight(class Light& l, const class Transform* transform);
 	void RenderEntities();
-	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform );
+	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform);
 	bool m_showBounds = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;

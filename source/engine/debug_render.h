@@ -22,6 +22,8 @@ namespace Engine
 		void AddLines(const glm::vec4* v, const glm::vec4* c, uint32_t count);
 		void AddAxisAtPoint(const glm::vec4& point, float scale = 1.0f);
 		void AddBox(glm::vec3 center, glm::vec3 dimensions, glm::vec4 colour);
+		void DrawFrustum(const class Frustum& f, glm::vec4 colour);
+		void DrawBox(glm::vec3 bmin, glm::vec3 bmax, glm::vec4 colour, glm::mat4 boxTransform = glm::identity<glm::mat4>());
 
 		void PushToRenderer(Renderer&);
 	private:

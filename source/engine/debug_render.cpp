@@ -1,5 +1,6 @@
 #include "debug_render.h"
 #include "renderer.h"
+#include "frustum.h"
 #include "render/render_buffer.h"
 #include "render/mesh.h"
 #include "core/log.h"
@@ -199,5 +200,78 @@ namespace Engine
 
 		// remove old lines
 		m_currentLines = 0;
+	}
+
+	void DebugRender::DrawBox(glm::vec3 bmin, glm::vec3 bmax, glm::vec4 colour, glm::mat4 boxTransform)
+	{
+		glm::vec4 v[] = {
+			{bmin.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmin.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmin.y,bmax.z,1.0f},
+			{bmax.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmin.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmin.y,bmin.z,1.0f},
+			{bmin.x,bmax.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmax.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmax.z,1.0f},
+			{bmax.x,bmax.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmax.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmin.z,1.0f},
+			{bmin.x,bmin.y,bmin.z,1.0f},	{bmin.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmin.z,1.0f},	{bmax.x,bmax.y,bmin.z,1.0f},
+			{bmax.x,bmin.y,bmax.z,1.0f},	{bmax.x,bmax.y,bmax.z,1.0f},
+			{bmin.x,bmin.y,bmax.z,1.0f},	{bmin.x,bmax.y,bmax.z,1.0f},
+		};
+
+		for (auto& vert : v)
+		{
+			vert = boxTransform * vert;
+		}
+
+		const glm::vec4 c[] = {
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+		};
+		AddLines(v, c, 12);
+	}
+
+	void DebugRender::DrawFrustum(const class Frustum& f, glm::vec4 colour)
+	{
+		const auto& p = f.GetPoints();
+		glm::vec4 v[] = {
+				{p[0],1.0f},	{p[1],1.0f},	// lbn,	ltn
+				{p[1],1.0f},	{p[3],1.0f},	// ltn, rtn
+				{p[3],1.0f},	{p[2],1.0f},	// rtn, rbn
+				{p[2],1.0f},	{p[0],1.0f},	// rbn, lbn
+				{p[0],1.0f},	{p[4],1.0f},	// lbn, lbf
+				{p[1],1.0f},	{p[5],1.0f},	// ltn, ltf
+				{p[2],1.0f},	{p[6],1.0f},	// rbn, rbf
+				{p[3],1.0f},	{p[7],1.0f},	// rtn, rtf
+				{p[4],1.0f},	{p[5],1.0f},	// lbf,	ltf
+				{p[5],1.0f},	{p[7],1.0f},	// ltf, rtf
+				{p[7],1.0f},	{p[6],1.0f},	// rtf, rbf
+				{p[6],1.0f},	{p[4],1.0f},	// rbf, lbf
+		};
+		const glm::vec4 c[] = {
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+			colour,colour,
+		};
+		AddLines(v, c, 24);
 	}
 }
