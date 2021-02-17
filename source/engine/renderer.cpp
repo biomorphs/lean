@@ -245,7 +245,7 @@ namespace Engine
 		}
 	}
 
-	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation,	Render::FrameBuffer& sm, float bias)
+	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float bias)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
@@ -506,11 +506,17 @@ namespace Engine
 		UpdateGlobals(projectionMat, viewMat);
 
 		static int s_maxPerFrame = 16;
-		for (int l = 0; l < m_lights.size() && l < c_maxLights && l < s_maxPerFrame; ++l)
+		static int s_nextUpdate = 0;
+		int updatesRemaining = s_maxPerFrame;
+		if (s_nextUpdate >= m_lights.size() || s_nextUpdate >= c_maxLights)
+			s_nextUpdate = 0;
+		for (int l = s_nextUpdate; l < m_lights.size() && l < c_maxLights && updatesRemaining > 0; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
 				RenderShadowmap(d, m_lights[l]);
+				--updatesRemaining;
+				s_nextUpdate = l + 1;
 			}
 		}
 

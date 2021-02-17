@@ -62,12 +62,6 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
 	   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
 	);   
-	
-	//float bias = max(0.004 * (1.0 - dot(normal, normalize(fragToLight))), CubeShadowBias);  
-
-	// scale bias based on distance to light (munge factor)
-	//float distanceToLight = length(fragToLight);
-	//bias = min(bias * max(distanceToLight * 0.1, 0.0),2.5);
 
 	// pcf
 	float shadow = 0.0;
@@ -122,12 +116,9 @@ void main()
 								(Lights[i].Attenuation[1] * lightDistance) + 
 								(Lights[i].Attenuation[2] * (lightDistance * lightDistance)));
 			lightDir = normalize(Lights[i].Position.xyz - vs_out_position);
-			if(attenuation > 0.001)		// won't hit zero?
+			if(attenuation > 0.001 && Lights[i].ShadowParams.x != 0.0)		// won't hit zero?
 			{
-				if(Lights[i].ShadowParams.x != 0.0)
-				{
-					shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z, Lights[i].ShadowParams.w);
-				}
+				shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z, Lights[i].ShadowParams.w);
 			}
 		}
 

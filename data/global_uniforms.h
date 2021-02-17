@@ -18,5 +18,3 @@ layout(std140, binding = 0) uniform Globals
 	int LightCount;
 	float HDRExposure;
 };
-
-uniform mat4 ShadowLightSpaceMatrix;

@@ -1,6 +1,7 @@
 #version 430
 #pragma sde include "shared.vs"
 
+uniform mat4 ShadowLightSpaceMatrix;
 out vec3 vs_out_position;
 out vec2 vs_out_uv;
 
