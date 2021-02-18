@@ -14,6 +14,31 @@ COMPONENT_BEGIN(Light,
 )
 COMPONENT_END()
 
+glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
+{
+	if (m_type == Type::Point)
+	{
+		// todo: parameterise
+		auto lightPos = glm::vec3(position);
+		float aspect = m_shadowMap->Dimensions().x / (float)m_shadowMap->Dimensions().y;
+		float near = 0.1f;
+		float far = m_distance * 4.0f;	// ??? todo, attenuation
+		m_shadowMatrix = glm::perspective(glm::radians(90.0f), aspect, near, far);	// return a 90 degree frustum used to render cubemap
+	}
+	else
+	{
+		// todo - parameterise
+		static float c_nearPlane = 0.1f;
+		static float c_farPlane = 1000.0f;
+		static float c_orthoDims = 400.0f;
+		const glm::vec3 up = direction.y == -1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, c_farPlane);
+		glm::mat4 lightView = glm::lookAt(glm::vec3(position), glm::vec3(position) + direction, up);
+		m_shadowMatrix = lightProjection * lightView;
+	}
+	return m_shadowMatrix;
+}
+
 void Light::SetType(Type newType)
 {
 	m_type = newType;

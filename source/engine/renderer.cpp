@@ -2,6 +2,7 @@
 #include "core/log.h"
 #include "core/profiler.h"
 #include "core/string_hashing.h"
+#include "core/thread.h"
 #include "render/shader_program.h"
 #include "render/shader_binary.h"
 #include "render/device.h"
@@ -13,16 +14,17 @@
 #include "shader_manager.h"
 #include "model.h"
 #include "material_helpers.h"
+#include "job_system.h"
 #include <algorithm>
 #include <map>
 
 namespace Engine
 {
-	const uint64_t c_maxInstances = 1024 * 128;
+	const uint64_t c_maxInstances = 1024 * 512;		// this needs to include all passes/shadowmap updates
 	const uint64_t c_maxLights = 64;
 	const uint32_t c_maxShadowMaps = 16;
 
-	struct LightInfo
+	struct LightInfo					// passed to shaders
 	{
 		glm::vec4 m_colourAndAmbient;	// rgb=colour, a=ambient multiplier
 		glm::vec4 m_position;
@@ -32,7 +34,7 @@ namespace Engine
 		glm::mat4 m_lightSpaceMatrix;	// for shadow calculations
 	};
 
-	struct GlobalUniforms
+	struct GlobalUniforms				// passed to shaders
 	{
 		glm::mat4 m_viewProjMat;
 		glm::vec4 m_cameraPosition;		// world-space
@@ -43,10 +45,11 @@ namespace Engine
 
 	std::map<std::string, TextureHandle> g_defaultTextures;
 
-	Renderer::Renderer(TextureManager* ta, ModelManager* mm, ShaderManager* sm, glm::ivec2 windowSize)
+	Renderer::Renderer(TextureManager* ta, ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize)
 		: m_textures(ta)
 		, m_models(mm)
 		, m_shaders(sm)
+		, m_jobSystem(js)
 		, m_windowSize(windowSize)
 		, m_mainFramebuffer(windowSize)
 	{
@@ -221,31 +224,7 @@ namespace Engine
 		}
 	}
 
-	glm::mat4 GetLightspaceTransform(const Light& l)
-	{
-		if (l.m_position.w == 0.0f)
-		{
-			// todo - parameterise
-			static float c_nearPlane = 0.1f;
-			static float c_farPlane = 1000.0f;
-			static float c_orthoDims = 400.0f;
-			const glm::vec3 up = l.m_direction.y == -1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-			glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, c_farPlane);
-			glm::mat4 lightView = glm::lookAt(glm::vec3(l.m_position), glm::vec3(l.m_position) + l.m_direction, up);
-			return lightProjection * lightView;
-		}
-		else
-		{
-			// todo: parameterise
-			auto lightPos = glm::vec3(l.m_position);
-			float aspect = l.m_shadowMap->Dimensions().x / (float)l.m_shadowMap->Dimensions().y;
-			float near = 0.1f;
-			float far = 300.0f;
-			return glm::perspective(glm::radians(90.0f), aspect, near, far);
-		}
-	}
-
-	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float bias)
+	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float bias, glm::mat4 shadowMatrix, bool updateShadowmap)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
@@ -253,8 +232,9 @@ namespace Engine
 		newLight.m_direction = direction;
 		newLight.m_attenuation = attenuation;
 		newLight.m_shadowMap = &sm;
-		newLight.m_lightspaceMatrix = GetLightspaceTransform(newLight);
+		newLight.m_lightspaceMatrix = shadowMatrix;
 		newLight.m_shadowBias = bias;
+		newLight.m_updateShadowmap = updateShadowmap;
 		m_lights.push_back(newLight);
 	}
 
@@ -316,16 +296,7 @@ namespace Engine
 			{
 				globals.m_lights[l].m_shadowParams.x = 1.0f;
 				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 0.0f ? 1000.0f : 500.0f;		// far plane hacks todo
-				uint32_t smIndex = 0;
-				if (m_lights[l].m_position.w == 0.0f)
-				{
-					smIndex = shadowMapIndex++;
-				}
-				else
-				{
-					smIndex = cubeShadowMapIndex++;
-				}
-				globals.m_lights[l].m_shadowParams.z = smIndex;
+				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_position.w == 0.0f ? shadowMapIndex++ : cubeShadowMapIndex++;
 				globals.m_lights[l].m_shadowParams.w = m_lights[l].m_shadowBias;
 				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
 			}
@@ -557,13 +528,13 @@ namespace Engine
 			SDE_PROF_EVENT("FrustumCull");
 			Frustum viewFrustum(lightViewProj);
 			visibleInstances.m_instances.clear();
-			visibleInstances.m_instances.reserve(m_allShadowCasterInstances.m_instances.size() >> 1);
-			for (const auto& it : m_allShadowCasterInstances.m_instances)
+			if (m_cullingEnabled)
 			{
-				if (!m_cullingEnabled || viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
-				{
-					visibleInstances.m_instances.push_back(it);
-				}
+				CullInstances(viewFrustum, m_allShadowCasterInstances, visibleInstances);
+			}
+			else
+			{
+				visibleInstances = m_allShadowCasterInstances;
 			}
 		}
 		{
@@ -602,13 +573,13 @@ namespace Engine
 			const auto projectionMat = m_camera.ProjectionMatrix();
 			const auto viewMat = m_camera.ViewMatrix();
 			Frustum viewFrustum(projectionMat * viewMat);
-			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
-			for (const auto& it : list.m_instances)
+			if (m_cullingEnabled)
 			{
-				if (!m_cullingEnabled || viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
-				{
-					visibleInstances.m_instances.push_back(it);
-				}
+				CullInstances(viewFrustum, list, visibleInstances);
+			}
+			else
+			{
+				visibleInstances = list;
 			}
 		}
 		{
@@ -650,24 +621,22 @@ namespace Engine
 	int Renderer::PrepareOpaqueInstances(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
-		InstanceList visibleInstances;
+		InstanceList allVisibleInstances;
 		{
 			SDE_PROF_EVENT("FrustumCull");
-			const auto projectionMat = m_camera.ProjectionMatrix();
-			const auto viewMat = m_camera.ViewMatrix();
-			Frustum viewFrustum(projectionMat * viewMat);
-			visibleInstances.m_instances.reserve(list.m_instances.size() >> 1);
-			for (const auto& it : list.m_instances)
+			Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
+			if (m_cullingEnabled)
 			{
-				if (!m_cullingEnabled || viewFrustum.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
-				{
-					visibleInstances.m_instances.push_back(it);
-				}
+				CullInstances(viewFrustum, list, allVisibleInstances);
+			}
+			else
+			{
+				allVisibleInstances = list;
 			}
 		}
 		{
 			SDE_PROF_EVENT("Sort");
-			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
+			std::sort(allVisibleInstances.m_instances.begin(), allVisibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
 				if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
 				{
 					return true;
@@ -697,7 +666,72 @@ namespace Engine
 				return false;
 			});
 		}
-		list.m_instances = std::move(visibleInstances.m_instances);
+		list.m_instances = std::move(allVisibleInstances.m_instances);
 		return PopulateInstanceBuffers(list);
+	}
+
+	void Renderer::CullInstances(const Frustum& f, const InstanceList& srcInstances, InstanceList& results)
+	{
+		SDE_PROF_EVENT();
+		static bool s_singleThreadCull = false;
+		if (!s_singleThreadCull)
+		{
+			const int instanceCount = srcInstances.m_instances.size();
+			const int instancesPerThread = 1024;
+			std::atomic<int> jobsRemaining = 0;
+			std::atomic<int> totalVisibleInstances = 0;
+			std::vector<std::unique_ptr<InstanceList>> jobResults;
+			for (int i = 0; i < instanceCount; i += instancesPerThread)
+			{
+				const int startIndex = i;
+				const int endIndex = std::min(i + instancesPerThread, instanceCount);
+				auto visibleInstances = std::make_unique<InstanceList>();
+				visibleInstances->m_instances.reserve(instancesPerThread);
+				auto instanceListPtr = visibleInstances.get();
+				jobResults.push_back(std::move(visibleInstances));
+				auto cullJob = [&jobsRemaining, &totalVisibleInstances, instanceListPtr, &srcInstances, f, startIndex, endIndex](void*)
+				{
+					SDE_PROF_EVENT("Culling");
+					for (int i = startIndex; i < endIndex; ++i)
+					{
+						if (f.IsBoxVisible(srcInstances.m_instances[i].m_aabbMin, srcInstances.m_instances[i].m_aabbMax))
+						{
+							instanceListPtr->m_instances.push_back(srcInstances.m_instances[i]);
+						}
+					}
+					totalVisibleInstances += instanceListPtr->m_instances.size();
+					jobsRemaining--;
+				};
+				jobsRemaining++;
+				m_jobSystem->PushJob(cullJob);
+			}
+			{
+				SDE_PROF_EVENT("WaitForCulling");
+				while (jobsRemaining > 0)
+				{
+					Core::Thread::Sleep(0);
+				}
+			}
+			{
+				SDE_PROF_EVENT("PushResults");
+				results.m_instances.resize(totalVisibleInstances);
+				int endIndex = 0;
+				for (const auto& result : jobResults)
+				{
+					memcpy(&results.m_instances[endIndex], result->m_instances.data(), result->m_instances.size() * sizeof(Engine::MeshInstance));
+					endIndex += result->m_instances.size();
+				}
+			}
+		}
+		else
+		{
+			for (const auto& it : srcInstances.m_instances)
+			{
+				if (f.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				{
+					results.m_instances.push_back(it);
+				}
+			}
+		}
 	}
 }

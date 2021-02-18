@@ -4,9 +4,10 @@
 
 namespace Engine
 {
-	Job::Job(JobSystem* parent, JobThreadFunction threadFn)
+	Job::Job(JobSystem* parent, JobThreadFunction threadFn, void* userData)
 		: m_parent(parent)
 		, m_threadFn(threadFn)
+		, m_userData(userData)
 	{
 		assert(parent != nullptr);
 	}
@@ -14,6 +15,6 @@ namespace Engine
 	void Job::Run()
 	{
 		SDE_PROF_EVENT();
-		m_threadFn();
+		m_threadFn(m_userData);
 	}
 }

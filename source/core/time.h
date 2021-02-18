@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace Kernel
+namespace Core
 {
 	namespace Time
 	{

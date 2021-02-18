@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 
-namespace Kernel
+namespace Core
 {
 	class Thread
 	{

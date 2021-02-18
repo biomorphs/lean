@@ -22,11 +22,12 @@ namespace Engine
 {
 	class TextureManager;
 	class ModelManager;
+	class JobSystem;
 
 	class Renderer : public Render::RenderPass
 	{
 	public:
-		Renderer(TextureManager* ta, ModelManager* mm, ShaderManager* sm, glm::ivec2 windowSize);			
+		Renderer(TextureManager* ta, ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize);
 		virtual ~Renderer() = default;
 
 		void Reset();
@@ -35,7 +36,7 @@ namespace Engine
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
-		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float shadowBias);
+		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 
@@ -69,6 +70,7 @@ namespace Engine
 		int PopulateInstanceBuffers(InstanceList& list);	// returns offset to start of index data in global gpu buffers
 		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
+		void CullInstances(const class Frustum& f, const InstanceList& srcInstances, InstanceList& results);
 
 		FrameStats m_frameStats;
 		float m_hdrExposure = 1.0f;
@@ -86,6 +88,7 @@ namespace Engine
 		ShaderManager* m_shaders;
 		TextureManager* m_textures;
 		ModelManager* m_models;
+		JobSystem* m_jobSystem = nullptr;
 		Render::RenderTargetBlitter m_targetBlitter;
 		Engine::ShaderHandle m_blitShader;
 		Render::RenderBuffer m_globalsUniformBuffer;

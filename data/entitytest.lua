@@ -7,7 +7,7 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 17
+local InstancingTestCount = 20
 local LightColours = {
 	{1.0,0.0,0.0},
 	{0.0,1.0,0.0},

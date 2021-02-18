@@ -24,7 +24,7 @@ namespace Engine
 	private:
 		Core::ThreadPool m_threadPool;
 		JobQueue m_pendingJobs;
-		Kernel::Semaphore m_jobThreadTrigger;
+		Core::Semaphore m_jobThreadTrigger;
 		std::atomic<int32_t> m_jobThreadStopRequested;
 		int32_t m_threadCount;
 		std::function<void(uint32_t)> m_threadInitFn = nullptr;

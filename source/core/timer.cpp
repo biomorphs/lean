@@ -5,7 +5,7 @@ namespace Core
 {
 	Timer::Timer()
 	{
-		m_frequency = Kernel::Time::HighPerformanceCounterFrequency();
+		m_frequency = Core::Time::HighPerformanceCounterFrequency();
 	}
 
 	Timer::~Timer()
@@ -14,7 +14,7 @@ namespace Core
 
 	uint64_t Timer::GetTicks() const
 	{
-		return Kernel::Time::HighPerformanceCounterTicks();
+		return Core::Time::HighPerformanceCounterTicks();
 	}
 
 	double Timer::GetSeconds() const

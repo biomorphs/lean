@@ -25,7 +25,7 @@ SERIALISE_END()
 
 Playground::Playground()
 {
-	srand((uint32_t)Kernel::Time::HighPerformanceCounterTicks());
+	srand((uint32_t)Core::Time::HighPerformanceCounterTicks());
 }
 
 Playground::~Playground()

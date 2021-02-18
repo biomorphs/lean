@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace Kernel
+namespace Core
 {
 	class Semaphore
 	{

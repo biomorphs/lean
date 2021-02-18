@@ -31,7 +31,8 @@ public:
 	void SetCastsShadows(bool c);
 	void SetShadowmapSize(int w, int h) { m_shadowMapSize = { w,h }; }
 	void SetShadowBias(float b) { m_shadowBias = b; }
-	
+	glm::mat4 UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction);
+
 	Type GetLightType() const { return m_type; }
 	std::unique_ptr<Render::FrameBuffer>& GetShadowMap() { return m_shadowMap; }
 	glm::ivec2 GetShadowmapSize() const { return m_shadowMapSize; }
@@ -44,6 +45,7 @@ public:
 	float GetShadowBias() const { return m_shadowBias; }
 	glm::vec3 GetAttenuation() const;
 	glm::vec2 GetSpotAngles() const { return m_spotAngles; }	// radians!
+	glm::mat4 GetShadowMatrix() { return m_shadowMatrix; }
 
 private:
 	Type m_type = Type::Directional;
@@ -55,5 +57,6 @@ private:
 	float m_shadowBias = 0.05f;	// functionality may depend on light type
 	bool m_castShadows = false;
 	glm::ivec2 m_shadowMapSize = { 256,256 };
+	glm::mat4 m_shadowMatrix = glm::identity<glm::mat4>();	// lightspace matrix
 	std::unique_ptr<Render::FrameBuffer> m_shadowMap;	// can be 2d or 3d (cubemap)
 };

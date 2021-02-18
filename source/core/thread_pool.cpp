@@ -41,7 +41,7 @@ namespace Core
 			m_thread.WaitForFinish();
 		}
 	private:
-		Kernel::Thread m_thread;
+		Thread m_thread;
 		ThreadPool* m_parent;
 		std::string m_name;
 		uint32_t m_workerIndex;

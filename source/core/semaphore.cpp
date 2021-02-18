@@ -2,7 +2,7 @@
 #include <cassert>
 #include <SDL_mutex.h>
 
-namespace Kernel
+namespace Core
 {
 	Semaphore::Semaphore(uint32_t initialValue)
 	{

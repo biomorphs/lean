@@ -4,7 +4,7 @@
 #include <SDL_thread.h>
 #include <SDL_timer.h>
 
-namespace Kernel
+namespace Core
 {
 	Thread::Thread()
 		: m_handle(nullptr)

@@ -138,7 +138,7 @@ bool Graphics::Initialise()
 	});
 	
 	//// add our renderer to the global passes
-	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_windowSize);
+	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
 
 	// expose TextureHandle to lua
@@ -260,30 +260,29 @@ void Graphics::ProcessLight(Light& l, const Transform* transform)
 	}
 	if (l.CastsShadows())
 	{
-		bool recreateShadowmap = l.GetShadowMap() == nullptr;
-		if (l.GetShadowMap())
-		{
-			recreateShadowmap = l.GetShadowMap()->IsCubemap() != l.IsPointLight();
-		}
+		bool recreateShadowmap = l.GetShadowMap() == nullptr || l.GetShadowMap()->IsCubemap() != l.IsPointLight();
 		if (recreateShadowmap)
 		{
 			auto& sm = l.GetShadowMap();
 			sm = std::make_unique<Render::FrameBuffer>(l.GetShadowmapSize());
 			if (l.IsPointLight())
-			{
 				sm->AddDepthCube();
-			}
 			else
-			{
 				sm->AddDepth();
-			}
 			if (!sm->Create())
 			{
 				SDE_LOG("Failed to create shadow depth buffer");
 			}
 		}
+		bool updateShadowmap = l.GetShadowMap() != nullptr;
+		glm::mat4 shadowMatrix = l.GetShadowMatrix();
+		if (updateShadowmap)
+		{
+			shadowMatrix = l.UpdateShadowMatrix(position, direction);
+		}
+
 		// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
-		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation, *l.GetShadowMap(), l.GetShadowBias());
+		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation, *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
 	}
 	else
 	{

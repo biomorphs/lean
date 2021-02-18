@@ -1,7 +1,7 @@
 #include "time.h"
 #include <sdl_timer.h>
 
-namespace Kernel
+namespace Core
 {
 	namespace Time
 	{

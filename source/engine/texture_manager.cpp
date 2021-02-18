@@ -65,7 +65,7 @@ namespace Engine
 		while (m_inFlightTextures > 0)
 		{
 			int v = m_inFlightTextures;
-			Kernel::Thread::Sleep(1);
+			Core::Thread::Sleep(1);
 		}
 		// clear out the old results
 		{
@@ -124,7 +124,7 @@ namespace Engine
 		m_inFlightTextures += 1;
 
 		std::string pathString = path;
-		m_jobSystem->PushJob([this, pathString, newHandle]() {
+		m_jobSystem->PushJob([this, pathString, newHandle](void*) {
 			char debugName[1024] = { '\0' };
 			sprintf_s(debugName, "LoadTexture %s", pathString.c_str());
 			SDE_PROF_EVENT_DYN(debugName);

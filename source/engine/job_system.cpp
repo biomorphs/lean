@@ -14,7 +14,7 @@ namespace Engine
 		int cpuCount = SDL_GetCPUCount();
 		if (cpuCount > 1)
 		{
-			m_threadCount = cpuCount - 1;
+			m_threadCount = (cpuCount - 1) / 2;
 		}
 	}
 

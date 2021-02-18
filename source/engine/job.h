@@ -9,9 +9,9 @@ namespace Engine
 	class Job
 	{
 	public:
-		typedef std::function<void()> JobThreadFunction;	// Code to be ran on the job thread
+		typedef std::function<void(void*)> JobThreadFunction;	// Code to be ran on the job thread
 		Job() = default;
-		Job(JobSystem* parent, JobThreadFunction threadFn);
+		Job(JobSystem* parent, JobThreadFunction threadFn, void* userData=nullptr);
 		~Job() = default;
 		Job(Job&&) = default;
 		Job& operator=(Job&&) = default;
@@ -23,6 +23,7 @@ namespace Engine
 	private:
 		JobThreadFunction m_threadFn = nullptr;
 		JobSystem* m_parent = nullptr;
+		void* m_userData = nullptr;
 		uint64_t m_padding[8] = { 0 };
 	};
 }
