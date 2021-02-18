@@ -12,8 +12,14 @@ namespace Engine
 {
 	class Mesh;
 	class ShaderProgram;
-	struct MeshInstance
+	class MeshInstance
 	{
+	public:
+		MeshInstance() = default;
+		MeshInstance(const MeshInstance&) = default;
+		MeshInstance(MeshInstance&&) = default;
+		MeshInstance& operator=(const MeshInstance& other) = default;
+		MeshInstance& operator=(MeshInstance&& other) = default;
 		glm::mat4 m_transform;
 		glm::vec4 m_colour;
 		glm::vec3 m_aabbMin;	// used in culling

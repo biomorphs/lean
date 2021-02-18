@@ -1,10 +1,6 @@
-/*
-SDLEngine
-Matt Hoyle
-*/
 #pragma once
 
-namespace Kernel
+namespace Core
 {
 	class Mutex
 	{
@@ -19,5 +15,14 @@ namespace Kernel
 
 	private:
 		void* m_mutex;
+	};
+
+	class ScopedMutex
+	{
+	public:
+		ScopedMutex(Mutex& target) : m_mutex(target) { m_mutex.Lock(); }
+		~ScopedMutex() { m_mutex.Unlock(); }
+	private:
+		Mutex& m_mutex;
 	};
 }

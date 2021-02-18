@@ -12,13 +12,13 @@ namespace Engine
 
 	void JobQueue::PushJob(Job&& j)
 	{
-		std::lock_guard<std::mutex> guard(m_lock);
+		Core::ScopedMutex lock(m_mutex);
 		m_currentJobs.push(std::move(j));
 	}
 
 	bool JobQueue::PopJob(Job &j)
 	{
-		std::lock_guard<std::mutex> guard(m_lock);
+		Core::ScopedMutex lock(m_mutex);
 		if (!m_currentJobs.empty())
 		{
 			j = std::move(m_currentJobs.front());
@@ -31,7 +31,7 @@ namespace Engine
 
 	void JobQueue::RemoveAll()
 	{
-		std::lock_guard<std::mutex> guard(m_lock);
+		Core::ScopedMutex lock(m_mutex);
 		while (!m_currentJobs.empty())
 		{
 			m_currentJobs.pop();

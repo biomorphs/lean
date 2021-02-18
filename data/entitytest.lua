@@ -7,7 +7,7 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 20
+local InstancingTestCount = 12
 local LightColours = {
 	{1.0,0.0,0.0},
 	{0.0,1.0,0.0},
@@ -64,7 +64,7 @@ function MakeLightEntity()
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(256,256)
 	light:SetShadowBias(4.0)
-	light:SetBrightness(math.random(2,4))
+	light:SetBrightness(math.random(4,8))
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -86,7 +86,7 @@ end
 function EntityTest.Init()
 	MakeSunEntity()
 
-	for i=1,8 do 
+	for i=1,10 do 
 		MakeLightEntity()
 	end
 	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)

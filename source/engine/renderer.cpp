@@ -476,18 +476,11 @@ namespace Engine
 		auto viewMat = m_camera.ViewMatrix();
 		UpdateGlobals(projectionMat, viewMat);
 
-		static int s_maxPerFrame = 16;
-		static int s_nextUpdate = 0;
-		int updatesRemaining = s_maxPerFrame;
-		if (s_nextUpdate >= m_lights.size() || s_nextUpdate >= c_maxLights)
-			s_nextUpdate = 0;
-		for (int l = s_nextUpdate; l < m_lights.size() && l < c_maxLights && updatesRemaining > 0; ++l)
+		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
-			if (m_lights[l].m_shadowMap != nullptr)
+			if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
 			{
 				RenderShadowmap(d, m_lights[l]);
-				--updatesRemaining;
-				s_nextUpdate = l + 1;
 			}
 		}
 
@@ -524,18 +517,16 @@ namespace Engine
 	int Renderer::PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances)
 	{
 		SDE_PROF_EVENT();
+
+		Frustum viewFrustum(lightViewProj);
+		visibleInstances.m_instances.clear();
+		if (m_cullingEnabled)
 		{
-			SDE_PROF_EVENT("FrustumCull");
-			Frustum viewFrustum(lightViewProj);
-			visibleInstances.m_instances.clear();
-			if (m_cullingEnabled)
-			{
-				CullInstances(viewFrustum, m_allShadowCasterInstances, visibleInstances);
-			}
-			else
-			{
-				visibleInstances = m_allShadowCasterInstances;
-			}
+			CullInstances(viewFrustum, m_allShadowCasterInstances, visibleInstances);
+		}
+		else
+		{
+			visibleInstances = m_allShadowCasterInstances;
 		}
 		{
 			SDE_PROF_EVENT("Sort");
@@ -568,19 +559,16 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		InstanceList visibleInstances;
+		const auto projectionMat = m_camera.ProjectionMatrix();
+		const auto viewMat = m_camera.ViewMatrix();
+		Frustum viewFrustum(projectionMat * viewMat);
+		if (m_cullingEnabled)
 		{
-			SDE_PROF_EVENT("FrustumCull");
-			const auto projectionMat = m_camera.ProjectionMatrix();
-			const auto viewMat = m_camera.ViewMatrix();
-			Frustum viewFrustum(projectionMat * viewMat);
-			if (m_cullingEnabled)
-			{
-				CullInstances(viewFrustum, list, visibleInstances);
-			}
-			else
-			{
-				visibleInstances = list;
-			}
+			CullInstances(viewFrustum, list, visibleInstances);
+		}
+		else
+		{
+			visibleInstances = list;
 		}
 		{
 			SDE_PROF_EVENT("Sort");
@@ -622,17 +610,14 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		InstanceList allVisibleInstances;
+		Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
+		if (m_cullingEnabled)
 		{
-			SDE_PROF_EVENT("FrustumCull");
-			Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
-			if (m_cullingEnabled)
-			{
-				CullInstances(viewFrustum, list, allVisibleInstances);
-			}
-			else
-			{
-				allVisibleInstances = list;
-			}
+			CullInstances(viewFrustum, list, allVisibleInstances);
+		}
+		else
+		{
+			allVisibleInstances = list;
 		}
 		{
 			SDE_PROF_EVENT("Sort");
@@ -696,7 +681,7 @@ namespace Engine
 					{
 						if (f.IsBoxVisible(srcInstances.m_instances[i].m_aabbMin, srcInstances.m_instances[i].m_aabbMax))
 						{
-							instanceListPtr->m_instances.push_back(srcInstances.m_instances[i]);
+							instanceListPtr->m_instances.emplace_back(srcInstances.m_instances[i]);
 						}
 					}
 					totalVisibleInstances += instanceListPtr->m_instances.size();
@@ -714,12 +699,11 @@ namespace Engine
 			}
 			{
 				SDE_PROF_EVENT("PushResults");
-				results.m_instances.resize(totalVisibleInstances);
-				int endIndex = 0;
+				results.m_instances.reserve(totalVisibleInstances);
 				for (const auto& result : jobResults)
 				{
-					memcpy(&results.m_instances[endIndex], result->m_instances.data(), result->m_instances.size() * sizeof(Engine::MeshInstance));
-					endIndex += result->m_instances.size();
+					SDE_PROF_EVENT("Insert");
+					results.m_instances.insert(results.m_instances.end(), result->m_instances.begin(), result->m_instances.end());
 				}
 			}
 		}

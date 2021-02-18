@@ -1,7 +1,7 @@
 #pragma once
 #include "job.h"
+#include "core/mutex.h"
 #include <queue>
-#include <mutex>
 
 namespace Engine
 {
@@ -16,7 +16,7 @@ namespace Engine
 		void RemoveAll();
 
 	private:
-		std::mutex m_lock;
+		Core::Mutex m_mutex;
 		std::queue<Job> m_currentJobs;
 	};
 }
