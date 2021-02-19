@@ -405,7 +405,7 @@ namespace Engine
 	void Renderer::RenderShadowmap(Render::Device& d, Light& l)
 	{
 		SDE_PROF_EVENT();
-
+		m_frameStats.m_shadowMapUpdates++;
 		if (l.m_position.w == 0.0f)		// directional
 		{
 			InstanceList visibleShadowInstances;
@@ -420,6 +420,8 @@ namespace Engine
 			d.SetBlending(false);
 			d.SetScissorEnabled(false);
 			DrawInstances(d, visibleShadowInstances, baseIndex, false, &lightMatUniforms);
+			m_frameStats.m_totalShadowInstances += m_allShadowCasterInstances.m_instances.size();
+			m_frameStats.m_renderedShadowInstances += visibleShadowInstances.m_instances.size();
 		}
 		else
 		{
@@ -458,6 +460,8 @@ namespace Engine
 				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
 				uniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
 				DrawInstances(d, instances, baseIndex, false, &uniforms);
+				m_frameStats.m_totalShadowInstances += m_allShadowCasterInstances.m_instances.size();
+				m_frameStats.m_renderedShadowInstances += instances.m_instances.size();
 			}
 		}
 	}
@@ -496,17 +500,21 @@ namespace Engine
 			d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
 
 			// render opaques
+			m_frameStats.m_totalOpaqueInstances = m_opaqueInstances.m_instances.size();
 			int baseIndex = PrepareOpaqueInstances(m_opaqueInstances);
 			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 			d.SetBlending(false);				// no blending for opaques
 			d.SetScissorEnabled(false);			// (don't) scissor me timbers
 			DrawInstances(d, m_opaqueInstances, baseIndex, true);
+			m_frameStats.m_renderedOpaqueInstances = m_opaqueInstances.m_instances.size();
 
 			// render transparents
+			m_frameStats.m_totalTransparentInstances = m_transparentInstances.m_instances.size();
 			baseIndex = PrepareTransparentInstances(m_transparentInstances);
 			d.SetDepthState(true, false);		// enable z-test, disable write
 			d.SetBlending(true);
 			DrawInstances(d, m_transparentInstances, baseIndex, true);
+			m_frameStats.m_renderedTransparentInstances = m_transparentInstances.m_instances.size();
 		}
 
 		// blit main buffer to backbuffer

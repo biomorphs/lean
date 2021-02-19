@@ -43,6 +43,13 @@ namespace Engine
 
 		struct FrameStats {
 			size_t m_instancesSubmitted = 0;
+			size_t m_totalTransparentInstances = 0;
+			size_t m_totalOpaqueInstances = 0;
+			size_t m_totalShadowInstances = 0;
+			size_t m_renderedTransparentInstances = 0;
+			size_t m_renderedOpaqueInstances = 0;
+			size_t m_renderedShadowInstances = 0;
+			size_t m_shadowMapUpdates = 0;
 			size_t m_shaderBinds = 0;
 			size_t m_vertexArrayBinds = 0;
 			size_t m_batchesDrawn = 0;

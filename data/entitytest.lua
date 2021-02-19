@@ -7,7 +7,7 @@ local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simple
 local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 17
+local InstancingTestCount = 15
 local LightColours = {
 	{1.0,0.0,0.0},
 	{0.0,1.0,0.0},
@@ -29,20 +29,19 @@ local bouncyLights = {}		-- array of {entityHandle, velocity{xyz}}
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(0,500,0)
-	transform:SetRotation(0,0,0)
-	transform:SetScale(4,4,4)
+	transform:SetPosition(-40,500,0)
+	transform:SetRotation(2.2,11,14.7)
+	transform:SetScale(4,16,4)
 	
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.8, 0.8, 0.8)
 	light:SetAmbient(0.1)
-	light:SetDistance(300)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
-	light:SetShadowBias(0.1)
+	light:SetShadowBias(0.005)
 	light:SetBrightness(1.0)
-	light:SetShadowFarPlane(1000)
+	light:SetShadowFarPlane(800)
 
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(CubeModel)
@@ -116,7 +115,7 @@ end
 function EntityTest.Init()
 	MakeSunEntity()
 
-	for i=1,8 do 
+	for i=1,32 do 
 		MakeLightEntity()
 	end
 	for i=1,8 do 

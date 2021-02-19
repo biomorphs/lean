@@ -124,7 +124,7 @@ namespace Engine
 		m_inFlightTextures += 1;
 
 		std::string pathString = path;
-		m_jobSystem->PushJob([this, pathString, newHandle](void*) {
+		m_jobSystem->PushSlowJob([this, pathString, newHandle](void*) {
 			char debugName[1024] = { '\0' };
 			sprintf_s(debugName, "LoadTexture %s", pathString.c_str());
 			SDE_PROF_EVENT_DYN(debugName);

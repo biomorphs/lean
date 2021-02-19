@@ -294,7 +294,7 @@ void Graphics::ProcessLight(Light& l, const Transform* transform)
 	}
 };
 
-void Graphics::RenderEntities()
+void Graphics::ProcessEntities()
 {
 	SDE_PROF_EVENT();
 
@@ -338,27 +338,9 @@ void Graphics::RenderEntities()
 	}
 }
 
-bool Graphics::Tick()
+void Graphics::ShowGui(int framesPerSecond)
 {
-	SDE_PROF_EVENT();
-
-	static int framesPerSecond = 0;
-	static uint32_t framesThisSecond = 0;
-	static Core::Timer timer;
-	static double startTime = timer.GetSeconds();
-
-	double currentTime = timer.GetSeconds();
-	framesThisSecond++;
-	if (currentTime - startTime >= 1.0f)
-	{
-		framesPerSecond = framesThisSecond;
-		framesThisSecond = 0;
-		startTime = currentTime;
-	}
-
-	double renderEntitiesStart = timer.GetSeconds();
-	RenderEntities();
-	double renderEntitiesTime = timer.GetSeconds() - renderEntitiesStart;
+	m_debugGui->MainMenuBar(g_graphicsMenu);
 
 	if (g_showCameraInfo)
 	{
@@ -367,12 +349,45 @@ bool Graphics::Tick()
 		m_debugGui->DragVector("Position", posVec);
 		m_debugGui->EndWindow();
 	}
+	
+	if (g_showTextureGui)
+	{
+		g_showTextureGui = m_textures->ShowGui(*m_debugGui);
+	}
 
+	if (g_showModelGui)
+	{
+		g_showModelGui = m_models->ShowGui(*m_debugGui);
+	}
+
+	const auto& fs = m_renderer->GetStats();
+	char statText[1024] = { '\0' };
+	bool forceOpen = true;
+	m_debugGui->BeginWindow(forceOpen, "Render Stats");
+	sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
+	sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
+	sprintf_s(statText, "\tTransparents: %zu (%zu visible)", fs.m_totalTransparentInstances, fs.m_renderedTransparentInstances);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Shadowmaps updated: %zu", fs.m_shadowMapUpdates);	m_debugGui->Text(statText);
+	sprintf_s(statText, "\tShadow casters drawn: %zu (%zu visible)", fs.m_totalShadowInstances, fs.m_renderedShadowInstances);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Active Lights: %zu", fs.m_activeLights);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
+	sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Batches Drawn: %zu", fs.m_batchesDrawn);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Draw calls: %zu", fs.m_drawCalls);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
+	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
+	m_debugGui->Checkbox("Draw Bounds", &m_showBounds);
+	m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f);
+	m_debugGui->Checkbox("Culling Enabled", &m_renderer->GetCullingEnabled());
+	m_debugGui->EndWindow();
+}
+
+void Graphics::ProcessCamera()
+{
 	Render::Camera c;
 	auto windowSize = m_renderSystem->GetWindow()->GetSize();
 	float aspect = (float)windowSize.x / (float)windowSize.y;
 	c.SetProjection(70.0f, aspect, 0.1f, 1000.0f);
-
 	if (g_useArcballCam)
 	{
 		if (!m_debugGui->IsCapturingMouse())
@@ -393,37 +408,33 @@ bool Graphics::Tick()
 			m_debugCamera->Update(m_inputSystem->GetKeyboardState(), 0.016f);
 		}
 		m_debugCamera->ApplyToCamera(c);
-	}	
+	}
 	m_renderer->SetCamera(c);
+}
+
+bool Graphics::Tick()
+{
+	SDE_PROF_EVENT();
+
+	static int framesPerSecond = 0;
+	static uint32_t framesThisSecond = 0;
+	static Core::Timer timer;
+	static double startTime = timer.GetSeconds();
+
+	double currentTime = timer.GetSeconds();
+	framesThisSecond++;
+	if (currentTime - startTime >= 1.0f)
+	{
+		framesPerSecond = framesThisSecond;
+		framesThisSecond = 0;
+		startTime = currentTime;
+	}
+
+	ProcessCamera();
+	ProcessEntities();
+	ShowGui(framesPerSecond);
 
 	m_debugRender->PushToRenderer(*m_renderer);
-	m_debugGui->MainMenuBar(g_graphicsMenu);
-	if (g_showTextureGui)
-	{
-		g_showTextureGui = m_textures->ShowGui(*m_debugGui);
-	}
-	if (g_showModelGui)
-	{
-		g_showModelGui = m_models->ShowGui(*m_debugGui);
-	}
-
-	const auto& fs = m_renderer->GetStats();
-	char statText[1024] = { '\0' };
-	bool forceOpen = true;
-	m_debugGui->BeginWindow(forceOpen,"Render Stats");
-	sprintf_s(statText, "RenderEntities time: %.2fms", renderEntitiesTime * 1000.0f);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Total Instances: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Active Lights: %zu", fs.m_activeLights);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
-	sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Batches Drawn: %zu", fs.m_batchesDrawn);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Draw calls: %zu", fs.m_drawCalls);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
-	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
-	m_debugGui->Checkbox("Draw Bounds", &m_showBounds);
-	m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f);
-	m_debugGui->Checkbox("Culling Enabled", &m_renderer->GetCullingEnabled());
-	m_debugGui->EndWindow();
 
 	// Process loaded data on main thread
 	m_textures->ProcessLoadedTextures();

@@ -34,8 +34,10 @@ public:
 	virtual bool Tick();
 	virtual void Shutdown();
 private:
+	void ShowGui(int fps);
 	void ProcessLight(class Light& l, const class Transform* transform);
-	void RenderEntities();
+	void ProcessEntities();
+	void ProcessCamera();
 	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform);
 	bool m_showBounds = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;

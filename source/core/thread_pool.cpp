@@ -25,11 +25,11 @@ namespace Core
 				SDE_PROF_THREAD(m_name.c_str());
 				if (m_parent->m_initFn != nullptr)
 				{
-					m_parent->m_initFn(m_workerIndex);
+					m_parent->m_initFn(m_parent->m_threadStartIndex + m_workerIndex);
 				}
 				while (m_parent->m_stopRequested == 0)
 				{
-					m_parent->m_fn(m_workerIndex);
+					m_parent->m_fn(m_parent->m_threadStartIndex + m_workerIndex);
 				}
 				return 0;
 			};
@@ -49,6 +49,7 @@ namespace Core
 
 	ThreadPool::ThreadPool()
 		: m_stopRequested(0)
+		, m_threadStartIndex(0)
 	{
 	}
 
@@ -57,12 +58,13 @@ namespace Core
 		Stop();
 	}
 
-	void ThreadPool::Start(const char* poolName, uint32_t threadCount, ThreadPoolFn threadfn, ThreadPoolFn threadStartFn)
+	void ThreadPool::Start(const char* poolName, uint32_t threadCount, ThreadPoolFn threadfn, ThreadPoolFn threadStartFn, int threadStartIndex)
 	{
 		SDE_PROF_EVENT();
 		assert(m_threads.size() == 0);
 		m_fn = threadfn;
 		m_initFn = threadStartFn;
+		m_threadStartIndex = threadStartIndex;
 		m_threads.reserve(threadCount);
 		for (uint32_t t = 0;t < threadCount;++t)
 		{
