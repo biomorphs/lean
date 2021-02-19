@@ -69,7 +69,7 @@ namespace Engine
 		}
 		// clear out the old results
 		{
-			std::lock_guard<std::mutex> guard(m_loadedTexturesMutex);
+			Core::ScopedMutex guard(m_loadedTexturesMutex);
 			m_loadedTextures.clear();
 		}
 		// now load the textures again
@@ -88,7 +88,7 @@ namespace Engine
 		std::vector<LoadedTexture> loadedTextures;
 		{
 			SDE_PROF_EVENT("AcquireLoadedTextures");
-			std::lock_guard<std::mutex> guard(m_loadedTexturesMutex);
+			Core::ScopedMutex guard(m_loadedTexturesMutex);
 			loadedTextures = std::move(m_loadedTextures);
 		}
 
@@ -167,7 +167,7 @@ namespace Engine
 				Render::Device::FlushContext();
 
 				SDE_PROF_EVENT("PushToResultsList");
-				std::lock_guard<std::mutex> guard(m_loadedTexturesMutex);
+				Core::ScopedMutex guard(m_loadedTexturesMutex);
 				{
 					m_loadedTextures.push_back({ std::move(newTex), newHandle });
 				}

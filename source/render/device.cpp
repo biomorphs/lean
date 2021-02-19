@@ -163,7 +163,6 @@ namespace Render
 	{
 		if (enabled)
 		{
-			// Todo - separate
 			glEnable(GL_BLEND);
 			SDE_RENDER_PROCESS_GL_ERRORS("glEnable");
 			glBlendEquation(GL_FUNC_ADD);

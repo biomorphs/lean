@@ -1,6 +1,7 @@
 #pragma once
 #include "render/texture.h"
 #include "render/texture_source.h"
+#include "core/mutex.h"
 #include <stdint.h>
 #include <vector>
 #include <string>
@@ -47,7 +48,7 @@ namespace Engine
 			std::unique_ptr<Render::Texture> m_texture;
 			TextureHandle m_destination;
 		};
-		std::mutex m_loadedTexturesMutex;
+		Core::Mutex m_loadedTexturesMutex;
 		std::vector<LoadedTexture> m_loadedTextures;
 		std::atomic<int32_t> m_inFlightTextures = 0;
 		JobSystem* m_jobSystem = nullptr;

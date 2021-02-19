@@ -2,6 +2,7 @@
 #include "model.h"
 #include "model_asset.h"
 #include "render/mesh_builder.h"
+#include "core/mutex.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -52,7 +53,7 @@ namespace Engine
 
 		std::vector<ModelDesc> m_models;
 	
-		std::mutex m_loadedModelsMutex;
+		Core::Mutex m_loadedModelsMutex;
 		std::vector<ModelLoadResult> m_loadedModels;	// models to process after successful load
 		std::atomic<int32_t> m_inFlightModels = 0;
 

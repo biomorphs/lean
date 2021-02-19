@@ -12,6 +12,7 @@ namespace Engine
 		glm::vec3 m_attenuation;	// constant, linear, quadratic
 		glm::mat4 m_lightspaceMatrix;	// for shadow calculations
 		float m_shadowBias;	
+		float m_shadowFarPlane;
 		Render::FrameBuffer* m_shadowMap = nullptr;	// if this is not null the light casts shadows
 		bool m_updateShadowmap;		// do we need to redraw this frame
 	};

@@ -48,7 +48,7 @@ namespace Engine
 		}
 		// clear out the old results
 		{
-			std::lock_guard<std::mutex> guard(m_loadedModelsMutex);
+			Core::ScopedMutex guard(m_loadedModelsMutex);
 			m_loadedModels.clear();
 		}
 		// now load the models again
@@ -130,7 +130,7 @@ namespace Engine
 		
 		std::vector<ModelLoadResult> loadedModels;
 		{
-			std::lock_guard<std::mutex> guard(m_loadedModelsMutex);
+			Core::ScopedMutex guard(m_loadedModelsMutex);
 			loadedModels = std::move(m_loadedModels);
 		}
 
@@ -210,7 +210,7 @@ namespace Engine
 
 				auto theModel = CreateModel(*loadedAsset, meshBuilders);	// this does not create VAOs as they cannot be shared across contexts
 				{
-					std::lock_guard<std::mutex> guard(m_loadedModelsMutex);
+					Core::ScopedMutex guard(m_loadedModelsMutex);
 					m_loadedModels.push_back({ std::move(loadedAsset), std::move(theModel), std::move(meshBuilders), newHandle });
 					m_inFlightModels -= 1;
 				}

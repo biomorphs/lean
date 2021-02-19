@@ -10,7 +10,8 @@ COMPONENT_BEGIN(Light,
 	"SetAmbient", &Light::SetAmbient,
 	"SetCastsShadows", &Light::SetCastsShadows,
 	"SetShadowmapSize", &Light::SetShadowmapSize,
-	"SetShadowBias", &Light::SetShadowBias
+	"SetShadowBias", &Light::SetShadowBias,
+	"SetShadowFarPlane", &Light::SetShadowFarPlane
 )
 COMPONENT_END()
 
@@ -22,17 +23,16 @@ glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
 		auto lightPos = glm::vec3(position);
 		float aspect = m_shadowMap->Dimensions().x / (float)m_shadowMap->Dimensions().y;
 		float near = 0.1f;
-		float far = m_distance * 4.0f;	// ??? todo, attenuation
+		float far = m_shadowFarPlane;
 		m_shadowMatrix = glm::perspective(glm::radians(90.0f), aspect, near, far);	// return a 90 degree frustum used to render cubemap
 	}
 	else
 	{
 		// todo - parameterise
 		static float c_nearPlane = 0.1f;
-		static float c_farPlane = 1000.0f;
 		static float c_orthoDims = 400.0f;
 		const glm::vec3 up = direction.y == -1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, c_farPlane);
+		glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, m_shadowFarPlane);
 		glm::mat4 lightView = glm::lookAt(glm::vec3(position), glm::vec3(position) + direction, up);
 		m_shadowMatrix = lightProjection * lightView;
 	}
@@ -78,7 +78,6 @@ glm::vec3 Light::GetAttenuation() const
 
 	float closestDistance = FLT_MAX;
 	glm::vec4 closestValue = c_lightAttenuationTable[0];
-
 	for (int i = 0; i < std::size(c_lightAttenuationTable); ++i)
 	{
 		float distance = fabsf(m_distance - c_lightAttenuationTable[i].x);

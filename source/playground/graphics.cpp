@@ -115,6 +115,9 @@ bool Graphics::Initialise()
 			float bias = l.GetShadowBias();
 			dbg.DragFloat("Shadow Bias", bias, 0.001f, 0.0f, 10.0f);
 			l.SetShadowBias(bias);
+			float farPlane = l.GetShadowFarPlane();
+			dbg.DragFloat("Shadow Far Plane", farPlane, 0.01f, 0.0f, 100000.0f);
+			l.SetShadowFarPlane(farPlane);
 			if (!l.IsPointLight() && l.GetShadowMap() != nullptr && !l.GetShadowMap()->IsCubemap())
 			{
 				dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
@@ -282,7 +285,7 @@ void Graphics::ProcessLight(Light& l, const Transform* transform)
 		}
 
 		// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
-		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation, *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
+		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation, *l.GetShadowMap(), l.GetShadowBias(), l.GetShadowFarPlane(),  shadowMatrix, updateShadowmap);
 	}
 	else
 	{

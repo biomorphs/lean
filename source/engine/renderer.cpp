@@ -59,15 +59,12 @@ namespace Engine
 		m_blitShader = m_shaders->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
-
 			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
 			m_colours.Create(c_maxInstances * sizeof(glm::vec4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
-
-			CreateInstanceList(m_opaqueInstances, c_maxInstances);
-			CreateInstanceList(m_transparentInstances, c_maxInstances);
-			CreateInstanceList(m_allShadowCasterInstances, c_maxInstances);
-			CreateInstanceList(m_visibleShadowInstances, c_maxInstances);
 			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferType::UniformData, Render::RenderBufferModification::Dynamic, true);
+			m_opaqueInstances.m_instances.reserve(c_maxInstances);
+			m_transparentInstances.m_instances.reserve(c_maxInstances);
+			m_allShadowCasterInstances.m_instances.reserve(c_maxInstances);
 		}
 		{
 			SDE_PROF_EVENT("Create render targets");
@@ -83,12 +80,6 @@ namespace Engine
 	void Renderer::SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader)
 	{
 		m_shadowShaders[lightingShader.m_index] = shadowShader;
-	}
-
-	void Renderer::CreateInstanceList(InstanceList& newlist, uint32_t maxInstances)
-	{
-		SDE_PROF_EVENT();
-		newlist.m_instances.reserve(maxInstances);
 	}
 
 	void Renderer::Reset() 
@@ -224,7 +215,8 @@ namespace Engine
 		}
 	}
 
-	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float bias, glm::mat4 shadowMatrix, bool updateShadowmap)
+	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, 
+		Render::FrameBuffer& sm, float bias, float shadowFarPlane, glm::mat4 shadowMatrix, bool updateShadowmap)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
@@ -235,6 +227,7 @@ namespace Engine
 		newLight.m_lightspaceMatrix = shadowMatrix;
 		newLight.m_shadowBias = bias;
 		newLight.m_updateShadowmap = updateShadowmap;
+		newLight.m_shadowFarPlane = shadowFarPlane;	
 		m_lights.push_back(newLight);
 	}
 
@@ -291,11 +284,11 @@ namespace Engine
 			globals.m_lights[l].m_position = m_lights[l].m_position;
 			globals.m_lights[l].m_direction = m_lights[l].m_direction;
 			globals.m_lights[l].m_attenuation = m_lights[l].m_attenuation;
-			bool hasShadowMap = m_lights[l].m_position.w == 0.0f ? shadowMapIndex < c_maxShadowMaps : cubeShadowMapIndex < c_maxShadowMaps;
-			if (m_lights[l].m_shadowMap)
+			bool canAddMore = m_lights[l].m_position.w == 0.0f ? shadowMapIndex < c_maxShadowMaps : cubeShadowMapIndex < c_maxShadowMaps;
+			if (m_lights[l].m_shadowMap && canAddMore)
 			{
 				globals.m_lights[l].m_shadowParams.x = 1.0f;
-				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 0.0f ? 1000.0f : 500.0f;		// far plane hacks todo
+				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_shadowFarPlane;
 				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_position.w == 0.0f ? shadowMapIndex++ : cubeShadowMapIndex++;
 				globals.m_lights[l].m_shadowParams.w = m_lights[l].m_shadowBias;
 				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
@@ -415,7 +408,8 @@ namespace Engine
 
 		if (l.m_position.w == 0.0f)		// directional
 		{
-			int baseIndex = PrepareShadowInstances(l.m_lightspaceMatrix, m_visibleShadowInstances);
+			InstanceList visibleShadowInstances;
+			int baseIndex = PrepareShadowInstances(l.m_lightspaceMatrix, visibleShadowInstances);
 			Render::UniformBuffer lightMatUniforms;
 			lightMatUniforms.SetValue("ShadowLightSpaceMatrix", l.m_lightspaceMatrix);
 			lightMatUniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
@@ -425,13 +419,12 @@ namespace Engine
 			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 			d.SetBlending(false);
 			d.SetScissorEnabled(false);
-			DrawInstances(d, m_visibleShadowInstances, baseIndex, false, &lightMatUniforms);
+			DrawInstances(d, visibleShadowInstances, baseIndex, false, &lightMatUniforms);
 		}
 		else
 		{
 			Render::UniformBuffer uniforms;
 			SDE_PROF_EVENT("RenderShadowCubemap");
-			
 			const auto pos3 = glm::vec3(l.m_position);
 			const glm::mat4 shadowTransforms[] = {
 				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
@@ -441,18 +434,30 @@ namespace Engine
 				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
 				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
 			};
+			InstanceList culledShadowInstances[6];	// we will cull lists for all 6 faces at once
+			Frustum shadowFrustums[6];
+			if (m_cullingEnabled)
+			{
+				for (uint32_t cubeFace = 0; cubeFace < 6; ++cubeFace)
+				{
+					shadowFrustums[cubeFace] = Frustum(shadowTransforms[cubeFace]);
+					culledShadowInstances[cubeFace].m_instances.reserve(m_allShadowCasterInstances.m_instances.size() / 4);	// tune
+				}
+				CullInstances(m_allShadowCasterInstances, culledShadowInstances, shadowFrustums, 6);
+			}
 			for (uint32_t cubeFace = 0; cubeFace < 6; ++cubeFace)
 			{
-				int baseIndex = PrepareShadowInstances(shadowTransforms[cubeFace], m_visibleShadowInstances);
+				auto& instances = m_cullingEnabled ? culledShadowInstances[cubeFace] : m_allShadowCasterInstances;
+				int baseIndex = PrepareCulledShadowInstances(instances);
 				d.DrawToFramebuffer(*l.m_shadowMap, cubeFace);
 				d.ClearFramebufferDepth(*l.m_shadowMap, FLT_MAX);
 				d.SetViewport(glm::ivec2(0, 0), l.m_shadowMap->Dimensions());
 				d.SetBackfaceCulling(true, true);	// backface culling, ccw order
-				d.SetBlending(false);	
-				d.SetScissorEnabled(false);	
+				d.SetBlending(false);
+				d.SetScissorEnabled(false);
 				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
 				uniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
-				DrawInstances(d, m_visibleShadowInstances, baseIndex, false, &uniforms);
+				DrawInstances(d, instances, baseIndex, false, &uniforms);
 			}
 		}
 	}
@@ -514,6 +519,33 @@ namespace Engine
 		}
 	}
 
+	int Renderer::PrepareCulledShadowInstances(InstanceList& visibleInstances)
+	{
+		SDE_PROF_EVENT();
+		std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
+			if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
+			{
+				return true;
+			}
+			else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
+			{
+				return false;
+			}
+			auto q1Mesh = reinterpret_cast<uintptr_t>(q1.m_mesh);	// mesh
+			auto q2Mesh = reinterpret_cast<uintptr_t>(q2.m_mesh);
+			if (q1Mesh < q2Mesh)
+			{
+				return true;
+			}
+			else if (q1Mesh > q2Mesh)
+			{
+				return false;
+			}
+			return false;
+		});
+		return PopulateInstanceBuffers(visibleInstances);
+	}
+
 	int Renderer::PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances)
 	{
 		SDE_PROF_EVENT();
@@ -522,37 +554,13 @@ namespace Engine
 		visibleInstances.m_instances.clear();
 		if (m_cullingEnabled)
 		{
-			CullInstances(viewFrustum, m_allShadowCasterInstances, visibleInstances);
+			CullInstances(m_allShadowCasterInstances, &visibleInstances, &viewFrustum);
 		}
 		else
 		{
 			visibleInstances = m_allShadowCasterInstances;
 		}
-		{
-			SDE_PROF_EVENT("Sort");
-			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
-				if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
-				{
-					return true;
-				}
-				else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
-				{
-					return false;
-				}
-				auto q1Mesh = reinterpret_cast<uintptr_t>(q1.m_mesh);	// mesh
-				auto q2Mesh = reinterpret_cast<uintptr_t>(q2.m_mesh);
-				if (q1Mesh < q2Mesh)
-				{
-					return true;
-				}
-				else if (q1Mesh > q2Mesh)
-				{
-					return false;
-				}
-				return false;
-			});
-		}
-		return PopulateInstanceBuffers(visibleInstances);
+		return PrepareCulledShadowInstances(visibleInstances);
 	}
 
 	int Renderer::PrepareTransparentInstances(InstanceList& list)
@@ -564,7 +572,7 @@ namespace Engine
 		Frustum viewFrustum(projectionMat * viewMat);
 		if (m_cullingEnabled)
 		{
-			CullInstances(viewFrustum, list, visibleInstances);
+			CullInstances(list, &visibleInstances, &viewFrustum);
 		}
 		else
 		{
@@ -613,7 +621,7 @@ namespace Engine
 		Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
 		if (m_cullingEnabled)
 		{
-			CullInstances(viewFrustum, list, allVisibleInstances);
+			CullInstances(list, &allVisibleInstances, &viewFrustum);
 		}
 		else
 		{
@@ -655,65 +663,62 @@ namespace Engine
 		return PopulateInstanceBuffers(list);
 	}
 
-	void Renderer::CullInstances(const Frustum& f, const InstanceList& srcInstances, InstanceList& results)
+	void Renderer::CullInstances(const InstanceList& srcInstances, InstanceList* results, const Frustum* frustums, int listCount)
 	{
 		SDE_PROF_EVENT();
-		static bool s_singleThreadCull = false;
-		if (!s_singleThreadCull)
+		const int instancesPerThread = 1024;
+		std::atomic<int> jobsRemaining = 0;
+		std::vector<std::atomic<int>> totalVisibleInstances(listCount);
+		std::vector<std::vector<std::unique_ptr<InstanceList>>> allResults;			// ew
 		{
-			const int instanceCount = srcInstances.m_instances.size();
-			const int instancesPerThread = 1024;
-			std::atomic<int> jobsRemaining = 0;
-			std::atomic<int> totalVisibleInstances = 0;
-			std::vector<std::unique_ptr<InstanceList>> jobResults;
-			for (int i = 0; i < instanceCount; i += instancesPerThread)
+			SDE_PROF_EVENT("SubmitJobs");
+			for (int listIndex = 0; listIndex < listCount; ++listIndex)
 			{
-				const int startIndex = i;
-				const int endIndex = std::min(i + instancesPerThread, instanceCount);
-				auto visibleInstances = std::make_unique<InstanceList>();
-				visibleInstances->m_instances.reserve(instancesPerThread);
-				auto instanceListPtr = visibleInstances.get();
-				jobResults.push_back(std::move(visibleInstances));
-				auto cullJob = [&jobsRemaining, &totalVisibleInstances, instanceListPtr, &srcInstances, f, startIndex, endIndex](void*)
+				std::vector<std::unique_ptr<InstanceList>> jobResults;
+				const int instanceCount = srcInstances.m_instances.size();
+				for (int i = 0; i < instanceCount; i += instancesPerThread)
 				{
-					SDE_PROF_EVENT("Culling");
-					for (int i = startIndex; i < endIndex; ++i)
+					const int startIndex = i;
+					const int endIndex = std::min(i + instancesPerThread, instanceCount);
+					auto visibleInstances = std::make_unique<InstanceList>();		// instance list per job
+					visibleInstances->m_instances.reserve(instancesPerThread);
+					auto instanceListPtr = visibleInstances.get();
+					jobResults.push_back(std::move(visibleInstances));
+					auto cullJob = [&jobsRemaining, &totalVisibleInstances, instanceListPtr, &srcInstances, frustums, startIndex, endIndex, listIndex](void*)
 					{
-						if (f.IsBoxVisible(srcInstances.m_instances[i].m_aabbMin, srcInstances.m_instances[i].m_aabbMax))
+						SDE_PROF_EVENT("Culling");
+						for (int i = startIndex; i < endIndex; ++i)
 						{
-							instanceListPtr->m_instances.emplace_back(srcInstances.m_instances[i]);
+							if (frustums[listIndex].IsBoxVisible(srcInstances.m_instances[i].m_aabbMin, srcInstances.m_instances[i].m_aabbMax))
+							{
+								instanceListPtr->m_instances.emplace_back(srcInstances.m_instances[i]);
+							}
 						}
-					}
-					totalVisibleInstances += instanceListPtr->m_instances.size();
-					jobsRemaining--;
-				};
-				jobsRemaining++;
-				m_jobSystem->PushJob(cullJob);
-			}
-			{
-				SDE_PROF_EVENT("WaitForCulling");
-				while (jobsRemaining > 0)
-				{
-					Core::Thread::Sleep(0);
+						totalVisibleInstances[listIndex] += instanceListPtr->m_instances.size();
+						jobsRemaining--;
+					};
+					jobsRemaining++;
+					m_jobSystem->PushJob(cullJob);
 				}
-			}
-			{
-				SDE_PROF_EVENT("PushResults");
-				results.m_instances.reserve(totalVisibleInstances);
-				for (const auto& result : jobResults)
-				{
-					SDE_PROF_EVENT("Insert");
-					results.m_instances.insert(results.m_instances.end(), result->m_instances.begin(), result->m_instances.end());
-				}
+				allResults.emplace_back(std::move(jobResults));
 			}
 		}
-		else
 		{
-			for (const auto& it : srcInstances.m_instances)
+			SDE_PROF_EVENT("WaitForCulling");
+			while (jobsRemaining > 0)
 			{
-				if (f.IsBoxVisible(it.m_aabbMin, it.m_aabbMax))
+				Core::Thread::Sleep(0);
+			}
+		}
+		{
+			SDE_PROF_EVENT("PushResults");
+			for (int listIndex = 0; listIndex < listCount; ++listIndex)
+			{
+				results[listIndex].m_instances.reserve(totalVisibleInstances[listIndex]);
+				for (const auto& result : allResults[listIndex])
 				{
-					results.m_instances.push_back(it);
+					SDE_PROF_EVENT("Insert");
+					results[listIndex].m_instances.insert(results[listIndex].m_instances.end(), result->m_instances.begin(), result->m_instances.end());
 				}
 			}
 		}

@@ -36,7 +36,8 @@ namespace Engine
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
 		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation);
-		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
+		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, 
+					  Render::FrameBuffer& sm, float shadowBias, float shadowFarPlane, glm::mat4 shadowMatrix, bool updateShadowmap);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 
@@ -63,14 +64,16 @@ namespace Engine
 		void RenderShadowmap(Render::Device& d, Light& l);
 		void SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
 		void SubmitInstance(InstanceList& list, glm::vec3 cam, glm::mat4 trns, glm::vec4 col, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 aabbMin, glm::vec3 aabbMax);
-		void CreateInstanceList(InstanceList& newlist, uint32_t maxInstances);
 		int PrepareOpaqueInstances(InstanceList& list);
 		int PrepareTransparentInstances(InstanceList& list);
+		int PrepareCulledShadowInstances(InstanceList& visibleInstances);
 		int PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
 		int PopulateInstanceBuffers(InstanceList& list);	// returns offset to start of index data in global gpu buffers
 		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
-		void CullInstances(const class Frustum& f, const InstanceList& srcInstances, InstanceList& results);
+
+		// cull one source list into multiple result lists each with a different frustum
+		void CullInstances(const InstanceList& srcInstances, InstanceList* results, const class Frustum* frustums, int listCount=1);
 
 		FrameStats m_frameStats;
 		float m_hdrExposure = 1.0f;
@@ -78,7 +81,6 @@ namespace Engine
 		InstanceList m_opaqueInstances;
 		InstanceList m_transparentInstances;
 		InstanceList m_allShadowCasterInstances;
-		InstanceList m_visibleShadowInstances;
 		Render::RenderBuffer m_transforms;	// global instance transforms
 		Render::RenderBuffer m_colours;		// global instance colours
 		int m_nextInstance = 0;				// index into buffers above

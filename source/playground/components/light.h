@@ -31,6 +31,7 @@ public:
 	void SetCastsShadows(bool c);
 	void SetShadowmapSize(int w, int h) { m_shadowMapSize = { w,h }; }
 	void SetShadowBias(float b) { m_shadowBias = b; }
+	void SetShadowFarPlane(float p) { m_shadowFarPlane = p; }
 	glm::mat4 UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction);
 
 	Type GetLightType() const { return m_type; }
@@ -43,6 +44,7 @@ public:
 	float GetAmbient() const { return m_ambient; }
 	float GetDistance() const { return m_distance; }
 	float GetShadowBias() const { return m_shadowBias; }
+	float GetShadowFarPlane() const { return m_shadowFarPlane; }
 	glm::vec3 GetAttenuation() const;
 	glm::vec2 GetSpotAngles() const { return m_spotAngles; }	// radians!
 	glm::mat4 GetShadowMatrix() { return m_shadowMatrix; }
@@ -55,6 +57,7 @@ private:
 	glm::vec2 m_spotAngles = { 0.0f,0.0f };	// radians
 	float m_ambient = 0.0f;
 	float m_shadowBias = 0.05f;	// functionality may depend on light type
+	float m_shadowFarPlane = 64.0f;	// tune based on distance/attenuation
 	bool m_castShadows = false;
 	glm::ivec2 m_shadowMapSize = { 256,256 };
 	glm::mat4 m_shadowMatrix = glm::identity<glm::mat4>();	// lightspace matrix
