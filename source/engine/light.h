@@ -10,6 +10,7 @@ namespace Engine
 		glm::vec4 m_position;		// w = type - 0 = dir, 1=point, 2=spot
 		glm::vec3 m_direction;
 		glm::mat4 m_lightspaceMatrix;	// for shadow calculations
+		glm::vec2 m_spotlightAngles;	// inner, outer, cosines
 		float m_maxDistance;			// for attenuation
 		float m_attenuationCompress;	// controls attenuation fn
 		float m_shadowBias;	

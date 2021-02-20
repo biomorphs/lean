@@ -19,9 +19,9 @@ uniform sampler2D SpecularTexture;
 uniform sampler2D ShadowMaps[16];
 uniform samplerCube ShadowCubeMaps[16];
 
-float CalculateShadows(vec3 normal, float shadowIndex, mat4 lightSpaceTransform, float bias)
+float CalculateShadows(vec3 normal, vec3 position, float shadowIndex, mat4 lightSpaceTransform, float bias)
 {
-	vec4 positionLightSpace = lightSpaceTransform * vec4(vs_out_position,1.0); 
+	vec4 positionLightSpace = lightSpaceTransform * vec4(position,1.0); 
 	
 	// perform perspective divide
 	vec3 projCoords = positionLightSpace.xyz / positionLightSpace.w;
@@ -79,6 +79,62 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 
 	return shadow;
 }
+
+float CalculateShadow(int i, vec3 normal)
+{
+	float shadow = 0.0;
+	if(Lights[i].Position.w == 1.0)		// point light
+	{
+		shadow = CalculateCubeShadows(normal,vs_out_position, Lights[i].Position.xyz, Lights[i].DistanceAttenuation.x, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
+	}
+	else if(Lights[i].Position.w == 0.0)	// directional
+	{
+		shadow = CalculateShadows(normal, vs_out_position, Lights[i].ShadowParams.y, Lights[i].LightspaceTransform, Lights[i].ShadowParams.z);
+	}
+	else
+	{
+		shadow = CalculateShadows(normal, vs_out_position, Lights[i].ShadowParams.y, Lights[i].LightspaceTransform, Lights[i].ShadowParams.z);
+	} 
+	return shadow;
+}
+
+float CalculateAttenuation(int i, vec3 lightDir)
+{
+	if(Lights[i].Position.w == 0.0)		// directional
+	{
+		return 1.0;
+	}
+	else if(Lights[i].Position.w == 2.0)		// spot
+	{
+		float distance = length(Lights[i].Position.xyz - vs_out_position);			
+		float attenuation = pow(smoothstep(Lights[i].DistanceAttenuation.x, 0, distance),Lights[i].DistanceAttenuation.y);
+		
+		float theta = dot(lightDir, normalize(Lights[i].Position.xyz - vs_out_position)); 
+		float outerAngle = Lights[i].SpotlightAngles.y;
+		float innerAngle = Lights[i].SpotlightAngles.x;
+		attenuation *= clamp((theta - outerAngle) / (outerAngle - innerAngle), 0.0, 1.0);    
+		
+		return attenuation;
+	}
+	else	
+	{
+		float distance = length(Lights[i].Position.xyz - vs_out_position);			
+		float attenuation = pow(smoothstep(Lights[i].DistanceAttenuation.x, 0, distance),Lights[i].DistanceAttenuation.y);
+		return attenuation;
+	}
+}
+
+vec3 CalculateDirection(int i)
+{
+	if(Lights[i].Position.w == 1.0)		// point light
+	{
+		return normalize(Lights[i].Position.xyz - vs_out_position);
+	}
+	else
+	{
+		return normalize(-Lights[i].Direction);
+	}
+}
  
 void main()
 {
@@ -97,27 +153,11 @@ void main()
 
 	for(int i=0;i<LightCount;++i)
 	{
-		float attenuation = 1.0;
-		vec3 lightDir;
+		vec3 lightDir = CalculateDirection(i);
+		float attenuation = CalculateAttenuation(i, lightDir);
 		float shadow = 0.0;
-		if(Lights[i].Position.w == 0.0)		// directional light
-		{
-			lightDir = normalize(-Lights[i].Direction);
-			if(Lights[i].ShadowParams.x != 0.0)
-			{
-				shadow = CalculateShadows(finalNormal, Lights[i].ShadowParams.y, Lights[i].LightspaceTransform, Lights[i].ShadowParams.z);
-			}
-		}
-		else	// point light
-		{
-			lightDir = normalize(Lights[i].Position.xyz - vs_out_position);
-			float lightDistance = length(Lights[i].Position.xyz - vs_out_position);			
-			attenuation = pow(smoothstep(Lights[i].DistanceAttenuation.x, 0, lightDistance),Lights[i].DistanceAttenuation.y);
-			if(attenuation > 0.0 && Lights[i].ShadowParams.x != 0.0)
-			{
-				shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].DistanceAttenuation.x, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
-			}
-		}
+		if(attenuation > 0.0 && Lights[i].ShadowParams.x != 0.0)
+			shadow = CalculateShadow(i, finalNormal);
 
 		// diffuse light
 		float diffuseFactor = max(dot(finalNormal, lightDir),0.0);

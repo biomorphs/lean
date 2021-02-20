@@ -25,6 +25,7 @@ local lightFriction = 0.95
 local lightXZSpeed = 200
 local lightYSpeed = 200
 local bouncyLights = {}		-- array of {entityHandle, velocity{xyz}}
+local spinnyLights = {}		-- array of entityHandle
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
@@ -35,9 +36,10 @@ function MakeSunEntity()
 	
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
-	light:SetColour(0.8, 0.8, 0.8)
-	light:SetColour(0.0, 0.0, 0.0)
+	light:SetColour(0.4, 0.4, 0.4)
+	--light:SetColour(0.0, 0.0, 0.0)
 	light:SetAmbient(0.1)
+	light:SetDistance(1500)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
 	light:SetShadowBias(0.005)
@@ -52,6 +54,7 @@ function MakeLightEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
+	transform:SetPosition(-20,24,-5)
 	transform:SetScale(1,1,1)
 	
 	LightColourIndex = LightColourIndex + 1
@@ -62,9 +65,10 @@ function MakeLightEntity()
 	light:SetPointLight();
 	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
 	light:SetAmbient(0.0)
-	light:SetDistance(math.random(32,64))
+	light:SetDistance(math.random(16,32))
+	light:SetAttenuation(2.5)
 	light:SetCastsShadows(false)
-	light:SetBrightness(math.random(1,2))
+	light:SetBrightness(2.0)
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -77,6 +81,7 @@ function MakeShadowLightEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
+	transform:SetPosition(-20,5,-5)
 	transform:SetScale(1,1,1)
 	
 	LightColourIndex = LightColourIndex + 1
@@ -93,13 +98,38 @@ function MakeShadowLightEntity()
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(256,256)
 	light:SetShadowBias(4.0)
-	light:SetBrightness(math.random(1,2))
+	light:SetBrightness(2.0)
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
 	newModel:SetShader(BasicShader)
 	
 	table.insert(bouncyLights,{newEntity, {0.0,0.0,0.0}})
+end
+
+function MakeSpotLight(x,y,z, rx, ry, rz)
+	local newEntity = World.AddEntity()
+	local transform = World.AddComponent_Transform(newEntity)
+	transform:SetPosition(x,y,z)
+	transform:SetRotation(rx, ry, rz)
+	transform:SetScale(1,4,1)
+	
+	local light = World.AddComponent_Light(newEntity)
+	light:SetSpotLight();
+	light:SetColour(1, 0, 0)
+	light:SetAmbient(0.0)
+	light:SetDistance(100)
+	light:SetCastsShadows(true)
+	light:SetShadowmapSize(1024,1024)
+	light:SetShadowBias(0.0001)
+	light:SetBrightness(2.0)
+	light:SetSpotAngles(0.1,0.5)
+	
+	local newModel = World.AddComponent_Model(newEntity)
+	newModel:SetModel(CubeModel)
+	newModel:SetShader(BasicShader)
+	
+	table.insert(spinnyLights,newEntity)
 end
 
 function MakeModelEntity(x,y,z,scale,model,shader)
@@ -114,11 +144,16 @@ end
 
 function EntityTest.Init()
 	MakeSunEntity()
+	MakeSpotLight(25,5,-4.5,0,0,80)
+	MakeSpotLight(25,5,-4.5,0,180,80)
+	
+	MakeSpotLight(61,75,-92,0,0,100)
+	MakeSpotLight(61,75,-92,0,180,100)
 
-	for i=1,8 do 
-		--MakeLightEntity()
+	for i=1,4 do 
+		MakeLightEntity()
 	end
-	for i=1,16 do 
+	for i=1,8 do 
 		MakeShadowLightEntity()
 	end
 	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)
@@ -140,7 +175,14 @@ function Vec3Length(v)
 end
 
 function EntityTest.Tick(deltaTime)
-	deltaTime = deltaTime * 0.2
+	deltaTime = deltaTime * 0.05
+	for s=1,#spinnyLights do 
+		local entity = spinnyLights[s]
+		local transform = World.GetComponent_Transform(entity)
+		local rotation = transform:GetRotationDegrees()
+		rotation.y = rotation.y + deltaTime * 2000
+		transform:SetRotation(rotation.x,rotation.y,rotation.z)
+	end
 	for b=1,#bouncyLights do 
 		local entity = bouncyLights[b][1]
 		local velocity = bouncyLights[b][2]

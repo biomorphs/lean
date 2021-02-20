@@ -14,6 +14,7 @@ public:
 	void SetScale(float x, float y, float z) { m_scale = { x, y, z }; }
 	glm::vec3 GetPosition() const { return m_position; }
 	glm::vec3 GetRotationRadians() const { return m_rotation; }
+	glm::vec3 GetRotationDegrees() const { return glm::degrees(m_rotation); }
 	glm::vec3 GetScale() const { return m_scale; }
 
 	glm::mat4 GetMatrix() const {

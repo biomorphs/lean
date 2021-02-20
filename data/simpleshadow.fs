@@ -14,7 +14,7 @@ void main()
 	if(diffuseTex.a < 0.5 || MeshDiffuseOpacity.a == 0.0)
 		discard;
 
-	if(Lights[ShadowLightIndex].Position.w == 0.0)
+	if(Lights[ShadowLightIndex].Position.w == 0.0 || Lights[ShadowLightIndex].Position.w == 2.0)
 	{
 		gl_FragDepth = gl_FragCoord.z;
 	}

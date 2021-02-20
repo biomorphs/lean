@@ -27,9 +27,10 @@ namespace Engine
 	struct LightInfo					// passed to shaders
 	{
 		glm::vec4 m_colourAndAmbient;	// rgb=colour, a=ambient multiplier
-		glm::vec4 m_position;
-		glm::vec3 m_direction;			// w = spotlight angle or pointlight radius used for attenuation	
+		glm::vec4 m_position;			// w = type (0=Directional,1=Point,2=Spot)
+		glm::vec3 m_direction;	
 		glm::vec2 m_distanceAttenuation;// distance, attenuation compression
+		glm::vec2 m_spotAngles;			// spotlight angles (inner,outer)
 		glm::vec3 m_shadowParams;		// enabled, index, bias
 		glm::mat4 m_lightSpaceMatrix;	// for shadow calculations
 	};
@@ -215,6 +216,35 @@ namespace Engine
 		}
 	}
 
+	void Renderer::SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles)
+	{
+		Light newLight;
+		newLight.m_colour = glm::vec4(colour, ambientStr);
+		newLight.m_position = { position, 2.0f };	// spotlight
+		newLight.m_direction = direction;
+		newLight.m_maxDistance = distance;
+		newLight.m_attenuationCompress = attenuation;
+		newLight.m_spotlightAngles = spotAngles;
+		m_lights.push_back(newLight);
+	}
+
+	void Renderer::SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles,
+		Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap)
+	{
+		Light newLight;
+		newLight.m_colour = glm::vec4(colour, ambientStr);
+		newLight.m_position = { position, 2.0f };	// spotlight
+		newLight.m_direction = direction;
+		newLight.m_maxDistance = distance;
+		newLight.m_attenuationCompress = attenuation;
+		newLight.m_shadowMap = &sm;
+		newLight.m_lightspaceMatrix = shadowMatrix;
+		newLight.m_shadowBias = shadowBias;
+		newLight.m_updateShadowmap = updateShadowmap;
+		newLight.m_spotlightAngles = spotAngles;
+		m_lights.push_back(newLight);
+	}
+
 	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, 
 		Render::FrameBuffer& sm, float bias, glm::mat4 shadowMatrix, bool updateShadowmap)
 	{
@@ -285,11 +315,12 @@ namespace Engine
 			globals.m_lights[l].m_position = m_lights[l].m_position;
 			globals.m_lights[l].m_direction = m_lights[l].m_direction;
 			globals.m_lights[l].m_distanceAttenuation = { m_lights[l].m_maxDistance, m_lights[l].m_attenuationCompress };
-			bool canAddMore = m_lights[l].m_position.w == 0.0f ? shadowMapIndex < c_maxShadowMaps : cubeShadowMapIndex < c_maxShadowMaps;
+			globals.m_lights[l].m_spotAngles = m_lights[l].m_spotlightAngles;
+			bool canAddMore = m_lights[l].m_position.w == 1.0f ? cubeShadowMapIndex < c_maxShadowMaps : shadowMapIndex < c_maxShadowMaps;
 			if (m_lights[l].m_shadowMap && canAddMore)
 			{
 				globals.m_lights[l].m_shadowParams.x = 1.0f;
-				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 0.0f ? shadowMapIndex++ : cubeShadowMapIndex++;
+				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 1.0f ? cubeShadowMapIndex++ : shadowMapIndex++;
 				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_shadowBias;
 				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
 			}
@@ -313,7 +344,7 @@ namespace Engine
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
-				if (m_lights[l].m_position.w == 0.0f && shadowMapIndex < c_maxShadowMaps)
+				if (m_lights[l].m_position.w == 0.0f || m_lights[l].m_position.w == 2.0f && shadowMapIndex < c_maxShadowMaps)
 				{
 					sprintf_s(samplerNameBuffer, "ShadowMaps[%d]", shadowMapIndex++);
 					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
@@ -331,6 +362,26 @@ namespace Engine
 						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
 					}
 				}
+			}
+		}
+
+		// make sure to reset any we are not using or opengl will NOT be happy
+		for (int l = shadowMapIndex; l < c_maxShadowMaps; ++l)
+		{
+			sprintf_s(samplerNameBuffer, "ShadowMaps[%d]", shadowMapIndex++);
+			uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+			if (uniformHandle != -1)
+			{
+				d.SetSampler(uniformHandle, 0, textureUnit++);
+			}
+		}
+		for (int l = cubeShadowMapIndex; l < c_maxShadowMaps; ++l)
+		{
+			sprintf_s(samplerNameBuffer, "ShadowCubeMaps[%d]", shadowMapIndex++);
+			uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+			if (uniformHandle != -1)
+			{
+				d.SetSampler(uniformHandle, 0, textureUnit++);
 			}
 		}
 
@@ -404,7 +455,7 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		m_frameStats.m_shadowMapUpdates++;
-		if (l.m_position.w == 0.0f)		// directional
+		if (l.m_position.w == 0.0f || l.m_position.w == 2.0f)		// directional / spot
 		{
 			InstanceList visibleShadowInstances;
 			int baseIndex = PrepareShadowInstances(l.m_lightspaceMatrix, visibleShadowInstances);

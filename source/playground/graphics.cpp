@@ -84,7 +84,7 @@ bool Graphics::Initialise()
 	});
 
 	m_entitySystem->RegisterComponentType<Light>("Light");
-	m_entitySystem->RegisterComponentUi("Light", [](Component& c, Engine::DebugGuiSystem& dbg) {
+	m_entitySystem->RegisterComponentUi("Light", [this](Component& c, Engine::DebugGuiSystem& dbg) {
 		auto& l = static_cast<Light&>(c);
 		int typeIndex = static_cast<int>(l.GetLightType());
 		const char* types[] = { "Directional", "Point", "Spot" };
@@ -101,14 +101,21 @@ bool Graphics::Initialise()
 		auto ambient = l.GetAmbient();
 		dbg.DragFloat("Ambient", ambient, 0.001f, 0.0f, 1.0f);
 		l.SetAmbient(ambient);
+		auto radius = l.GetDistance();
+		dbg.DragFloat("Distance", radius, 0.1f, 0.0f, 3250.0f);
+		l.SetDistance(radius);
 		if (l.GetLightType() != Light::Type::Directional)
 		{
-			auto radius = l.GetDistance();
-			dbg.DragFloat("Distance", radius, 0.1f, 0.0f, 3250.0f);
-			l.SetDistance(radius);
 			auto atten = l.GetAttenuation();
 			dbg.DragFloat("Attenuation", atten, 0.1f, 0.0001f, 1000.0f);
 			l.SetAttenuation(atten);
+		}
+		if (l.GetLightType() == Light::Type::Spot)
+		{
+			auto angles = l.GetSpotAngles();
+			dbg.DragFloat("Outer Angle", angles.y, 0.01f, angles.x, 1.0f);
+			dbg.DragFloat("Inner Angle", angles.x, 0.01f, 0.0f, angles.y);
+			l.SetSpotAngles(angles.x, angles.y);
 		}
 		bool castShadow = l.CastsShadows();
 		dbg.Checkbox("Cast Shadows", &castShadow);
@@ -123,6 +130,8 @@ bool Graphics::Initialise()
 				dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
 			}
 		}
+		Engine::Frustum f(l.GetShadowMatrix());
+		m_debugRender->DrawFrustum(f, glm::vec4(l.GetColour(), 1.0f));
 	});
 
 	m_entitySystem->RegisterComponentType<Model>("Model");
@@ -285,13 +294,27 @@ void Graphics::ProcessLight(Light& l, const Transform* transform)
 			shadowMatrix = l.UpdateShadowMatrix(position, direction);
 		}
 
-		// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
-		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
+		if (l.GetLightType() == Light::Type::Spot)
+		{
+			m_renderer->SpotLight(position, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, l.GetSpotAngles(), *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
+		}
+		else
+		{
+			// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
+			m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
+		}
 	}
 	else
 	{
 		l.GetShadowMap() = nullptr;	// this is a safe spot to destroy unused shadow maps
-		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation);
+		if (l.GetLightType() == Light::Type::Spot)
+		{
+			m_renderer->SpotLight(position, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, l.GetSpotAngles());
+		}
+		else
+		{
+			m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation);
+		}
 	}
 };
 

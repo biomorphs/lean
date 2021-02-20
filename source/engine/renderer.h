@@ -38,6 +38,9 @@ namespace Engine
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation,
 					  Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
+		void SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles,
+			Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
+		void SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 

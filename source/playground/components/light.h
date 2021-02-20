@@ -23,11 +23,12 @@ public:
 	void SetType(Type newType);
 	void SetDirectional();
 	void SetPointLight();
+	void SetSpotLight();
 	void SetColour(float r, float g, float b) { m_colour = { r,g,b }; }
 	void SetBrightness(float b) { m_brightness = b; }
 	void SetDistance(float d) { m_distance = d; }
 	void SetAttenuation(float a) { m_attenuation = a; }
-	void SetSpotAnglesDegrees(float inner, float outer) { m_spotAngles = glm::radians(glm::vec2(inner, outer)); }
+	void SetSpotAngles(float inner, float outer) { m_spotAngles = glm::vec2(inner, outer); }
 	void SetAmbient(float a) { m_ambient = a; }
 	void SetCastsShadows(bool c);
 	void SetShadowmapSize(int w, int h) { m_shadowMapSize = { w,h }; }
@@ -54,7 +55,7 @@ private:
 	float m_brightness = 1.0f;	// scales colour (HDR)
 	float m_distance = 32.0f;	// used for attenuation and culling
 	float m_attenuation = 1.0f;	// controls attenuation
-	glm::vec2 m_spotAngles = { 0.0f,0.0f };	// radians
+	glm::vec2 m_spotAngles = { 0.4f,0.8f };	// inner, outer
 	float m_ambient = 0.0f;
 	float m_shadowBias = 0.05f;	// functionality may depend on light type
 	bool m_castShadows = false;
