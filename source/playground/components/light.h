@@ -26,12 +26,12 @@ public:
 	void SetColour(float r, float g, float b) { m_colour = { r,g,b }; }
 	void SetBrightness(float b) { m_brightness = b; }
 	void SetDistance(float d) { m_distance = d; }
+	void SetAttenuation(float a) { m_attenuation = a; }
 	void SetSpotAnglesDegrees(float inner, float outer) { m_spotAngles = glm::radians(glm::vec2(inner, outer)); }
 	void SetAmbient(float a) { m_ambient = a; }
 	void SetCastsShadows(bool c);
 	void SetShadowmapSize(int w, int h) { m_shadowMapSize = { w,h }; }
 	void SetShadowBias(float b) { m_shadowBias = b; }
-	void SetShadowFarPlane(float p) { m_shadowFarPlane = p; }
 	glm::mat4 UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction);
 
 	Type GetLightType() const { return m_type; }
@@ -42,10 +42,9 @@ public:
 	glm::vec3 GetColour() const { return m_colour; }
 	float GetBrightness() const { return m_brightness; }
 	float GetAmbient() const { return m_ambient; }
-	float GetDistance() const { return m_distance; }
+	float GetDistance() const { return m_distance; }	// anything past this = no light
+	float GetAttenuation() const { return m_attenuation; }
 	float GetShadowBias() const { return m_shadowBias; }
-	float GetShadowFarPlane() const { return m_shadowFarPlane; }
-	glm::vec3 GetAttenuation() const;
 	glm::vec2 GetSpotAngles() const { return m_spotAngles; }	// radians!
 	glm::mat4 GetShadowMatrix() { return m_shadowMatrix; }
 
@@ -53,11 +52,11 @@ private:
 	Type m_type = Type::Directional;
 	glm::vec3 m_colour = { 1.0f,1.0f,1.0f };
 	float m_brightness = 1.0f;	// scales colour (HDR)
-	float m_distance = 32.0f;	// used to calculate attenuation
+	float m_distance = 32.0f;	// used for attenuation and culling
+	float m_attenuation = 1.0f;	// controls attenuation
 	glm::vec2 m_spotAngles = { 0.0f,0.0f };	// radians
 	float m_ambient = 0.0f;
 	float m_shadowBias = 0.05f;	// functionality may depend on light type
-	float m_shadowFarPlane = 64.0f;	// tune based on distance/attenuation
 	bool m_castShadows = false;
 	glm::ivec2 m_shadowMapSize = { 256,256 };
 	glm::mat4 m_shadowMatrix = glm::identity<glm::mat4>();	// lightspace matrix

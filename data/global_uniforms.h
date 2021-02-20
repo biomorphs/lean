@@ -5,8 +5,8 @@ struct LightInfo
 	vec4 ColourAndAmbient;
 	vec4 Position;
 	vec3 Direction;
-	vec3 Attenuation;
-	vec4 ShadowParams;		// enabled, far plane, shadowmap index, bias
+	vec2 DistanceAttenuation;
+	vec3 ShadowParams;		// enabled, shadowmap index, bias
 	mat4 LightspaceTransform;
 };
 

@@ -29,8 +29,8 @@ namespace Engine
 		glm::vec4 m_colourAndAmbient;	// rgb=colour, a=ambient multiplier
 		glm::vec4 m_position;
 		glm::vec3 m_direction;			// w = spotlight angle or pointlight radius used for attenuation	
-		glm::vec3 m_attenuation;		// todo - delete
-		glm::vec4 m_shadowParams;		// enabled, far plane, index, bias
+		glm::vec2 m_distanceAttenuation;// distance, attenuation compression
+		glm::vec3 m_shadowParams;		// enabled, index, bias
 		glm::mat4 m_lightSpaceMatrix;	// for shadow calculations
 	};
 
@@ -215,29 +215,30 @@ namespace Engine
 		}
 	}
 
-	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation, 
-		Render::FrameBuffer& sm, float bias, float shadowFarPlane, glm::mat4 shadowMatrix, bool updateShadowmap)
+	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, 
+		Render::FrameBuffer& sm, float bias, glm::mat4 shadowMatrix, bool updateShadowmap)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
 		newLight.m_position = posAndType;
 		newLight.m_direction = direction;
-		newLight.m_attenuation = attenuation;
+		newLight.m_maxDistance = distance;
+		newLight.m_attenuationCompress = attenuation;
 		newLight.m_shadowMap = &sm;
 		newLight.m_lightspaceMatrix = shadowMatrix;
 		newLight.m_shadowBias = bias;
 		newLight.m_updateShadowmap = updateShadowmap;
-		newLight.m_shadowFarPlane = shadowFarPlane;	
 		m_lights.push_back(newLight);
 	}
 
-	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, glm::vec3 attenuation)
+	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
 		newLight.m_position = posAndType;
 		newLight.m_direction = direction;
-		newLight.m_attenuation = attenuation;
+		newLight.m_maxDistance = distance;
+		newLight.m_attenuationCompress = attenuation;
 		m_lights.push_back(newLight);
 	}
 
@@ -283,19 +284,18 @@ namespace Engine
 			globals.m_lights[l].m_colourAndAmbient = m_lights[l].m_colour;
 			globals.m_lights[l].m_position = m_lights[l].m_position;
 			globals.m_lights[l].m_direction = m_lights[l].m_direction;
-			globals.m_lights[l].m_attenuation = m_lights[l].m_attenuation;
+			globals.m_lights[l].m_distanceAttenuation = { m_lights[l].m_maxDistance, m_lights[l].m_attenuationCompress };
 			bool canAddMore = m_lights[l].m_position.w == 0.0f ? shadowMapIndex < c_maxShadowMaps : cubeShadowMapIndex < c_maxShadowMaps;
 			if (m_lights[l].m_shadowMap && canAddMore)
 			{
 				globals.m_lights[l].m_shadowParams.x = 1.0f;
-				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_shadowFarPlane;
-				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_position.w == 0.0f ? shadowMapIndex++ : cubeShadowMapIndex++;
-				globals.m_lights[l].m_shadowParams.w = m_lights[l].m_shadowBias;
+				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 0.0f ? shadowMapIndex++ : cubeShadowMapIndex++;
+				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_shadowBias;
 				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
 			}
 			else
 			{
-				globals.m_lights[l].m_shadowParams = { 0.0f,0.0f,0.0f,0.0f };
+				globals.m_lights[l].m_shadowParams = { 0.0f,0.0f,0.0f };
 			}
 		}
 		globals.m_lightCount = static_cast<int>(std::min(m_lights.size(), c_maxLights));
@@ -339,8 +339,6 @@ namespace Engine
 
 	void Renderer::DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps, Render::UniformBuffer* uniforms)
 	{
-		// populate the global instance buffers
-
 		SDE_PROF_EVENT();
 		auto firstInstance = list.m_instances.begin();
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
@@ -481,8 +479,8 @@ namespace Engine
 		}
 
 		// setup global constants
-		auto projectionMat = m_camera.ProjectionMatrix();
-		auto viewMat = m_camera.ViewMatrix();
+		const auto projectionMat = m_camera.ProjectionMatrix();
+		const auto viewMat = m_camera.ViewMatrix();
 		UpdateGlobals(projectionMat, viewMat);
 
 		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
@@ -712,7 +710,7 @@ namespace Engine
 			}
 		}
 		{
-			SDE_PROF_EVENT("WaitForCulling");
+			SDE_PROF_STALL("WaitForCulling");
 			while (jobsRemaining > 0)
 			{
 				Core::Thread::Sleep(0);

@@ -9,10 +9,10 @@ namespace Engine
 		glm::vec4 m_colour;			// w = ambient strength
 		glm::vec4 m_position;		// w = type - 0 = dir, 1=point, 2=spot
 		glm::vec3 m_direction;
-		glm::vec3 m_attenuation;	// constant, linear, quadratic
 		glm::mat4 m_lightspaceMatrix;	// for shadow calculations
+		float m_maxDistance;			// for attenuation
+		float m_attenuationCompress;	// controls attenuation fn
 		float m_shadowBias;	
-		float m_shadowFarPlane;
 		Render::FrameBuffer* m_shadowMap = nullptr;	// if this is not null the light casts shadows
 		bool m_updateShadowmap;		// do we need to redraw this frame
 	};

@@ -36,12 +36,12 @@ function MakeSunEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.8, 0.8, 0.8)
+	light:SetColour(0.0, 0.0, 0.0)
 	light:SetAmbient(0.1)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
 	light:SetShadowBias(0.005)
 	light:SetBrightness(1.0)
-	light:SetShadowFarPlane(800)
 
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(CubeModel)
@@ -64,7 +64,7 @@ function MakeLightEntity()
 	light:SetAmbient(0.0)
 	light:SetDistance(math.random(32,64))
 	light:SetCastsShadows(false)
-	light:SetBrightness(math.random(2,4))
+	light:SetBrightness(math.random(1,2))
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -89,11 +89,11 @@ function MakeShadowLightEntity()
 	light:SetAmbient(0.0)
 	local radius = math.random(64,96)
 	light:SetDistance(radius)
+	light:SetAttenuation(2.5)
 	light:SetCastsShadows(true)
-	light:SetShadowFarPlane(radius*3)
 	light:SetShadowmapSize(256,256)
 	light:SetShadowBias(4.0)
-	light:SetBrightness(math.random(2,4))
+	light:SetBrightness(math.random(1,2))
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -115,10 +115,10 @@ end
 function EntityTest.Init()
 	MakeSunEntity()
 
-	for i=1,32 do 
-		MakeLightEntity()
-	end
 	for i=1,8 do 
+		--MakeLightEntity()
+	end
+	for i=1,16 do 
 		MakeShadowLightEntity()
 	end
 	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)

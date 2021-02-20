@@ -24,7 +24,7 @@ void main()
 		float lightDistance = length(vs_out_position.xyz - Lights[ShadowLightIndex].Position.xyz);
 
 		// map to [0;1] range by dividing by far_plane
-		lightDistance = lightDistance / Lights[ShadowLightIndex].ShadowParams.y;
+		lightDistance = lightDistance / Lights[ShadowLightIndex].DistanceAttenuation.x;
     
 		// write this as modified depth
 		gl_FragDepth = lightDistance;

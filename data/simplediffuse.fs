@@ -97,28 +97,25 @@ void main()
 
 	for(int i=0;i<LightCount;++i)
 	{
-		float attenuation;
+		float attenuation = 1.0;
 		vec3 lightDir;
 		float shadow = 0.0;
 		if(Lights[i].Position.w == 0.0)		// directional light
 		{
-			attenuation = 1.0;
 			lightDir = normalize(-Lights[i].Direction);
 			if(Lights[i].ShadowParams.x != 0.0)
 			{
-				shadow = CalculateShadows(finalNormal, Lights[i].ShadowParams.z, Lights[i].LightspaceTransform, Lights[i].ShadowParams.w);
+				shadow = CalculateShadows(finalNormal, Lights[i].ShadowParams.y, Lights[i].LightspaceTransform, Lights[i].ShadowParams.z);
 			}
 		}
 		else	// point light
 		{
-			float lightDistance = length(Lights[i].Position.xyz - vs_out_position);
-			attenuation = 1.0 / (Lights[i].Attenuation[0] + 
-								(Lights[i].Attenuation[1] * lightDistance) + 
-								(Lights[i].Attenuation[2] * (lightDistance * lightDistance)));
 			lightDir = normalize(Lights[i].Position.xyz - vs_out_position);
-			if(attenuation > 0.001 && Lights[i].ShadowParams.x != 0.0)		// won't hit zero?
+			float lightDistance = length(Lights[i].Position.xyz - vs_out_position);			
+			attenuation = pow(smoothstep(Lights[i].DistanceAttenuation.x, 0, lightDistance),Lights[i].DistanceAttenuation.y);
+			if(attenuation > 0.0 && Lights[i].ShadowParams.x != 0.0)
 			{
-				shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z, Lights[i].ShadowParams.w);
+				shadow = CalculateCubeShadows(finalNormal,vs_out_position, Lights[i].Position.xyz, Lights[i].DistanceAttenuation.x, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
 			}
 		}
 
@@ -129,10 +126,10 @@ void main()
 		// ambient light
 		vec3 ambient = diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb * Lights[i].ColourAndAmbient.a;
 
-		// specular light 
+		// specular light (blinn phong)
 		vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
-		vec3 reflectDir = normalize(reflect(-lightDir, finalNormal));  
-		float specFactor = pow(max(dot(viewDir, reflectDir), 0.0), MeshShininess);
+		vec3 halfwayDir = normalize(lightDir + viewDir);  
+		float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), MeshShininess);
 		vec3 specularColour = MeshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
 		vec3 specular = MeshSpecular.a * specFactor * specularColour * specularTex; 
 

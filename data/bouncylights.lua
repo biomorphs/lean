@@ -20,22 +20,6 @@ local lightBrightness = 8.0
 local lightSphereSize = 1.0
 local timeMulti = 0.2
 
--- ~distance, const, linear, quad
-local lightAttenuationTable = {
-	{7, 1.0, 0.7,1.8},
-	{13,1.0,0.35 ,0.44},
-	{20,1.0,0.22 ,0.20},
-	{32,1.0,0.14,0.07},
-	{50,1.0,0.09,0.032},
-	{65,1.0,0.07,0.017},
-	{100,1.0,0.045,0.0075},
-	{160,1.0,0.027,0.0028},
-	{200,1.0,0.022,0.0019},
-	{325,1.0,0.014,0.0007},
-	{600,1.0,0.007,0.0002},
-	{3250,1.0,0.0014,0.000007}
-}
-
 function BouncyLights.Vec3Length(self,v)
 	return math.sqrt((v[1] * v[1]) + (v[2] * v[2]) + (v[3] * v[3]));
 end
@@ -46,19 +30,6 @@ function BouncyLights.pushLightHistory(self,i,x,y,z)
 		table.remove(Lights[i].History,1)
 	end
 	Lights[i].History[#Lights[i].History + 1] = {x,y,z}
-end
-
-function BouncyLights.GetAttenuation(self,lightRadius)
-	local closestDistance = 10000
-	local closestValue = {1,1,0.1,0.1}
-	for i=1,#lightAttenuationTable do
-		local distanceToRadInTable = math.abs(lightRadius - lightAttenuationTable[i][1])
-		if(distanceToRadInTable<closestDistance) then
-			closestValue = lightAttenuationTable[i];
-			closestDistance = distanceToRadInTable
-		end
-	end
-	return { closestValue[2], closestValue[3], closestValue[4] }
 end
 
 function BouncyLights.GenerateLightCol(self,i)
@@ -75,7 +46,8 @@ function BouncyLights.InitLight(self,i)
 	BouncyLights:GenerateLightCol(i)
 	Lights[i].Ambient = 0.0
 	Lights[i].Velocity = {0.0,0.0,0.0}
-	Lights[i].Attenuation = BouncyLights:GetAttenuation(math.random(lightRadiusRange[1],lightRadiusRange[2]))
+	Lights[i].Distance = math.random(lightRadiusRange[1],lightRadiusRange[2])
+	Lights[i].Attenuation = 1.5
 	Lights[i].History = {}
 	BouncyLights:pushLightHistory(i,Lights[i].Position[1], Lights[i].Position[2], Lights[i].Position[3])
 end
@@ -149,7 +121,7 @@ function BouncyLights.Tick(DeltaTime)
 			Lights[i].Velocity[3] = -Lights[i].Velocity[3] * lightBounceMul
 		end
 		
-		Graphics.PointLight(Lights[i].Position[1],Lights[i].Position[2],Lights[i].Position[3],Lights[i].Colour[1],Lights[i].Colour[2],Lights[i].Colour[3], Lights[i].Ambient, Lights[i].Attenuation[1], Lights[i].Attenuation[2], Lights[i].Attenuation[3])
+		Graphics.PointLight(Lights[i].Position[1],Lights[i].Position[2],Lights[i].Position[3],Lights[i].Colour[1],Lights[i].Colour[2],Lights[i].Colour[3], Lights[i].Ambient, Lights[i].Distance, Lights[i].Attenuation)
 		Graphics.DrawModel(Lights[i].Position[1],Lights[i].Position[2],Lights[i].Position[3],Lights[i].Colour[1],Lights[i].Colour[2],Lights[i].Colour[3],1.0,lightSphereSize,LightModel,LightShader)
 
 		for h=1,#Lights[i].History-1 do

@@ -86,6 +86,12 @@ bool Graphics::Initialise()
 	m_entitySystem->RegisterComponentType<Light>("Light");
 	m_entitySystem->RegisterComponentUi("Light", [](Component& c, Engine::DebugGuiSystem& dbg) {
 		auto& l = static_cast<Light&>(c);
+		int typeIndex = static_cast<int>(l.GetLightType());
+		const char* types[] = { "Directional", "Point", "Spot" };
+		if (dbg.ComboBox("Type", types, 3, typeIndex))
+		{
+			l.SetType(static_cast<Light::Type>(typeIndex));
+		}
 		auto col = glm::vec4(l.GetColour(),1.0f);
 		dbg.ColourEdit("Colour", col, false);
 		l.SetColour(col.r,col.g,col.b);
@@ -95,17 +101,14 @@ bool Graphics::Initialise()
 		auto ambient = l.GetAmbient();
 		dbg.DragFloat("Ambient", ambient, 0.001f, 0.0f, 1.0f);
 		l.SetAmbient(ambient);
-		int typeIndex = static_cast<int>(l.GetLightType());
-		const char* types[] = { "Directional", "Point", "Spot" };
-		if (dbg.ComboBox("Type", types, 3, typeIndex))
-		{
-			l.SetType(static_cast<Light::Type>(typeIndex));
-		}
-		if (l.GetLightType() == Light::Type::Point)
+		if (l.GetLightType() != Light::Type::Directional)
 		{
 			auto radius = l.GetDistance();
-			dbg.DragFloat("Radius", radius, 0.1f, 0.0f, 3250.0f);
+			dbg.DragFloat("Distance", radius, 0.1f, 0.0f, 3250.0f);
 			l.SetDistance(radius);
+			auto atten = l.GetAttenuation();
+			dbg.DragFloat("Attenuation", atten, 0.1f, 0.0001f, 1000.0f);
+			l.SetAttenuation(atten);
 		}
 		bool castShadow = l.CastsShadows();
 		dbg.Checkbox("Cast Shadows", &castShadow);
@@ -115,9 +118,6 @@ bool Graphics::Initialise()
 			float bias = l.GetShadowBias();
 			dbg.DragFloat("Shadow Bias", bias, 0.001f, 0.0f, 10.0f);
 			l.SetShadowBias(bias);
-			float farPlane = l.GetShadowFarPlane();
-			dbg.DragFloat("Shadow Far Plane", farPlane, 0.01f, 0.0f, 100000.0f);
-			l.SetShadowFarPlane(farPlane);
 			if (!l.IsPointLight() && l.GetShadowMap() != nullptr && !l.GetShadowMap()->IsCubemap())
 			{
 				dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
@@ -180,11 +180,11 @@ bool Graphics::Initialise()
 		auto transform = glm::scale(glm::translate(glm::identity<glm::mat4>(), glm::vec3(px, py, pz)), glm::vec3(scale));
 		m_renderer->SubmitInstance(transform, glm::vec4(r,g,b,a), h, sh);
 	};
-	graphics["PointLight"] = [this](float px, float py, float pz, float r, float g, float b, float ambient, float attenConst, float attenLinear, float attenQuad) {
-		m_renderer->SetLight(glm::vec4(px, py, pz,1.0f), glm::vec3(0.0f), glm::vec3(r, g, b), ambient, { attenConst , attenLinear , attenQuad });
+	graphics["PointLight"] = [this](float px, float py, float pz, float r, float g, float b, float ambient, float distance, float atten) {
+		m_renderer->SetLight(glm::vec4(px, py, pz,1.0f), glm::vec3(0.0f), glm::vec3(r, g, b), ambient, distance, atten);
 	};
 	graphics["DirectionalLight"] = [this](float dx, float dy, float dz, float r, float g, float b, float ambient) {
-		m_renderer->SetLight(glm::vec4(0.0f), { dx,dy,dz }, glm::vec3(r, g, b), ambient, { 0.0f,0.0f,0.0f });
+		m_renderer->SetLight(glm::vec4(0.0f), { dx,dy,dz }, glm::vec3(r, g, b), ambient, 0.0f, 0.0f);
 	};
 	graphics["DebugDrawAxis"] = [this](float px, float py, float pz, float size) {
 		m_debugRender->AddAxisAtPoint({ px,py,pz,1.0f }, size);
@@ -253,7 +253,8 @@ void Graphics::ProcessLight(Light& l, const Transform* transform)
 	SDE_PROF_EVENT();
 	const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
 	const glm::vec4 posAndType = { position, static_cast<float>(l.GetLightType()) };
-	const glm::vec3 attenuation = l.GetAttenuation();
+	const float distance = l.GetDistance();
+	const float attenuation = l.GetAttenuation();
 	glm::vec3 direction = { 0.0f,-1.0f,0.0f };
 	if (!l.IsPointLight())
 	{
@@ -285,12 +286,12 @@ void Graphics::ProcessLight(Light& l, const Transform* transform)
 		}
 
 		// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
-		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation, *l.GetShadowMap(), l.GetShadowBias(), l.GetShadowFarPlane(),  shadowMatrix, updateShadowmap);
+		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
 	}
 	else
 	{
 		l.GetShadowMap() = nullptr;	// this is a safe spot to destroy unused shadow maps
-		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), attenuation);
+		m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation);
 	}
 };
 
@@ -368,7 +369,7 @@ void Graphics::ShowGui(int framesPerSecond)
 	sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
 	sprintf_s(statText, "\tTransparents: %zu (%zu visible)", fs.m_totalTransparentInstances, fs.m_renderedTransparentInstances);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Shadowmaps updated: %zu", fs.m_shadowMapUpdates);	m_debugGui->Text(statText);
-	sprintf_s(statText, "\tShadow casters drawn: %zu (%zu visible)", fs.m_totalShadowInstances, fs.m_renderedShadowInstances);	m_debugGui->Text(statText);
+	sprintf_s(statText, "\tShadow casters: %zu (%zu visible)", fs.m_totalShadowInstances, fs.m_renderedShadowInstances);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Active Lights: %zu", fs.m_activeLights);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
 	sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
