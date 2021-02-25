@@ -16,7 +16,16 @@ namespace Engine
 	void ScriptSystem::OpenDefaultLibraries(sol::state& state)
 	{
 		SDE_PROF_EVENT();
-		state.open_libraries(sol::lib::base, sol::lib::math, sol::lib::table);
+		state.open_libraries(sol::lib::base, 
+			sol::lib::math, 
+			sol::lib::package,
+			sol::lib::os,
+			sol::lib::coroutine,
+			sol::lib::bit32,
+			sol::lib::io,
+			sol::lib::debug,
+			sol::lib::table, 
+			sol::lib::string);
 	}
 
 	template<>

@@ -1,24 +1,25 @@
 EntityTest = {}
 
+ProFi = require 'ProFi'
+
 local CubeModel = Graphics.LoadModel("cube.fbx")
 local SphereModel = Graphics.LoadModel("sphere_low.fbx")
-local SponzaModel = Graphics.LoadModel("sponza.obj")
 local DiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs")
-local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
 local ShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
-local InstancingTestCount = 15
+local BasicShader = Graphics.LoadShader("light",  "basic.vs", "basic.fs")
+
+local InstancingTestCount = 18
 local LightColours = {
-	{1.0,0.0,0.0},
-	{0.0,1.0,0.0},
-	{0.0,0.0,1.0},
-	{1.0,0.0,1.0},
-	{1.0,1.0,0.0},
-	{0.0,1.0,1.0},
+	"004777",
+	"a30000",
+	"ff7700",
+	"efd28d",
+	"00afb5"
 }
 local LightColourIndex = math.random(0,#LightColours)
-local lightBoxMin = {-284,4,-125}
-local lightBoxMax = {256,64,113}
+local lightBoxMin = {-100,7,-100}
+local lightBoxMax = {20,128,60}
 local lightGravity = -4096.0
 local lightBounceMul = 0.5
 local lightFriction = 0.95
@@ -26,35 +27,25 @@ local lightXZSpeed = 200
 local lightYSpeed = 200
 local bouncyLights = {}		-- array of {entityHandle, velocity{xyz}}
 local spinnyLights = {}		-- array of entityHandle
+local spheres = {}			-- array of entityHandle, {transform component, anchorpos}
 
-function MakeSunEntity()
-	local newEntity = World.AddEntity()
-	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(-40,500,0)
-	transform:SetRotation(2.2,11,14.7)
-	transform:SetScale(4,16,4)
-	
-	local light = World.AddComponent_Light(newEntity)
-	light:SetDirectional();
-	light:SetColour(0.4, 0.4, 0.4)
-	light:SetColour(0.0, 0.0, 0.0)
-	light:SetAmbient(0.1)
-	light:SetDistance(1500)
-	light:SetCastsShadows(true)
-	light:SetShadowmapSize(2048,2048)
-	light:SetShadowBias(0.005)
-	light:SetBrightness(1.0)
+function GetLightStartPos()
+	return {0,0,0}
+end
 
-	local newModel = World.AddComponent_Model(newEntity)
-	newModel:SetModel(CubeModel)
-	newModel:SetShader(BasicShader)
+function hex(h)
+	local r, g, b = h:match("(%w%w)(%w%w)(%w%w)")
+	r = (tonumber(r, 16) or 0) / 255
+	g = (tonumber(g, 16) or 0) / 255
+	b = (tonumber(b, 16) or 0) / 255
+	return r, g, b
 end
 
 function MakeLightEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
-	transform:SetPosition(-20,24,-5)
+	local p = GetLightStartPos()
+	transform:SetPosition(p[1],p[2],p[3])
 	transform:SetScale(1,1,1)
 	
 	LightColourIndex = LightColourIndex + 1
@@ -63,16 +54,13 @@ function MakeLightEntity()
 	end
 	local light = World.AddComponent_Light(newEntity)
 	light:SetPointLight();
-	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
+	local r,g,b = hex(LightColours[LightColourIndex])
+	light:SetColour(r,g,b)
 	light:SetAmbient(0.0)
 	light:SetDistance(math.random(16,32))
 	light:SetAttenuation(2.5)
 	light:SetCastsShadows(false)
 	light:SetBrightness(2.0)
-	
-	local newModel = World.AddComponent_Model(newEntity)
-	newModel:SetModel(SphereModel)
-	newModel:SetShader(BasicShader)
 	
 	table.insert(bouncyLights,{newEntity, {0.0,0.0,0.0}})
 end
@@ -80,8 +68,8 @@ end
 function MakeShadowLightEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
-	transform:SetPosition(-20,5,-5)
+	local p = GetLightStartPos()
+	transform:SetPosition(p[1],p[2],p[3])
 	transform:SetScale(1,1,1)
 	
 	LightColourIndex = LightColourIndex + 1
@@ -90,7 +78,8 @@ function MakeShadowLightEntity()
 	end
 	local light = World.AddComponent_Light(newEntity)
 	light:SetPointLight();
-	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
+	local r,g,b = hex(LightColours[LightColourIndex])
+	light:SetColour(r,g,b)
 	light:SetAmbient(0.0)
 	local radius = math.random(64,96)
 	light:SetDistance(radius)
@@ -100,18 +89,15 @@ function MakeShadowLightEntity()
 	light:SetShadowBias(4.0)
 	light:SetBrightness(2.0)
 	
-	local newModel = World.AddComponent_Model(newEntity)
-	newModel:SetModel(SphereModel)
-	newModel:SetShader(BasicShader)
-	
 	table.insert(bouncyLights,{newEntity, {0.0,0.0,0.0}})
 end
 
-function MakeSpotLight(x,y,z, rx, ry, rz)
+function MakeSpotLight()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(x,y,z)
-	transform:SetRotation(rx, ry, rz)
+	local p = GetLightStartPos();
+	transform:SetPosition(p[1],p[2],p[3])
+	transform:SetRotation(0,math.random(0,360),80)
 	transform:SetScale(1,4,1)
 	
 	local light = World.AddComponent_Light(newEntity)
@@ -119,19 +105,16 @@ function MakeSpotLight(x,y,z, rx, ry, rz)
 	if(LightColourIndex>#LightColours) then
 		LightColourIndex = 1
 	end
-	light:SetColour(LightColours[LightColourIndex][1],LightColours[LightColourIndex][2],LightColours[LightColourIndex][3])
+	local r,g,b = hex(LightColours[LightColourIndex])
+	light:SetColour(r,g,b)
 	light:SetSpotLight();
-	light:SetAmbient(0.0)
+	light:SetAmbient(0.05)
 	light:SetDistance(100)
 	light:SetCastsShadows(true)
-	light:SetShadowmapSize(2048,2048)
+	light:SetShadowmapSize(512,512)
 	light:SetShadowBias(0.0001)
 	light:SetBrightness(2.0)
 	light:SetSpotAngles(0.1,0.5)
-	
-	local newModel = World.AddComponent_Model(newEntity)
-	newModel:SetModel(CubeModel)
-	newModel:SetShader(BasicShader)
 	
 	table.insert(spinnyLights,newEntity)
 	table.insert(bouncyLights,{newEntity, {0.0,0.0,0.0}})
@@ -145,27 +128,28 @@ function MakeModelEntity(x,y,z,scale,model,shader)
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(model)
 	newModel:SetShader(shader)
+	table.insert(spheres,{newEntity, {x,y,z}})
 end
 
 function EntityTest.Init()
-	MakeSunEntity()
+	Graphics.SetClearColour(0.3,0.3,0.3)
+
 	for i=1,4 do 
-		--MakeLightEntity()
+		MakeLightEntity()
 	end
-	for i=1,15 do 
-		MakeSpotLight(25,5,-4.5,0,math.random(0,360),80)
+	for i=1,32 do 
+		MakeSpotLight()
 	end
-	for i=1,4 do 
+	for i=1,2 do 
 		MakeShadowLightEntity()
 	end
 	
-	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)
 	local gap = 10
 	local offset = -(InstancingTestCount * gap) / 2
 	for x=0,InstancingTestCount do
 		for y=0,InstancingTestCount do
 			for z=0,InstancingTestCount do
-				MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 8,1,SphereModel,DiffuseShader)
+				MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 8,2,SphereModel,DiffuseShader)
 			end
 		end		
 	end
@@ -175,8 +159,26 @@ function Vec3Length(v)
 	return math.sqrt((v[1] * v[1]) + (v[2] * v[2]) + (v[3] * v[3]));
 end
 
+local sphereTheta = 0.0
+local profile = 10
+
 function EntityTest.Tick(deltaTime)
+	if(profile < 10) then
+		ProFi:start()
+	end
 	deltaTime = deltaTime * 0.05
+	sphereTheta = sphereTheta + deltaTime * 80
+	local sin = math.sin
+	local getTransform = World.GetComponent_Transform
+	for sp=1,#spheres do
+		local anchorPos = spheres[sp][2]
+		local transform = getTransform(spheres[sp][1])
+		local position = {}
+		position[1] = anchorPos[1] + sin(sp * 0.1 + sphereTheta * 0.7) * 1.4
+		position[2] = anchorPos[2] + sin(sp * 0.5 + sphereTheta * 0.15) * 1.0
+		position[3] = anchorPos[3] + sin(sp * 0.9 + sphereTheta * 0.3) * 2.5
+		transform:SetPosition(position[1],position[2],position[3])
+	end
 	for s=1,#spinnyLights do 
 		local entity = spinnyLights[s]
 		local transform = World.GetComponent_Transform(entity)
@@ -227,6 +229,11 @@ function EntityTest.Tick(deltaTime)
 		end
 		transform:SetPosition(position.x,position.y,position.z)
 		bouncyLights[b][2] = velocity
+	end
+	if(profile < 10) then
+		ProFi:stop()
+		ProFi:writeReport( 'prof_' .. profile .. '.txt' )
+		profile = profile + 1
 	end
 end
 
