@@ -196,9 +196,7 @@ namespace Engine
 			for (const auto& part : theModel->Parts())
 			{
 				const glm::mat4 instanceTransform = transform * part.m_transform;
-				glm::vec3 boundsMin, boundsMax;
-				MakeAABBFromBounds(part.m_boundsMin, part.m_boundsMax, instanceTransform, boundsMin, boundsMax);
-
+				glm::vec3 boundsMin = part.m_boundsMin, boundsMax = part.m_boundsMax;
 				if (shadowShader.m_index != -1)
 				{
 					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, *part.m_mesh, shadowShader, boundsMin, boundsMax);
@@ -210,7 +208,6 @@ namespace Engine
 					isTransparent = IsMeshTransparent(*part.m_mesh, *m_textures);
 				}
 				InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-				
 				SubmitInstance(instances, m_camera.Position(), instanceTransform, colour, *part.m_mesh, shader, boundsMin, boundsMax);
 			}
 		}
@@ -746,7 +743,7 @@ namespace Engine
 						SDE_PROF_EVENT("Culling");
 						for (int i = startIndex; i < endIndex; ++i)
 						{
-							if (frustums[listIndex].IsBoxVisible(srcInstances.m_instances[i].m_aabbMin, srcInstances.m_instances[i].m_aabbMax))
+							if (frustums[listIndex].IsBoxVisible(srcInstances.m_instances[i].m_aabbMin, srcInstances.m_instances[i].m_aabbMax, srcInstances.m_instances[i].m_transform))
 							{
 								instanceListPtr->m_instances.emplace_back(srcInstances.m_instances[i]);
 							}

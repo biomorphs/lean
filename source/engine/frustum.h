@@ -1,4 +1,5 @@
-#include <glm/matrix.hpp>
+#include "core/glm_headers.h"
+#include "core/profiler.h"
 
 namespace Engine
 {
@@ -14,6 +15,8 @@ namespace Engine
 
 		// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
 		bool IsBoxVisible(const glm::vec3 minp, const glm::vec3 maxp) const;
+
+		bool IsBoxVisible(const glm::vec3 minp, const glm::vec3 maxp, glm::mat4 transform) const;
 
 		glm::vec3* GetPoints() { return m_points; }
 		const glm::vec3* GetPoints() const { return m_points; }
@@ -83,9 +86,44 @@ namespace Engine
 
 	}
 
+	inline bool Frustum::IsBoxVisible(const glm::vec3 oobbMin, const glm::vec3 oobbMax, glm::mat4 transform) const
+	{
+		SDE_PROF_EVENT();
+
+		glm::vec4 v[] = {
+			transform * glm::vec4(oobbMin.x,oobbMin.y,oobbMin.z,1.0f),
+			transform * glm::vec4(oobbMax.x,oobbMin.y,oobbMin.z,1.0f),
+			transform * glm::vec4(oobbMax.x,oobbMin.y,oobbMax.z,1.0f),
+			transform * glm::vec4(oobbMin.x,oobbMin.y,oobbMax.z,1.0f),
+			transform * glm::vec4(oobbMin.x,oobbMax.y,oobbMin.z,1.0f),
+			transform * glm::vec4(oobbMax.x,oobbMax.y,oobbMin.z,1.0f),
+			transform * glm::vec4(oobbMax.x,oobbMax.y,oobbMax.z,1.0f),
+			transform * glm::vec4(oobbMin.x,oobbMax.y,oobbMax.z,1.0f),
+		};
+		// check box outside/inside of frustum
+		for (int i = 0; i < Count; i++)
+		{
+			if ((glm::dot(m_planes[i], v[0]) < 0.0) &&
+				(glm::dot(m_planes[i], v[1]) < 0.0) &&
+				(glm::dot(m_planes[i], v[2]) < 0.0) &&
+				(glm::dot(m_planes[i], v[3]) < 0.0) &&
+				(glm::dot(m_planes[i], v[4]) < 0.0) &&
+				(glm::dot(m_planes[i], v[5]) < 0.0) &&
+				(glm::dot(m_planes[i], v[6]) < 0.0) &&
+				(glm::dot(m_planes[i], v[7]) < 0.0))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
 	inline bool Frustum::IsBoxVisible(const glm::vec3 minp, const glm::vec3 maxp) const
 	{
+		SDE_PROF_EVENT();
+
 		// check box outside/inside of frustum
 		for (int i = 0; i < Count; i++)
 		{

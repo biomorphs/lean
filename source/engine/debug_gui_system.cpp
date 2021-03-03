@@ -58,6 +58,9 @@ namespace Engine
 		ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
 		io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FK, 16.0f, &icons_config, icons_ranges);
 
+		// docking windows
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 		return true;
 	}
 

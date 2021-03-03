@@ -37,7 +37,7 @@ function MakeSunEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.4, 0.4, 0.4)
-	light:SetColour(0.0, 0.0, 0.0)
+	--light:SetColour(0.0, 0.0, 0.0)
 	light:SetAmbient(0.1)
 	light:SetDistance(1500)
 	light:SetCastsShadows(true)
