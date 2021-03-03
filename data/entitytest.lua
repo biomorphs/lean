@@ -148,14 +148,15 @@ function MakeModelEntity(x,y,z,scale,model,shader)
 end
 
 function EntityTest.Init()
+	Graphics.SetClearColour(0.3,0.3,0.3)
 	MakeSunEntity()
 	for i=1,4 do 
-		--MakeLightEntity()
+		MakeLightEntity()
 	end
 	for i=1,15 do 
 		MakeSpotLight(25,5,-4.5,0,math.random(0,360),80)
 	end
-	for i=1,4 do 
+	for i=1,8 do 
 		MakeShadowLightEntity()
 	end
 	

@@ -18,6 +18,10 @@ namespace Engine
 
 		bool IsBoxVisible(const glm::vec3 minp, const glm::vec3 maxp, glm::mat4 transform) const;
 
+		bool IsSphereVisible(const glm::vec3 center, float radius) const;
+
+		bool IsFrustumVisible(const Frustum& other) const;
+
 		glm::vec3* GetPoints() { return m_points; }
 		const glm::vec3* GetPoints() const { return m_points; }
 
@@ -83,13 +87,42 @@ namespace Engine
 		m_points[5] = intersection<Left, Top, Far>(crosses);
 		m_points[6] = intersection<Right, Bottom, Far>(crosses);
 		m_points[7] = intersection<Right, Top, Far>(crosses);
+	}
 
+	inline bool Frustum::IsSphereVisible(const glm::vec3 center, float radius) const
+	{
+		for (int i = 0; i < Count; i++)
+		{
+			float d = glm::dot(m_planes[i], glm::vec4(center,1.0f));
+			if (d < -radius)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	inline bool Frustum::IsFrustumVisible(const Frustum& other) const
+	{
+		for (int i = 0; i < Count; i++)
+		{
+			if ((glm::dot(m_planes[i], glm::vec4(other.m_points[0],1.0f)) < 0.0) &&
+				(glm::dot(m_planes[i], glm::vec4(other.m_points[1],1.0f)) < 0.0) &&
+				(glm::dot(m_planes[i], glm::vec4(other.m_points[2],1.0f)) < 0.0) &&
+				(glm::dot(m_planes[i], glm::vec4(other.m_points[3],1.0f)) < 0.0) &&
+				(glm::dot(m_planes[i], glm::vec4(other.m_points[4],1.0f)) < 0.0) &&
+				(glm::dot(m_planes[i], glm::vec4(other.m_points[5],1.0f)) < 0.0) &&
+				(glm::dot(m_planes[i], glm::vec4(other.m_points[6],1.0f)) < 0.0) &&
+				(glm::dot(m_planes[i], glm::vec4(other.m_points[7], 1.0f)) < 0.0))
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	inline bool Frustum::IsBoxVisible(const glm::vec3 oobbMin, const glm::vec3 oobbMax, glm::mat4 transform) const
 	{
-		SDE_PROF_EVENT();
-
 		glm::vec4 v[] = {
 			transform * glm::vec4(oobbMin.x,oobbMin.y,oobbMin.z,1.0f),
 			transform * glm::vec4(oobbMax.x,oobbMin.y,oobbMin.z,1.0f),
@@ -122,8 +155,6 @@ namespace Engine
 	// http://iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
 	inline bool Frustum::IsBoxVisible(const glm::vec3 minp, const glm::vec3 maxp) const
 	{
-		SDE_PROF_EVENT();
-
 		// check box outside/inside of frustum
 		for (int i = 0; i < Count; i++)
 		{

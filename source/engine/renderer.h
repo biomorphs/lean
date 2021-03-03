@@ -59,6 +59,7 @@ namespace Engine
 			size_t m_drawCalls = 0;
 			size_t m_totalVertices = 0;
 			size_t m_activeLights = 0;
+			size_t m_visibleLights = 0;
 		};
 		const FrameStats& GetStats() const { return m_frameStats; }
 		float& GetExposure() { return m_hdrExposure; }
@@ -81,6 +82,7 @@ namespace Engine
 		int PopulateInstanceBuffers(InstanceList& list);	// returns offset to start of index data in global gpu buffers
 		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
+		void CullLights();
 
 		// cull one source list into multiple result lists each with a different frustum
 		void CullInstances(const InstanceList& srcInstances, InstanceList* results, const class Frustum* frustums, int listCount=1);

@@ -150,30 +150,6 @@ namespace Engine
 		SubmitInstance(instances, m_camera.Position(), transform, colour, mesh, shader);
 	}
 
-	void MakeAABBFromBounds(glm::vec3 oobbMin, glm::vec3 oobbMax, glm::mat4 transform, glm::vec3& aabbMin, glm::vec3& aabbMax)
-	{
-		glm::vec4 v[] = {
-			{oobbMin.x,oobbMin.y,oobbMin.z,1.0f},	
-			{oobbMax.x,oobbMin.y,oobbMin.z,1.0f},
-			{oobbMax.x,oobbMin.y,oobbMax.z,1.0f},
-			{oobbMin.x,oobbMin.y,oobbMax.z,1.0f},
-			{oobbMin.x,oobbMax.y,oobbMin.z,1.0f},	
-			{oobbMax.x,oobbMax.y,oobbMin.z,1.0f},
-			{oobbMax.x,oobbMax.y,oobbMax.z,1.0f},
-			{oobbMin.x,oobbMax.y,oobbMax.z,1.0f},
-		};
-		glm::vec4 bMin = { FLT_MAX,FLT_MAX ,FLT_MAX, 1.0f };
-		glm::vec4 bMax = { -FLT_MAX,-FLT_MAX ,-FLT_MAX, 1.0f };
-		for (auto& vert : v)
-		{
-			vert = transform * vert;
-			bMin = glm::min(vert, bMin);
-			bMax = glm::max(vert, bMax);
-		}
-		aabbMin = glm::vec3(bMin);
-		aabbMax = glm::vec3(bMax);
-	}
-
 	void Renderer::SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader)
 	{
 		const auto theModel = m_models->GetModel(model);
@@ -272,7 +248,6 @@ namespace Engine
 	int Renderer::PopulateInstanceBuffers(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
-
 		//static to avoid constant allocations
 		static std::vector<glm::mat4> instanceTransforms;
 		instanceTransforms.reserve(list.m_instances.size());
@@ -298,10 +273,33 @@ namespace Engine
 		return instanceIndex;
 	}
 
+	void Renderer::CullLights()
+	{
+		SDE_PROF_EVENT();
+		// if a light is not visible to the main camera we can discard it
+		const auto projectionMat = m_camera.ProjectionMatrix();
+		const auto viewMat = m_camera.ViewMatrix();
+		const Frustum f(projectionMat * viewMat);
+		m_lights.erase(std::remove_if(m_lights.begin(), m_lights.end(), [&f](const Light& l) {
+			if (l.m_position.w == 0.0f)			// directional lights always visible
+				return false;
+			else if (l.m_position.w == 1.0f)	// point light
+			{
+				return !f.IsSphereVisible(glm::vec3(l.m_position), l.m_maxDistance);
+			}
+			else if (l.m_position.w == 2.0f)		// spot light
+			{
+				Frustum lightFrustum(l.m_lightspaceMatrix);
+				return !f.IsFrustumVisible(lightFrustum);
+			}
+			return false;
+		}), m_lights.end());
+		m_frameStats.m_visibleLights = m_lights.size();
+	}
+
 	void Renderer::UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat)
 	{
 		SDE_PROF_EVENT();
-
 		GlobalUniforms globals;
 		globals.m_viewProjMat = projectionMat * viewMat;
 		uint32_t shadowMapIndex = 0;		// precalculate shadow map sampler indices
@@ -334,6 +332,7 @@ namespace Engine
 
 	uint32_t Renderer::BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit)
 	{
+		SDE_PROF_EVENT();
 		uint32_t shadowMapIndex = 0;
 		uint32_t cubeShadowMapIndex = 0;
 		char samplerNameBuffer[256] = { '\0' };
@@ -361,7 +360,6 @@ namespace Engine
 				}
 			}
 		}
-
 		// make sure to reset any we are not using or opengl will NOT be happy
 		for (int l = shadowMapIndex; l < c_maxShadowMaps; ++l)
 		{
@@ -374,7 +372,7 @@ namespace Engine
 		}
 		for (int l = cubeShadowMapIndex; l < c_maxShadowMaps; ++l)
 		{
-			sprintf_s(samplerNameBuffer, "ShadowCubeMaps[%d]", shadowMapIndex++);
+			sprintf_s(samplerNameBuffer, "ShadowCubeMaps[%d]", cubeShadowMapIndex++);
 			uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
 			if (uniformHandle != -1)
 			{
@@ -472,7 +470,6 @@ namespace Engine
 		else
 		{
 			Render::UniformBuffer uniforms;
-			SDE_PROF_EVENT("RenderShadowCubemap");
 			const auto pos3 = glm::vec3(l.m_position);
 			const glm::mat4 shadowTransforms[] = {
 				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
@@ -525,6 +522,8 @@ namespace Engine
 			d.SetDepthState(true, true);	// make sure depth write is enabled before clearing!
 			d.ClearFramebufferColourDepth(m_mainFramebuffer, m_clearColour, FLT_MAX);
 		}
+
+		CullLights();
 
 		// setup global constants
 		const auto projectionMat = m_camera.ProjectionMatrix();
@@ -603,7 +602,6 @@ namespace Engine
 	int Renderer::PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances)
 	{
 		SDE_PROF_EVENT();
-
 		Frustum viewFrustum(lightViewProj);
 		visibleInstances.m_instances.clear();
 		if (m_cullingEnabled)

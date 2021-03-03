@@ -130,8 +130,11 @@ bool Graphics::Initialise()
 				dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
 			}
 		}
-		Engine::Frustum f(l.GetShadowMatrix());
-		m_debugRender->DrawFrustum(f, glm::vec4(l.GetColour(), 1.0f));
+		if (!l.IsPointLight())
+		{
+			Engine::Frustum f(l.GetShadowMatrix());
+			m_debugRender->DrawFrustum(f, glm::vec4(l.GetColour(), 1.0f));
+		}
 	});
 
 	m_entitySystem->RegisterComponentType<Model>("Model");
@@ -393,7 +396,7 @@ void Graphics::ShowGui(int framesPerSecond)
 	sprintf_s(statText, "\tTransparents: %zu (%zu visible)", fs.m_totalTransparentInstances, fs.m_renderedTransparentInstances);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Shadowmaps updated: %zu", fs.m_shadowMapUpdates);	m_debugGui->Text(statText);
 	sprintf_s(statText, "\tCasters: %zu (%zu visible)", fs.m_totalShadowInstances, fs.m_renderedShadowInstances);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Active Lights: %zu", fs.m_activeLights);	m_debugGui->Text(statText);
+	sprintf_s(statText, "Active Lights: %zu (%zu visible)", fs.m_activeLights, fs.m_visibleLights);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
 	sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Batches Drawn: %zu", fs.m_batchesDrawn);	m_debugGui->Text(statText);
