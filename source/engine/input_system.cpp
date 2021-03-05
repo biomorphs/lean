@@ -87,7 +87,7 @@ namespace Engine
 		return true;
 	}
 
-	bool InputSystem::Tick()
+	bool InputSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
 		m_mouseState.m_wheelScroll = m_currentMouseScroll;

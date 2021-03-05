@@ -28,6 +28,13 @@
 #include "components/model.h"
 #include <sol.hpp>
 
+Engine::MenuBar g_graphicsMenu;
+bool g_showTextureGui = false;
+bool g_showModelGui = false;
+bool g_useArcballCam = false;
+bool g_showCameraInfo = false;
+bool g_enableShadowUpdate = true;
+
 Graphics::Graphics()
 {
 }
@@ -54,13 +61,6 @@ bool Graphics::PreInit(Engine::SystemEnumerator& systemEnumerator)
 
 	return true;
 }
-
-Engine::MenuBar g_graphicsMenu;
-bool g_showTextureGui = false;
-bool g_showModelGui = false;
-bool g_useArcballCam = false;
-bool g_showCameraInfo = false;
-bool g_enableShadowUpdate = true;
 
 bool Graphics::Initialise()
 {
@@ -409,7 +409,7 @@ void Graphics::ShowGui(int framesPerSecond)
 	m_debugGui->EndWindow();
 }
 
-void Graphics::ProcessCamera()
+void Graphics::ProcessCamera(float timeDelta)
 {
 	Render::Camera c;
 	auto windowSize = m_renderSystem->GetWindow()->GetSize();
@@ -419,27 +419,27 @@ void Graphics::ProcessCamera()
 	{
 		if (!m_debugGui->IsCapturingMouse())
 		{
-			m_arcballCamera->Update(m_inputSystem->GetMouseState(), 0.066f);
+			m_arcballCamera->Update(m_inputSystem->GetMouseState(), timeDelta);
 		}
 		c.LookAt(m_arcballCamera->GetPosition(), m_arcballCamera->GetTarget(), m_arcballCamera->GetUp());
 	}
 	else
 	{
-		m_debugCamera->Update(m_inputSystem->ControllerState(0), 0.016f);
+		m_debugCamera->Update(m_inputSystem->ControllerState(0), timeDelta);
 		if (!m_debugGui->IsCapturingMouse())
 		{
-			m_debugCamera->Update(m_inputSystem->GetMouseState(), 0.016f);
+			m_debugCamera->Update(m_inputSystem->GetMouseState(), timeDelta);
 		}
 		if (!m_debugGui->IsCapturingKeyboard())
 		{
-			m_debugCamera->Update(m_inputSystem->GetKeyboardState(), 0.016f);
+			m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
 		}
 		m_debugCamera->ApplyToCamera(c);
 	}
 	m_renderer->SetCamera(c);
 }
 
-bool Graphics::Tick()
+bool Graphics::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
 
@@ -457,7 +457,7 @@ bool Graphics::Tick()
 		startTime = currentTime;
 	}
 
-	ProcessCamera();
+	ProcessCamera(timeDelta);
 	ProcessEntities();
 	ShowGui(framesPerSecond);
 

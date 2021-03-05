@@ -38,6 +38,10 @@ namespace Render
 		const Vec4Uniforms& Vec4Values() const { return m_vec4Values; }
 		const Mat4Uniforms& Mat4Values() const { return m_mat4Values; }
 		const IntUniforms& IntValues() const { return m_intValues; }
+		FloatUniforms& FloatValues() { return m_floatValues; }
+		Vec4Uniforms& Vec4Values() { return m_vec4Values; }
+		Mat4Uniforms& Mat4Values() { return m_mat4Values; }
+		IntUniforms& IntValues() { return m_intValues; }
 
 	private:
 		FloatUniforms m_floatValues;

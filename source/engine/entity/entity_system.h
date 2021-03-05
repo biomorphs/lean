@@ -17,7 +17,7 @@ public:
 	virtual ~EntitySystem() = default;
 	bool PreInit(Engine::SystemEnumerator&);
 	bool Initialise();
-	bool Tick();
+	bool Tick(float timeDelta);
 	void Shutdown();
 
 	template<class T>

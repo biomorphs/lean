@@ -119,7 +119,7 @@ void Playground::SaveScene(std::string filename)
 	SaveConfig();
 }
 
-void Playground::TickScene()
+void Playground::TickScene(float timeDelta)
 {
 	SDE_PROF_EVENT();
 	for (int script=0;script< m_scene.Scripts().size();++script)
@@ -129,7 +129,7 @@ void Playground::TickScene()
 		{
 			try
 			{
-				cachedTable["Tick"](m_deltaTime);
+				cachedTable["Tick"](timeDelta);
 			}
 			catch (const sol::error& err)
 			{
@@ -149,7 +149,6 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_debugGui = (Engine::DebugGuiSystem*)systemEnumerator.GetSystem("DebugGui");
 	m_scriptSystem = (Engine::ScriptSystem*)systemEnumerator.GetSystem("Script");
 	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
-	m_lastFrameTime = m_timer.GetSeconds();
 
 	DebugGuiScriptBinding::Go(m_debugGui, m_scriptSystem->Globals());
 	m_sceneEditor.Init(&m_scene, m_debugGui);
@@ -183,7 +182,7 @@ bool Playground::PostInit()
 	return true;
 }
 
-bool Playground::Tick()
+bool Playground::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
 
@@ -193,17 +192,11 @@ bool Playground::Tick()
 		ReloadScripts();
 	}
 
-	double thisFrameTime = m_timer.GetSeconds();
-	if (!g_pauseScriptDelta)
+	if (g_pauseScriptDelta)
 	{
-		m_deltaTime = thisFrameTime - m_lastFrameTime;
+		timeDelta = 0.0f;
 	}
-	else
-	{
-		m_deltaTime = 0.0f;
-	}
-	TickScene();
-	m_lastFrameTime = thisFrameTime;
+	TickScene(timeDelta);
 
 	return g_keepRunning;
 }

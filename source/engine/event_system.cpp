@@ -20,7 +20,7 @@ namespace Engine
 		m_handlers.push_back(h);
 	}
 
-	bool EventSystem::Tick()
+	bool EventSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT("EventSystem::Tick");
 		SDL_Event event;

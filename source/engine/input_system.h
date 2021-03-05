@@ -15,7 +15,7 @@ namespace Engine
 		virtual ~InputSystem();
 		virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
 		virtual bool Initialise();
-		virtual bool Tick();
+		virtual bool Tick(float timeDelta);
 
 		inline uint32_t ControllerCount() const { return (uint32_t)m_controllers.size(); }
 		const ControllerRawState ControllerState(uint32_t padIndex) const;

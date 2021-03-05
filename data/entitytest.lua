@@ -19,11 +19,12 @@ local LightColours = {
 local LightColourIndex = math.random(0,#LightColours)
 local lightBoxMin = {-284,4,-125}
 local lightBoxMax = {256,64,113}
-local lightGravity = -4096.0
+local lightGravity = -50.0
 local lightBounceMul = 0.5
 local lightFriction = 0.95
-local lightXZSpeed = 200
-local lightYSpeed = 200
+local lightXZSpeed = 50
+local lightYSpeed = 30
+local timeDeltaMulti = 1.0
 local bouncyLights = {}		-- array of {entityHandle, velocity{xyz}}
 local spinnyLights = {}		-- array of entityHandle
 
@@ -37,7 +38,6 @@ function MakeSunEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.4, 0.4, 0.4)
-	--light:SetColour(0.0, 0.0, 0.0)
 	light:SetAmbient(0.1)
 	light:SetDistance(1500)
 	light:SetCastsShadows(true)
@@ -96,7 +96,7 @@ function MakeShadowLightEntity()
 	light:SetDistance(radius)
 	light:SetAttenuation(2.5)
 	light:SetCastsShadows(true)
-	light:SetShadowmapSize(256,256)
+	light:SetShadowmapSize(512,512)
 	light:SetShadowBias(4.0)
 	light:SetBrightness(2.0)
 	
@@ -124,10 +124,11 @@ function MakeSpotLight(x,y,z, rx, ry, rz)
 	light:SetAmbient(0.0)
 	light:SetDistance(100)
 	light:SetCastsShadows(true)
-	light:SetShadowmapSize(2048,2048)
+	light:SetShadowmapSize(1024,1024)
 	light:SetShadowBias(0.0001)
 	light:SetBrightness(2.0)
-	light:SetSpotAngles(0.1,0.5)
+	light:SetSpotAngles(0.0,0.8)
+	light:SetAttenuation(1.3)
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(CubeModel)
@@ -154,7 +155,7 @@ function EntityTest.Init()
 		MakeLightEntity()
 	end
 	for i=1,15 do 
-		MakeSpotLight(25,5,-4.5,0,math.random(0,360),80)
+		MakeSpotLight(-25,5,-4.5,0,math.random(0,360),45)
 	end
 	for i=1,8 do 
 		MakeShadowLightEntity()
@@ -177,12 +178,16 @@ function Vec3Length(v)
 end
 
 function EntityTest.Tick(deltaTime)
-	deltaTime = deltaTime * 0.05
+	deltaTime = deltaTime * timeDeltaMulti
+	local open = true
+	DebugGui.BeginWindow(open,"Script")
+	timeDeltaMulti = DebugGui.DragFloat("Time Multi", timeDeltaMulti, 0.01, 0.0, 10.0)
+	DebugGui.EndWindow()
 	for s=1,#spinnyLights do 
 		local entity = spinnyLights[s]
 		local transform = World.GetComponent_Transform(entity)
 		local rotation = transform:GetRotationDegrees()
-		rotation.y = rotation.y + deltaTime * 2000
+		rotation.y = rotation.y + deltaTime * 200
 		transform:SetRotation(rotation.x,rotation.y,rotation.z)
 	end
 	for b=1,#bouncyLights do 
@@ -190,10 +195,10 @@ function EntityTest.Tick(deltaTime)
 		local velocity = bouncyLights[b][2]
 		local transform = World.GetComponent_Transform(entity)
 		local position = transform:GetPosition()
-		if(Vec3Length(velocity) < 32.0) then
-			velocity[1] = (math.random(-200,200) / 100.0) * lightXZSpeed
-			velocity[2] = (math.random(200,400) / 100.0) * lightYSpeed
-			velocity[3] = (math.random(-200,200) / 100.0) * lightXZSpeed
+		if(position.y <= lightBoxMin[2] and Vec3Length(velocity) < 4.0) then
+			velocity[1] = (math.random(-100,100) / 100.0) * lightXZSpeed
+			velocity[2] = (math.random(100,400) / 100.0) * lightYSpeed
+			velocity[3] = (math.random(-100,100) / 100.0) * lightXZSpeed
 		end
 		velocity[2] = velocity[2] + (lightGravity * deltaTime);
 		position.x = position.x + velocity[1] * deltaTime

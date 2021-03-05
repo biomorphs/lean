@@ -99,7 +99,7 @@ namespace Engine
 		return true;
 	}
 
-	bool ScriptSystem::Tick()
+	bool ScriptSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
 

@@ -56,7 +56,7 @@ namespace Engine
 	{
 		g_defaultTextures["DiffuseTexture"] = m_textures->LoadTexture("white.bmp");
 		g_defaultTextures["NormalsTexture"] = m_textures->LoadTexture("default_normalmap.png");
-		g_defaultTextures["SpecularTexture="] = m_textures->LoadTexture("white.bmp");
+		g_defaultTextures["SpecularTexture"] = m_textures->LoadTexture("white.bmp");
 		m_blitShader = m_shaders->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");

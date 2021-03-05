@@ -21,7 +21,7 @@ namespace Engine
 		void RegisterSystem(const char* systemName, System* theSystem);
 
 		bool Initialise();
-		bool Tick();
+		bool Tick(float timeDelta);
 		void Shutdown();
 
 	private:

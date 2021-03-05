@@ -9,6 +9,7 @@
 #include "entity/entity_system.h"
 #include "platform.h"
 #include "core/log.h"
+#include "core/timer.h"
 #include <cassert>
 
 namespace Engine
@@ -55,8 +56,14 @@ namespace Engine
 		if (initResult == true)
 		{
 			SDE_LOGC(Engine, "Running engine main loop");
-			while (sysManager.Tick())
+			Core::Timer engineTime;
+			float lastTickTime = engineTime.GetSeconds();
+			float deltaTime = 0.0f;
+			while (sysManager.Tick(deltaTime))
 			{
+				float thisTickTime = engineTime.GetSeconds();
+				deltaTime = thisTickTime - lastTickTime;
+				lastTickTime = thisTickTime;
 			}
 		}
 

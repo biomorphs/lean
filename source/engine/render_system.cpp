@@ -72,7 +72,7 @@ namespace Engine
 		return true;
 	}
 
-	bool RenderSystem::Tick()
+	bool RenderSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
 

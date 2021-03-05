@@ -31,13 +31,13 @@ public:
 	virtual ~Graphics();
 	virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
 	virtual bool Initialise();
-	virtual bool Tick();
+	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
 private:
 	void ShowGui(int fps);
 	void ProcessLight(class Light& l, const class Transform* transform);
 	void ProcessEntities();
-	void ProcessCamera();
+	void ProcessCamera(float timeDelta);
 	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform);
 	bool m_showBounds = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;

@@ -20,13 +20,13 @@ public:
 	virtual ~Playground();
 	virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
 	virtual bool PostInit();
-	virtual bool Tick();
+	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
 private:
 	void NewScene();
 	void LoadScene(std::string filename);
 	void SaveScene(std::string filename);
-	void TickScene();
+	void TickScene(float timeDelta);
 	void ReloadScripts();
 
 	Scene m_scene;
@@ -35,7 +35,4 @@ private:
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
-	Core::Timer m_timer;
-	double m_lastFrameTime = 0.0;
-	double m_deltaTime = 0.0;
 };

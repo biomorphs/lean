@@ -27,10 +27,64 @@ namespace Engine
 		sprintf_s(text, "Loading: %d", inFlight);
 		gui.Text(text);
 		gui.Separator();
-		for (int t = 0; t < m_models.size(); ++t)
+		if (gui.TreeNode("All Models", true))
 		{
-			sprintf_s(text, "%d: %s (0x%p)", t, m_models[t].m_name.c_str(), m_models[t].m_model.get());
-			gui.Text(text);
+			for (int t = 0; t < m_models.size(); ++t)
+			{
+				sprintf_s(text, "%s", m_models[t].m_name.c_str());
+				if (m_models[t].m_model.get() && gui.TreeNode(text))
+				{
+					if (gui.TreeNode("Parts"))
+					{
+						auto& parts = m_models[t].m_model->Parts();
+						for (auto& p : parts)
+						{
+							sprintf_s(text, "%d: (%3.1f,%3.1f,%3.1f) - (%3.1f,%3.1f,%3.1f)", (int)(&p - parts.data()),
+								p.m_boundsMin.x, p.m_boundsMin.y, p.m_boundsMin.z,
+								p.m_boundsMax.x, p.m_boundsMax.y, p.m_boundsMax.z);
+							if(p.m_mesh && gui.TreeNode(text))
+							{
+								auto& material = p.m_mesh->GetMaterial();
+								auto& uniforms = material.GetUniforms();
+								auto& samplers = material.GetSamplers();
+								for (auto& v : uniforms.FloatValues())
+								{
+									sprintf_s(text, "%s", v.second.m_name.c_str());
+									gui.DragFloat(text, v.second.m_value);
+								}
+								for (auto& v : uniforms.Vec4Values())
+								{
+									sprintf_s(text, "%s", v.second.m_name.c_str());
+									gui.DragVector(text, v.second.m_value);
+								}
+								for (auto& v : uniforms.IntValues())
+								{
+									sprintf_s(text, "%s", v.second.m_name.c_str());
+									gui.DragInt(text, v.second.m_value);
+								}
+								for (auto& t : samplers)
+								{
+									sprintf_s(text, "%s", t.second.m_name.c_str());
+									if (t.second.m_handle != 0 && gui.TreeNode(text))
+									{
+										auto texture = m_textureManager->GetTexture({ t.second.m_handle });
+										if (texture)
+										{
+											gui.Image(*texture, { 256,256 });
+										}
+										gui.TreePop();
+									}
+								}
+								gui.TreePop();
+							}
+						}
+						gui.TreePop();
+					}
+
+					gui.TreePop();
+				}
+			}
+			gui.TreePop();
 		}
 		gui.EndWindow();
 		return s_showWindow;

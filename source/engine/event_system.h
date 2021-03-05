@@ -12,7 +12,7 @@ namespace Engine
 	public:
 		EventSystem();
 		virtual ~EventSystem();
-		bool Tick();
+		bool Tick(float timeDelta);
 
 		using EventHandler = std::function<void(void*)>;		// void* = SDL_Event*
 		void RegisterEventHandler(EventHandler);

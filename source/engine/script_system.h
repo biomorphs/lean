@@ -21,7 +21,7 @@ namespace Engine
 		virtual ~ScriptSystem();
 
 		bool PreInit(SystemEnumerator& systemEnumerator);
-		bool Tick();
+		bool Tick(float timeDelta);
 		void PostShutdown();
 
 		sol::state& Globals() { return *m_globalState; }

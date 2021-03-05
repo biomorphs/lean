@@ -73,14 +73,14 @@ namespace Engine
 		return true;
 	}
 	
-	bool SystemManager::Tick()
+	bool SystemManager::Tick(float timeDelta)
 	{
 		SDE_PROF_FRAME("Main Thread");
 		SDE_PROF_EVENT();
 		bool keepRunning = true;
 		for (const auto it : m_systems)
 		{
-			keepRunning &= it->Tick();
+			keepRunning &= it->Tick(timeDelta);
 		}
 		return keepRunning;
 	}

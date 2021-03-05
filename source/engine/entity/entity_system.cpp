@@ -97,7 +97,7 @@ bool EntitySystem::Initialise()
 	return true;
 }
 
-bool EntitySystem::Tick()
+bool EntitySystem::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
 	ShowDebugGui();

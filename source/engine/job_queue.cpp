@@ -1,4 +1,5 @@
 #include "job_queue.h"
+#include "core/profiler.h"
 
 namespace Engine
 {
@@ -18,6 +19,7 @@ namespace Engine
 
 	bool JobQueue::PopJob(Job &j)
 	{
+		SDE_PROF_EVENT();
 		Core::ScopedMutex lock(m_mutex);
 		if (!m_currentJobs.empty())
 		{

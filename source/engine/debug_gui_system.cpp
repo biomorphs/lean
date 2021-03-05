@@ -152,6 +152,11 @@ namespace Engine
 		return ImGui::Combo(label, &currentItem, items, itemCount);
 	}
 
+	bool DebugGuiSystem::DragInt(const char* label, int32_t& t, int32_t step, int32_t min, int32_t max)
+	{
+		return ImGui::DragInt(label, &t, step, min, max);
+	}
+
 	bool DebugGuiSystem::DragFloat(const char* label, float& f, float step, float min, float max)
 	{
 		return ImGui::DragFloat(label, &f, step, min, max);
@@ -238,7 +243,7 @@ namespace Engine
 		ImGui::Image(reinterpret_cast<ImTextureID>(texHandle), { size.x,size.y }, { uv0.x, uv0.y }, { uv1.x, uv1.y });
 	}
 
-	bool DebugGuiSystem::Tick()
+	bool DebugGuiSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
 

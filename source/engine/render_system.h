@@ -34,7 +34,7 @@ namespace Engine
 		bool PreInit(SystemEnumerator& systemEnumerator);
 		bool Initialise();		// Window and device are created here
 		bool PostInit();		// Window made visible
-		bool Tick();			// All passes are drawn here
+		bool Tick(float timeDelta);			// All passes are drawn here
 		void PostShutdown();	// Device + window shutdown here
 
 	private:
