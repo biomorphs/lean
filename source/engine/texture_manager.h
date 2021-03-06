@@ -30,6 +30,7 @@ namespace Engine
 
 		TextureHandle LoadTexture(std::string path);
 		Render::Texture* GetTexture(const TextureHandle& h);
+		std::string GetTexturePath(const TextureHandle& h);
 		void ProcessLoadedTextures();
 
 		bool ShowGui(DebugGuiSystem& gui);

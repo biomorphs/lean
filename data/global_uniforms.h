@@ -15,7 +15,7 @@ layout(std140, binding = 0) uniform Globals
 {
 	mat4 ProjectionViewMatrix;
 	vec4 CameraPosition;	// World Space
-	LightInfo Lights[64];
+	LightInfo Lights[256];
 	int LightCount;
 	float HDRExposure;
 };

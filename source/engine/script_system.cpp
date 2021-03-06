@@ -103,7 +103,10 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		m_globalState->collect_garbage();
+		{
+			SDE_PROF_EVENT("CollectGarbage");
+			m_globalState->collect_garbage();
+		}
 		return true;
 	}
 

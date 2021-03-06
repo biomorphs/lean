@@ -178,6 +178,18 @@ namespace Engine
 		return newHandle;
 	}
 
+	std::string TextureManager::GetTexturePath(const TextureHandle& h)
+	{
+		if (h.m_index != -1 && h.m_index < m_textures.size())
+		{
+			return m_textures[h.m_index].m_path;
+		}
+		else
+		{
+			return "";
+		}
+	}
+
 	Render::Texture* TextureManager::GetTexture(const TextureHandle& h)
 	{
 		if (h.m_index != -1 && h.m_index < m_textures.size())

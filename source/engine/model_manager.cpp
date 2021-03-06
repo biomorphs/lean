@@ -3,6 +3,7 @@
 #include "model_asset.h"
 #include "texture_manager.h"
 #include "job_system.h"
+#include "file_picker_dialog.h"
 #include "debug_gui_system.h"
 #include "core/profiler.h"
 #include "core/thread.h"
@@ -68,9 +69,20 @@ namespace Engine
 									if (t.second.m_handle != 0 && gui.TreeNode(text))
 									{
 										auto texture = m_textureManager->GetTexture({ t.second.m_handle });
+										auto path = m_textureManager->GetTexturePath({ t.second.m_handle });
 										if (texture)
 										{
 											gui.Image(*texture, { 256,256 });
+										}
+										sprintf_s(text, "%s", t.second.m_name.c_str());
+										if (gui.Button(text))
+										{
+											std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0");
+											if (newFile != "")
+											{
+												auto loadedTexture = m_textureManager->LoadTexture(newFile.c_str());
+												t.second.m_handle = loadedTexture.m_index;
+											}
 										}
 										gui.TreePop();
 									}

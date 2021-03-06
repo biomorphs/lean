@@ -24,6 +24,7 @@ namespace Render
 		using Samplers = std::unordered_map<uint32_t, Sampler>;
 		void SetSampler(std::string name, uint32_t handle);
 		const Samplers& GetSamplers() const { return m_samplers; }
+		Samplers& GetSamplers() { return m_samplers; }
 	private:
 		Samplers m_samplers;
 		UniformBuffer m_uniforms;

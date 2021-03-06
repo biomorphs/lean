@@ -21,7 +21,7 @@
 namespace Engine
 {
 	const uint64_t c_maxInstances = 1024 * 512;		// this needs to include all passes/shadowmap updates
-	const uint64_t c_maxLights = 64;
+	const uint64_t c_maxLights = 256;
 	const uint32_t c_maxShadowMaps = 16;
 
 	struct LightInfo					// passed to shaders
