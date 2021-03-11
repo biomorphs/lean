@@ -1,8 +1,7 @@
-#include "component.h"
 #include "core/profiler.h"
 
 template<class ComponentType>
-void LinearComponentStorage<ComponentType>::ForEach(std::function<void(Component&,EntityHandle)> fn)
+void LinearComponentStorage<ComponentType>::ForEach(std::function<void(ComponentType&,EntityHandle)> fn)
 {
 	SDE_PROF_EVENT();
 	for (int c=0;c<m_components.size();++c)
@@ -12,7 +11,7 @@ void LinearComponentStorage<ComponentType>::ForEach(std::function<void(Component
 }
 
 template<class ComponentType>
-Component* LinearComponentStorage<ComponentType>::Find(EntityHandle owner)
+ComponentType* LinearComponentStorage<ComponentType>::Find(EntityHandle owner)
 {
 	auto foundEntity = m_entityToComponent.find(owner.GetID());
 	if (foundEntity == m_entityToComponent.end())
@@ -26,7 +25,7 @@ Component* LinearComponentStorage<ComponentType>::Find(EntityHandle owner)
 }
 
 template<class ComponentType>
-Component* LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
+ComponentType* LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
 {
 	SDE_PROF_EVENT();
 	bool noDuplicate = Find(owner) == nullptr;

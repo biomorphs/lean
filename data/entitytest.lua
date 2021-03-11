@@ -151,7 +151,7 @@ end
 function EntityTest.Init()
 	Graphics.SetClearColour(0.3,0.3,0.3)
 	MakeSunEntity()
-	for i=1,4 do 
+	for i=1,60 do 
 		MakeLightEntity()
 	end
 	for i=1,15 do 

@@ -18,6 +18,29 @@ EntityHandle World::AddEntity()
 	return EntityHandle(newId);
 }
 
+ComponentStorage* World::GetStorage(ComponentType t)
+{
+	auto foundStorage = m_components.find(t);
+	if (foundStorage != m_components.end())
+	{
+		return foundStorage->second.get();
+	}
+	return nullptr;
+}
+
+std::vector<ComponentType> World::GetOwnedComponentTypes(EntityHandle owner)
+{
+	std::vector<ComponentType> results;
+	for (const auto& component : m_components)
+	{
+		if (component.second->Contains(owner))
+		{
+			results.emplace_back(component.first);
+		}
+	}
+	return results;
+}
+
 void World::RemoveAllEntities()
 {
 	SDE_PROF_EVENT();
@@ -44,72 +67,4 @@ void World::RemoveEntity(EntityHandle h)
 			m_allEntities.erase(foundIt);
 		}
 	}
-}
-
-void World::RemoveComponent(EntityHandle owner, Component::Type type)
-{
-	SDE_PROF_EVENT();
-	if (owner.IsValid())
-	{
-		auto foundStorage = m_components.find(type);
-		if (foundStorage != m_components.end())
-		{
-			foundStorage->second->Destroy(owner);
-		}
-	}
-}
-
-Component* World::GetComponent(EntityHandle owner, Component::Type type)
-{
-	SDE_PROF_EVENT();
-	if (owner.IsValid())
-	{
-		auto foundStorage = m_components.find(type);
-		if (foundStorage != m_components.end())
-		{
-			return foundStorage->second->Find(owner);
-		}
-	}
-	return nullptr;
-}
-
-Component* World::AddComponent(EntityHandle owner, Component::Type type)
-{
-	SDE_PROF_EVENT();
-	if (!owner.IsValid())
-	{
-		return nullptr;
-	}
-
-	auto foundStorage = m_components.find(type);
-	if (foundStorage != m_components.end())
-	{
-		return foundStorage->second->Create(owner);
-	}
-	return nullptr;
-}
-
-std::vector<Component*> World::GetAllComponents(EntityHandle owner)
-{
-	SDE_PROF_EVENT();
-	std::vector<Component*> foundComponents;
-	for (const auto& it : m_components)
-	{
-		Component* found = it.second->Find(owner);
-		if (found)
-		{
-			foundComponents.push_back(found);
-		}
-	}
-	return foundComponents;
-}
-
-ComponentStorage* World::GetComponentStorage(Component::Type type)
-{
-	auto foundStorage = m_components.find(type);
-	if (foundStorage != m_components.end())
-	{
-		return foundStorage->second.get();
-	}
-	return nullptr;
 }

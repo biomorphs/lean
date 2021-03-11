@@ -1,7 +1,7 @@
 #include "light.h"
 #include "render/frame_buffer.h"
 
-COMPONENT_BEGIN(Light,
+COMPONENT_SCRIPTS(Light,
 	"SetPointLight", &Light::SetPointLight,
 	"SetDirectional", &Light::SetDirectional,
 	"SetSpotLight", &Light::SetSpotLight,
@@ -15,7 +15,6 @@ COMPONENT_BEGIN(Light,
 	"SetShadowBias", &Light::SetShadowBias,
 	"SetSpotAngles", &Light::SetSpotAngles
 )
-COMPONENT_END()
 
 glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
 {

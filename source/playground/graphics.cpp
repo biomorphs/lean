@@ -69,9 +69,9 @@ bool Graphics::Initialise()
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
-	m_entitySystem->RegisterComponentType<Transform>("Transform");
-	m_entitySystem->RegisterComponentUi("Transform", [](Component& c, Engine::DebugGuiSystem& dbg) {
-		auto& t = static_cast<Transform&>(c);
+	m_entitySystem->RegisterComponentType<Transform>();
+	m_entitySystem->RegisterComponentUi<Transform>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		auto& t = *static_cast<Transform::StorageType&>(cs).Find(e);
 		auto p = t.GetPosition();
 		if(dbg.DragVector("Position", p, 0.25f, -100000.0f, 100000.0f))
 			t.SetPosition(p.x,p.y,p.z);
@@ -83,9 +83,9 @@ bool Graphics::Initialise()
 		t.SetScale(s.x,s.y,s.z);
 	});
 
-	m_entitySystem->RegisterComponentType<Light>("Light");
-	m_entitySystem->RegisterComponentUi("Light", [this](Component& c, Engine::DebugGuiSystem& dbg) {
-		auto& l = static_cast<Light&>(c);
+	m_entitySystem->RegisterComponentType<Light>();
+	m_entitySystem->RegisterComponentUi<Light>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		auto& l = *static_cast<Light::StorageType&>(cs).Find(e);
 		int typeIndex = static_cast<int>(l.GetLightType());
 		const char* types[] = { "Directional", "Point", "Spot" };
 		if (dbg.ComboBox("Type", types, 3, typeIndex))
@@ -137,9 +137,9 @@ bool Graphics::Initialise()
 		}
 	});
 
-	m_entitySystem->RegisterComponentType<Model>("Model");
-	m_entitySystem->RegisterComponentUi("Model", [this](Component& c, Engine::DebugGuiSystem& dbg) {
-		auto& m = static_cast<Model&>(c);
+	m_entitySystem->RegisterComponentType<Model>();
+	m_entitySystem->RegisterComponentUi<Model>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		auto& m = *static_cast<Model::StorageType&>(cs).Find(e);
 		std::string modelPath = m_models->GetModelPath(m.GetModel());
 		if (dbg.Button(modelPath.c_str()))
 		{
@@ -326,14 +326,13 @@ void Graphics::ProcessEntities()
 	SDE_PROF_EVENT();
 
 	auto world = m_entitySystem->GetWorld();
-	auto transforms = world->GetComponentStorage("Transform");
+	auto transforms = world->GetAllComponents<Transform>();
 
 	// submit all lights
 	{
 		SDE_PROF_EVENT("SubmitLights");
-		world->ForEachComponent<Light>("Light", [this, &world, &transforms](Component& c, EntityHandle owner) {
-			auto& light = static_cast<Light&>(c);
-			const Transform* transform = (Transform*)transforms->Find(owner);
+		world->ForEachComponent<Light>([this, &world, &transforms](Light& light, EntityHandle owner) {
+			const Transform* transform = transforms->Find(owner);
 			ProcessLight(light, transform);
 		});
 	}
@@ -341,9 +340,8 @@ void Graphics::ProcessEntities()
 	// submit all models
 	{
 		SDE_PROF_EVENT("SubmitEntities");
-		world->ForEachComponent<Model>("Model", [this, &world, &transforms](Component& c, EntityHandle owner) {
-			const auto& model = static_cast<Model&>(c);
-			const Transform* transform = (Transform*)transforms->Find(owner);
+		world->ForEachComponent<Model>([this, &world, &transforms](Model& model, EntityHandle owner) {
+			const Transform* transform = transforms->Find(owner);
 			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
 			{
 				m_renderer->SubmitInstance(transform->GetMatrix(), glm::vec4(1.0f), model.GetModel(), model.GetShader());
@@ -354,9 +352,9 @@ void Graphics::ProcessEntities()
 	if(m_showBounds)
 	{
 		SDE_PROF_EVENT("ShowBounds");
-		world->ForEachComponent<Model>("Model", [this, &world, &transforms](Component& c, EntityHandle owner) {
-			const auto renderModel = m_models->GetModel(static_cast<Model&>(c).GetModel());
-			const Transform* transform = (Transform*)transforms->Find(owner);
+		world->ForEachComponent<Model>([this, &world, &transforms](Model& m, EntityHandle owner) {
+			const auto renderModel = m_models->GetModel(m.GetModel());
+			const Transform* transform = transforms->Find(owner);
 			if (transform && renderModel)
 			{
 				DrawModelBounds(*renderModel, transform->GetMatrix());

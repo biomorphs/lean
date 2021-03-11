@@ -19,11 +19,6 @@ void EntitySystem::NewWorld()
 	m_world->RemoveAllEntities();
 }
 
-void EntitySystem::RegisterComponentUi(Component::Type type, UiRenderFn fn)
-{
-	m_componentUiRenderers[type] = fn;
-}
-
 void EntitySystem::ShowDebugGui()
 {
 	SDE_PROF_EVENT();
@@ -40,16 +35,16 @@ void EntitySystem::ShowDebugGui()
 				sprintf_s(text, "Entity %d", entityID);
 				if (m_debugGui->TreeNode(text))
 				{
-					std::vector<Component*> components = m_world->GetAllComponents(entityID);
-					for (const auto& cmp : components)
+					std::vector<ComponentType> componentTypes = m_world->GetOwnedComponentTypes(entityID);
+					for (const auto& cmp : componentTypes)
 					{
-						if (m_debugGui->TreeNode(cmp->GetType().c_str()))
+						if (m_debugGui->TreeNode(cmp.c_str()))
 						{
-							auto uiRenderer = m_componentUiRenderers.find(cmp->GetType());
+							auto uiRenderer = m_componentUiRenderers.find(cmp);
 							if (uiRenderer != m_componentUiRenderers.end())
 							{
 								auto fn = uiRenderer->second;
-								fn(*cmp, *m_debugGui);
+								fn(*m_world->GetStorage(cmp), entityID, *m_debugGui);
 							}
 							m_debugGui->TreePop();
 						}

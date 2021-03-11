@@ -1,6 +1,6 @@
 #pragma once
 #include "engine/system.h"
-#include "component.h"
+#include "world.h"
 #include <memory>
 
 namespace Engine
@@ -21,37 +21,42 @@ public:
 	void Shutdown();
 
 	template<class T>
-	void RegisterComponentType(Component::Type type);
+	void RegisterComponentType();
 
-	using UiRenderFn = std::function<void(Component&, Engine::DebugGuiSystem&)>;
-	void RegisterComponentUi(Component::Type, UiRenderFn fn);
+	using UiRenderFn = std::function<void(ComponentStorage&, EntityHandle, Engine::DebugGuiSystem&)>;
+	template<class ComponentType>
+	void RegisterComponentUi(UiRenderFn fn);
 
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();
 
 private:
 	void ShowDebugGui();
-	std::map<Component::Type, UiRenderFn> m_componentUiRenderers;
+	std::map<ComponentType, UiRenderFn> m_componentUiRenderers;
 	std::unique_ptr<World> m_world;
 	Engine::ScriptSystem* m_scriptSystem;
 	Engine::DebugGuiSystem* m_debugGui;
 };
 
-#include "world.h"
+template<class ComponentType>
+void EntitySystem::RegisterComponentUi(UiRenderFn fn)
+{
+	m_componentUiRenderers[ComponentType::GetType()] = fn;
+}
 
 template<class T>
-inline void EntitySystem::RegisterComponentType(Component::Type type)
+inline void EntitySystem::RegisterComponentType()
 {
-	m_world->RegisterComponentType<T>(type);
+	m_world->RegisterComponentType<T>();
 	T::RegisterScripts(m_scriptSystem->Globals());
 
 	auto world = m_scriptSystem->Globals()["World"].get_or_create<sol::table>();
-	world["AddComponent_" + type] = [this, type](EntityHandle h) -> T*
+	world["AddComponent_" + T::GetType()] = [this](EntityHandle h) -> T*
 	{
-		return static_cast<T*>(m_world->AddComponent(h, type));
+		return static_cast<T*>(m_world->AddComponent<T>(h));
 	};
-	world["GetComponent_" + type] = [this, type](EntityHandle h) -> T*
+	world["GetComponent_" + T::GetType()] = [this](EntityHandle h) -> T*
 	{
-		return static_cast<T*>(m_world->GetComponent(h, type));
+		return static_cast<T*>(m_world->GetComponent<T>(h));
 	};
 }

@@ -1,7 +1,6 @@
 #include "model.h"
 
-COMPONENT_BEGIN(Model,
+COMPONENT_SCRIPTS(Model,
 	"SetShader", &Model::SetShader,
 	"SetModel", &Model::SetModel
 )
-COMPONENT_END()

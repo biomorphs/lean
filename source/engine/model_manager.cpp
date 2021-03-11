@@ -56,7 +56,7 @@ namespace Engine
 								for (auto& v : uniforms.Vec4Values())
 								{
 									sprintf_s(text, "%s", v.second.m_name.c_str());
-									gui.DragVector(text, v.second.m_value);
+									gui.DragVector(text, v.second.m_value);	
 								}
 								for (auto& v : uniforms.IntValues())
 								{

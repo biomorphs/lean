@@ -191,7 +191,6 @@ set(ENTITY_SOURCES
 	Source/engine/entity/entity_system.h
 	Source/engine/entity/entity_system.cpp
 	Source/engine/entity/component.h
-	Source/engine/entity/component.cpp
 	Source/engine/entity/component_storage.h
 	Source/engine/entity/component_storage.inl
 )

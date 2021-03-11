@@ -3,7 +3,7 @@
 #include "engine/entity/component.h"
 #include "core/glm_headers.h"
 
-class Transform : public Component
+class Transform
 {
 public:
 	COMPONENT(Transform);

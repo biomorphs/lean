@@ -5,7 +5,7 @@
 #include "engine/shader_manager.h"
 #include "engine/model_manager.h"
 
-class Model : public Component
+class Model
 {
 public:
 	COMPONENT(Model);

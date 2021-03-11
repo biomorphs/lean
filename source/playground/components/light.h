@@ -8,7 +8,7 @@ namespace Render
 	class FrameBuffer;
 }
 
-class Light : public Component
+class Light
 {
 public:
 	COMPONENT(Light);
