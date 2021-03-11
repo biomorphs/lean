@@ -15,9 +15,7 @@ namespace DebugGuiScriptBinding
 			system->EndWindow();
 		};
 		dbgui["DragFloat"] = [system](std::string label, float v, float step, float min, float max) -> float {
-			float fv = v;
-			system->DragFloat(label.c_str(), fv, step, min, max);
-			return fv;
+			return system->DragFloat(label.c_str(), v, step, min, max);
 		};
 		dbgui["Text"] = [system](std::string txt) {
 			system->Text(txt.c_str());
@@ -41,9 +39,7 @@ namespace DebugGuiScriptBinding
 			return system->Separator();
 		};
 		dbgui["Checkbox"] = [system](std::string txt, bool checked) -> bool {
-			bool checkVal = checked;
-			system->Checkbox(txt.c_str(), &checkVal);
-			return checkVal;
+			return system->Checkbox(txt.c_str(), checked);
 		};
 	}
 }

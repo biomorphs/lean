@@ -1,9 +1,9 @@
 #include "transform.h"
 
 COMPONENT_SCRIPTS(Transform,
-	"SetPosition", &Transform::SetPosition,
+	"SetPosition", &Transform::SetPos3,
 	"SetRotation", &Transform::SetRotation,
-	"SetScale", &Transform::SetScale,
+	"SetScale", &Transform::SetScale3,
 	"GetPosition", &Transform::GetPosition,
 	"GetRotationDegrees", &Transform::GetRotationDegrees
 )

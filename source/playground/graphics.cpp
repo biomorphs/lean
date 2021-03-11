@@ -72,15 +72,9 @@ bool Graphics::Initialise()
 	m_entitySystem->RegisterComponentType<Transform>();
 	m_entitySystem->RegisterComponentUi<Transform>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 		auto& t = *static_cast<Transform::StorageType&>(cs).Find(e);
-		auto p = t.GetPosition();
-		if(dbg.DragVector("Position", p, 0.25f, -100000.0f, 100000.0f))
-			t.SetPosition(p.x,p.y,p.z);
-		auto s = t.GetScale();
-		auto angleDegrees = glm::degrees(t.GetRotationRadians());
-		dbg.DragVector("Rotation", angleDegrees, 0.1f, -360.0f, 360.0f);
-		t.SetRotationDegrees(angleDegrees);
-		dbg.DragVector("Scale", s, 0.05f, 0.0f);
-		t.SetScale(s.x,s.y,s.z);
+		t.SetPosition(dbg.DragVector("Position", t.GetPosition(), 0.25f, -100000.0f, 100000.0f));
+		t.SetRotationDegrees(dbg.DragVector("Rotation", t.GetRotationDegrees(), 0.1f));
+		t.SetScale(dbg.DragVector("Scale", t.GetScale(), 0.05f, 0.0f));
 	});
 
 	m_entitySystem->RegisterComponentType<Light>();
@@ -92,39 +86,25 @@ bool Graphics::Initialise()
 		{
 			l.SetType(static_cast<Light::Type>(typeIndex));
 		}
-		auto col = glm::vec4(l.GetColour(),1.0f);
-		dbg.ColourEdit("Colour", col, false);
-		l.SetColour(col.r,col.g,col.b);
-		auto brightness = l.GetBrightness();
-		dbg.DragFloat("Brightness", brightness, 0.001f, 0.0f, 10000.0f);
-		l.SetBrightness(brightness);
-		auto ambient = l.GetAmbient();
-		dbg.DragFloat("Ambient", ambient, 0.001f, 0.0f, 1.0f);
-		l.SetAmbient(ambient);
-		auto radius = l.GetDistance();
-		dbg.DragFloat("Distance", radius, 0.1f, 0.0f, 3250.0f);
-		l.SetDistance(radius);
+		l.SetColour(glm::vec3(dbg.ColourEdit("Colour", glm::vec4(l.GetColour(), 1.0f), false)));
+		l.SetBrightness(dbg.DragFloat("Brightness", l.GetBrightness(), 0.001f, 0.0f, 10000.0f));
+		l.SetAmbient(dbg.DragFloat("Ambient", l.GetAmbient(), 0.001f, 0.0f, 1.0f));
+		l.SetDistance(dbg.DragFloat("Distance", l.GetDistance(), 0.1f, 0.0f, 3250.0f));
 		if (l.GetLightType() != Light::Type::Directional)
 		{
-			auto atten = l.GetAttenuation();
-			dbg.DragFloat("Attenuation", atten, 0.1f, 0.0001f, 1000.0f);
-			l.SetAttenuation(atten);
+			l.SetAttenuation(dbg.DragFloat("Attenuation", l.GetAttenuation(), 0.1f, 0.0001f, 1000.0f));
 		}
 		if (l.GetLightType() == Light::Type::Spot)
 		{
 			auto angles = l.GetSpotAngles();
-			dbg.DragFloat("Outer Angle", angles.y, 0.01f, angles.x, 1.0f);
-			dbg.DragFloat("Inner Angle", angles.x, 0.01f, 0.0f, angles.y);
+			angles.y = dbg.DragFloat("Outer Angle", angles.y, 0.01f, angles.x, 1.0f);
+			angles.x = dbg.DragFloat("Inner Angle", angles.x, 0.01f, 0.0f, angles.y);
 			l.SetSpotAngles(angles.x, angles.y);
 		}
-		bool castShadow = l.CastsShadows();
-		dbg.Checkbox("Cast Shadows", &castShadow);
-		l.SetCastsShadows(castShadow);
-		if (castShadow)
+		l.SetCastsShadows(dbg.Checkbox("Cast Shadows", l.CastsShadows()));
+		if (l.CastsShadows())
 		{
-			float bias = l.GetShadowBias();
-			dbg.DragFloat("Shadow Bias", bias, 0.001f, 0.0f, 10.0f);
-			l.SetShadowBias(bias);
+			l.SetShadowBias(dbg.DragFloat("Shadow Bias", l.GetShadowBias(), 0.001f, 0.0f, 10.0f));
 			if (!l.IsPointLight() && l.GetShadowMap() != nullptr && !l.GetShadowMap()->IsCubemap())
 			{
 				dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
@@ -401,9 +381,9 @@ void Graphics::ShowGui(int framesPerSecond)
 	sprintf_s(statText, "Draw calls: %zu", fs.m_drawCalls);	m_debugGui->Text(statText);
 	sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
 	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
-	m_debugGui->Checkbox("Draw Bounds", &m_showBounds);
-	m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f);
-	m_debugGui->Checkbox("Culling Enabled", &m_renderer->GetCullingEnabled());
+	m_showBounds = m_debugGui->Checkbox("Draw Bounds", m_showBounds);
+	m_renderer->SetExposure(m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f));
+	m_renderer->SetCullingEnabled(m_debugGui->Checkbox("Culling Enabled", m_renderer->IsCullingEnabled()));
 	m_debugGui->EndWindow();
 }
 

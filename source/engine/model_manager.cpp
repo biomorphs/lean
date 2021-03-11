@@ -51,17 +51,17 @@ namespace Engine
 								for (auto& v : uniforms.FloatValues())
 								{
 									sprintf_s(text, "%s", v.second.m_name.c_str());
-									gui.DragFloat(text, v.second.m_value);
+									v.second.m_value = gui.DragFloat(text, v.second.m_value);
 								}
 								for (auto& v : uniforms.Vec4Values())
 								{
 									sprintf_s(text, "%s", v.second.m_name.c_str());
-									gui.DragVector(text, v.second.m_value);	
+									v.second.m_value = gui.DragVector(text, v.second.m_value);
 								}
 								for (auto& v : uniforms.IntValues())
 								{
 									sprintf_s(text, "%s", v.second.m_name.c_str());
-									gui.DragInt(text, v.second.m_value);
+									v.second.m_value = gui.DragInt(text, v.second.m_value);
 								}
 								for (auto& t : samplers)
 								{

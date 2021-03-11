@@ -152,29 +152,39 @@ namespace Engine
 		return ImGui::Combo(label, &currentItem, items, itemCount);
 	}
 
-	bool DebugGuiSystem::DragInt(const char* label, int32_t& t, int32_t step, int32_t min, int32_t max)
+	int32_t DebugGuiSystem::DragInt(const char* label, int32_t t, int32_t step, int32_t min, int32_t max)
 	{
-		return ImGui::DragInt(label, &t, step, min, max);
+		auto vv = t;
+		ImGui::DragInt(label, &vv, step, min, max);
+		return vv;
 	}
 
-	bool DebugGuiSystem::DragFloat(const char* label, float& f, float step, float min, float max)
+	float DebugGuiSystem::DragFloat(const char* label, float f, float step, float min, float max)
 	{
-		return ImGui::DragFloat(label, &f, step, min, max);
+		auto ff = f;
+		ImGui::DragFloat(label, &ff, step, min, max);
+		return ff;
 	}
 
-	bool DebugGuiSystem::DragVector(const char* label, glm::vec3& v, float step, float min, float max)
+	glm::vec4 DebugGuiSystem::ColourEdit(const char* label, glm::vec4 c, bool showAlpha)
 	{
-		return ImGui::DragFloat3(label, glm::value_ptr(v), step, min, max);
+		auto vv = c;
+		ImGui::ColorEdit4(label, glm::value_ptr(vv), showAlpha);
+		return vv;
 	}
 
-	bool DebugGuiSystem::ColourEdit(const char* label, glm::vec4& c, bool showAlpha)
+	glm::vec3 DebugGuiSystem::DragVector(const char* label, glm::vec3 v, float step, float min, float max)
 	{
-		return ImGui::ColorEdit4(label, glm::value_ptr(c), showAlpha);
+		auto vv = v;
+		ImGui::DragFloat3(label, glm::value_ptr(vv), step, min, max);
+		return vv;
 	}
 
-	bool DebugGuiSystem::DragVector(const char* label, glm::vec4& v, float step, float min, float max)
+	glm::vec4 DebugGuiSystem::DragVector(const char* label, glm::vec4 v, float step, float min, float max)
 	{
-		return ImGui::DragFloat4(label, glm::value_ptr(v), step, min, max);
+		auto vv = v;
+		ImGui::DragFloat4(label, glm::value_ptr(vv), step, min, max);
+		return vv;
 	}
 
 	bool DebugGuiSystem::TextInput(const char* label, std::string& str)
@@ -226,9 +236,11 @@ namespace Engine
 		ImGui::PlotLines("", buffer.GetValues(), buffer.ValueCount(), 0, label, FLT_MAX, FLT_MAX, graphSize);
 	}
 
-	bool DebugGuiSystem::Checkbox(const char* text, bool* val)
+	bool DebugGuiSystem::Checkbox(const char* text, bool val)
 	{
-		return ImGui::Checkbox(text, val);
+		bool bb = val;
+		ImGui::Checkbox(text, &bb);
+		return bb;
 	}
 
 	void DebugGuiSystem::GraphHistogram(const char* label, glm::vec2 size, GraphDataBuffer& buffer)

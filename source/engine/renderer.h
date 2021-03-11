@@ -62,8 +62,10 @@ namespace Engine
 			size_t m_visibleLights = 0;
 		};
 		const FrameStats& GetStats() const { return m_frameStats; }
-		float& GetExposure() { return m_hdrExposure; }
-		bool& GetCullingEnabled() { return m_cullingEnabled; }
+		float GetExposure() { return m_hdrExposure; }
+		void SetExposure(float e) { m_hdrExposure = e; }
+		bool IsCullingEnabled() { return m_cullingEnabled; }
+		void SetCullingEnabled(bool b) { m_cullingEnabled = b; }
 	private:
 		struct InstanceList
 		{

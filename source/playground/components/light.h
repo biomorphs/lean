@@ -24,7 +24,7 @@ public:
 	void SetDirectional();
 	void SetPointLight();
 	void SetSpotLight();
-	void SetColour(float r, float g, float b) { m_colour = { r,g,b }; }
+	void SetColour(glm::vec3 c) { m_colour = c; }
 	void SetBrightness(float b) { m_brightness = b; }
 	void SetDistance(float d) { m_distance = d; }
 	void SetAttenuation(float a) { m_attenuation = a; }
@@ -50,6 +50,7 @@ public:
 	glm::mat4 GetShadowMatrix() { return m_shadowMatrix; }
 
 private:
+	void SetColour3(float r, float g, float b) { m_colour = { r,g,b }; }
 	Type m_type = Type::Directional;
 	glm::vec3 m_colour = { 1.0f,1.0f,1.0f };
 	float m_brightness = 1.0f;	// scales colour (HDR)
