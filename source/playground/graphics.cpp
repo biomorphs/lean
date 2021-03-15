@@ -256,6 +256,7 @@ void Graphics::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
 		const auto bmax = part.m_boundsMax;
 		m_debugRender->DrawBox(bmin, bmax, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), transform);
 	}
+	m_debugRender->DrawBox(m.BoundsMin(), m.BoundsMax(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), transform);
 }
 
 void Graphics::ProcessLight(Light& l, const Transform* transform)

@@ -118,6 +118,7 @@ namespace Engine
 			std::vector<ModelMesh>& Meshes() { return m_meshes; }
 			const std::vector<ModelMesh>& Meshes() const { return m_meshes; }
 			const std::string& GetPath() const { return m_path; }
+			void CalculateAABB(glm::vec3& minb, glm::vec3& maxb);
 
 		private:
 			static void ParseSceneNode(const aiScene* scene, const aiNode* node, Model& model, glm::mat4 parentTransform);

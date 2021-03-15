@@ -192,6 +192,10 @@ namespace Engine
 			newPart.m_boundsMax = mesh.BoundsMax();
 			resultModel->Parts().push_back(std::move(newPart));
 		}
+		glm::vec3 aabbMin, aabbMax;
+		model.CalculateAABB(aabbMin, aabbMax);
+		resultModel->BoundsMin() = aabbMin;
+		resultModel->BoundsMax() = aabbMax;
 
 		// Ensure any writes are shared with all contexts
 		Render::Device::FlushContext();

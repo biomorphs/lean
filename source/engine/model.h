@@ -21,8 +21,10 @@ namespace Engine
 		Model() = default;
 		~Model() = default;
 
-		static std::unique_ptr<Model> CreateFromAsset(const Assets::Model& src, TextureManager& tm);
-
+		glm::vec3& BoundsMin() { return m_boundsMin; }
+		glm::vec3& BoundsMax() { return m_boundsMax; }
+		const glm::vec3& BoundsMin() const { return m_boundsMin; }
+		const glm::vec3& BoundsMax() const { return m_boundsMax; }
 		struct Part
 		{
 			std::unique_ptr<Render::Mesh> m_mesh;
@@ -35,5 +37,7 @@ namespace Engine
 
 	private:
 		std::vector<Part> m_parts;
+		glm::vec3 m_boundsMin = glm::vec3(FLT_MAX);
+		glm::vec3 m_boundsMax = glm::vec3(-FLT_MAX);
 	};
 }

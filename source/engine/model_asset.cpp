@@ -20,6 +20,31 @@ namespace Engine
 			};
 		}
 
+		void Model::CalculateAABB(glm::vec3& minb, glm::vec3& maxb)
+		{
+			glm::vec3 boundsMin(FLT_MAX), boundsMax(-FLT_MAX);
+			for (const auto& m : m_meshes)
+			{
+				auto transform = m.Transform();
+				auto bmin = m.BoundsMin();
+				auto bmax = m.BoundsMax();
+				glm::vec3 points[] = {
+					{bmin.x, bmin.y, bmin.z},	{bmax.x, bmin.y, bmin.z},
+					{bmin.x, bmax.y, bmin.z},	{bmax.x, bmax.y, bmin.z},
+					{bmin.x, bmin.y, bmax.z},	{bmax.x, bmin.y, bmax.z},
+					{bmin.x, bmax.y, bmax.z},	{bmax.x, bmax.y, bmax.z},
+				};
+				for (int p=0;p<8;++p)
+				{
+					points[p] = glm::vec3(transform * glm::vec4(points[p],1.0f));
+					boundsMin = glm::min(boundsMin, points[p]);
+					boundsMax = glm::max(boundsMax, points[p]);
+				}
+			}
+			minb = boundsMin;
+			maxb = boundsMax;
+		}
+
 		void Model::ProcessMesh(const aiScene* scene, const struct aiMesh* mesh, Model& model, glm::mat4 transform)
 		{
 			SDE_PROF_EVENT();
