@@ -6,6 +6,17 @@
 
 namespace Engine
 {
+	std::vector<ShaderHandle> ShaderManager::AllShaders() const
+	{
+		std::vector<ShaderHandle> results;
+		results.reserve(m_shaders.size());
+		for (int s=0; s < m_shaders.size(); ++s)
+		{
+			results.push_back({ (uint16_t)s });
+		}
+		return results;
+	}
+
 	void ShaderManager::ReloadAll()
 	{
 		SDE_PROF_EVENT();
@@ -54,6 +65,20 @@ namespace Engine
 
 		m_shaders.push_back({ std::move(shader), name, vsPath, fsPath });
 		return ShaderHandle{ static_cast<uint16_t>(m_shaders.size() - 1) };
+	}
+
+	bool ShaderManager::GetShaderPaths(const ShaderHandle& h, std::string& vs, std::string& fs)
+	{
+		if (h.m_index != -1 && h.m_index < m_shaders.size())
+		{
+			vs = m_shaders[h.m_index].m_vsPath;
+			fs = m_shaders[h.m_index].m_fsPath;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	Render::ShaderProgram* ShaderManager::GetShader(const ShaderHandle& h)

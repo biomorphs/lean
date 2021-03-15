@@ -130,6 +130,24 @@ bool Graphics::Initialise()
 				m.SetModel(loadedModel);
 			}
 		}
+		auto allShaders = m_shaders->AllShaders();
+		std::vector<std::string> shaders;
+		std::string vs, fs;
+		for (auto it : allShaders)
+		{
+			if (m_shaders->GetShaderPaths(it, vs, fs))
+			{
+				char shaderPathText[1024];
+				sprintf(shaderPathText, "%s, %s", vs.c_str(), fs.c_str());
+				shaders.push_back(shaderPathText);
+			}
+		}
+		shaders.push_back("None");
+		int shaderIndex = m.GetShader().m_index != (uint16_t)-1 ? m.GetShader().m_index : shaders.size() - 1;
+		if (m_debugGui->ComboBox("Shader", shaders, shaderIndex))
+		{
+			m.SetShader({ (uint16_t)(shaderIndex == (shaders.size() - 1) ? (uint16_t)-1 : shaderIndex) });
+		}
 	});
 	
 	//// add our renderer to the global passes
@@ -313,7 +331,10 @@ void Graphics::ProcessEntities()
 		SDE_PROF_EVENT("SubmitLights");
 		world->ForEachComponent<Light>([this, &world, &transforms](Light& light, EntityHandle owner) {
 			const Transform* transform = transforms->Find(owner);
-			ProcessLight(light, transform);
+			if (transform)
+			{
+				ProcessLight(light, transform);
+			}
 		});
 	}
 

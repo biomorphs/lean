@@ -57,13 +57,15 @@ namespace Engine
 		{
 			SDE_LOGC(Engine, "Running engine main loop");
 			Core::Timer engineTime;
-			float lastTickTime = engineTime.GetSeconds();
-			float deltaTime = 0.0f;
-			while (sysManager.Tick(deltaTime))
+			double startTime = engineTime.GetSeconds();
+			double lastTickTime = startTime;
+			bool running = true;
+			while (running)
 			{
-				float thisTickTime = engineTime.GetSeconds();
-				deltaTime = thisTickTime - lastTickTime;
-				lastTickTime = thisTickTime;
+				double thisTime = engineTime.GetSeconds();
+				double deltaTime = glm::clamp(thisTime - lastTickTime, 0.0047, 0.033);
+				lastTickTime = thisTime;
+				running = sysManager.Tick(deltaTime);
 			}
 		}
 

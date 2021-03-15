@@ -21,8 +21,10 @@ namespace Engine
 		ShaderManager(const ShaderManager&) = delete;
 		ShaderManager(ShaderManager&&) = delete;
 
+		std::vector<ShaderHandle> AllShaders() const;
 		ShaderHandle LoadShader(const char* name, const char* vsPath, const char* fsPath);
 		Render::ShaderProgram* GetShader(const ShaderHandle& h);
+		bool GetShaderPaths(const ShaderHandle& h, std::string& vs, std::string& fs);
 
 		void ReloadAll();
 

@@ -25,7 +25,7 @@ ComponentType* LinearComponentStorage<ComponentType>::Find(EntityHandle owner)
 }
 
 template<class ComponentType>
-ComponentType* LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
+void LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
 {
 	SDE_PROF_EVENT();
 	bool noDuplicate = Find(owner) == nullptr;
@@ -36,10 +36,7 @@ ComponentType* LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
 		m_components.push_back(ComponentType());
 		uint32_t newIndex = m_components.size() - 1;
 		m_entityToComponent.insert({ owner.GetID(), newIndex });
-		return &m_components[newIndex];
 	}
-
-	return nullptr;
 }
 
 template<class ComponentType>

@@ -60,7 +60,7 @@ private:
 	float m_ambient = 0.0f;
 	float m_shadowBias = 0.05f;	// functionality may depend on light type
 	bool m_castShadows = false;
-	glm::ivec2 m_shadowMapSize = { 256,256 };
+	glm::ivec2 m_shadowMapSize = { 1024,1024 };
 	glm::mat4 m_shadowMatrix = glm::identity<glm::mat4>();	// lightspace matrix
 	std::unique_ptr<Render::FrameBuffer> m_shadowMap;	// can be 2d or 3d (cubemap)
 };

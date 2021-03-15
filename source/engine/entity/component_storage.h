@@ -13,6 +13,7 @@ public:
 	virtual ~ComponentStorage() = default;
 	SERIALISED_CLASS();
 
+	virtual void Create(EntityHandle owner) = 0;
 	virtual bool Contains(EntityHandle owner) = 0;
 	virtual void Destroy(EntityHandle owner) = 0;
 	virtual void DestroyAll() = 0;
@@ -24,8 +25,9 @@ class LinearComponentStorage : public ComponentStorage
 {
 public:
 	ComponentType* Find(EntityHandle owner);
-	ComponentType* Create(EntityHandle owner);
 	void ForEach(std::function<void(ComponentType&, EntityHandle)> fn);
+
+	virtual void Create(EntityHandle owner);
 	virtual bool Contains(EntityHandle owner) { return Find(owner) != nullptr; }
 	virtual void Destroy(EntityHandle owner);
 	virtual void DestroyAll();

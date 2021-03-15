@@ -18,6 +18,29 @@ EntityHandle World::AddEntity()
 	return EntityHandle(newId);
 }
 
+void World::AddComponent(EntityHandle owner, ComponentType type)
+{
+	SDE_PROF_EVENT();
+	if (owner.IsValid())
+	{
+		auto foundStorage = m_components.find(type);
+		if (foundStorage != m_components.end())
+		{
+			foundStorage->second->Create(owner);
+		}
+	}
+}
+
+std::vector<ComponentType> World::GetAllComponentTypes()
+{
+	std::vector<ComponentType> results;
+	for (const auto& it : m_components)
+	{
+		results.push_back(it.first);
+	}
+	return results;
+}
+
 ComponentStorage* World::GetStorage(ComponentType t)
 {
 	auto foundStorage = m_components.find(t);

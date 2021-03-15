@@ -151,30 +151,35 @@ void main()
 	finalNormal = finalNormal * 2.0 - 1.0;   
 	finalNormal = normalize(vs_out_tbnMatrix * finalNormal);
 
+	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
 	for(int i=0;i<LightCount;++i)
 	{
 		vec3 lightDir = CalculateDirection(i);
 		float attenuation = CalculateAttenuation(i, lightDir);
 		float shadow = 0.0;
-		if(attenuation > 0.0 && Lights[i].ShadowParams.x != 0.0)
-			shadow = CalculateShadow(i, finalNormal);
+		if(attenuation > 0.0)
+		{	
+			if(Lights[i].ShadowParams.x != 0.0)
+			{
+				shadow = CalculateShadow(i, finalNormal);
+			}
 
-		// diffuse light
-		float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
-		vec3 diffuse = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb * diffuseFactor;
+			// diffuse light
+			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
+			vec3 diffuse = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb * diffuseFactor;
 
-		// ambient light
-		vec3 ambient = diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb * Lights[i].ColourAndAmbient.a;
+			// ambient light
+			vec3 ambient = diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb * Lights[i].ColourAndAmbient.a;
 
-		// specular light (blinn phong)
-		vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
-		vec3 halfwayDir = normalize(lightDir + viewDir);  
-		float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), MeshShininess);
-		vec3 specularColour = MeshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
-		vec3 specular = MeshSpecular.a * specFactor * specularColour * specularTex; 
+			// specular light (blinn phong)
+			vec3 halfwayDir = normalize(lightDir + viewDir);  
+			float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), MeshShininess);
+			vec3 specularColour = MeshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
+			vec3 specular = MeshSpecular.a * specFactor * specularColour * specularTex; 
 
-		vec3 diffuseSpec = (1.0-shadow) * (diffuse + specular);
-		finalColour += attenuation * (ambient + diffuseSpec);
+			vec3 diffuseSpec = (1.0-shadow) * (diffuse + specular);
+			finalColour += attenuation * (ambient + diffuseSpec);
+		}
 	}
 	
 	// tonemap

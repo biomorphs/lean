@@ -147,6 +147,20 @@ namespace Engine
 		ImGui::End();
 	}
 
+	bool DebugGuiSystem::ComboBox(const char* label, std::vector<std::string> items, int& currentItem)
+	{
+		struct Fn
+		{
+			static bool GetFromStringArray(void* data, int n, const char** out_str)
+			{
+				auto items = static_cast<std::vector<std::string>*>(data);
+				*out_str = (*items)[n].c_str();
+				return true;
+			}
+		};
+		return ImGui::Combo(label, &currentItem, &Fn::GetFromStringArray, (void*)&items, (int)items.size());
+	}
+
 	bool DebugGuiSystem::ComboBox(const char* label, const char* items[], int itemCount, int& currentItem)
 	{
 		return ImGui::Combo(label, &currentItem, items, itemCount);

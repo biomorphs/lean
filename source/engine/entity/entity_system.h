@@ -53,7 +53,8 @@ inline void EntitySystem::RegisterComponentType()
 	auto world = m_scriptSystem->Globals()["World"].get_or_create<sol::table>();
 	world["AddComponent_" + T::GetType()] = [this](EntityHandle h) -> T*
 	{
-		return static_cast<T*>(m_world->AddComponent<T>(h));
+		m_world->AddComponent(h, T::GetType());
+		return m_world->GetComponent<T>(h);
 	};
 	world["GetComponent_" + T::GetType()] = [this](EntityHandle h) -> T*
 	{

@@ -29,9 +29,9 @@ public:
 
 	template<class ComponentType>
 	void ForEachComponent(std::function<void(ComponentType&, EntityHandle)> fn);
-	
-	template<class ComponentType>
-	ComponentType* AddComponent(EntityHandle owner);
+
+	void AddComponent(EntityHandle owner, ComponentType type);
+	std::vector<ComponentType> GetAllComponentTypes();
 
 	template<class ComponentType>
 	ComponentType* GetComponent(EntityHandle owner);
@@ -55,7 +55,7 @@ private:
 template<class ComponentType>
 void World::RegisterComponentType()
 {
-	assert(m_components.find(t) == m_components.end());
+	assert(m_components.find(ComponentType::GetType()) == m_components.end());
 	auto storage = std::make_unique<typename ComponentType::StorageType>();
 	m_components[ComponentType::GetType()] = std::move(storage);
 }
@@ -102,23 +102,6 @@ ComponentType* World::GetComponent(EntityHandle owner)
 		{
 			return static_cast<ComponentType::StorageType*>(foundStorage->second.get())->Find(owner);
 		}
-	}
-	return nullptr;
-}
-
-template<class ComponentType>
-ComponentType* World::AddComponent(EntityHandle owner)
-{
-	SDE_PROF_EVENT();
-	if (!owner.IsValid())
-	{
-		return nullptr;
-	}
-
-	auto foundStorage = m_components.find(ComponentType::GetType());
-	if (foundStorage != m_components.end())
-	{
-		return static_cast<ComponentType::StorageType*>(foundStorage->second.get())->Create(owner);
 	}
 	return nullptr;
 }

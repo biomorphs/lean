@@ -28,6 +28,7 @@ void EntitySystem::ShowDebugGui()
 		m_debugGui->BeginWindow(g_showWindow, "Entity System");
 		if (m_debugGui->TreeNode("All Entities", true))
 		{
+			auto allComponentTypes = m_world->GetAllComponentTypes();
 			const auto& allEntities = m_world->AllEntities();
 			for (auto entityID : allEntities)
 			{
@@ -35,8 +36,8 @@ void EntitySystem::ShowDebugGui()
 				sprintf_s(text, "Entity %d", entityID);
 				if (m_debugGui->TreeNode(text))
 				{
-					std::vector<ComponentType> componentTypes = m_world->GetOwnedComponentTypes(entityID);
-					for (const auto& cmp : componentTypes)
+					std::vector<ComponentType> owned = m_world->GetOwnedComponentTypes(entityID);
+					for (const auto& cmp : owned)
 					{
 						if (m_debugGui->TreeNode(cmp.c_str()))
 						{
@@ -49,8 +50,24 @@ void EntitySystem::ShowDebugGui()
 							m_debugGui->TreePop();
 						}
 					}
+					std::vector<ComponentType> notOwned = allComponentTypes;
+					notOwned.erase(std::remove_if(notOwned.begin(), notOwned.end(),[&owned](const ComponentType& t) {
+						return std::find(owned.begin(), owned.end(), t) != owned.end();
+					}), notOwned.end());
+					if (notOwned.size() > 0)
+					{
+						int currentItem = 0;
+						if (m_debugGui->ComboBox("Add Component", notOwned, currentItem))
+						{
+							m_world->AddComponent(entityID, notOwned[currentItem]);
+						}
+					}
 					m_debugGui->TreePop();
 				}
+			}
+			if (m_debugGui->Button("Add entity"))
+			{
+				m_world->AddEntity();
 			}
 			m_debugGui->TreePop();
 		}
