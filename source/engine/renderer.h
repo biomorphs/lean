@@ -33,8 +33,8 @@ namespace Engine
 		void Reset();
 		void RenderAll(Render::Device&);
 		void SetCamera(const Render::Camera& c);
-		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
-		void SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader);
+		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader);
+		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation,
 					  Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
@@ -74,8 +74,8 @@ namespace Engine
 
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
 		void RenderShadowmap(Render::Device& d, Light& l);
-		void SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader);
-		void SubmitInstance(InstanceList& list, glm::vec3 cam, glm::mat4 trns, glm::vec4 col, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 aabbMin, glm::vec3 aabbMax);
+		void SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader);
+		void SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax);
 		int PrepareOpaqueInstances(InstanceList& list);
 		int PrepareTransparentInstances(InstanceList& list);
 		int PrepareCulledShadowInstances(InstanceList& visibleInstances);
@@ -95,7 +95,6 @@ namespace Engine
 		InstanceList m_transparentInstances;
 		InstanceList m_allShadowCasterInstances;
 		Render::RenderBuffer m_transforms;	// global instance transforms
-		Render::RenderBuffer m_colours;		// global instance colours
 		int m_nextInstance = 0;				// index into buffers above
 		bool m_cullingEnabled = true;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };

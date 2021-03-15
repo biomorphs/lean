@@ -186,9 +186,9 @@ bool Graphics::Initialise()
 	graphics["SetShadowShader"] = [this](Engine::ShaderHandle lightingShander, Engine::ShaderHandle shadowShader) {
 		m_shaders->SetShadowsShader(lightingShander, shadowShader);
 	};
-	graphics["DrawModel"] = [this](float px, float py, float pz, float r, float g, float b, float a, float scale, Engine::ModelHandle h, Engine::ShaderHandle sh) {
+	graphics["DrawModel"] = [this](float px, float py, float pz, float scale, Engine::ModelHandle h, Engine::ShaderHandle sh) {
 		auto transform = glm::scale(glm::translate(glm::identity<glm::mat4>(), glm::vec3(px, py, pz)), glm::vec3(scale));
-		m_renderer->SubmitInstance(transform, glm::vec4(r,g,b,a), h, sh);
+		m_renderer->SubmitInstance(transform, h, sh);
 	};
 	graphics["PointLight"] = [this](float px, float py, float pz, float r, float g, float b, float ambient, float distance, float atten) {
 		m_renderer->SetLight(glm::vec4(px, py, pz,1.0f), glm::vec3(0.0f), glm::vec3(r, g, b), ambient, distance, atten);
@@ -346,7 +346,7 @@ void Graphics::ProcessEntities()
 			const Transform* transform = transforms->Find(owner);
 			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
 			{
-				m_renderer->SubmitInstance(transform->GetMatrix(), glm::vec4(1.0f), model.GetModel(), model.GetShader());
+				m_renderer->SubmitInstance(transform->GetMatrix(), model.GetModel(), model.GetShader());
 			}
 		});
 	}

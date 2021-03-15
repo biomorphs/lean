@@ -61,7 +61,6 @@ namespace Engine
 		{
 			SDE_PROF_EVENT("Create Buffers");
 			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
-			m_colours.Create(c_maxInstances * sizeof(glm::vec4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
 			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferType::UniformData, Render::RenderBufferModification::Dynamic, true);
 			m_opaqueInstances.m_instances.reserve(c_maxInstances);
 			m_transparentInstances.m_instances.reserve(c_maxInstances);
@@ -92,22 +91,22 @@ namespace Engine
 		m_camera = c;
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, glm::vec3 cam, glm::mat4 trns, glm::vec4 col, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 aabbMin, glm::vec3 aabbMax)
+	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax)
 	{
 		float distanceToCamera = glm::length(glm::vec3(trns[3]) - cam);
 		const auto foundShader = m_shaders->GetShader(shader);
-		list.m_instances.emplace_back(MeshInstance{trns, col, aabbMin, aabbMax, foundShader, &mesh, distanceToCamera });
+		list.m_instances.emplace_back(std::move(MeshInstance{ trns, aabbMin, aabbMax, foundShader, &mesh, distanceToCamera }));
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader)
 	{
 		// objects submitted with no bounds have infinite aabb
 		const auto boundsMin = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 		const auto boundsMax = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-		SubmitInstance(list, cameraPos, transform, colour, mesh, shader, boundsMin, boundsMax);
+		SubmitInstance(list, cameraPos, transform, mesh, shader, boundsMin, boundsMax);
 	}
 
-	void Renderer::SubmitInstance(glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader)
 	{
 		bool castShadow = true;
 		if (castShadow)
@@ -115,20 +114,16 @@ namespace Engine
 			auto shadowShader = m_shaders->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, mesh, shadowShader);
+				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, mesh, shadowShader);
 			}
 		}
 
-		bool isTransparent = colour.a != 1.0f;
-		if (!isTransparent)
-		{
-			isTransparent = mesh.GetMaterial().GetIsTransparent();
-		}
+		bool isTransparent = mesh.GetMaterial().GetIsTransparent();
 		InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-		SubmitInstance(instances, m_camera.Position(), transform, colour, mesh, shader);
+		SubmitInstance(instances, m_camera.Position(), transform, mesh, shader);
 	}
 
-	void Renderer::SubmitInstance(glm::mat4 transform, glm::vec4 colour, const struct ModelHandle& model, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader)
 	{
 		const auto theModel = m_models->GetModel(model);
 		const auto theShader = m_shaders->GetShader(shader);
@@ -149,16 +144,12 @@ namespace Engine
 				glm::vec3 boundsMin = part.m_boundsMin, boundsMax = part.m_boundsMax;
 				if (shadowShader.m_index != (uint32_t)-1)
 				{
-					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, *part.m_mesh, shadowShader, boundsMin, boundsMax);
+					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
 				}
 
-				bool isTransparent = colour.a != 1.0f;
-				if (!isTransparent)
-				{
-					isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
-				}
+				bool isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
 				InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-				SubmitInstance(instances, m_camera.Position(), instanceTransform, colour, *part.m_mesh, shader, boundsMin, boundsMax);
+				SubmitInstance(instances, m_camera.Position(), instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax);
 			}
 		}
 	}
@@ -226,13 +217,9 @@ namespace Engine
 		static std::vector<glm::mat4> instanceTransforms;
 		instanceTransforms.reserve(list.m_instances.size());
 		instanceTransforms.clear();
-		static std::vector<glm::vec4> instanceColours;
-		instanceColours.reserve(list.m_instances.size());
-		instanceColours.clear();
 		for (const auto& c : list.m_instances)
 		{
 			instanceTransforms.push_back(c.m_transform);
-			instanceColours.push_back(c.m_colour);
 		}
 
 		// copy the instance buffers to gpu
@@ -240,7 +227,6 @@ namespace Engine
 		if (list.m_instances.size() > 0 && m_nextInstance + list.m_instances.size() < c_maxInstances)
 		{
 			m_transforms.SetData(m_nextInstance * sizeof(glm::mat4), instanceTransforms.size() * sizeof(glm::mat4), instanceTransforms.data());
-			m_colours.SetData(m_nextInstance * sizeof(glm::vec4), instanceColours.size() * sizeof(glm::vec4), instanceColours.data());
 			instanceIndex = m_nextInstance;
 			m_nextInstance += list.m_instances.size();
 		}
@@ -405,7 +391,6 @@ namespace Engine
 				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 4, 4);
 				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 8, 4);
 				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 12, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_colours, instancingSlotIndex++, 4, 0);
 
 				// draw the chunks
 				for (const auto& chunk : theMesh->GetChunks())

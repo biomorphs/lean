@@ -1,5 +1,4 @@
 #version 430
-in vec4 out_colour;
 in vec2 out_uv;
 out vec4 colour;
 
@@ -18,5 +17,5 @@ vec4 linearToSRGB(vec4 v)
 }
  
 void main(){
-	colour = linearToSRGB(srgbToLinear(texture(DiffuseTexture, out_uv)) * out_colour);
+	colour = linearToSRGB(srgbToLinear(texture(DiffuseTexture, out_uv)));
 }

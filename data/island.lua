@@ -18,7 +18,7 @@ end
 
 function Island.Tick(deltaTime)
 	Graphics.DirectionalLight(SunPosition[1],SunPosition[2],SunPosition[3], SunMulti * SunColour[1], SunMulti * SunColour[2], SunMulti * SunColour[3], SunAmbient)
-	Graphics.DrawModel(0.0,1.5,0.0,1.0,1.0,1.0,1.0,0.4,IslandModel,DiffuseShader)
+	Graphics.DrawModel(0.0,1.5,0.0,0.4,IslandModel,DiffuseShader)
 end
 
 return Island

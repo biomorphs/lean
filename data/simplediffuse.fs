@@ -1,7 +1,6 @@
 #version 430 
 #pragma sde include "shared.fs"
 
-in vec4 vs_out_colour;
 in vec3 vs_out_normal;
 in vec2 vs_out_uv;
 in vec3 vs_out_position;
@@ -183,6 +182,6 @@ void main()
 	}
 	
 	// tonemap
-	finalColour = Tonemap_ACESFilm(vs_out_colour.rgb * finalColour * HDRExposure);
+	finalColour = Tonemap_ACESFilm(finalColour * HDRExposure);
 	fs_out_colour = vec4(linearToSRGB(finalColour),MeshDiffuseOpacity.a * diffuseTex.a);
 }

@@ -6,7 +6,6 @@ layout(location = 1) in vec3 vs_in_normal;
 layout(location = 2) in vec3 vs_in_tangent;
 layout(location = 3) in vec2 vs_in_uv;
 layout(location = 4) in mat4 vs_in_instance_modelmat;
-layout(location = 8) in vec4 vs_in_instance_colour;
 
 #pragma sde include "global_uniforms.h"
 

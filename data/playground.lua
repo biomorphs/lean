@@ -34,7 +34,7 @@ function Playground.Tick(DeltaTime)
 	Graphics.DebugDrawAxis(0.0,32.0,0.0,8.0)
 
 	Graphics.DirectionalLight(SunPosition[1],SunPosition[2],SunPosition[3], SunMulti * SunColour[1], SunMulti * SunColour[2], SunMulti * SunColour[3], SunAmbient)
-	Graphics.DrawModel(0.0,0.5,0.0,1.0,1.0,1.0,1.0,0.2,Sponza,DiffuseShader)
+	Graphics.DrawModel(0.0,0.5,0.0,0.2,Sponza,DiffuseShader)
 
 	local attenua = {1.0,0.14,0.07}
 	local brightness = 8
@@ -55,7 +55,7 @@ function Playground.Tick(DeltaTime)
 	local gap = width / numPerWidth
 	for z=1,numPerWidth do
 		for x=1,numPerWidth do
-			Graphics.DrawModel(-halfWidth + (x * gap),0.0,-halfWidth + (z*gap) - 14,1.0,1.0,1.0,1.0,1.0 * scale,Container,DiffuseShader)
+			Graphics.DrawModel(-halfWidth + (x * gap),0.0,-halfWidth + (z*gap) - 14,scale,Container,DiffuseShader)
 		end
 	end
 end

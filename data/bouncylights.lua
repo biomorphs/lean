@@ -122,7 +122,7 @@ function BouncyLights.Tick(DeltaTime)
 		end
 		
 		Graphics.PointLight(Lights[i].Position[1],Lights[i].Position[2],Lights[i].Position[3],Lights[i].Colour[1],Lights[i].Colour[2],Lights[i].Colour[3], Lights[i].Ambient, Lights[i].Distance, Lights[i].Attenuation)
-		Graphics.DrawModel(Lights[i].Position[1],Lights[i].Position[2],Lights[i].Position[3],Lights[i].Colour[1],Lights[i].Colour[2],Lights[i].Colour[3],1.0,lightSphereSize,LightModel,LightShader)
+		Graphics.DrawModel(Lights[i].Position[1],Lights[i].Position[2],Lights[i].Position[3],lightSphereSize,LightModel,LightShader)
 
 		for h=1,#Lights[i].History-1 do
 			local alpha = (1.0 - (((#Lights[i].History - h) / #Lights[i].History)))  * 0.5
