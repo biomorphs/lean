@@ -83,10 +83,7 @@ namespace Render
 		if (it == m_uniformHandles.end())
 		{
 			foundHandle = glGetUniformLocation(m_handle, uniformName);
-			if (foundHandle != -1)
-			{
-				m_uniformHandles[nameHash] = foundHandle;
-			}
+			m_uniformHandles[nameHash] = foundHandle;	// we even cache missing uniforms as its faster to hit the map
 		}
 		else
 		{

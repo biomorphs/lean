@@ -162,13 +162,15 @@ void main()
 			{
 				shadow = CalculateShadow(i, finalNormal);
 			}
+			
+			vec3 matColour = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb;
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
-			vec3 diffuse = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb * diffuseFactor;
+			vec3 diffuse = matColour * diffuseFactor;
 
 			// ambient light
-			vec3 ambient = diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb * Lights[i].ColourAndAmbient.a;
+			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a;
 
 			// specular light (blinn phong)
 			vec3 halfwayDir = normalize(lightDir + viewDir);  

@@ -77,7 +77,7 @@ namespace Engine
 										sprintf_s(text, "%s", t.second.m_name.c_str());
 										if (gui.Button(text))
 										{
-											std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0");
+											std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
 											if (newFile != "")
 											{
 												auto loadedTexture = m_textureManager->LoadTexture(newFile.c_str());

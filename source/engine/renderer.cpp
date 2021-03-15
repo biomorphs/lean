@@ -45,6 +45,7 @@ namespace Engine
 	};
 
 	std::map<std::string, TextureHandle> g_defaultTextures;
+	std::vector<std::string> g_shadowSamplerNames, g_shadowCubeSamplerNames;
 
 	Renderer::Renderer(TextureManager* ta, ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize)
 		: m_textures(ta)
@@ -74,6 +75,15 @@ namespace Engine
 			{
 				SDE_LOG("Failed to create framebuffer!");
 			}
+		}
+
+		char nameBuffer[256] = { '\0' };
+		for (int i = 0; i < c_maxShadowMaps; ++i)
+		{
+			sprintf_s(nameBuffer, "ShadowMaps[%d]", i);
+			g_shadowSamplerNames.push_back(nameBuffer);
+			sprintf_s(nameBuffer, "ShadowCubeMaps[%d]", i);
+			g_shadowCubeSamplerNames.push_back(nameBuffer);
 		}
 	}
 
@@ -295,15 +305,13 @@ namespace Engine
 		SDE_PROF_EVENT();
 		uint32_t shadowMapIndex = 0;
 		uint32_t cubeShadowMapIndex = 0;
-		char samplerNameBuffer[256] = { '\0' };
 		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr)
 			{
 				if (m_lights[l].m_position.w == 0.0f || m_lights[l].m_position.w == 2.0f && shadowMapIndex < c_maxShadowMaps)
 				{
-					sprintf_s(samplerNameBuffer, "ShadowMaps[%d]", shadowMapIndex++);
-					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+					uint32_t uniformHandle = shader.GetUniformHandle(g_shadowSamplerNames[shadowMapIndex++].c_str());
 					if (uniformHandle != -1)
 					{
 						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
@@ -311,8 +319,7 @@ namespace Engine
 				}
 				else if(cubeShadowMapIndex < c_maxShadowMaps)
 				{
-					sprintf_s(samplerNameBuffer, "ShadowCubeMaps[%d]", cubeShadowMapIndex++);
-					uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+					uint32_t uniformHandle = shader.GetUniformHandle(g_shadowCubeSamplerNames[cubeShadowMapIndex++].c_str());
 					if (uniformHandle != -1)
 					{
 						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
@@ -323,8 +330,7 @@ namespace Engine
 		// make sure to reset any we are not using or opengl will NOT be happy
 		for (int l = shadowMapIndex; l < c_maxShadowMaps; ++l)
 		{
-			sprintf_s(samplerNameBuffer, "ShadowMaps[%d]", shadowMapIndex++);
-			uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+			uint32_t uniformHandle = shader.GetUniformHandle(g_shadowSamplerNames[shadowMapIndex++].c_str());
 			if (uniformHandle != -1)
 			{
 				d.SetSampler(uniformHandle, 0, textureUnit++);
@@ -332,8 +338,7 @@ namespace Engine
 		}
 		for (int l = cubeShadowMapIndex; l < c_maxShadowMaps; ++l)
 		{
-			sprintf_s(samplerNameBuffer, "ShadowCubeMaps[%d]", cubeShadowMapIndex++);
-			uint32_t uniformHandle = shader.GetUniformHandle(samplerNameBuffer);
+			uint32_t uniformHandle = shader.GetUniformHandle(g_shadowCubeSamplerNames[cubeShadowMapIndex++].c_str());
 			if (uniformHandle != -1)
 			{
 				d.SetSampler(uniformHandle, 0, textureUnit++);
