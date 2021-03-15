@@ -26,6 +26,7 @@ local Rock3 = Graphics.LoadModel("medieval/props/Rock_2.fbx")
 local Fence = Graphics.LoadModel("medieval/props/Fence.fbx")
 local Floor = Graphics.LoadModel("floor_4x4.fbx")
 local Sphere = Graphics.LoadModel("sphere.fbx")
+local Tree = Graphics.LoadModel("treefixed.fbx")
 local Fire = Graphics.LoadModel("medieval/props/Bonfire_Lit.fbx")
 
 function MakeSunEntity()
@@ -139,12 +140,15 @@ function Medieval.Init()
 	MakeModelEntityScaled(-64,-100,128,0,0,0,100,Floor)
 	
 	MakeModelEntityScaled(2,1.3,96,0,0,0,0.5,Fire)
-	MakePointLight(2,20,96,128, 0.99,0.56,0.3, 0.1,2.0)
+	MakePointLight(2,20,96,128, 1.0,0.56,0.3, 0.1,4.0)
 	
 	MakeModelEntityScaled(-134,1.3,320,0,0,0,0.5,Fire)
-	MakePointLight(-134,20,320,128, 0.99,0.56,0.3, 0.1,2.0)
+	MakePointLight(-134,20,320,128, 1.0,0.56,0.3, 0.1,4.0)
 	
 	MakePointLight(155,17.5,14.5,96, 0.99,0.56,0.3, 0.05,1.0)
+	
+	MakeModelEntityScaled(105.75,-5,34,0,146,0,15,Tree)
+	MakeModelEntityScaled(-105.75,-28,55,0,-86,-5,12,Tree)
 	
 end
 

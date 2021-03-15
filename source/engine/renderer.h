@@ -63,6 +63,10 @@ namespace Engine
 		const FrameStats& GetStats() const { return m_frameStats; }
 		float GetExposure() { return m_hdrExposure; }
 		void SetExposure(float e) { m_hdrExposure = e; }
+		float GetBloomThreshold() { return m_bloomThreshold; }
+		void SetBloomThreshold(float t) { m_bloomThreshold = t; }
+		float GetBloomMultiplier() { return m_bloomMultiplier; }
+		void SetBloomMultiplier(float t) { m_bloomMultiplier = t; }
 		bool IsCullingEnabled() { return m_cullingEnabled; }
 		void SetCullingEnabled(bool b) { m_cullingEnabled = b; }
 	private:
@@ -102,10 +106,17 @@ namespace Engine
 		TextureManager* m_textures;
 		ModelManager* m_models;
 		JobSystem* m_jobSystem = nullptr;
+		float m_bloomThreshold = 0.9f;
+		float m_bloomMultiplier = 4.0f;
 		Render::RenderTargetBlitter m_targetBlitter;
 		Engine::ShaderHandle m_blitShader;
+		Engine::ShaderHandle m_bloomBrightnessShader;
+		Engine::ShaderHandle m_bloomBlurShader;
+		Engine::ShaderHandle m_bloomCombineShader;
 		Render::RenderBuffer m_globalsUniformBuffer;
 		Render::FrameBuffer m_mainFramebuffer;
+		Render::FrameBuffer m_bloomBrightnessBuffer;
+		std::unique_ptr<Render::FrameBuffer> m_bloomBlurBuffers[2];
 		Render::Camera m_camera;
 		glm::ivec2 m_windowSize;
 	};

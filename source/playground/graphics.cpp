@@ -405,6 +405,8 @@ void Graphics::ShowGui(int framesPerSecond)
 	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
 	m_showBounds = m_debugGui->Checkbox("Draw Bounds", m_showBounds);
 	m_renderer->SetExposure(m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f));
+	m_renderer->SetBloomThreshold(m_debugGui->DragFloat("Bloom Threshold", m_renderer->GetBloomThreshold(), 0.01f, 0.0f, 0.0f));
+	m_renderer->SetBloomMultiplier(m_debugGui->DragFloat("Bloom Multiplier", m_renderer->GetBloomMultiplier(), 0.01f, 0.0f, 0.0f));
 	m_renderer->SetCullingEnabled(m_debugGui->Checkbox("Culling Enabled", m_renderer->IsCullingEnabled()));
 	m_debugGui->EndWindow();
 }
