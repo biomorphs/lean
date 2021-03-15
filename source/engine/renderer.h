@@ -42,7 +42,6 @@ namespace Engine
 			Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
 		void SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
-		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 
 		struct FrameStats {
 			size_t m_instancesSubmitted = 0;
@@ -100,7 +99,6 @@ namespace Engine
 		int m_nextInstance = 0;				// index into buffers above
 		bool m_cullingEnabled = true;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
-		ShadowShaders m_shadowShaders;	// map of lighting shader handle index -> shadow shader
 		ShaderManager* m_shaders;
 		TextureManager* m_textures;
 		ModelManager* m_models;

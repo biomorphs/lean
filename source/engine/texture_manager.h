@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <atomic>
+#include <functional>
 
 namespace Engine
 {
@@ -28,7 +29,7 @@ namespace Engine
 		TextureManager(TextureManager&&) = delete;
 		~TextureManager() = default;
 
-		TextureHandle LoadTexture(std::string path);
+		TextureHandle LoadTexture(std::string path, std::function<void(bool, TextureHandle)> onFinish = nullptr);
 		Render::Texture* GetTexture(const TextureHandle& h);
 		std::string GetTexturePath(const TextureHandle& h);
 		void ProcessLoadedTextures();
@@ -48,6 +49,7 @@ namespace Engine
 		{
 			std::unique_ptr<Render::Texture> m_texture;
 			TextureHandle m_destination;
+			std::function<void(bool, TextureHandle)> m_onFinish;
 		};
 		Core::Mutex m_loadedTexturesMutex;
 		std::vector<LoadedTexture> m_loadedTextures;

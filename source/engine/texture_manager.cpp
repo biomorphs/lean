@@ -33,7 +33,7 @@ namespace Engine
 				m_textures[t].m_texture ? m_textures[t].m_texture->GetComponentCount() : 0);
 			if (gui.Button(text))
 			{
-				s_showTexture = { static_cast<uint16_t>(t) };
+				s_showTexture = { static_cast<uint32_t>(t) };
 			}
 		}
 		gui.EndWindow();
@@ -49,7 +49,7 @@ namespace Engine
 				gui.EndWindow();
 				if (!show)
 				{
-					s_showTexture = {(uint16_t)-1};
+					s_showTexture = {(uint32_t)-1};
 				}
 			}
 		}
@@ -99,12 +99,16 @@ namespace Engine
 				if(tex.m_texture != nullptr)
 				{
 					m_textures[tex.m_destination.m_index].m_texture = std::move(tex.m_texture);
+					if (tex.m_onFinish != nullptr)
+					{
+						tex.m_onFinish(true, tex.m_destination);
+					}
 				}
 			}
 		}
 	}
 
-	TextureHandle TextureManager::LoadTexture(std::string path)
+	TextureHandle TextureManager::LoadTexture(std::string path, std::function<void(bool, TextureHandle)> onFinish)
 	{
 		if (path.empty())
 		{
@@ -115,16 +119,19 @@ namespace Engine
 		{
 			if (m_textures[i].m_path == path)
 			{
-				return { static_cast<uint16_t>(i) };
+				TextureHandle index = { static_cast<uint32_t>(i) };
+				if(onFinish)
+					onFinish(true, index);
+				return index;
 			}
 		}
 
 		m_textures.push_back({nullptr, path });
-		auto newHandle = TextureHandle{ static_cast<uint16_t>(m_textures.size() - 1) };
+		auto newHandle = TextureHandle{ static_cast<uint32_t>(m_textures.size() - 1) };
 		m_inFlightTextures += 1;
 
 		std::string pathString = path;
-		m_jobSystem->PushSlowJob([this, pathString, newHandle](void*) {
+		m_jobSystem->PushSlowJob([this, pathString, newHandle, onFinish](void*) {
 			char debugName[1024] = { '\0' };
 			sprintf_s(debugName, "LoadTexture %s", pathString.c_str());
 			SDE_PROF_EVENT_DYN(debugName);
@@ -135,6 +142,8 @@ namespace Engine
 			if (loadedData == nullptr)
 			{
 				m_inFlightTextures -= 1;
+				if(onFinish != nullptr)
+					onFinish(false, newHandle);
 				return;
 			}
 
@@ -169,8 +178,12 @@ namespace Engine
 				SDE_PROF_EVENT("PushToResultsList");
 				Core::ScopedMutex guard(m_loadedTexturesMutex);
 				{
-					m_loadedTextures.push_back({ std::move(newTex), newHandle });
+					m_loadedTextures.push_back({ std::move(newTex), newHandle, onFinish });
 				}
+			}
+			else if(onFinish != nullptr)
+			{
+				onFinish(false, newHandle);
 			}
 			m_inFlightTextures -= 1;
 		});

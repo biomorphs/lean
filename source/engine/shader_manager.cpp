@@ -6,13 +6,31 @@
 
 namespace Engine
 {
+	ShaderHandle ShaderManager::GetShadowsShader(ShaderHandle lightingShader)
+	{
+		const auto& foundShadowShader = m_shadowShaders.find(lightingShader.m_index);
+		if (foundShadowShader != m_shadowShaders.end())
+		{
+			return foundShadowShader->second;
+		}
+		else
+		{
+			return ShaderHandle::Invalid();
+		}
+	}
+
+	void ShaderManager::SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader)
+	{
+		m_shadowShaders[lightingShader.m_index] = shadowShader;
+	}
+
 	std::vector<ShaderHandle> ShaderManager::AllShaders() const
 	{
 		std::vector<ShaderHandle> results;
 		results.reserve(m_shaders.size());
 		for (int s=0; s < m_shaders.size(); ++s)
 		{
-			results.push_back({ (uint16_t)s });
+			results.push_back({ (uint32_t)s });
 		}
 		return results;
 	}
@@ -38,7 +56,7 @@ namespace Engine
 		{
 			if (m_shaders[i].m_name == name)
 			{
-				return { static_cast<uint16_t>(i) };
+				return { static_cast<uint32_t>(i) };
 			}
 		}
 
@@ -64,7 +82,7 @@ namespace Engine
 		}
 
 		m_shaders.push_back({ std::move(shader), name, vsPath, fsPath });
-		return ShaderHandle{ static_cast<uint16_t>(m_shaders.size() - 1) };
+		return ShaderHandle{ static_cast<uint32_t>(m_shaders.size() - 1) };
 	}
 
 	bool ShaderManager::GetShaderPaths(const ShaderHandle& h, std::string& vs, std::string& fs)

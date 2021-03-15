@@ -143,10 +143,10 @@ bool Graphics::Initialise()
 			}
 		}
 		shaders.push_back("None");
-		int shaderIndex = m.GetShader().m_index != (uint16_t)-1 ? m.GetShader().m_index : shaders.size() - 1;
+		int shaderIndex = m.GetShader().m_index != (uint32_t)-1 ? m.GetShader().m_index : shaders.size() - 1;
 		if (m_debugGui->ComboBox("Shader", shaders, shaderIndex))
 		{
-			m.SetShader({ (uint16_t)(shaderIndex == (shaders.size() - 1) ? (uint16_t)-1 : shaderIndex) });
+			m.SetShader({ (uint32_t)(shaderIndex == (shaders.size() - 1) ? (uint32_t)-1 : shaderIndex) });
 		}
 	});
 	
@@ -184,7 +184,7 @@ bool Graphics::Initialise()
 		return m_shaders->LoadShader(name, vsPath, fsPath);
 	};
 	graphics["SetShadowShader"] = [this](Engine::ShaderHandle lightingShander, Engine::ShaderHandle shadowShader) {
-		m_renderer->SetShadowsShader(lightingShander, shadowShader);
+		m_shaders->SetShadowsShader(lightingShander, shadowShader);
 	};
 	graphics["DrawModel"] = [this](float px, float py, float pz, float r, float g, float b, float a, float scale, Engine::ModelHandle h, Engine::ShaderHandle sh) {
 		auto transform = glm::scale(glm::translate(glm::identity<glm::mat4>(), glm::vec3(px, py, pz)), glm::vec3(scale));

@@ -78,11 +78,6 @@ namespace Engine
 		}
 	}
 
-	void Renderer::SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader)
-	{
-		m_shadowShaders[lightingShader.m_index] = shadowShader;
-	}
-
 	void Renderer::Reset() 
 	{ 
 		m_opaqueInstances.m_instances.clear();
@@ -97,28 +92,11 @@ namespace Engine
 		m_camera = c;
 	}
 
-	bool IsMeshTransparent(const Render::Mesh& mesh, TextureManager& tm)
-	{
-		const uint32_t c_diffuseSampler = Core::StringHashing::GetHash("DiffuseTexture");
-		const auto& samplers = mesh.GetMaterial().GetSamplers();
-		const auto& diffuseSampler = samplers.find(c_diffuseSampler);
-		if (diffuseSampler != samplers.end())
-		{
-			TextureHandle texHandle = { static_cast<uint16_t>(diffuseSampler->second.m_handle) };
-			const auto theTexture = tm.GetTexture({ texHandle });
-			if (theTexture && theTexture->GetComponentCount() == 4)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	void Renderer::SubmitInstance(InstanceList& list, glm::vec3 cam, glm::mat4 trns, glm::vec4 col, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 aabbMin, glm::vec3 aabbMax)
 	{
 		float distanceToCamera = glm::length(glm::vec3(trns[3]) - cam);
 		const auto foundShader = m_shaders->GetShader(shader);
-		list.m_instances.push_back({ trns, col, aabbMin, aabbMax, foundShader, &mesh, distanceToCamera });
+		list.m_instances.emplace_back(MeshInstance{trns, col, aabbMin, aabbMax, foundShader, &mesh, distanceToCamera });
 	}
 
 	void Renderer::SubmitInstance(InstanceList& list, glm::vec3 cameraPos, glm::mat4 transform, glm::vec4 colour, const Render::Mesh& mesh, const struct ShaderHandle& shader)
@@ -134,17 +112,17 @@ namespace Engine
 		bool castShadow = true;
 		if (castShadow)
 		{
-			const auto& foundShadowShader = m_shadowShaders.find(shader.m_index);
-			if (foundShadowShader != m_shadowShaders.end())
+			auto shadowShader = m_shaders->GetShadowsShader(shader);
+			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, mesh, foundShadowShader->second);
+				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, mesh, shadowShader);
 			}
 		}
 
 		bool isTransparent = colour.a != 1.0f;
 		if (!isTransparent)
 		{
-			isTransparent = IsMeshTransparent(mesh, *m_textures);
+			isTransparent = mesh.GetMaterial().GetIsTransparent();
 		}
 		InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
 		SubmitInstance(instances, m_camera.Position(), transform, colour, mesh, shader);
@@ -159,11 +137,7 @@ namespace Engine
 		bool castShadow = true;
 		if (castShadow)
 		{
-			const auto& foundShadowShader = m_shadowShaders.find(shader.m_index);
-			if (foundShadowShader != m_shadowShaders.end())
-			{
-				shadowShader = foundShadowShader->second;
-			}
+			shadowShader = m_shaders->GetShadowsShader(shader);
 		}
 
 		if (theModel != nullptr && theShader != nullptr)
@@ -173,7 +147,7 @@ namespace Engine
 			{
 				const glm::mat4 instanceTransform = transform * part.m_transform;
 				glm::vec3 boundsMin = part.m_boundsMin, boundsMax = part.m_boundsMax;
-				if (shadowShader.m_index != -1)
+				if (shadowShader.m_index != (uint32_t)-1)
 				{
 					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, colour, *part.m_mesh, shadowShader, boundsMin, boundsMax);
 				}
@@ -181,7 +155,7 @@ namespace Engine
 				bool isTransparent = colour.a != 1.0f;
 				if (!isTransparent)
 				{
-					isTransparent = IsMeshTransparent(*part.m_mesh, *m_textures);
+					isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
 				}
 				InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
 				SubmitInstance(instances, m_camera.Position(), instanceTransform, colour, *part.m_mesh, shader, boundsMin, boundsMax);

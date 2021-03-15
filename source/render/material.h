@@ -3,6 +3,7 @@
 #include "uniform_buffer.h"
 #include <stdint.h>
 #include <memory>
+#include <atomic>
 
 namespace Render
 {
@@ -14,6 +15,8 @@ namespace Render
 		Material();
 		~Material();
 
+		bool GetIsTransparent() const { return m_isTransparent; }
+		void SetIsTransparent(bool m) { m_isTransparent = m; }
 		inline UniformBuffer& GetUniforms()							{ return m_uniforms; }
 		inline const UniformBuffer& GetUniforms() const				{ return m_uniforms; }
 
@@ -28,5 +31,6 @@ namespace Render
 	private:
 		Samplers m_samplers;
 		UniformBuffer m_uniforms;
+		std::atomic<bool> m_isTransparent = false;
 	};
 }

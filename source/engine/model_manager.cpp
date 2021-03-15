@@ -143,6 +143,14 @@ namespace Engine
 				std::string normalPath = mat.NormalMaps().size() > 0 ? mat.NormalMaps()[0] : "";
 				std::string specPath = mat.SpecularMaps().size() > 0 ? mat.SpecularMaps()[0] : "";
 				auto& material = renderModel.Parts()[index].m_mesh->GetMaterial();
+				// Set transparent flag based on diffuse texture
+				auto diffuseTexture = m_textureManager->LoadTexture(diffusePath.c_str(), [this, &renderModel, index](bool loaded, TextureHandle h) {
+					auto texture = m_textureManager->GetTexture(h);
+					if (texture != nullptr && texture->GetComponentCount() == 4 && renderModel.Parts()[index].m_mesh != nullptr)
+					{
+						renderModel.Parts()[index].m_mesh->GetMaterial().SetIsTransparent(true);
+					}
+				});
 				material.SetSampler("DiffuseTexture", m_textureManager->LoadTexture(diffusePath.c_str()).m_index);
 				material.SetSampler("NormalsTexture", m_textureManager->LoadTexture(normalPath.c_str()).m_index);
 				material.SetSampler("SpecularTexture", m_textureManager->LoadTexture(specPath.c_str()).m_index);
@@ -175,6 +183,7 @@ namespace Engine
 			uniforms.SetValue("MeshDiffuseOpacity", glm::vec4(mat.DiffuseColour(), mat.Opacity()));
 			uniforms.SetValue("MeshSpecular", packedSpecular);
 			uniforms.SetValue("MeshShininess", mat.Shininess());
+			newMesh->GetMaterial().SetIsTransparent(mat.Opacity() != 1.0f);
 
 			Model::Part newPart;
 			newPart.m_mesh = std::move(newMesh);
@@ -250,13 +259,13 @@ namespace Engine
 		{
 			if (m_models[i].m_name == path)
 			{
-				return { static_cast<uint16_t>(i) };
+				return { static_cast<uint32_t>(i) };
 			}
 		}
 
 		// always make a valid handle
 		m_models.push_back({nullptr, path });
-		auto newHandle = ModelHandle{ static_cast<uint16_t>(m_models.size() - 1) };
+		auto newHandle = ModelHandle{ static_cast<uint32_t>(m_models.size() - 1) };
 		m_inFlightModels += 1;
 
 		std::string pathString = path;
