@@ -132,7 +132,7 @@ function MakeModelEntity(x,y,z,scale,model,shader)
 end
 
 function EntityTest.Init()
-	Graphics.SetClearColour(0.3,0.3,0.3)
+	Graphics.SetClearColour(0.0,0.0,0.0)
 
 	for i=1,4 do 
 		MakeLightEntity()

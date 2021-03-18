@@ -106,10 +106,11 @@ namespace Engine
 		TextureManager* m_textures;
 		ModelManager* m_models;
 		JobSystem* m_jobSystem = nullptr;
-		float m_bloomThreshold = 0.9f;
-		float m_bloomMultiplier = 4.0f;
+		float m_bloomThreshold = 1.0f;
+		float m_bloomMultiplier = 0.5f;
 		Render::RenderTargetBlitter m_targetBlitter;
 		Engine::ShaderHandle m_blitShader;
+		Engine::ShaderHandle m_tonemapShader;
 		Engine::ShaderHandle m_bloomBrightnessShader;
 		Engine::ShaderHandle m_bloomBlurShader;
 		Engine::ShaderHandle m_bloomCombineShader;

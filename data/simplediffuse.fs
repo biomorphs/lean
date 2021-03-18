@@ -183,7 +183,6 @@ void main()
 		}
 	}
 	
-	// tonemap
-	finalColour = Tonemap_ACESFilm(finalColour * HDRExposure);
-	fs_out_colour = vec4(linearToSRGB(finalColour),MeshDiffuseOpacity.a * diffuseTex.a);
+	// apply exposure here, assuming next pass is postfx
+	fs_out_colour = vec4(finalColour * HDRExposure,MeshDiffuseOpacity.a * diffuseTex.a);
 }

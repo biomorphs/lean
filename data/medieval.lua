@@ -28,6 +28,7 @@ local Floor = Graphics.LoadModel("floor_4x4.fbx")
 local Sphere = Graphics.LoadModel("sphere.fbx")
 local Tree = Graphics.LoadModel("treefixed.fbx")
 local Fire = Graphics.LoadModel("medieval/props/Bonfire_Lit.fbx")
+local Forest = Graphics.LoadModel("forest.gltf")
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
@@ -78,11 +79,15 @@ function MakePointLight(x,y,z,d,r,g,b,a,br)
 	light:SetColour(r,g,b)
 	light:SetAmbient(a)
 	light:SetDistance(d)
-	light:SetAttenuation(1)
+	light:SetAttenuation(2.6)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(512,512)
 	light:SetShadowBias(2.0)
 	light:SetBrightness(br)
+	
+	-- local newModel = World.AddComponent_Model(newEntity)
+	-- newModel:SetModel(Sphere)
+	-- newModel:SetShader(BasicShader)
 end
 
 function Medieval.Init()
@@ -140,16 +145,19 @@ function Medieval.Init()
 	MakeModelEntityScaled(-64,-100,128,0,0,0,100,Floor)
 	
 	MakeModelEntityScaled(2,1.3,96,0,0,0,0.5,Fire)
-	MakePointLight(2,20,96,128, 1.0,0.56,0.3, 0.1,4.0)
+	MakePointLight(2,20,96,128, 1.0,0.56,0.3, 0.1,2.0)
 	
 	MakeModelEntityScaled(-134,1.3,320,0,0,0,0.5,Fire)
-	MakePointLight(-134,20,320,128, 1.0,0.56,0.3, 0.1,4.0)
+	MakePointLight(-134,20,320,128, 0.95,0.3,0.12, 0.2,4.0)
 	
 	MakePointLight(155,17.5,14.5,96, 0.99,0.56,0.3, 0.05,1.0)
 	
 	MakeModelEntityScaled(105.75,-5,34,0,146,0,15,Tree)
 	MakeModelEntityScaled(-105.75,-28,55,0,-86,-5,12,Tree)
 	
+	MakeModelEntityScaled(-295.25,54.25,3.5,0,0,0,5,Forest)
+	MakePointLight(-289,70,-9.25,64,1.0,0.42,0.149,0.0,20.0)
+	MakePointLight(-297,86,11.0,45,0.0,0.88,1.0,0.01,40.0)
 end
 
 function DrawGrid(startX,endX,stepX,startZ,endZ,stepZ,yAxis)

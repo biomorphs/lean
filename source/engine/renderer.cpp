@@ -23,6 +23,8 @@ namespace Engine
 	const uint64_t c_maxInstances = 1024 * 512;		// this needs to include all passes/shadowmap updates
 	const uint64_t c_maxLights = 256;
 	const uint32_t c_maxShadowMaps = 16;
+	const int32_t c_bloomBufferSizeDivider = 2;	// windowsize/divider
+	const uint32_t c_bloomBlurIterations = 10;
 
 	struct LightInfo					// passed to shaders
 	{
@@ -63,6 +65,7 @@ namespace Engine
 		m_bloomBrightnessShader = m_shaders->LoadShader("BloomBrightness", "basic_blit.vs", "bloom_brightness.fs");
 		m_bloomBlurShader = m_shaders->LoadShader("BloomBlur", "basic_blit.vs", "bloom_blur.fs");
 		m_bloomCombineShader = m_shaders->LoadShader("BloomCombine", "basic_blit.vs", "bloom_combine.fs");
+		m_tonemapShader = m_shaders->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
 			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
@@ -83,7 +86,7 @@ namespace Engine
 			m_bloomBrightnessBuffer.Create();
 			for (int i = 0; i < 2; ++i)
 			{
-				m_bloomBlurBuffers[i] = std::make_unique<Render::FrameBuffer>(windowSize/4);
+				m_bloomBlurBuffers[i] = std::make_unique<Render::FrameBuffer>(windowSize / c_bloomBufferSizeDivider);
 				m_bloomBlurBuffers[i]->AddColourAttachment(Render::FrameBuffer::RGBA_F16);
 				m_bloomBlurBuffers[i]->Create();
 			}
@@ -544,6 +547,7 @@ namespace Engine
 		auto brightnessShader = m_shaders->GetShader(m_bloomBrightnessShader);
 		if (brightnessShader)
 		{
+			SDE_PROF_EVENT("BloomBrightness");
 			d.BindShaderProgram(*brightnessShader);		// must happen before setting uniforms
 			auto threshold = brightnessShader->GetUniformHandle("BrightnessThreshold");
 			if (threshold != -1)
@@ -558,10 +562,10 @@ namespace Engine
 		auto blurShader = m_shaders->GetShader(m_bloomBlurShader);
 		if (blurShader)
 		{
+			SDE_PROF_EVENT("BloomBlur");
 			auto blurDirection = blurShader->GetUniformHandle("BlurDirection");
-			int iterations = 10;
 			bool horizontal = false;
-			for (int i = 0; i < iterations; ++i)
+			for (int i = 0; i < c_bloomBlurIterations; ++i)
 			{
 				d.SetUniformValue(blurDirection, horizontal ? 0.0f : 1.0f);
 				const auto& src = (i == 0) ? m_bloomBrightnessBuffer : *m_bloomBlurBuffers[!horizontal];
@@ -575,6 +579,7 @@ namespace Engine
 		auto combineShader = m_shaders->GetShader(m_bloomCombineShader);
 		if (combineShader)
 		{
+			SDE_PROF_EVENT("BloomCombine");
 			d.BindShaderProgram(*combineShader);		// must happen before setting uniforms
 			auto sampler = combineShader->GetUniformHandle("LightingTexture");
 			if (sampler != -1)
@@ -583,16 +588,16 @@ namespace Engine
 				d.SetSampler(sampler, m_mainFramebuffer.GetColourAttachment(0).GetHandle(), 1);
 			}
 			m_targetBlitter.TargetToTarget(d, *m_bloomBlurBuffers[0], m_bloomBrightnessBuffer, *combineShader);
-			
 		}
 
-		// blit main buffer to backbuffer
+		// blit main buffer to backbuffer + tonemap
 		d.SetDepthState(false, false);
 		d.SetBlending(true);
+		auto tonemapShader = m_shaders->GetShader(m_tonemapShader);
 		auto blitShader = m_shaders->GetShader(m_blitShader);
-		if (blitShader)
+		if (blitShader && tonemapShader)
 		{
-			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, m_mainFramebuffer, *blitShader);
+			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, m_mainFramebuffer, *tonemapShader);
 			m_targetBlitter.TargetToBackbuffer(d, m_mainFramebuffer, *blitShader, m_windowSize);
 		}
 	}

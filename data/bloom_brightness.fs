@@ -16,7 +16,7 @@ void main()
 	float brightness = dot(colour.rgb, vec3(0.2126, 0.7152, 0.0722));
 	if(brightness > BrightnessThreshold)
 	{
-		fs_out_colour = colour * (brightness - BrightnessThreshold) * BrightnessMulti;
+		fs_out_colour = colour * clamp((brightness - BrightnessThreshold) * BrightnessMulti,0.0,1.0);
 	}
 	else
 	{

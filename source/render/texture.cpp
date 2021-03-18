@@ -127,6 +127,20 @@ namespace Render
 		return mipCount;
 	}
 
+	uint32_t WrapModeToGlType(TextureSource::WrapMode m)
+	{
+		switch (m)
+		{
+		case TextureSource::WrapMode::ClampToEdge:
+			return GL_CLAMP_TO_EDGE;
+		case TextureSource::WrapMode::Repeat:
+			return GL_REPEAT;
+		default:
+			assert(false);
+			return GL_REPEAT;
+		}
+	}
+
 	void Texture::SetClampToBorder(glm::vec4 borderColour)
 	{
 		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -146,7 +160,12 @@ namespace Render
 
 		m_componentCount = SourceFormatToComponentCount(src.SourceFormat());
 		const bool shouldGenerateMips = src.MipCount() <=1 && src.ShouldGenerateMips();
-		const uint32_t mipCount = shouldGenerateMips ? GetGeneratedMipCount(src) : src.MipCount();
+		const uint32_t mipCount = shouldGenerateMips ? GetGeneratedMipCount(src) : src.MipCount();	
+
+		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, WrapModeToGlType(src.GetWrapModeS()));
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_T, WrapModeToGlType(src.GetWrapModeT()));
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
 
 		if (src.UseNearestFiltering())
 		{

@@ -54,7 +54,7 @@ function MakeLightEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
-	transform:SetPosition(-20,24,-5)
+	transform:SetPosition(-20,5,-5)
 	transform:SetScale(1,1,1)
 	
 	LightColourIndex = LightColourIndex + 1
@@ -68,7 +68,7 @@ function MakeLightEntity()
 	light:SetDistance(math.random(16,32))
 	light:SetAttenuation(2.5)
 	light:SetCastsShadows(false)
-	light:SetBrightness(2.0)
+	light:SetBrightness(4.0)
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -98,7 +98,7 @@ function MakeShadowLightEntity()
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(512,512)
 	light:SetShadowBias(4.0)
-	light:SetBrightness(2.0)
+	light:SetBrightness(4.0)
 	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(SphereModel)
@@ -126,7 +126,7 @@ function MakeSpotLight(x,y,z, rx, ry, rz)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(1024,1024)
 	light:SetShadowBias(0.0001)
-	light:SetBrightness(2.0)
+	light:SetBrightness(4.0)
 	light:SetSpotAngles(0.0,0.8)
 	light:SetAttenuation(1.3)
 	
@@ -157,7 +157,7 @@ function EntityTest.Init()
 	for i=1,15 do 
 		MakeSpotLight(-25,5,-4.5,0,math.random(0,360),45)
 	end
-	for i=1,8 do 
+	for i=1,2 do 
 		MakeShadowLightEntity()
 	end
 	

@@ -31,6 +31,7 @@ namespace Render
 			assert(false);	// Unsupported
 		}
 		TextureSource ts(m_dimensions.x, m_dimensions.y, textureFormat);
+		ts.SetWrapMode(TextureSource::WrapMode::ClampToEdge, TextureSource::WrapMode::ClampToEdge);
 		auto newTexture = std::make_unique<Render::Texture>();
 		if (newTexture->Create(ts))
 		{

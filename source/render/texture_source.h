@@ -21,6 +21,11 @@ namespace Render
 			Depth32,
 			Unsupported
 		};
+		enum class WrapMode
+		{
+			Repeat,
+			ClampToEdge
+		};
 		struct MipDesc
 		{
 			uint32_t m_width;
@@ -37,6 +42,9 @@ namespace Render
 		TextureSource(const TextureSource&) = delete;
 		TextureSource(TextureSource&&) = default;
 
+		inline WrapMode GetWrapModeS() const { return m_wrapModeS; }
+		inline WrapMode GetWrapModeT() const { return m_wrapModeT; }
+		void SetWrapMode(WrapMode s, WrapMode t) { m_wrapModeS = s; m_wrapModeT = t; }
 		inline uint32_t Width() const { return m_width; }
 		inline uint32_t Height() const { return m_height; }
 		inline uint32_t MipCount() const { return static_cast<uint32_t>(m_mipDescriptors.size()); }
@@ -47,7 +55,10 @@ namespace Render
 		inline bool ContainsSourceData() const { return m_rawBuffer.size() > 0; }
 		inline bool& UseNearestFiltering() { return m_useNearestFiltering; }
 		inline const bool& UseNearestFiltering() const { return m_useNearestFiltering; }
+
 	private:
+		WrapMode m_wrapModeS = WrapMode::Repeat;
+		WrapMode m_wrapModeT = WrapMode::Repeat;
 		Format m_format;
 		uint32_t m_width;
 		uint32_t m_height;
