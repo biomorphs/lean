@@ -173,11 +173,15 @@ void main()
 			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a;
 
 			// specular light (blinn phong)
-			vec3 halfwayDir = normalize(lightDir + viewDir);  
-			float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), MeshShininess);
-			vec3 specularColour = MeshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
-			vec3 specular = MeshSpecular.a * specFactor * specularColour * specularTex; 
-
+			vec3 specular = vec3(0.0);
+			if(MeshSpecular.a > 0.0)
+			{
+				vec3 halfwayDir = normalize(lightDir + viewDir);  
+				float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), max(MeshShininess,0.000000001));
+				vec3 specularColour = MeshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
+				specular = MeshSpecular.a * specFactor * specularColour * specularTex; 
+			}
+			
 			vec3 diffuseSpec = (1.0-shadow) * (diffuse + specular);
 			finalColour += attenuation * (ambient + diffuseSpec);
 		}

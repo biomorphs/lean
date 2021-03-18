@@ -26,6 +26,12 @@ namespace Render
 			Repeat,
 			ClampToEdge
 		};
+		enum class Antialiasing		// MSAA textures cannot be used directly in shaders, they must be resolved to a non-MSAA target
+		{
+			None,
+			MSAAx2,
+			MSAAx4
+		};
 		struct MipDesc
 		{
 			uint32_t m_width;
@@ -42,6 +48,8 @@ namespace Render
 		TextureSource(const TextureSource&) = delete;
 		TextureSource(TextureSource&&) = default;
 
+		inline Antialiasing GetAA() const { return m_antiAliasing; }
+		void SetAA(Antialiasing m) { m_antiAliasing = m; }
 		inline WrapMode GetWrapModeS() const { return m_wrapModeS; }
 		inline WrapMode GetWrapModeT() const { return m_wrapModeT; }
 		void SetWrapMode(WrapMode s, WrapMode t) { m_wrapModeS = s; m_wrapModeT = t; }
@@ -57,6 +65,7 @@ namespace Render
 		inline const bool& UseNearestFiltering() const { return m_useNearestFiltering; }
 
 	private:
+		Antialiasing m_antiAliasing = Antialiasing::None;
 		WrapMode m_wrapModeS = WrapMode::Repeat;
 		WrapMode m_wrapModeT = WrapMode::Repeat;
 		Format m_format;

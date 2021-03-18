@@ -16,6 +16,30 @@ namespace Render
 		Destroy();
 	}
 
+	void FrameBuffer::Resolve(FrameBuffer& target)
+	{
+		assert(m_msaaSamples != 1);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboHandle);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.GetHandle());
+		glBlitFramebuffer(0, 0, m_dimensions.x, m_dimensions.y, 0, 0, target.m_dimensions.x, target.m_dimensions.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		SDE_RENDER_PROCESS_GL_ERRORS("glBlitFrameBuffer");
+	}
+
+	TextureSource::Antialiasing GetAAMode(int samples)
+	{
+		auto aaMode = TextureSource::Antialiasing::None;
+		switch (samples)
+		{
+		case 2:
+			aaMode = TextureSource::Antialiasing::MSAAx2;
+			break;
+		case 4:
+			aaMode = TextureSource::Antialiasing::MSAAx4;
+			break;
+		}
+		return aaMode;
+	}
+
 	bool FrameBuffer::AddColourAttachment(ColourAttachmentFormat format)
 	{
 		auto textureFormat = Render::TextureSource::Format::Unsupported;
@@ -31,7 +55,7 @@ namespace Render
 			assert(false);	// Unsupported
 		}
 		TextureSource ts(m_dimensions.x, m_dimensions.y, textureFormat);
-		ts.SetWrapMode(TextureSource::WrapMode::ClampToEdge, TextureSource::WrapMode::ClampToEdge);
+		ts.SetAA(GetAAMode(m_msaaSamples));
 		auto newTexture = std::make_unique<Render::Texture>();
 		if (newTexture->Create(ts))
 		{
@@ -47,6 +71,8 @@ namespace Render
 	bool FrameBuffer::AddDepthCube()
 	{
 		TextureSource ts(m_dimensions.x, m_dimensions.y, Render::TextureSource::Format::Depth32);
+		ts.SetAA(GetAAMode(m_msaaSamples));
+		ts.SetWrapMode(TextureSource::WrapMode::ClampToEdge, TextureSource::WrapMode::ClampToEdge);
 		auto newTexture = std::make_unique<Render::Texture>();
 		if (newTexture->CreateCubemap(ts))
 		{
@@ -61,6 +87,8 @@ namespace Render
 	{
 		TextureSource ts(m_dimensions.x, m_dimensions.y, Render::TextureSource::Format::Depth32);
 		ts.UseNearestFiltering() = true;
+		ts.SetAA(GetAAMode(m_msaaSamples));
+		ts.SetWrapMode(TextureSource::WrapMode::ClampToEdge, TextureSource::WrapMode::ClampToEdge);
 		auto newTexture = std::make_unique<Render::Texture>();
 		if (newTexture->Create(ts))
 		{
@@ -74,6 +102,8 @@ namespace Render
 	bool FrameBuffer::AddDepthStencil()
 	{
 		TextureSource ts(m_dimensions.x, m_dimensions.y, Render::TextureSource::Format::Depth24Stencil8);
+		ts.SetAA(GetAAMode(m_msaaSamples));
+		ts.SetWrapMode(TextureSource::WrapMode::ClampToEdge, TextureSource::WrapMode::ClampToEdge);
 		auto newTexture = std::make_unique<Render::Texture>();
 		if (newTexture->Create(ts))
 		{

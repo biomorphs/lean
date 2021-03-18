@@ -18,6 +18,8 @@ namespace Render
 			RGBA_F16
 		};
 
+		int GetMSAASamples() const { return m_msaaSamples; }
+		void SetMSAASamples(int s) { m_msaaSamples = s; }
 		bool AddColourAttachment(ColourAttachmentFormat format = RGBA_U8);
 		bool AddDepthStencil();
 		bool AddDepth();	// no stencil
@@ -32,11 +34,13 @@ namespace Render
 		const std::unique_ptr<Texture>& GetDepthStencil() const { return m_depthStencil; }
 		glm::ivec2 Dimensions() const {	return m_dimensions; }
 		bool IsCubemap() const { return m_isCubemap; }
+		void Resolve(FrameBuffer& target);	// required for msaa targets
 
 	private:
 		std::vector<std::unique_ptr<Texture>> m_colourAttachments;
 		std::unique_ptr<Texture> m_depthStencil;
 		glm::ivec2 m_dimensions;
+		int m_msaaSamples = 1;		// 1 = no AA
 		bool m_isCubemap = false;
 		uint32_t m_fboHandle = 0;
 	};

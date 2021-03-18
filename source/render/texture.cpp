@@ -155,59 +155,78 @@ namespace Render
 	{
 		SDE_PROF_EVENT();
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_handle);
+		uint32_t target = src.GetAA() == TextureSource::Antialiasing::None ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE;
+
+		glCreateTextures(target, 1, &m_handle);
 		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateTextures");
 
 		m_componentCount = SourceFormatToComponentCount(src.SourceFormat());
 		const bool shouldGenerateMips = src.MipCount() <=1 && src.ShouldGenerateMips();
 		const uint32_t mipCount = shouldGenerateMips ? GetGeneratedMipCount(src) : src.MipCount();	
 
-		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, WrapModeToGlType(src.GetWrapModeS()));
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
-		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_T, WrapModeToGlType(src.GetWrapModeT()));
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+		if (src.GetAA() == TextureSource::Antialiasing::None)
+		{
+			glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, WrapModeToGlType(src.GetWrapModeS()));
+			SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+			glTextureParameteri(m_handle, GL_TEXTURE_WRAP_T, WrapModeToGlType(src.GetWrapModeT()));
+			SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
 
-		if (src.UseNearestFiltering())
-		{
-			glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		}
-		else
-		{
-			glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		}
-		
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
-		if (mipCount > 1)
-		{
 			if (src.UseNearestFiltering())
 			{
-				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+				glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			}
 			else
 			{
-				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
-		}
-		else
-		{
-			if (src.UseNearestFiltering())
+			SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+			if (mipCount > 1)
 			{
-				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				if (src.UseNearestFiltering())
+				{
+					glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+				}
+				else
+				{
+					glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				}
 			}
 			else
 			{
-				glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				if (src.UseNearestFiltering())
+				{
+					glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				}
+				else
+				{
+					glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				}
 			}
+			SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
 		}
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
 
 		uint32_t glStorageFormat = SourceFormatToGLStorageFormat(src.SourceFormat());
 		SDE_RENDER_ASSERT(glStorageFormat != -1);
 		{
 			SDE_PROF_EVENT("AllocateStorage");
 			// This preallocates the entire mip-chain
-			glTextureStorage2D(m_handle, std::max(mipCount,1u), glStorageFormat, src.Width(), src.Height());
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureStorage2D");
+			if (src.GetAA() == TextureSource::Antialiasing::None)
+			{
+				glTextureStorage2D(m_handle, std::max(mipCount, 1u), glStorageFormat, src.Width(), src.Height());
+				SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureStorage2D");
+			}
+			else
+			{
+				uint32_t sampleCount = 2;
+				switch (src.GetAA())
+				{
+				case TextureSource::Antialiasing::MSAAx4:
+					sampleCount = 4;
+					break;
+				}
+				glTextureStorage2DMultisample(m_handle, sampleCount, glStorageFormat, src.Width(), src.Height(), true);
+				SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureStorage2DMultisample");
+			}
 		}
 		if(src.ContainsSourceData())
 		{
@@ -216,18 +235,21 @@ namespace Render
 			uint32_t glInternalType = SourceFormatToGLInternalType(src.SourceFormat());
 			SDE_RENDER_ASSERT(glInternalFormat != -1);
 			SDE_RENDER_ASSERT(glInternalType != -1);
-			for (uint32_t m = 0; m < src.MipCount(); ++m)
+			if (src.GetAA() == TextureSource::Antialiasing::None)
 			{
-				uint32_t w = 0, h = 0;
-				size_t size = 0;
-				const uint8_t* mipData = src.MipLevel(m, w, h, size);
-				SDE_RENDER_ASSERT(mipData);
+				for (uint32_t m = 0; m < src.MipCount(); ++m)
+				{
+					uint32_t w = 0, h = 0;
+					size_t size = 0;
+					const uint8_t* mipData = src.MipLevel(m, w, h, size);
+					SDE_RENDER_ASSERT(mipData);
 
-				glTextureSubImage2D(m_handle, m, 0, 0, w, h, glInternalFormat, glInternalType, mipData);
-				SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureSubImage2D");
+					glTextureSubImage2D(m_handle, m, 0, 0, w, h, glInternalFormat, glInternalType, mipData);
+					SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureSubImage2D");
+				}
 			}
 		}
-		if (shouldGenerateMips)
+		if (shouldGenerateMips && src.GetAA() == TextureSource::Antialiasing::None)
 		{
 			SDE_PROF_EVENT("GenerateMips");
 			glGenerateTextureMipmap(m_handle);

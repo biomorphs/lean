@@ -25,6 +25,7 @@ namespace Engine
 	const uint32_t c_maxShadowMaps = 16;
 	const int32_t c_bloomBufferSizeDivider = 2;	// windowsize/divider
 	const uint32_t c_bloomBlurIterations = 10;
+	const int c_msaaSamples = 4;
 
 	struct LightInfo					// passed to shaders
 	{
@@ -56,6 +57,7 @@ namespace Engine
 		, m_jobSystem(js)
 		, m_windowSize(windowSize)
 		, m_mainFramebuffer(windowSize)
+		, m_mainFramebufferResolved(windowSize)
 		, m_bloomBrightnessBuffer(windowSize)
 	{
 		g_defaultTextures["DiffuseTexture"] = m_textures->LoadTexture("white.bmp");
@@ -76,9 +78,15 @@ namespace Engine
 		}
 		{
 			SDE_PROF_EVENT("Create render targets");
+			m_mainFramebuffer.SetMSAASamples(c_msaaSamples);
 			m_mainFramebuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F16);
 			m_mainFramebuffer.AddDepthStencil();
 			if (!m_mainFramebuffer.Create())
+			{
+				SDE_LOG("Failed to create framebuffer!");
+			}
+			m_mainFramebufferResolved.AddColourAttachment(Render::FrameBuffer::RGBA_F16);
+			if (!m_mainFramebufferResolved.Create())
 			{
 				SDE_LOG("Failed to create framebuffer!");
 			}
@@ -541,6 +549,14 @@ namespace Engine
 			m_frameStats.m_renderedTransparentInstances = m_transparentInstances.m_instances.size();
 		}
 
+		Render::FrameBuffer* mainFb = &m_mainFramebuffer;
+		if(m_mainFramebuffer.GetMSAASamples() > 1)
+		{
+			SDE_PROF_EVENT("ResolveMSAA");
+			m_mainFramebuffer.Resolve(m_mainFramebufferResolved);
+			mainFb = &m_mainFramebufferResolved;
+		}
+
 		// blit to bloom brightness buffer
 		d.SetDepthState(false, false);
 		d.SetBlending(false);
@@ -555,7 +571,7 @@ namespace Engine
 			auto multi = brightnessShader->GetUniformHandle("BrightnessMulti");
 			if (multi != -1)
 				d.SetUniformValue(multi, m_bloomMultiplier);
-			m_targetBlitter.TargetToTarget(d, m_mainFramebuffer, m_bloomBrightnessBuffer, *brightnessShader);
+			m_targetBlitter.TargetToTarget(d, *mainFb, m_bloomBrightnessBuffer, *brightnessShader);
 		}
 
 		// gaussian blur 
@@ -585,7 +601,7 @@ namespace Engine
 			if (sampler != -1)
 			{
 				// force texture unit 1 since 0 is used by blitter
-				d.SetSampler(sampler, m_mainFramebuffer.GetColourAttachment(0).GetHandle(), 1);
+				d.SetSampler(sampler, mainFb->GetColourAttachment(0).GetHandle(), 1);
 			}
 			m_targetBlitter.TargetToTarget(d, *m_bloomBlurBuffers[0], m_bloomBrightnessBuffer, *combineShader);
 		}
@@ -597,8 +613,8 @@ namespace Engine
 		auto blitShader = m_shaders->GetShader(m_blitShader);
 		if (blitShader && tonemapShader)
 		{
-			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, m_mainFramebuffer, *tonemapShader);
-			m_targetBlitter.TargetToBackbuffer(d, m_mainFramebuffer, *blitShader, m_windowSize);
+			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, *mainFb, *tonemapShader);
+			m_targetBlitter.TargetToBackbuffer(d, *mainFb, *blitShader, m_windowSize);
 		}
 	}
 

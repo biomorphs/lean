@@ -116,6 +116,7 @@ namespace Engine
 		Engine::ShaderHandle m_bloomCombineShader;
 		Render::RenderBuffer m_globalsUniformBuffer;
 		Render::FrameBuffer m_mainFramebuffer;
+		Render::FrameBuffer m_mainFramebufferResolved;
 		Render::FrameBuffer m_bloomBrightnessBuffer;
 		std::unique_ptr<Render::FrameBuffer> m_bloomBlurBuffers[2];
 		Render::Camera m_camera;
