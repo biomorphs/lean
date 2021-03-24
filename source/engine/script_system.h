@@ -1,6 +1,8 @@
 #pragma once
 
 #include "system.h"
+#define SOL_CHECK_ARGUMENTS 1		// deprecated in sol 3 (time for upgrade?)
+#define SOL_LUAJIT 1
 #include <sol.hpp>
 #include <string>
 #include <memory>

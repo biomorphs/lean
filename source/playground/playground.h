@@ -1,10 +1,10 @@
 #pragma once
 #include "engine/system.h"
+#include "engine/script_system.h"
 #include "core/timer.h"
 #include "scene.h"
 #include "scene_editor.h"
 #include <string>
-#include <sol.hpp>
 
 namespace Engine
 {

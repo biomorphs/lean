@@ -1,6 +1,6 @@
 #include "debug_gui_script_binding.h"
 #include "engine/debug_gui_system.h"
-#include <sol.hpp>
+#include "engine/script_system.h"
 #include <string>
 
 namespace DebugGuiScriptBinding

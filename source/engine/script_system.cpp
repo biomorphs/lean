@@ -1,7 +1,6 @@
 #include "script_system.h"
 #include "core/file_io.h"
 #include "core/profiler.h"
-#include <sol.hpp>
 
 namespace Engine
 {
@@ -17,6 +16,7 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		state.open_libraries(sol::lib::base, 
+			sol::lib::jit,
 			sol::lib::math, 
 			sol::lib::package,
 			sol::lib::os,

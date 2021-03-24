@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/serialisation.h"
+#include "engine/script_system.h"
 #include "component_storage.h"
-#include <sol.hpp>
 #include <string>
 
 using ComponentType = std::string;

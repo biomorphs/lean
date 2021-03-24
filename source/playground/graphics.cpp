@@ -27,7 +27,6 @@
 #include "components/transform.h"
 #include "components/model.h"
 #include "components/sdf_model.h"
-#include <sol.hpp>
 
 Engine::MenuBar g_graphicsMenu;
 bool g_showTextureGui = false;
