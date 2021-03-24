@@ -2,7 +2,13 @@
 
 #include "engine/entity/component.h"
 #include "core/glm_headers.h"
+#include "engine/shader_manager.h"
 #include <functional>
+
+namespace Render
+{
+	class Mesh;
+}
 
 class SDFModel
 {
@@ -12,9 +18,30 @@ public:
 	
 	struct Sample { float distance = -1.0f; uint8_t material = (uint8_t)-1; };
 	using SampleFn = std::function<void(float, float, float, Sample&)>;
+	struct SDFDebug
+	{
+		virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {}
+		virtual void DrawCellVertex(glm::vec3 p) {}
+		virtual void DrawCellNormal(glm::vec3 p, glm::vec3 n) {}
+		virtual void DrawCorners(glm::vec3 p, const SDFModel::Sample(&corners)[2][2][2]) {}
+	};
+
+	enum MeshMode
+	{
+		Blocky,
+		SurfaceNet,
+		DualContour
+	};
+	Render::Mesh* GetMesh() const { return m_mesh.get(); }
+	void EnableRemesh() { m_remesh = true; }
+	void UpdateMesh(MeshMode mode, SDFDebug& dbg);
+	void SetShader(Engine::ShaderHandle s) { m_shader = s; }
+	Engine::ShaderHandle GetShader() const { return m_shader; }
 	void SetSampleScriptFunction(sol::protected_function fn);
 	void SetSampleFunction(SampleFn fn) { m_sampleFunction = fn; }
 	void SetBounds(glm::vec3 minB, glm::vec3 maxB) { m_boundsMin = minB; m_boundsMax = maxB; }
+	void SetBoundsMin(float x, float y, float z) { m_boundsMin = { x,y,z }; }
+	void SetBoundsMax(float x, float y, float z) { m_boundsMax = { x,y,z }; }
 	void SetResolution(int x, int y, int z) { m_meshResolution = { x,y,z }; }
 	glm::vec3 GetBoundsMin() const { return m_boundsMin; }
 	glm::vec3 GetBoundsMax() const { return m_boundsMax; }
@@ -45,6 +72,9 @@ public:
 	// build mesh data from quads
 
 private:
+	bool m_remesh = false;
+	Engine::ShaderHandle m_shader;
+	std::unique_ptr<Render::Mesh> m_mesh;
 	glm::vec3 m_boundsMin = { -1.0f,-1.0f,-1.0f };
 	glm::vec3 m_boundsMax = { 1.0f,1.0f,1.0f };
 	glm::ivec3 m_meshResolution = {11,11,11};
@@ -52,6 +82,9 @@ private:
 		float sphere = glm::length(glm::vec3(x, y - 0.1f, z)) - 0.75f;
 		float plane = glm::dot(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, 0.0f)) + 1.0f;
 		float opUnion = glm::min(sphere, plane);
+		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 1, y - 0.1, z)) - 0.6f);
+		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 1.8, y - 0.1, z)) - 0.4f);
+		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 2.4, y - 0.1, z)) - 0.25f);
 		s.distance = opUnion;
 	};
 };

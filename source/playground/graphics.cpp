@@ -169,6 +169,10 @@ bool Graphics::Initialise()
 		r.y = dbg.DragInt("ResY", r.y, 1);
 		r.z = dbg.DragInt("ResZ", r.z, 1);
 		m.SetResolution(r.x, r.y, r.z);
+		if (dbg.Button("Remesh"))
+		{
+			m.EnableRemesh();
+		}
 	});
 	
 	//// add our renderer to the global passes
@@ -385,19 +389,37 @@ void Graphics::ProcessEntities()
 		});
 	}
 
-	enum MeshMode
-	{
-		Blocky,
-		SurfaceNet,
-		DualContour
-	};
-
-	struct SDFDebug
+	struct SDFDebugDraw : public SDFModel::SDFDebug
 	{
 		Engine::DebugRender* dbg;
 		Engine::DebugGuiSystem* gui;
 		glm::vec3 cellSize;
 		glm::mat4 transform;
+
+		void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
+		{
+			glm::vec4 v[] = {
+				transform * glm::vec4(v0,1.0f),
+				transform * glm::vec4(v1,1.0f),
+				transform * glm::vec4(v1,1.0f),
+				transform * glm::vec4(v2,1.0f),
+				transform * glm::vec4(v2,1.0f),
+				transform * glm::vec4(v3,1.0f),
+				transform * glm::vec4(v3,1.0f),
+				transform* glm::vec4(v0,1.0f),
+			};
+			glm::vec4 c[] = { 
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+				glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			};
+			dbg->AddLines(v, c, 4);
+		}
 
 		void DrawCellVertex(glm::vec3 p)
 		{
@@ -435,64 +457,25 @@ void Graphics::ProcessEntities()
 	{
 		SDE_PROF_EVENT("ProcessSDFModels");
 		world->ForEachComponent<SDFModel>([this, &world, &transforms](SDFModel& m, EntityHandle owner) {
-			static MeshMode meshMode = SurfaceNet;
+			static SDFModel::MeshMode meshMode = SDFModel::SurfaceNet;
 			const Transform* transform = transforms->Find(owner);
-			const auto& sampleFn = m.GetSampleFn();
-			if (!transform || !sampleFn)
+			if (!transform)
 				return;
+
 			const auto cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
-			SDFDebug debug{ m_debugRender.get(), m_debugGui, cellSize, transform->GetMatrix() };
-			if (transform && m.GetSampleFn() != nullptr)
+			SDFDebugDraw debug;
+			debug.cellSize = cellSize;
+			debug.dbg = m_debugRender.get();
+			debug.gui = m_debugGui;
+			debug.transform = transform->GetMatrix();
+			
+			m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
+
+			m.UpdateMesh(meshMode, debug);
+			
+			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{
-				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
-				std::vector<glm::vec3> vertices;	// 1 vertex per cell
-				robin_hood::unordered_map<uint64_t, uint32_t> cellToVertex;	// map of cell to vertex (uses cell hash below)
-				constexpr auto cellHash = [](int x, int y, int z) -> uint64_t
-				{
-					constexpr uint64_t maxBitsPerAxis = 20;
-					return ((uint64_t)x & (1 ^ maxBitsPerAxis) - 1) +
-							((uint64_t)y & (1 ^ maxBitsPerAxis) - 1) << maxBitsPerAxis + 
-							((uint64_t)z & (1 ^ maxBitsPerAxis) - 1) << (maxBitsPerAxis * 2);
-				};
-
-				for (int x = 0; x <= m.GetResolution().x-1; ++x)
-				{
-					for (int y = 0; y <= m.GetResolution().y-1; ++y)
-					{
-						for (int z = 0; z <= m.GetResolution().z-1; ++z)
-						{
-							glm::vec3 p = m.GetBoundsMin() + cellSize * glm::vec3(x, y, z);
-							bool addVertex = false;
-							glm::vec3 cellVertex;	// this will be the output position
-
-							// evaluate the function at each corner of the cell
-							SDFModel::Sample corners[2][2][2];
-							m.SampleCorners(p, cellSize, corners);
-							debug.DrawCorners(p, corners);
-
-							switch (meshMode)
-							{
-							case Blocky:
-								addVertex = m.FindVertex_Blocky(p, cellSize, corners, cellVertex);
-								break;
-							case SurfaceNet:
-								addVertex = m.FindVertex_SurfaceNet(p, cellSize, corners, cellVertex);
-								break;
-							default:
-								assert(false);
-							};
-
-							if (addVertex)
-							{
-								debug.DrawCellVertex(cellVertex);
-								glm::vec3 normal = m.SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, glm::compMin(cellSize) * 0.5f);
-								debug.DrawCellNormal(cellVertex, normal);
-								vertices.push_back(cellVertex);
-								cellToVertex[cellHash(x, y, z)] = vertices.size() - 1;
-							}
-						}
-					}
-				}
+				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader());
 			}
 		});
 	}
