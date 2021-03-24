@@ -87,16 +87,16 @@ struct SDFDebugDraw : public SDFModel::SDFDebug
 
 	void DrawCorners(glm::vec3 p, const SDFModel::Sample(&corners)[2][2][2])
 	{
-		for (int x = 0; x < 2; ++x)
-			for (int y = 0; y < 2; ++y)
-				for (int z = 0; z < 2; ++z)
-				{
-					if (corners[x][y][z].distance <= 0.0f)
-					{
-						glm::vec3 vertexPos(p.x + cellSize.x * (float)x, p.y + cellSize.y * (float)y, p.z + cellSize.z * (float)z);
-						dbg->AddBox(glm::vec3(transform * glm::vec4(vertexPos, 1.0f)), cellSize * 0.1f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
-					}
-				}
+		//for (int x = 0; x < 2; ++x)
+		//	for (int y = 0; y < 2; ++y)
+		//		for (int z = 0; z < 2; ++z)
+		//		{
+		//			if (corners[x][y][z].distance <= 0.0f)
+		//			{
+		//				glm::vec3 vertexPos(p.x + cellSize.x * (float)x, p.y + cellSize.y * (float)y, p.z + cellSize.z * (float)z);
+		//				dbg->AddBox(glm::vec3(transform * glm::vec4(vertexPos, 1.0f)), cellSize * 0.1f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+		//			}
+		//		}
 	}
 };
 
@@ -222,6 +222,13 @@ bool Graphics::Initialise()
 	m_entitySystem->RegisterComponentType<SDFModel>();
 	m_entitySystem->RegisterComponentUi<SDFModel>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
+		int typeIndex = static_cast<int>(m.GetMeshMode());
+		const char* types[] = { "Blocky", "Surface Net" };
+		if (dbg.ComboBox("Mesh Type", types, 3, typeIndex))
+		{
+			m.SetMeshMode(static_cast<SDFModel::MeshMode>(typeIndex));
+			m.Remesh();
+		}
 		auto bMin = m.GetBoundsMin();
 		auto bMax = m.GetBoundsMax();
 		bMin = dbg.DragVector("BoundsMin", bMin, 1.0f);
@@ -232,9 +239,9 @@ bool Graphics::Initialise()
 		r.y = dbg.DragInt("ResY", r.y, 1);
 		r.z = dbg.DragInt("ResZ", r.z, 1);
 		m.SetResolution(r.x, r.y, r.z);
-		if (dbg.Button("Remesh"))
+		if (dbg.Button("Remesh Now"))
 		{
-			m.EnableRemesh();
+			m.Remesh();
 		}
 	});
 	
@@ -470,7 +477,7 @@ void Graphics::ProcessEntities()
 			
 			m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
 
-			m.UpdateMesh(meshMode);
+			m.UpdateMesh(debug);
 			
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{

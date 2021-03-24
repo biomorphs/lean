@@ -9,7 +9,8 @@ COMPONENT_SCRIPTS(SDFModel,
 	"SetSampleFunction", &SDFModel::SetSampleFunction,
 	"SetShader", &SDFModel::SetShader,
 	"SetBoundsMin", &SDFModel::SetBoundsMin,
-	"SetBoundsMax", &SDFModel::SetBoundsMax
+	"SetBoundsMax", &SDFModel::SetBoundsMax,
+	"Remesh", &SDFModel::Remesh
 )
 
 inline uint32_t CellToIndex(int x, int y, int z, glm::ivec3 res)
@@ -80,14 +81,11 @@ void SDFModel::FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, M
 				};
 				if (addVertex)
 				{
+					glm::vec3 normal = SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, glm::compMin(cellSize) * 0.5f);
 					dbg.DrawCellVertex(cellVertex);
-					if (drawCellNormals)
-					{
-						glm::vec3 normal = SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, glm::compMin(cellSize));
-						dbg.DrawCellNormal(cellVertex, normal);
-					}
+					dbg.DrawCellNormal(cellVertex, normal);
 					outV.push_back(cellVertex);
-					outN.push_back(SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, glm::compMin(cellSize)));
+					outN.push_back(normal);
 					cellToVert[CellHash(x, y, z)] = outV.size() - 1;
 				}
 			}
@@ -189,13 +187,13 @@ void SDFModel::FindQuads(const std::vector<Sample>& samples, const std::vector<g
 	}
 }
 
-void SDFModel::UpdateMesh(MeshMode mode, SDFDebug& dbg)
+void SDFModel::UpdateMesh(SDFDebug& dbg)
 {
 	SDE_PROF_EVENT();
 	if (m_mesh == nullptr || m_remesh)
 	{
 		m_mesh = std::make_unique<Render::Mesh>();
-		//m_remesh = false;
+		m_remesh = false;
 	}
 	else
 	{
@@ -211,7 +209,7 @@ void SDFModel::UpdateMesh(MeshMode mode, SDFDebug& dbg)
 	std::vector<glm::vec3> vertices;	// 1 vertex per cell
 	std::vector<glm::vec3> normals;		// much faster to calculate them once per vertex
 	robin_hood::unordered_map<uint64_t, uint32_t> cellToVertex;	// map of cell to vertex (uses cell hash below)
-	FindVertices(cachedSamples, dbg, mode, vertices, normals, cellToVertex);
+	FindVertices(cachedSamples, dbg, m_meshMode, vertices, normals, cellToVertex);
 
 	Render::MeshBuilder builder;
 	builder.AddVertexStream(3);	// pos

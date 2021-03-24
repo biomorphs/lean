@@ -37,8 +37,10 @@ public:
 		DualContour
 	};
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }
-	void EnableRemesh() { m_remesh = true; }
-	void UpdateMesh(MeshMode mode, SDFDebug& dbg = SDFDebug());
+	void Remesh() { m_remesh = true; }
+	void UpdateMesh(SDFDebug& dbg = SDFDebug());
+	MeshMode GetMeshMode() const { return m_meshMode; }
+	void SetMeshMode(MeshMode m) { m_meshMode = m; }
 	void SetShader(Engine::ShaderHandle s) { m_shader = s; }
 	Engine::ShaderHandle GetShader() const { return m_shader; }
 	void SetSampleScriptFunction(sol::protected_function fn);
@@ -82,7 +84,8 @@ public:
 	// build mesh data from quads
 
 private:
-	bool m_remesh = false;
+	bool m_remesh = true;
+	MeshMode m_meshMode = SurfaceNet;
 	Engine::ShaderHandle m_shader;
 	std::unique_ptr<Render::Mesh> m_mesh;
 	glm::vec3 m_boundsMin = { -1.0f,-1.0f,-1.0f };
@@ -95,6 +98,7 @@ private:
 		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 1, y - 0.1, z)) - 0.6f);
 		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 1.8, y - 0.1, z)) - 0.4f);
 		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 2.4, y - 0.1, z)) - 0.25f);
+		opUnion = glm::min(opUnion, glm::length(glm::vec2(glm::length(glm::vec2(x, z-1.0f)) - 1.5f, y+0.5f)) - 0.2f);
 		s.distance = opUnion;
 	};
 };
