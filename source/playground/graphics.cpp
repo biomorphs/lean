@@ -36,6 +36,70 @@ bool g_useArcballCam = false;
 bool g_showCameraInfo = false;
 bool g_enableShadowUpdate = true;
 
+struct SDFDebugDraw : public SDFModel::SDFDebug
+{
+	Engine::DebugRender* dbg;
+	Engine::DebugGuiSystem* gui;
+	glm::vec3 cellSize;
+	glm::mat4 transform;
+
+	void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
+	{
+		glm::vec4 v[] = {
+			transform * glm::vec4(v0,1.0f),
+			transform * glm::vec4(v1,1.0f),
+			transform * glm::vec4(v1,1.0f),
+			transform * glm::vec4(v2,1.0f),
+			transform * glm::vec4(v2,1.0f),
+			transform * glm::vec4(v3,1.0f),
+			transform * glm::vec4(v3,1.0f),
+			transform * glm::vec4(v0,1.0f),
+		};
+		glm::vec4 c[] = {
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+		};
+		dbg->AddLines(v, c, 4);
+	}
+
+	void DrawCellVertex(glm::vec3 p)
+	{
+		dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	}
+
+	void DrawCellNormal(glm::vec3 p, glm::vec3 n)
+	{
+		glm::vec4 p4 = transform * glm::vec4(p, 1.0f);
+		glm::vec3 normal = glm::mat3(transform) * n;
+		glm::vec4 v[] = {
+			p4,
+			p4 + glm::vec4(normal * 0.05f,1.0f)
+		};
+		glm::vec4 c[] = { glm::vec4(1.0f,1.0f,0.0f,1.0f), glm::vec4(1.0f,1.0f,0.0f,1.0f) };
+		dbg->AddLines(v, c, 1);
+	}
+
+	void DrawCorners(glm::vec3 p, const SDFModel::Sample(&corners)[2][2][2])
+	{
+		for (int x = 0; x < 2; ++x)
+			for (int y = 0; y < 2; ++y)
+				for (int z = 0; z < 2; ++z)
+				{
+					if (corners[x][y][z].distance <= 0.0f)
+					{
+						glm::vec3 vertexPos(p.x + cellSize.x * (float)x, p.y + cellSize.y * (float)y, p.z + cellSize.z * (float)z);
+						dbg->AddBox(glm::vec3(transform * glm::vec4(vertexPos, 1.0f)), cellSize * 0.1f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+					}
+				}
+	}
+};
+
 Graphics::Graphics()
 {
 }
@@ -55,7 +119,6 @@ bool Graphics::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_debugGui = (Engine::DebugGuiSystem*)systemEnumerator.GetSystem("DebugGui");
 	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
 
-	// Create managers
 	m_shaders = std::make_unique<Engine::ShaderManager>();
 	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);
 	m_models = std::make_unique<Engine::ModelManager>(m_textures.get(), m_jobSystem);
@@ -389,70 +452,6 @@ void Graphics::ProcessEntities()
 		});
 	}
 
-	struct SDFDebugDraw : public SDFModel::SDFDebug
-	{
-		Engine::DebugRender* dbg;
-		Engine::DebugGuiSystem* gui;
-		glm::vec3 cellSize;
-		glm::mat4 transform;
-
-		void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
-		{
-			glm::vec4 v[] = {
-				transform * glm::vec4(v0,1.0f),
-				transform * glm::vec4(v1,1.0f),
-				transform * glm::vec4(v1,1.0f),
-				transform * glm::vec4(v2,1.0f),
-				transform * glm::vec4(v2,1.0f),
-				transform * glm::vec4(v3,1.0f),
-				transform * glm::vec4(v3,1.0f),
-				transform* glm::vec4(v0,1.0f),
-			};
-			glm::vec4 c[] = { 
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-				glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			};
-			dbg->AddLines(v, c, 4);
-		}
-
-		void DrawCellVertex(glm::vec3 p)
-		{
-			dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-		}
-
-		void DrawCellNormal(glm::vec3 p, glm::vec3 n)
-		{
-			glm::vec4 p4 = transform * glm::vec4(p, 1.0f);
-			glm::vec3 normal = glm::mat3(transform) * n;
-			glm::vec4 v[] = {
-				p4,
-				p4 + glm::vec4(normal * 0.05f,1.0f)
-			};
-			glm::vec4 c[] = { glm::vec4(1.0f,1.0f,0.0f,1.0f), glm::vec4(1.0f,1.0f,0.0f,1.0f) };
-			dbg->AddLines(v, c, 1);
-		}
-
-		void DrawCorners(glm::vec3 p, const SDFModel::Sample(&corners)[2][2][2])
-		{
-			for(int x=0;x<2;++x)
-				for (int y = 0; y < 2; ++y)
-					for (int z = 0; z < 2; ++z)
-					{
-						if (corners[x][y][z].distance <= 0.0f)
-						{
-							glm::vec3 vertexPos(p.x + cellSize.x * (float)x, p.y + cellSize.y * (float)y, p.z + cellSize.z * (float)z);
-							dbg->AddBox(glm::vec3(transform * glm::vec4(vertexPos,1.0f)), cellSize * 0.1f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
-						}
-					}
-		}
-	};
-
 	// SDF Models
 	{
 		SDE_PROF_EVENT("ProcessSDFModels");
@@ -471,7 +470,7 @@ void Graphics::ProcessEntities()
 			
 			m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
 
-			m.UpdateMesh(meshMode, debug);
+			m.UpdateMesh(meshMode);
 			
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{

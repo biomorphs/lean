@@ -16,10 +16,14 @@ public:
 	SDFModel() = default;
 	COMPONENT(SDFModel);
 	
-	struct Sample { float distance = -1.0f; uint8_t material = (uint8_t)-1; };
+	struct Sample { 
+		float distance = -1.0f; 
+		uint8_t material = (uint8_t)-1; 
+	};
 	using SampleFn = std::function<void(float, float, float, Sample&)>;
 	struct SDFDebug
 	{
+		virtual bool ShouldDrawNormals() { return false; }
 		virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {}
 		virtual void DrawCellVertex(glm::vec3 p) {}
 		virtual void DrawCellNormal(glm::vec3 p, glm::vec3 n) {}
@@ -34,7 +38,7 @@ public:
 	};
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }
 	void EnableRemesh() { m_remesh = true; }
-	void UpdateMesh(MeshMode mode, SDFDebug& dbg);
+	void UpdateMesh(MeshMode mode, SDFDebug& dbg = SDFDebug());
 	void SetShader(Engine::ShaderHandle s) { m_shader = s; }
 	Engine::ShaderHandle GetShader() const { return m_shader; }
 	void SetSampleScriptFunction(sol::protected_function fn);
@@ -46,11 +50,17 @@ public:
 	glm::vec3 GetBoundsMin() const { return m_boundsMin; }
 	glm::vec3 GetBoundsMax() const { return m_boundsMax; }
 	glm::ivec3 GetResolution() const { return m_meshResolution; }
-	
-	const SampleFn& GetSampleFn() const { return m_sampleFunction; }
 	glm::vec3 SampleNormal(float x, float y, float z, float sampleDelta = 0.01f);
+	glm::vec3 GetCellSize() { return (m_boundsMax - m_boundsMin) / glm::vec3(m_meshResolution); }
 
+	using QuadFn = std::function<void(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)>;
+	void FindQuads(const std::vector<Sample>& samples, const std::vector<glm::vec3>& v, const std::vector<glm::vec3>& n, 
+		robin_hood::unordered_map<uint64_t, uint32_t>& cellToVert, QuadFn fn);
+	void FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, MeshMode mode, 
+		std::vector<glm::vec3>& outV, std::vector<glm::vec3>& outN, robin_hood::unordered_map<uint64_t, uint32_t>& cellToVert);
+	void SampleGrid(std::vector<Sample>& allSamples);
 	void SampleCorners(glm::vec3 p0, glm::vec3 cellSize, SDFModel::Sample (&corners) [2][2][2]) const;
+	void SampleCorners(int x, int y, int z, const std::vector<Sample>& v, SDFModel::Sample(&corners)[2][2][2]) const;
 	bool FindVertex_Blocky(glm::vec3 p0, glm::vec3 cellSize, const SDFModel::Sample(&corners)[2][2][2], glm::vec3& outVertex) const;
 	bool FindVertex_SurfaceNet(glm::vec3 p0, glm::vec3 cellSize, const SDFModel::Sample(&corners)[2][2][2], glm::vec3& outVertex) const;
 

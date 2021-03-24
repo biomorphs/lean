@@ -67,7 +67,7 @@ function SDFTest.Init()
 	sdfModel:SetBoundsMax(4,1,4)
 	sdfModel:SetResolution(64,32,64)
 	sdfModel:SetShader(DiffuseShader)
-	sdfModel:SetSampleFunction(TestSampleFn)
+	--sdfModel:SetSampleFunction(TestSampleFn)
 end
 
 function SDFTest.Tick(deltaTime)
