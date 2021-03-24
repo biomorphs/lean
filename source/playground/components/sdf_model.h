@@ -23,11 +23,9 @@ public:
 	using SampleFn = std::function<void(float, float, float, Sample&)>;
 	struct SDFDebug
 	{
-		virtual bool ShouldDrawNormals() { return false; }
 		virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {}
 		virtual void DrawCellVertex(glm::vec3 p) {}
 		virtual void DrawCellNormal(glm::vec3 p, glm::vec3 n) {}
-		virtual void DrawCorners(glm::vec3 p, const SDFModel::Sample(&corners)[2][2][2]) {}
 	};
 
 	enum MeshMode
@@ -36,6 +34,8 @@ public:
 		SurfaceNet,
 		DualContour
 	};
+	bool GetDebugEnabled() { return m_debugRender; }
+	void SetDebugEnabled(bool d) { m_debugRender = d; }
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }
 	void Remesh() { m_remesh = true; }
 	void UpdateMesh(SDFDebug& dbg = SDFDebug());
@@ -85,6 +85,7 @@ public:
 
 private:
 	bool m_remesh = true;
+	bool m_debugRender = false;
 	MeshMode m_meshMode = SurfaceNet;
 	Engine::ShaderHandle m_shader;
 	std::unique_ptr<Render::Mesh> m_mesh;

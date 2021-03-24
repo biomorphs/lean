@@ -42,6 +42,7 @@ struct SDFDebugDraw : public SDFModel::SDFDebug
 	Engine::DebugGuiSystem* gui;
 	glm::vec3 cellSize;
 	glm::mat4 transform;
+	float alpha = 0.5f;
 
 	void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 	{
@@ -56,21 +57,21 @@ struct SDFDebugDraw : public SDFModel::SDFDebug
 			transform * glm::vec4(v0,1.0f),
 		};
 		glm::vec4 c[] = {
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
-			glm::vec4(0.0f,0.8f,1.0f,1.0f),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
+			glm::vec4(0.0f,0.8f,1.0f,alpha),
 		};
 		dbg->AddLines(v, c, 4);
 	}
 
 	void DrawCellVertex(glm::vec3 p)
 	{
-		dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.2f, glm::vec4(1.0f, 0.0f, 0.0f, alpha));
 	}
 
 	void DrawCellNormal(glm::vec3 p, glm::vec3 n)
@@ -81,22 +82,8 @@ struct SDFDebugDraw : public SDFModel::SDFDebug
 			p4,
 			p4 + glm::vec4(normal * 0.05f,1.0f)
 		};
-		glm::vec4 c[] = { glm::vec4(1.0f,1.0f,0.0f,1.0f), glm::vec4(1.0f,1.0f,0.0f,1.0f) };
+		glm::vec4 c[] = { glm::vec4(1.0f,1.0f,0.0f,alpha), glm::vec4(1.0f,1.0f,0.0f,alpha) };
 		dbg->AddLines(v, c, 1);
-	}
-
-	void DrawCorners(glm::vec3 p, const SDFModel::Sample(&corners)[2][2][2])
-	{
-		//for (int x = 0; x < 2; ++x)
-		//	for (int y = 0; y < 2; ++y)
-		//		for (int z = 0; z < 2; ++z)
-		//		{
-		//			if (corners[x][y][z].distance <= 0.0f)
-		//			{
-		//				glm::vec3 vertexPos(p.x + cellSize.x * (float)x, p.y + cellSize.y * (float)y, p.z + cellSize.z * (float)z);
-		//				dbg->AddBox(glm::vec3(transform * glm::vec4(vertexPos, 1.0f)), cellSize * 0.1f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
-		//			}
-		//		}
 	}
 };
 
@@ -243,6 +230,7 @@ bool Graphics::Initialise()
 		{
 			m.Remesh();
 		}
+		m.SetDebugEnabled(dbg.Checkbox("Debug Render", m.GetDebugEnabled()));
 	});
 	
 	//// add our renderer to the global passes
@@ -477,7 +465,14 @@ void Graphics::ProcessEntities()
 			
 			m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
 
-			m.UpdateMesh(debug);
+			if (m.GetDebugEnabled())
+			{
+				m.UpdateMesh(debug);
+			}
+			else
+			{
+				m.UpdateMesh();
+			}
 			
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{

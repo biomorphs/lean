@@ -40,12 +40,14 @@ function OpUnion( d1, d2 )
 	return math.min(d1,d2)
 end
 
+local a = 0
+
 function TestSampleFn(x,y,z,s)
 	s.distance = OpUnion(Sphere({x,y-0.1,z}, 0.8),Plane({x,y,z}, {0.0,1.0,0.0}, 1.0))
 	s.distance = OpUnion(Sphere({x-1,y-0.1,z}, 0.6),s.distance)
 	s.distance = OpUnion(Sphere({x-1.8,y-0.1,z}, 0.4),s.distance)
 	s.distance = OpUnion(Sphere({x-2.4,y-0.1,z}, 0.25),s.distance)
-	s.distance = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.2}), s.distance)
+	s.distance = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), s.distance)
 	s.material = 10
 end
 
@@ -79,11 +81,12 @@ function SDFTest.Init()
 	sdfModel:SetBoundsMax(4,1,4)
 	sdfModel:SetResolution(64,32,64)
 	sdfModel:SetShader(DiffuseShader)
-	-- sdfModel:SetSampleFunction(TestSampleFn)
+	--sdfModel:SetSampleFunction(TestSampleFn)
 end
 
 function SDFTest.Tick(deltaTime)
 	local model = World.GetComponent_SDFModel(sdf_entity)
+	a = a + deltaTime
 	model:Remesh()
 end 
 

@@ -59,6 +59,7 @@ namespace Engine
 			auto& streams = mesh->GetStreams();
 			auto& vertexArray = mesh->GetVertexArray();
 			auto& chunks = mesh->GetChunks();
+			mesh->GetMaterial().SetIsTransparent(true);
 
 			// init vertex streams and vertex array
 			streams.resize(2);

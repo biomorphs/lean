@@ -10,7 +10,9 @@ COMPONENT_SCRIPTS(SDFModel,
 	"SetShader", &SDFModel::SetShader,
 	"SetBoundsMin", &SDFModel::SetBoundsMin,
 	"SetBoundsMax", &SDFModel::SetBoundsMax,
-	"Remesh", &SDFModel::Remesh
+	"Remesh", &SDFModel::Remesh,
+	"SetDebugEnabled", &SDFModel::SetDebugEnabled,
+	"GetDebugEnabled", &SDFModel::GetDebugEnabled
 )
 
 inline uint32_t CellToIndex(int x, int y, int z, glm::ivec3 res)
@@ -56,7 +58,6 @@ void SDFModel::FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, M
 	SDE_PROF_EVENT();
 	auto cellSize = GetCellSize();
 	SDFModel::Sample corners[2][2][2];	// evaluate the function at each corner of the cell
-	bool drawCellNormals = dbg.ShouldDrawNormals();
 	for (int x = 0; x < GetResolution().x - 1; ++x)
 	{
 		for (int y = 0; y < GetResolution().y - 1; ++y)
@@ -67,7 +68,6 @@ void SDFModel::FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, M
 				bool addVertex = false;
 				glm::vec3 cellVertex;	// this will be the output position
 				SampleCorners(x, y, z, samples, corners);
-				dbg.DrawCorners(p, corners);
 				switch (mode)
 				{
 				case Blocky:
@@ -81,7 +81,8 @@ void SDFModel::FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, M
 				};
 				if (addVertex)
 				{
-					glm::vec3 normal = SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, glm::compMin(cellSize) * 0.5f);
+					auto v = glm::compMax(cellSize);
+					glm::vec3 normal = SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, v);
 					dbg.DrawCellVertex(cellVertex);
 					dbg.DrawCellNormal(cellVertex, normal);
 					outV.push_back(cellVertex);
