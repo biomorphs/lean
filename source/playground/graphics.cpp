@@ -26,6 +26,7 @@
 #include "components/light.h"
 #include "components/transform.h"
 #include "components/model.h"
+#include "components/sdf_model.h"
 #include <sol.hpp>
 
 Engine::MenuBar g_graphicsMenu;
@@ -149,6 +150,26 @@ bool Graphics::Initialise()
 			m.SetShader({ (uint32_t)(shaderIndex == (shaders.size() - 1) ? (uint32_t)-1 : shaderIndex) });
 		}
 	});
+
+	m_scriptSystem->Globals().new_usertype<SDFModel::Sample>(
+		"SDFModelSample", sol::constructors<SDFModel::Sample()>(),
+		"distance", &SDFModel::Sample::distance,
+		"material", &SDFModel::Sample::material
+	);
+	m_entitySystem->RegisterComponentType<SDFModel>();
+	m_entitySystem->RegisterComponentUi<SDFModel>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
+		auto bMin = m.GetBoundsMin();
+		auto bMax = m.GetBoundsMax();
+		bMin = dbg.DragVector("BoundsMin", bMin, 1.0f);
+		bMax = dbg.DragVector("BoundsMax", bMax, 1.0f);
+		m.SetBounds(bMin, bMax);
+		auto r = m.GetResolution();
+		r.x = dbg.DragInt("ResX", r.x, 1);
+		r.y = dbg.DragInt("ResY", r.y, 1);
+		r.z = dbg.DragInt("ResZ", r.z, 1);
+		m.SetResolution(r.x, r.y, r.z);
+	});
 	
 	//// add our renderer to the global passes
 	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
@@ -164,7 +185,7 @@ bool Graphics::Initialise()
 	m_scriptSystem->Globals().new_usertype<Engine::ShaderHandle>("ShaderHandle", sol::constructors<Engine::ShaderHandle()>());
 
 	// expose vec3 to lua
-	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3()>(), 
+	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float,float,float)>(),
 		"x", &glm::vec3::x,
 		"y", &glm::vec3::y,
 		"z", &glm::vec3::z);
@@ -214,9 +235,9 @@ bool Graphics::Initialise()
 	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
 
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();
-	m_debugCamera->SetPosition({99.f,47.0f,2.4f});
-	m_debugCamera->SetPitch(-0.185f);
-	m_debugCamera->SetYaw(1.49f);
+	m_debugCamera->SetPosition({0.f,0.0f,20.0f});
+	m_debugCamera->SetPitch(0.0f);
+	m_debugCamera->SetYaw(0.0f);
 
 	m_arcballCamera = std::make_unique<Engine::ArcballCamera>();
 	m_arcballCamera->SetWindowSize(m_renderSystem->GetWindow()->GetSize());
@@ -360,6 +381,118 @@ void Graphics::ProcessEntities()
 			if (transform && renderModel)
 			{
 				DrawModelBounds(*renderModel, transform->GetMatrix());
+			}
+		});
+	}
+
+	enum MeshMode
+	{
+		Blocky,
+		SurfaceNet,
+		DualContour
+	};
+
+	struct SDFDebug
+	{
+		Engine::DebugRender* dbg;
+		Engine::DebugGuiSystem* gui;
+		glm::vec3 cellSize;
+		glm::mat4 transform;
+
+		void DrawCellVertex(glm::vec3 p)
+		{
+			dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+
+		void DrawCellNormal(glm::vec3 p, glm::vec3 n)
+		{
+			glm::vec4 p4 = transform * glm::vec4(p, 1.0f);
+			glm::vec3 normal = glm::mat3(transform) * n;
+			glm::vec4 v[] = {
+				p4,
+				p4 + glm::vec4(normal * 0.05f,1.0f)
+			};
+			glm::vec4 c[] = { glm::vec4(1.0f,1.0f,0.0f,1.0f), glm::vec4(1.0f,1.0f,0.0f,1.0f) };
+			dbg->AddLines(v, c, 1);
+		}
+
+		void DrawCorners(glm::vec3 p, const SDFModel::Sample(&corners)[2][2][2])
+		{
+			for(int x=0;x<2;++x)
+				for (int y = 0; y < 2; ++y)
+					for (int z = 0; z < 2; ++z)
+					{
+						if (corners[x][y][z].distance <= 0.0f)
+						{
+							glm::vec3 vertexPos(p.x + cellSize.x * (float)x, p.y + cellSize.y * (float)y, p.z + cellSize.z * (float)z);
+							dbg->AddBox(glm::vec3(transform * glm::vec4(vertexPos,1.0f)), cellSize * 0.1f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+						}
+					}
+		}
+	};
+
+	// SDF Models
+	{
+		SDE_PROF_EVENT("ProcessSDFModels");
+		world->ForEachComponent<SDFModel>([this, &world, &transforms](SDFModel& m, EntityHandle owner) {
+			static MeshMode meshMode = SurfaceNet;
+			const Transform* transform = transforms->Find(owner);
+			const auto& sampleFn = m.GetSampleFn();
+			if (!transform || !sampleFn)
+				return;
+			const auto cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
+			SDFDebug debug{ m_debugRender.get(), m_debugGui, cellSize, transform->GetMatrix() };
+			if (transform && m.GetSampleFn() != nullptr)
+			{
+				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
+				std::vector<glm::vec3> vertices;	// 1 vertex per cell
+				robin_hood::unordered_map<uint64_t, uint32_t> cellToVertex;	// map of cell to vertex (uses cell hash below)
+				constexpr auto cellHash = [](int x, int y, int z) -> uint64_t
+				{
+					constexpr uint64_t maxBitsPerAxis = 20;
+					return ((uint64_t)x & (1 ^ maxBitsPerAxis) - 1) +
+							((uint64_t)y & (1 ^ maxBitsPerAxis) - 1) << maxBitsPerAxis + 
+							((uint64_t)z & (1 ^ maxBitsPerAxis) - 1) << (maxBitsPerAxis * 2);
+				};
+
+				for (int x = 0; x <= m.GetResolution().x-1; ++x)
+				{
+					for (int y = 0; y <= m.GetResolution().y-1; ++y)
+					{
+						for (int z = 0; z <= m.GetResolution().z-1; ++z)
+						{
+							glm::vec3 p = m.GetBoundsMin() + cellSize * glm::vec3(x, y, z);
+							bool addVertex = false;
+							glm::vec3 cellVertex;	// this will be the output position
+
+							// evaluate the function at each corner of the cell
+							SDFModel::Sample corners[2][2][2];
+							m.SampleCorners(p, cellSize, corners);
+							debug.DrawCorners(p, corners);
+
+							switch (meshMode)
+							{
+							case Blocky:
+								addVertex = m.FindVertex_Blocky(p, cellSize, corners, cellVertex);
+								break;
+							case SurfaceNet:
+								addVertex = m.FindVertex_SurfaceNet(p, cellSize, corners, cellVertex);
+								break;
+							default:
+								assert(false);
+							};
+
+							if (addVertex)
+							{
+								debug.DrawCellVertex(cellVertex);
+								glm::vec3 normal = m.SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, glm::compMin(cellSize) * 0.5f);
+								debug.DrawCellNormal(cellVertex, normal);
+								vertices.push_back(cellVertex);
+								cellToVertex[cellHash(x, y, z)] = vertices.size() - 1;
+							}
+						}
+					}
+				}
 			}
 		});
 	}

@@ -151,7 +151,7 @@ namespace Engine
 						renderModel.Parts()[index].m_mesh->GetMaterial().SetIsTransparent(true);
 					}
 				});
-				material.SetSampler("DiffuseTexture", m_textureManager->LoadTexture(diffusePath.c_str()).m_index);
+				material.SetSampler("DiffuseTexture", diffuseTexture.m_index);
 				material.SetSampler("NormalsTexture", m_textureManager->LoadTexture(normalPath.c_str()).m_index);
 				material.SetSampler("SpecularTexture", m_textureManager->LoadTexture(specPath.c_str()).m_index);
 

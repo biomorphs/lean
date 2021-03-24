@@ -201,6 +201,8 @@ target_include_directories(Entity PRIVATE ${JSONIncludePaths})
 
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
+	Source/playground/components/sdf_model.h
+	Source/playground/components/sdf_model.cpp
 	Source/playground/components/model.h
 	Source/playground/components/model.cpp
 	Source/playground/components/transform.h
