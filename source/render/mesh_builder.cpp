@@ -163,14 +163,17 @@ namespace Render
 				streamSize += (streamSize % minVbSize);
 			}
 
-			auto streamBuffer = (void*)streamIt.m_streamData.data();
-			if (createDynamicMesh)
+			if (streamSize != 0)
 			{
-				theBuffer.Create(streamBuffer,streamSize, RenderBufferType::VertexData, RenderBufferModification::Dynamic);
-			}
-			else
-			{
-				theBuffer.Create(streamBuffer,streamSize, RenderBufferType::VertexData, RenderBufferModification::Static);
+				auto streamBuffer = (void*)streamIt.m_streamData.data();
+				if (createDynamicMesh)
+				{
+					theBuffer.Create(streamBuffer, streamSize, RenderBufferType::VertexData, RenderBufferModification::Dynamic);
+				}
+				else
+				{
+					theBuffer.Create(streamBuffer, streamSize, RenderBufferType::VertexData, RenderBufferModification::Static);
+				}
 			}
 			++streamIndex;
 		}

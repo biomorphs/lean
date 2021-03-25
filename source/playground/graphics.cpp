@@ -35,7 +35,7 @@ bool g_useArcballCam = false;
 bool g_showCameraInfo = false;
 bool g_enableShadowUpdate = true;
 
-struct SDFDebugDraw : public SDFModel::SDFDebug
+struct SDFDebugDraw : public SDFDebug
 {
 	Engine::DebugRender* dbg;
 	Engine::DebugGuiSystem* gui;

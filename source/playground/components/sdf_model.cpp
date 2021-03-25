@@ -36,11 +36,12 @@ void SDFModel::SampleGrid(std::vector<Sample>& allSamples)
 	auto cellSize = GetCellSize();
 	Sample s;
 	allSamples.resize(GetResolution().x * GetResolution().y * (uint64_t)GetResolution().z);
-	for (int x = 0; x < GetResolution().x; ++x)
+
+	for (int z = 0; z < GetResolution().z; ++z)
 	{
 		for (int y = 0; y < GetResolution().y; ++y)
 		{
-			for (int z = 0; z < GetResolution().z; ++z)
+			for (int x = 0; x < GetResolution().x; ++x)
 			{
 				const auto index = CellToIndex(x, y, z, GetResolution());
 				const glm::vec3 p = GetBoundsMin() + cellSize * glm::vec3(x, y, z);
@@ -58,16 +59,19 @@ void SDFModel::FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, M
 	SDE_PROF_EVENT();
 	auto cellSize = GetCellSize();
 	SDFModel::Sample corners[2][2][2];	// evaluate the function at each corner of the cell
-	for (int x = 0; x < GetResolution().x - 1; ++x)
+	const auto res = GetResolution();
+	const auto minBounds = GetBoundsMin();
+	for (int z = 0; z < res.z - 1; ++z)
 	{
-		for (int y = 0; y < GetResolution().y - 1; ++y)
+		for (int y = 0; y < res.y - 1; ++y)
 		{
-			for (int z = 0; z < GetResolution().z - 1; ++z)
+			for (int x = 0; x < res.x - 1; ++x)
 			{
-				glm::vec3 p = GetBoundsMin() + cellSize * glm::vec3(x, y, z);
+				glm::vec3 p = minBounds + cellSize * glm::vec3(x, y, z);
 				bool addVertex = false;
-				glm::vec3 cellVertex;	// this will be the output position
 				SampleCorners(x, y, z, samples, corners);
+
+				glm::vec3 cellVertex;	// this will be the output position
 				switch (mode)
 				{
 				case Blocky:
@@ -101,11 +105,11 @@ void SDFModel::FindQuads(const std::vector<Sample>& samples, const std::vector<g
 	// for each cell, generate quads from edges with sign differences
 	// by joining the vertices in neighbour cells for a particular edge
 	auto cellSize = GetCellSize();
-	for (int x = 0; x < GetResolution().x - 1; ++x)
+	for (int z = 0; z < GetResolution().z - 1; ++z)
 	{
 		for (int y = 0; y < GetResolution().y - 1; ++y)
 		{
-			for (int z = 0; z < GetResolution().z - 1; ++z)
+			for (int x = 0; x < GetResolution().x - 1; ++x)
 			{
 				glm::vec3 p = GetBoundsMin() + cellSize * glm::vec3(x, y, z);
 				if (x > 0 && y > 0)
@@ -207,6 +211,7 @@ void SDFModel::UpdateMesh(SDFDebug& dbg)
 	std::vector<SDFModel::Sample> cachedSamples;
 	SampleGrid(cachedSamples);
 
+	// Find vertices 1 per cell 
 	std::vector<glm::vec3> vertices;	// 1 vertex per cell
 	std::vector<glm::vec3> normals;		// much faster to calculate them once per vertex
 	robin_hood::unordered_map<uint64_t, uint32_t> cellToVertex;	// map of cell to vertex (uses cell hash below)
@@ -339,13 +344,14 @@ bool SDFModel::FindVertex_SurfaceNet(glm::vec3 p, glm::vec3 cellSize, const SDFM
 
 void SDFModel::SampleCorners(int x, int y, int z, const std::vector<Sample>& v, SDFModel::Sample(&corners)[2][2][2]) const
 {
-	for (int crnX = 0; crnX < 2; ++crnX)
+	const auto res = GetResolution();
+	for (int crnZ = 0; crnZ < 2; ++crnZ)
 	{
 		for (int crnY = 0; crnY < 2; ++crnY)
 		{
-			for (int crnZ = 0; crnZ < 2; ++crnZ)
+			for (int crnX = 0; crnX < 2; ++crnX)
 			{
-				auto index = CellToIndex(x + crnX, y + crnY, z + crnZ, GetResolution());
+				auto index = CellToIndex(x + crnX, y + crnY, z + crnZ, res);
 				corners[crnX][crnY][crnZ] = v[index];
 			}
 		}
@@ -360,11 +366,11 @@ void SDFModel::SampleCorners(glm::vec3 p, glm::vec3 cellSize, SDFModel::Sample(&
 	// |        |
 	// p0-------c
 	assert(m_sampleFunction != nullptr);
-	for (int crnX = 0; crnX < 2; ++crnX)
+	for (int crnZ = 0; crnZ < 2; ++crnZ)
 	{
 		for (int crnY = 0; crnY < 2; ++crnY)
 		{
-			for (int crnZ = 0; crnZ < 2; ++crnZ)
+			for (int crnX = 0; crnX < 2; ++crnX)
 			{
 				m_sampleFunction(p.x + crnX * cellSize.x, p.y + crnY * cellSize.y, p.z + crnZ * cellSize.z, corners[crnX][crnY][crnZ]);
 			}

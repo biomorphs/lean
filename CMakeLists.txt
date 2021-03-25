@@ -9,6 +9,8 @@ set(CMAKE_CXX_STANDARD 17)
   
 find_package(OpenGL REQUIRED)
 
+set(UseLuaJIT 1)
+
 set(CommonIncludePaths 
 	Source
 	external/SDL2-2.0.12/include/
@@ -18,11 +20,19 @@ set(CommonIncludePaths
 	external/Optick_1.3.1/include
 	external/robin-hood-hashing/src/include/
 )
-set(LuaAndSolIncludePaths
-	#external/lua-5.3.5_Win64_vc16_lib/include/
-	../luajit/src/
-	external/sol2-2.20.6/
-)
+
+if(UseLuaJIT)
+	set(LuaAndSolIncludePaths
+		../luajit/src/
+		external/sol2-2.20.6/
+	)
+else()
+	set(LuaAndSolIncludePaths
+		external/lua-5.3.5_Win64_vc16_lib/include/
+		external/sol2-2.20.6/
+	)
+endif()
+
 set(JSONIncludePaths
 	external/json-3.9.1/include/
 )
@@ -237,9 +247,12 @@ target_link_libraries(Lean PRIVATE Entity)
 target_link_libraries(Lean PRIVATE Playground)
 target_link_libraries(Lean PRIVATE ../external/assimp-5.0.1/lib/release/assimp-vc142-mt)
 target_link_libraries(Lean PRIVATE ../external/glew-2.1.0/lib/Release/x64/glew32)
-# target_link_libraries(Lean PRIVATE ../external/lua-5.3.5_Win64_vc16_lib/lua53)
-target_link_libraries(Lean PRIVATE ../external/luajit/luajit)
-target_link_libraries(Lean PRIVATE ../external/luajit/lua51)
+if(UseLuaJIT)
+	target_link_libraries(Lean PRIVATE ../external/luajit/luajit)
+	target_link_libraries(Lean PRIVATE ../external/luajit/lua51)
+else()
+	target_link_libraries(Lean PRIVATE ../external/lua-5.3.5_Win64_vc16_lib/lua53)
+endif()
 target_link_libraries(Lean PRIVATE ../external/SDL2-2.0.12/lib/x64/SDL2 ../external/SDL2-2.0.12/lib/x64/SDL2main)
 target_link_libraries(Lean PRIVATE ../external/Optick_1.3.1/lib/x64/release/OptickCore)
 target_link_libraries(Lean PRIVATE opengl32)

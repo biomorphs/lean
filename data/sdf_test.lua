@@ -1,5 +1,7 @@
 SDFTest = {}
 
+ProFi = require 'ProFi'
+
 local DiffuseShader = Graphics.LoadShader("sdf_diffuse", "sdf_model.vs", "sdf_model_diffuse.fs")
 local ShadowShader = Graphics.LoadShader("sdf_shadows", "sdf_shadow.vs", "sdf_shadow.fs")
 
@@ -43,10 +45,10 @@ end
 local a = 0
 
 function TestSampleFn(x,y,z,s)
-	s.distance = OpUnion(Sphere({x,y-0.1,z}, 0.8),Plane({x,y,z}, {0.0,1.0,0.0}, 1.0))
-	s.distance = OpUnion(Sphere({x-1,y-0.1,z}, 0.6),s.distance)
-	s.distance = OpUnion(Sphere({x-1.8,y-0.1,z}, 0.4),s.distance)
-	s.distance = OpUnion(Sphere({x-2.4,y-0.1,z}, 0.25),s.distance)
+	s.distance = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.7),Plane({x,y,z}, {0.0,1.0,0.0}, 1.0))
+	s.distance = OpUnion(Sphere({x-1,y-0.1,z}, 0.1 + (1.0 + math.cos(a * 0.3 + 0.5)) * 0.25),s.distance)
+	s.distance = OpUnion(Sphere({x-1.8,y-0.1,z}, 0.8),s.distance)
+	s.distance = OpUnion(Sphere({x+2.4,y-0.1,z}, 0.5),s.distance)
 	s.distance = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), s.distance)
 	s.material = 10
 end
@@ -78,10 +80,10 @@ function SDFTest.Init()
 	transform:SetScale(4.0,4.0,4.0)
 	local sdfModel = World.AddComponent_SDFModel(sdf_entity)
 	sdfModel:SetBoundsMin(-4,-1,-4)
-	sdfModel:SetBoundsMax(4,1,4)
-	sdfModel:SetResolution(64,32,64)
+	sdfModel:SetBoundsMax(4,2,4)
+	sdfModel:SetResolution(32,32,32)
 	sdfModel:SetShader(DiffuseShader)
-	--sdfModel:SetSampleFunction(TestSampleFn)
+	sdfModel:SetSampleFunction(TestSampleFn)
 end
 
 function SDFTest.Tick(deltaTime)

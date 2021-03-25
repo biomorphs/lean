@@ -10,6 +10,13 @@ namespace Render
 	class Mesh;
 }
 
+struct SDFDebug
+{
+	virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {}
+	virtual void DrawCellVertex(glm::vec3 p) {}
+	virtual void DrawCellNormal(glm::vec3 p, glm::vec3 n) {}
+};
+
 class SDFModel
 {
 public:
@@ -21,24 +28,18 @@ public:
 		uint8_t material = (uint8_t)-1; 
 	};
 	using SampleFn = std::function<void(float, float, float, Sample&)>;
-	struct SDFDebug
-	{
-		virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {}
-		virtual void DrawCellVertex(glm::vec3 p) {}
-		virtual void DrawCellNormal(glm::vec3 p, glm::vec3 n) {}
-	};
-
 	enum MeshMode
 	{
 		Blocky,
 		SurfaceNet,
 		DualContour
 	};
-	bool GetDebugEnabled() { return m_debugRender; }
-	void SetDebugEnabled(bool d) { m_debugRender = d; }
+
+	void UpdateMesh(SDFDebug& dbg = SDFDebug());
+
+	// Model stuff
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }
 	void Remesh() { m_remesh = true; }
-	void UpdateMesh(SDFDebug& dbg = SDFDebug());
 	MeshMode GetMeshMode() const { return m_meshMode; }
 	void SetMeshMode(MeshMode m) { m_meshMode = m; }
 	void SetShader(Engine::ShaderHandle s) { m_shader = s; }
@@ -54,7 +55,10 @@ public:
 	glm::ivec3 GetResolution() const { return m_meshResolution; }
 	glm::vec3 SampleNormal(float x, float y, float z, float sampleDelta = 0.01f);
 	glm::vec3 GetCellSize() { return (m_boundsMax - m_boundsMin) / glm::vec3(m_meshResolution); }
+	bool GetDebugEnabled() { return m_debugRender; }
+	void SetDebugEnabled(bool d) { m_debugRender = d; }
 
+	// Meshing (move this)
 	using QuadFn = std::function<void(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)>;
 	void FindQuads(const std::vector<Sample>& samples, const std::vector<glm::vec3>& v, const std::vector<glm::vec3>& n, 
 		robin_hood::unordered_map<uint64_t, uint32_t>& cellToVert, QuadFn fn);
