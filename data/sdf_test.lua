@@ -98,7 +98,7 @@ local windowOpen = true
 
 function SDFTest.Tick(deltaTime)
 	local model = World.GetComponent_SDFModel(sdf_entity)
-	a = a + deltaTime
+	a = a + deltaTime * 0.5
 	
 	DebugGui.BeginWindow(windowOpen, "SDF Test")
 		keepRemeshing = DebugGui.Checkbox("Build every frame", keepRemeshing)

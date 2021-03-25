@@ -256,7 +256,7 @@ void SDFModel::UpdateMesh(SDFDebug& dbg)
 
 	if (m_meshMode == DualContour)
 	{
-		SDE_LOG("Success: %d, Failure: %d", s_dcSuccess, s_dcFailure);
+		//SDE_LOG("Success: %d, Failure: %d", s_dcSuccess, s_dcFailure);
 	}
 }
 
@@ -347,7 +347,7 @@ bool SDFModel::FindVertex_DualContour(glm::vec3 p, glm::vec3 cellSize, const SDF
 	// Get normals for each of the sample points + push data into registers
 	__m128 foundPositions128[16];
 	__m128 foundNormals128[16];
-	auto v = glm::compMin(cellSize) * 0.25f;		// we need to sample normals at high frequency if possible
+	auto v = glm::compMin(cellSize) * 0.1f;		// we need to sample normals at high frequency if possible
 	for (int i = 0; i < intersections; ++i)
 	{
 		auto foundNormal = SampleNormal(foundPositions[i].x, foundPositions[i].y, foundPositions[i].z, v);
@@ -369,8 +369,8 @@ bool SDFModel::FindVertex_DualContour(glm::vec3 p, glm::vec3 cellSize, const SDF
 		// fallback to surface net
 		// schmidtz particle aproach(?)
 		static bool s_doClamp = false;
-		static bool s_useSurfaceNetFallback = 1;
-		const glm::vec3 errorTolerance = cellSize * 0.5f;
+		static bool s_useSurfaceNetFallback = true;
+		const glm::vec3 errorTolerance = cellSize * 0.25f;
 		if (glm::any(glm::lessThan(outVertex, p-errorTolerance)) || glm::any(glm::greaterThan(outVertex, p + errorTolerance + cellSize)))
 		{	
 			++s_dcFailure;
@@ -380,7 +380,18 @@ bool SDFModel::FindVertex_DualContour(glm::vec3 p, glm::vec3 cellSize, const SDF
 			}
 			else if(s_useSurfaceNetFallback)
 			{
-				return FindVertex_SurfaceNet(p, cellSize, corners, outVertex);
+				glm::vec3 averagePos(0.0f);
+				for (int i = 0; i < intersections; ++i)
+				{
+					averagePos += foundPositions[i];
+				}
+				const bool foundOne = intersections > 0;
+				if (foundOne)
+				{
+					averagePos = averagePos / (float)intersections;
+				}
+				outVertex = averagePos;
+				return foundOne;
 			}
 		}
 	}
