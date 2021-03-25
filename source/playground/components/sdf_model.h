@@ -12,7 +12,7 @@ namespace Render
 
 struct SDFDebug
 {
-	virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {}
+	virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3) {}
 	virtual void DrawCellVertex(glm::vec3 p) {}
 	virtual void DrawCellNormal(glm::vec3 p, glm::vec3 n) {}
 };
@@ -27,7 +27,7 @@ public:
 		float distance = -1.0f; 
 		uint8_t material = (uint8_t)-1; 
 	};
-	using SampleFn = std::function<void(float, float, float, Sample&)>;
+	using SampleFn = std::function<std::tuple<float, int>(float, float, float)>;	// pos(3), out distance, out material
 	enum MeshMode
 	{
 		Blocky,
@@ -53,10 +53,12 @@ public:
 	glm::vec3 GetBoundsMin() const { return m_boundsMin; }
 	glm::vec3 GetBoundsMax() const { return m_boundsMax; }
 	glm::ivec3 GetResolution() const { return m_meshResolution; }
-	glm::vec3 SampleNormal(float x, float y, float z, float sampleDelta = 0.01f);
+	glm::vec3 SampleNormal(float x, float y, float z, float sampleDelta = 0.01f) const;
 	glm::vec3 GetCellSize() { return (m_boundsMax - m_boundsMin) / glm::vec3(m_meshResolution); }
 	bool GetDebugEnabled() { return m_debugRender; }
 	void SetDebugEnabled(bool d) { m_debugRender = d; }
+	float GetNormalSmoothness() { return m_normalSmoothness; }
+	void SetNormalSmoothness(float s) { m_normalSmoothness = s; }
 
 	// Meshing (move this)
 	using QuadFn = std::function<void(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)>;
@@ -69,6 +71,7 @@ public:
 	void SampleCorners(int x, int y, int z, const std::vector<Sample>& v, SDFModel::Sample(&corners)[2][2][2]) const;
 	bool FindVertex_Blocky(glm::vec3 p0, glm::vec3 cellSize, const SDFModel::Sample(&corners)[2][2][2], glm::vec3& outVertex) const;
 	bool FindVertex_SurfaceNet(glm::vec3 p0, glm::vec3 cellSize, const SDFModel::Sample(&corners)[2][2][2], glm::vec3& outVertex) const;
+	bool FindVertex_DualContour(glm::vec3 p0, glm::vec3 cellSize, const SDFModel::Sample(&corners)[2][2][2], glm::vec3& outVertex) const;
 
 	// surface net / dual contouring
 	// Stage 1: Vertex generation
@@ -93,10 +96,11 @@ private:
 	MeshMode m_meshMode = SurfaceNet;
 	Engine::ShaderHandle m_shader;
 	std::unique_ptr<Render::Mesh> m_mesh;
+	float m_normalSmoothness = 1.0f;	// adjusts the sample distance when calculating normals
 	glm::vec3 m_boundsMin = { -1.0f,-1.0f,-1.0f };
 	glm::vec3 m_boundsMax = { 1.0f,1.0f,1.0f };
 	glm::ivec3 m_meshResolution = {11,11,11};
-	SampleFn m_sampleFunction = [](float x, float y, float z, Sample& s) {
+	SampleFn m_sampleFunction = [](float x, float y, float z) -> std::tuple<float, int> {
 		float sphere = glm::length(glm::vec3(x, y - 0.1f, z)) - 0.75f;
 		float plane = glm::dot(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, 0.0f)) + 1.0f;
 		float opUnion = glm::min(sphere, plane);
@@ -104,6 +108,6 @@ private:
 		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 1.8, y - 0.1, z)) - 0.4f);
 		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 2.4, y - 0.1, z)) - 0.25f);
 		opUnion = glm::min(opUnion, glm::length(glm::vec2(glm::length(glm::vec2(x, z-1.0f)) - 1.5f, y+0.5f)) - 0.2f);
-		s.distance = opUnion;
+		return std::make_tuple(opUnion, 0);
 	};
 };

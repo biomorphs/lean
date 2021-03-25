@@ -234,6 +234,7 @@ target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Playground PRIVATE ${JSONIncludePaths})
+target_include_directories(Playground PRIVATE external/qef/)
 target_compile_options(Playground PRIVATE ${CommonCompilerOptions})
 
 add_executable(Lean Source/main/main.cpp)

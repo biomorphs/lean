@@ -3,10 +3,13 @@
 #include "render/mesh_builder.h"
 #include "core/log.h"
 
+#define QEF_INCLUDE_IMPL
+#include <qef_simd.h>
+
 COMPONENT_SCRIPTS(SDFModel,
 	"SetBounds", &SDFModel::SetBounds,
 	"SetResolution", &SDFModel::SetResolution,
-	"SetSampleFunction", &SDFModel::SetSampleFunction,
+	"SetSampleFunction", &SDFModel::SetSampleScriptFunction,
 	"SetShader", &SDFModel::SetShader,
 	"SetBoundsMin", &SDFModel::SetBoundsMin,
 	"SetBoundsMax", &SDFModel::SetBoundsMax,
@@ -45,8 +48,7 @@ void SDFModel::SampleGrid(std::vector<Sample>& allSamples)
 			{
 				const auto index = CellToIndex(x, y, z, GetResolution());
 				const glm::vec3 p = GetBoundsMin() + cellSize * glm::vec3(x, y, z);
-				m_sampleFunction(p.x, p.y, p.z, s);	
-				allSamples[index] = s;
+				std::tie(allSamples[index].distance, allSamples[index].material) = m_sampleFunction(p.x, p.y, p.z);
 			}
 		}
 	}
@@ -80,12 +82,15 @@ void SDFModel::FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, M
 				case SurfaceNet:
 					addVertex = FindVertex_SurfaceNet(p, cellSize, corners, cellVertex);
 					break;
+				case DualContour:
+					addVertex = FindVertex_DualContour(p, cellSize, corners, cellVertex);
+					break;
 				default:
 					assert(false);
 				};
 				if (addVertex)
 				{
-					auto v = glm::compMax(cellSize);
+					auto v = glm::compMax(cellSize) * m_normalSmoothness;
 					glm::vec3 normal = SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, v);
 					dbg.DrawCellVertex(cellVertex);
 					dbg.DrawCellNormal(cellVertex, normal);
@@ -192,8 +197,14 @@ void SDFModel::FindQuads(const std::vector<Sample>& samples, const std::vector<g
 	}
 }
 
+static int s_dcSuccess = 0;
+static int s_dcFailure = 0;
+
 void SDFModel::UpdateMesh(SDFDebug& dbg)
 {
+	s_dcSuccess = 0;
+	s_dcFailure = 0;
+
 	SDE_PROF_EVENT();
 	if (m_mesh == nullptr || m_remesh)
 	{
@@ -231,7 +242,7 @@ void SDFModel::UpdateMesh(SDFDebug& dbg)
 		builder.SetStreamData(0, v2, v3, v0);
 		builder.SetStreamData(1, n2, n3, n0);
 		builder.EndTriangle();
-		dbg.DrawQuad(v0, v1, v2, v3);
+		dbg.DrawQuad(v0, v1, v2, v3, n0, n1, n2, n3);
 	};
 	builder.BeginChunk();
 	// Generate quads from a combination of the samples and indexed normals and positions
@@ -241,6 +252,11 @@ void SDFModel::UpdateMesh(SDFDebug& dbg)
 		SDE_PROF_EVENT("CreateMesh");
 		builder.CreateMesh(*m_mesh);
 		builder.CreateVertexArray(*m_mesh);
+	}
+
+	if (m_meshMode == DualContour)
+	{
+		SDE_LOG("Success: %d, Failure: %d", s_dcSuccess, s_dcFailure);
 	}
 }
 
@@ -321,6 +337,57 @@ void ExtractEdgeIntersections(glm::vec3 p, glm::vec3 cellSize, const SDFModel::S
 	}
 }
 
+bool SDFModel::FindVertex_DualContour(glm::vec3 p, glm::vec3 cellSize, const SDFModel::Sample(&corners)[2][2][2], glm::vec3& outVertex) const
+{
+	// detect sign changes on edges, extract vertices per edge at the zero point
+	glm::vec3 foundPositions[16];
+	int intersections = 0;
+	ExtractEdgeIntersections(p, cellSize, corners, foundPositions, intersections);
+
+	// Get normals for each of the sample points + push data into registers
+	__m128 foundPositions128[16];
+	__m128 foundNormals128[16];
+	auto v = glm::compMin(cellSize) * 0.25f;		// we need to sample normals at high frequency if possible
+	for (int i = 0; i < intersections; ++i)
+	{
+		auto foundNormal = SampleNormal(foundPositions[i].x, foundPositions[i].y, foundPositions[i].z, v);
+		foundPositions128[i] = _mm_set_ps(1.0f, foundPositions[i].z, foundPositions[i].y, foundPositions[i].x);
+		foundNormals128[i] = _mm_set_ps(0.0f, foundNormal.z, foundNormal.y, foundNormal.x);
+	}
+
+	// Now find a vertex by solving the QEF of the points and normals
+	if (intersections > 0)
+	{
+		__m128 solvedPosition;
+		float qefError = qef_solve_from_points(foundPositions128, foundNormals128, intersections, &solvedPosition);
+		outVertex.x = solvedPosition.m128_f32[0];
+		outVertex.y = solvedPosition.m128_f32[1];
+		outVertex.z = solvedPosition.m128_f32[2];
+
+		// if the vertex is out of cells bounds, we have a few options
+		// clamp to cell bounds (we lose sharp features, may fix crazy meshes)
+		// fallback to surface net
+		// schmidtz particle aproach(?)
+		static bool s_doClamp = false;
+		static bool s_useSurfaceNetFallback = 1;
+		const glm::vec3 errorTolerance = cellSize * 0.5f;
+		if (glm::any(glm::lessThan(outVertex, p-errorTolerance)) || glm::any(glm::greaterThan(outVertex, p + errorTolerance + cellSize)))
+		{	
+			++s_dcFailure;
+			if (s_doClamp)
+			{
+				outVertex = glm::clamp(outVertex, p, p + cellSize);
+			}
+			else if(s_useSurfaceNetFallback)
+			{
+				return FindVertex_SurfaceNet(p, cellSize, corners, outVertex);
+			}
+		}
+	}
+	++s_dcSuccess;
+	return intersections > 0;
+}
+
 bool SDFModel::FindVertex_SurfaceNet(glm::vec3 p, glm::vec3 cellSize, const SDFModel::Sample(&corners)[2][2][2], glm::vec3& outVertex) const
 {
 	// detect sign changes on edges, extract vertices per edge at the zero point
@@ -372,24 +439,25 @@ void SDFModel::SampleCorners(glm::vec3 p, glm::vec3 cellSize, SDFModel::Sample(&
 		{
 			for (int crnX = 0; crnX < 2; ++crnX)
 			{
-				m_sampleFunction(p.x + crnX * cellSize.x, p.y + crnY * cellSize.y, p.z + crnZ * cellSize.z, corners[crnX][crnY][crnZ]);
+				auto pos = glm::vec3(p.x + crnX * cellSize.x, p.y + crnY * cellSize.y, p.z + crnZ * cellSize.z);
+				std::tie(corners[crnX][crnY][crnZ].distance, corners[crnX][crnY][crnZ].material) = m_sampleFunction(pos.x, pos.y, pos.z);
 			}
 		}
 	}
 }
 
-glm::vec3 SDFModel::SampleNormal(float x, float y, float z, float sampleDelta)
+glm::vec3 SDFModel::SampleNormal(float x, float y, float z, float sampleDelta) const
 {
 	glm::vec3 normal(0.0f, 1.0f, 0.0f);
 	if (m_sampleFunction != nullptr)
 	{
 		Sample samples[6];
-		m_sampleFunction(x + sampleDelta, y, z, samples[0]);
-		m_sampleFunction(x - sampleDelta, y, z, samples[1]);
-		m_sampleFunction(x, y + sampleDelta, z, samples[2]);
-		m_sampleFunction(x, y - sampleDelta, z, samples[3]);
-		m_sampleFunction(x, y, z + sampleDelta, samples[4]);
-		m_sampleFunction(x, y, z - sampleDelta, samples[5]);
+		std::tie(samples[0].distance, samples[0].material) = m_sampleFunction(x + sampleDelta, y, z);
+		std::tie(samples[1].distance, samples[1].material) = m_sampleFunction(x - sampleDelta, y, z);
+		std::tie(samples[2].distance, samples[2].material) = m_sampleFunction(x, y + sampleDelta, z);
+		std::tie(samples[3].distance, samples[3].material) = m_sampleFunction(x, y - sampleDelta, z);
+		std::tie(samples[4].distance, samples[4].material) = m_sampleFunction(x, y, z + sampleDelta);
+		std::tie(samples[5].distance, samples[5].material) = m_sampleFunction(x, y, z - sampleDelta);
 		normal.x = (samples[0].distance - samples[1].distance) / 2 / sampleDelta;
 		normal.y = (samples[2].distance - samples[3].distance) / 2 / sampleDelta;
 		normal.z = (samples[4].distance - samples[5].distance) / 2 / sampleDelta;
@@ -400,12 +468,14 @@ glm::vec3 SDFModel::SampleNormal(float x, float y, float z, float sampleDelta)
 
 void SDFModel::SetSampleScriptFunction(sol::protected_function fn)
 {
-	auto wrappedFn = [fn](float x, float y, float z, Sample& s) {
-		sol::protected_function_result result = fn(x,y,z,s);
+	auto wrappedFn = [fn](float x, float y, float z) -> std::tuple<float, int> {
+		sol::protected_function_result result = fn(x,y,z);
 		if (!result.valid())
 		{
 			SDE_LOG("Failed to call sample function");
 		}
+		std::tuple<float, int> r = result;
+		return r;
 	};
 	m_sampleFunction = std::move(wrappedFn);
 }

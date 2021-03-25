@@ -38,19 +38,26 @@ function Torus( p, t ) -- pos(3), torus wid/leng?(2)
   return Vec2Length(q)-t[2];
 end
 
+
+function TriPrism( p, h )	-- pos, w/h
+  local q = { math.abs(p[1]), math.abs(p[2]), math.abs(p[3]) };
+  return math.max(q[3]-h[2],math.max(q[1]*0.866025+p[2]*0.5,-p[2])-h[1]*0.5);
+end
+
 function OpUnion( d1, d2 ) 
 	return math.min(d1,d2)
 end
 
 local a = 0
 
-function TestSampleFn(x,y,z,s)
-	s.distance = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.7),Plane({x,y,z}, {0.0,1.0,0.0}, 1.0))
-	s.distance = OpUnion(Sphere({x-1,y-0.1,z}, 0.1 + (1.0 + math.cos(a * 0.3 + 0.5)) * 0.25),s.distance)
-	s.distance = OpUnion(Sphere({x-1.8,y-0.1,z}, 0.8),s.distance)
-	s.distance = OpUnion(Sphere({x+2.4,y-0.1,z}, 0.5),s.distance)
-	s.distance = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), s.distance)
-	s.material = 10
+function TestSampleFn(x,y,z)
+	local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.7),Plane({x,y,z}, {0.0,1.0,0.0}, 1.0))
+	d = OpUnion(Sphere({x-1,y-0.1,z}, 0.1 + (1.0 + math.cos(a * 0.3 + 0.5)) * 0.25),d)
+	d = OpUnion(Sphere({x-1.8,y-0.1,z}, 0.8),d)
+	d = OpUnion(Sphere({x+2.4,y-0.1,z}, 0.5),d)
+	d = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
+	d = OpUnion(TriPrism({x,y-1.0,z-2},{0.5,1.0}), d)
+	return d, 10
 end
 
 function MakeSunEntity()
@@ -86,10 +93,20 @@ function SDFTest.Init()
 	sdfModel:SetSampleFunction(TestSampleFn)
 end
 
+local keepRemeshing = false
+local windowOpen = true
+
 function SDFTest.Tick(deltaTime)
 	local model = World.GetComponent_SDFModel(sdf_entity)
 	a = a + deltaTime
-	model:Remesh()
+	
+	DebugGui.BeginWindow(windowOpen, "SDF Test")
+		keepRemeshing = DebugGui.Checkbox("Build every frame", keepRemeshing)
+	DebugGui.EndWindow()
+	
+	if keepRemeshing then
+		model:Remesh()
+	end
 end 
 
 return SDFTest

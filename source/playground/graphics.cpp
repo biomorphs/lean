@@ -43,17 +43,19 @@ struct SDFDebugDraw : public SDFDebug
 	glm::mat4 transform;
 	float alpha = 0.5f;
 
-	void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
+	void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)
 	{
+		// push the vertices out a tiny amount so we dont have z-fighting
+		float c_bias = 0.01f;	
 		glm::vec4 v[] = {
-			transform * glm::vec4(v0,1.0f),
-			transform * glm::vec4(v1,1.0f),
-			transform * glm::vec4(v1,1.0f),
-			transform * glm::vec4(v2,1.0f),
-			transform * glm::vec4(v2,1.0f),
-			transform * glm::vec4(v3,1.0f),
-			transform * glm::vec4(v3,1.0f),
-			transform * glm::vec4(v0,1.0f),
+			transform * glm::vec4(v0 + (n0 * c_bias),1.0f),
+			transform * glm::vec4(v1 + (n1 * c_bias),1.0f),
+			transform * glm::vec4(v1 + (n1 * c_bias),1.0f),
+			transform * glm::vec4(v2 + (n2 * c_bias),1.0f),
+			transform * glm::vec4(v2 + (n2 * c_bias),1.0f),
+			transform * glm::vec4(v3 + (n3 * c_bias),1.0f),
+			transform * glm::vec4(v3 + (n3 * c_bias),1.0f),
+			transform * glm::vec4(v0 + (n0 * c_bias),1.0f),
 		};
 		glm::vec4 c[] = {
 			glm::vec4(0.0f,0.8f,1.0f,alpha),
@@ -209,7 +211,7 @@ bool Graphics::Initialise()
 	m_entitySystem->RegisterComponentUi<SDFModel>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
 		int typeIndex = static_cast<int>(m.GetMeshMode());
-		const char* types[] = { "Blocky", "Surface Net" };
+		const char* types[] = { "Blocky", "Surface Net", "Dual Contour" };
 		if (dbg.ComboBox("Mesh Type", types, 3, typeIndex))
 		{
 			m.SetMeshMode(static_cast<SDFModel::MeshMode>(typeIndex));
@@ -225,6 +227,7 @@ bool Graphics::Initialise()
 		r.y = dbg.DragInt("ResY", r.y, 1);
 		r.z = dbg.DragInt("ResZ", r.z, 1);
 		m.SetResolution(r.x, r.y, r.z);
+		m.SetNormalSmoothness(dbg.DragFloat("Normal Smooth", m.GetNormalSmoothness(), 0.01f, 0.0f));
 		if (dbg.Button("Remesh Now"))
 		{
 			m.Remesh();
