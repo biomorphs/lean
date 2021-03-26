@@ -2,6 +2,7 @@
 
 #include "system.h"
 #define SOL_CHECK_ARGUMENTS 0		// 2x slower, but safer
+#define SOL_PRINT_ERRORS 1
 #include <sol.hpp>
 #include <string>
 #include <memory>

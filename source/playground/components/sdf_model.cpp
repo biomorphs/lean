@@ -15,7 +15,10 @@ COMPONENT_SCRIPTS(SDFModel,
 	"SetBoundsMax", &SDFModel::SetBoundsMax,
 	"Remesh", &SDFModel::Remesh,
 	"SetDebugEnabled", &SDFModel::SetDebugEnabled,
-	"GetDebugEnabled", &SDFModel::GetDebugEnabled
+	"GetDebugEnabled", &SDFModel::GetDebugEnabled,
+	"SetMeshBlocky", &SDFModel::SetMeshBlocky,
+	"SetMeshSurfaceNet", &SDFModel::SetMeshSurfaceNet,
+	"SetMeshDualContour", &SDFModel::SetMeshDualContour
 )
 
 inline uint32_t CellToIndex(int x, int y, int z, glm::ivec3 res)
@@ -47,6 +50,7 @@ void SDFModel::SampleGrid(std::vector<Sample>& allSamples)
 			for (int x = 0; x < GetResolution().x; ++x)
 			{
 				const auto index = CellToIndex(x, y, z, GetResolution());
+				assert(index < allSamples.size());
 				const glm::vec3 p = GetBoundsMin() + cellSize * glm::vec3(x, y, z);
 				std::tie(allSamples[index].distance, allSamples[index].material) = m_sampleFunction(p.x, p.y, p.z);
 			}
@@ -63,15 +67,28 @@ void SDFModel::FindVertices(const std::vector<Sample>& samples, SDFDebug& dbg, M
 	SDFModel::Sample corners[2][2][2];	// evaluate the function at each corner of the cell
 	const auto res = GetResolution();
 	const auto minBounds = GetBoundsMin();
-	for (int z = 0; z < res.z - 1; ++z)
+	for (int z = 0; z < res.z-1; ++z)
 	{
-		for (int y = 0; y < res.y - 1; ++y)
+		for (int y = 0; y < res.y-1; ++y)
 		{
-			for (int x = 0; x < res.x - 1; ++x)
+			for (int x = 0; x < res.x-1; ++x)
 			{
 				glm::vec3 p = minBounds + cellSize * glm::vec3(x, y, z);
 				bool addVertex = false;
 				SampleCorners(x, y, z, samples, corners);
+				dbg.DrawCellCorner(p, corners[0][0][0].distance);
+				if (x + 1 >= res.x - 1)
+				{
+					dbg.DrawCellCorner(minBounds + cellSize * glm::vec3(x + 1, y, z), corners[1][0][0].distance);
+				}
+				if (y + 1 >= res.y - 1)
+				{
+					dbg.DrawCellCorner(minBounds + cellSize * glm::vec3(x, y + 1, z), corners[0][1][0].distance);
+				}
+				if (z + 1 >= res.z - 1)
+				{
+					dbg.DrawCellCorner(minBounds + cellSize * glm::vec3(x, y, z + 1), corners[0][0][1].distance);
+				}
 
 				glm::vec3 cellVertex;	// this will be the output position
 				switch (mode)

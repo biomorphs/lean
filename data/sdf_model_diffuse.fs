@@ -134,7 +134,7 @@ void main()
 	vec3 finalColour = vec3(0.0);
 
 	// transform normal map to world space
-	vec3 finalNormal = vs_out_normal;
+	vec3 finalNormal = normalize(vs_out_normal);
 	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
 	for(int i=0;i<LightCount;++i)
 	{

@@ -139,7 +139,7 @@ namespace Engine
 		SubmitInstance(list, cameraPos, transform, mesh, shader, boundsMin, boundsMax);
 	}
 
-	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax)
 	{
 		bool castShadow = true;
 		if (castShadow)
@@ -153,7 +153,12 @@ namespace Engine
 
 		bool isTransparent = mesh.GetMaterial().GetIsTransparent();
 		InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-		SubmitInstance(instances, m_camera.Position(), transform, mesh, shader);
+		SubmitInstance(instances, m_camera.Position(), transform, mesh, shader, boundsMin, boundsMax);
+	}
+
+	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader)
+	{
+		SubmitInstance(transform, mesh, shader, { -FLT_MAX, -FLT_MAX, -FLT_MAX }, { FLT_MAX, FLT_MAX, FLT_MAX });
 	}
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader)

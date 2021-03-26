@@ -48,6 +48,8 @@ public:
 	float GetShadowBias() const { return m_shadowBias; }
 	glm::vec2 GetSpotAngles() const { return m_spotAngles; }	// radians!
 	glm::mat4 GetShadowMatrix() { return m_shadowMatrix; }
+	float GetShadowOrthoScale() const {	return m_shadowOrthoScale; }
+	void SetShadowOrthoScale(float s) { m_shadowOrthoScale = s; }
 
 private:
 	void SetColour3(float r, float g, float b) { m_colour = { r,g,b }; }
@@ -59,6 +61,7 @@ private:
 	glm::vec2 m_spotAngles = { 0.4f,0.8f };	// inner, outer
 	float m_ambient = 0.0f;
 	float m_shadowBias = 0.05f;	// functionality may depend on light type
+	float m_shadowOrthoScale = 400.0f;	// scales the ortho frustum with directional lights
 	bool m_castShadows = false;
 	glm::ivec2 m_shadowMapSize = { 1024,1024 };
 	glm::mat4 m_shadowMatrix = glm::identity<glm::mat4>();	// lightspace matrix

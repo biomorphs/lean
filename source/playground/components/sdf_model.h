@@ -13,6 +13,7 @@ namespace Render
 struct SDFDebug
 {
 	virtual void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3) {}
+	virtual void DrawCellCorner(glm::vec3 p, float d) {}
 	virtual void DrawCellVertex(glm::vec3 p) {}
 	virtual void DrawCellNormal(glm::vec3 p, glm::vec3 n) {}
 };
@@ -38,6 +39,9 @@ public:
 	void UpdateMesh(SDFDebug& dbg = SDFDebug());
 
 	// Model stuff
+	void SetMeshBlocky() { m_meshMode = Blocky; }
+	void SetMeshSurfaceNet() { m_meshMode = SurfaceNet; }
+	void SetMeshDualContour() { m_meshMode = DualContour; }
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }
 	void Remesh() { m_remesh = true; }
 	MeshMode GetMeshMode() const { return m_meshMode; }

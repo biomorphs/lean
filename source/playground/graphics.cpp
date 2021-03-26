@@ -43,6 +43,14 @@ struct SDFDebugDraw : public SDFDebug
 	glm::mat4 transform;
 	float alpha = 0.5f;
 
+	void DrawCellCorner(glm::vec3 p, float d)
+	{
+		if (d <= 0)
+		{
+			dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 1.0f, 1.0f, alpha));
+		}
+	}
+
 	void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)
 	{
 		// push the vertices out a tiny amount so we dont have z-fighting
@@ -156,6 +164,10 @@ bool Graphics::Initialise()
 		l.SetCastsShadows(dbg.Checkbox("Cast Shadows", l.CastsShadows()));
 		if (l.CastsShadows())
 		{
+			if (l.GetLightType() == Light::Type::Directional)
+			{
+				l.SetShadowOrthoScale(dbg.DragFloat("Ortho Scale", l.GetShadowOrthoScale(), 0.1f, 0.1f, 10000000.0f));
+			}
 			l.SetShadowBias(dbg.DragFloat("Shadow Bias", l.GetShadowBias(), 0.001f, 0.0f, 10.0f));
 			if (!l.IsPointLight() && l.GetShadowMap() != nullptr && !l.GetShadowMap()->IsCubemap())
 			{
@@ -219,13 +231,13 @@ bool Graphics::Initialise()
 		}
 		auto bMin = m.GetBoundsMin();
 		auto bMax = m.GetBoundsMax();
-		bMin = dbg.DragVector("BoundsMin", bMin, 1.0f);
-		bMax = dbg.DragVector("BoundsMax", bMax, 1.0f);
+		bMin = dbg.DragVector("BoundsMin", bMin, 0.1f);
+		bMax = dbg.DragVector("BoundsMax", bMax, 0.1f);
 		m.SetBounds(bMin, bMax);
 		auto r = m.GetResolution();
-		r.x = dbg.DragInt("ResX", r.x, 1);
-		r.y = dbg.DragInt("ResY", r.y, 1);
-		r.z = dbg.DragInt("ResZ", r.z, 1);
+		r.x = dbg.DragInt("ResX", r.x, 1, 1);
+		r.y = dbg.DragInt("ResY", r.y, 1, 1);
+		r.z = dbg.DragInt("ResZ", r.z, 1, 1);
 		m.SetResolution(r.x, r.y, r.z);
 		m.SetNormalSmoothness(dbg.DragFloat("Normal Smooth", m.GetNormalSmoothness(), 0.01f, 0.0f));
 		if (dbg.Button("Remesh Now"))
@@ -458,17 +470,18 @@ void Graphics::ProcessEntities()
 			if (!transform)
 				return;
 
-			const auto cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
-			SDFDebugDraw debug;
-			debug.cellSize = cellSize;
-			debug.dbg = m_debugRender.get();
-			debug.gui = m_debugGui;
-			debug.transform = transform->GetMatrix();
-			
-			m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
+			if (m_showBounds)
+			{
+				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
+			}
 
 			if (m.GetDebugEnabled())
 			{
+				SDFDebugDraw debug;
+				debug.cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
+				debug.dbg = m_debugRender.get();
+				debug.gui = m_debugGui;
+				debug.transform = transform->GetMatrix();
 				m.UpdateMesh(debug);
 			}
 			else
@@ -478,7 +491,7 @@ void Graphics::ProcessEntities()
 			
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{
-				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader());
+				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax());
 			}
 		});
 	}

@@ -13,7 +13,8 @@ COMPONENT_SCRIPTS(Light,
 	"SetCastsShadows", &Light::SetCastsShadows,
 	"SetShadowmapSize", &Light::SetShadowmapSize,
 	"SetShadowBias", &Light::SetShadowBias,
-	"SetSpotAngles", &Light::SetSpotAngles
+	"SetSpotAngles", &Light::SetSpotAngles,
+	"SetShadowOrthoScale", &Light::SetShadowOrthoScale
 )
 
 glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
@@ -31,9 +32,8 @@ glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
 	{
 		// todo - parameterise
 		static float c_nearPlane = 0.1f;
-		static float c_orthoDims = 400.0f;
 		const glm::vec3 up = direction.y == -1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::mat4 lightProjection = glm::ortho(-c_orthoDims, c_orthoDims, -c_orthoDims, c_orthoDims, c_nearPlane, m_distance);
+		glm::mat4 lightProjection = glm::ortho(-m_shadowOrthoScale, m_shadowOrthoScale, -m_shadowOrthoScale, m_shadowOrthoScale, c_nearPlane, m_distance);
 		glm::mat4 lightView = glm::lookAt(glm::vec3(position), glm::vec3(position) + direction, up);
 		m_shadowMatrix = lightProjection * lightView;
 	}
