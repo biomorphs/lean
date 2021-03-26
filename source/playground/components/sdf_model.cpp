@@ -214,16 +214,10 @@ void SDFModel::FindQuads(const std::vector<Sample>& samples, const std::vector<g
 	}
 }
 
-static int s_dcSuccess = 0;
-static int s_dcFailure = 0;
-
 void SDFModel::UpdateMesh(SDFDebug& dbg)
 {
-	s_dcSuccess = 0;
-	s_dcFailure = 0;
-
 	SDE_PROF_EVENT();
-	if (m_mesh == nullptr || m_remesh)
+	if (m_remesh)
 	{
 		m_mesh = std::make_unique<Render::Mesh>();
 		m_remesh = false;
@@ -269,11 +263,6 @@ void SDFModel::UpdateMesh(SDFDebug& dbg)
 		SDE_PROF_EVENT("CreateMesh");
 		builder.CreateMesh(*m_mesh);
 		builder.CreateVertexArray(*m_mesh);
-	}
-
-	if (m_meshMode == DualContour)
-	{
-		//SDE_LOG("Success: %d, Failure: %d", s_dcSuccess, s_dcFailure);
 	}
 }
 
@@ -390,7 +379,6 @@ bool SDFModel::FindVertex_DualContour(glm::vec3 p, glm::vec3 cellSize, const SDF
 		const glm::vec3 errorTolerance = cellSize * 0.25f;
 		if (glm::any(glm::lessThan(outVertex, p-errorTolerance)) || glm::any(glm::greaterThan(outVertex, p + errorTolerance + cellSize)))
 		{	
-			++s_dcFailure;
 			if (s_doClamp)
 			{
 				outVertex = glm::clamp(outVertex, p, p + cellSize);
@@ -412,7 +400,6 @@ bool SDFModel::FindVertex_DualContour(glm::vec3 p, glm::vec3 cellSize, const SDF
 			}
 		}
 	}
-	++s_dcSuccess;
 	return intersections > 0;
 }
 

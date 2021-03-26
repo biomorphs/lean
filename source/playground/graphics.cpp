@@ -47,7 +47,8 @@ struct SDFDebugDraw : public SDFDebug
 	{
 		if (d <= 0)
 		{
-			dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 1.0f, 1.0f, alpha));
+			// heavy! for debugging meshing only
+			//dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 1.0f, 1.0f, alpha));
 		}
 	}
 
@@ -118,6 +119,7 @@ bool Graphics::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_shaders = std::make_unique<Engine::ShaderManager>();
 	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);
 	m_models = std::make_unique<Engine::ModelManager>(m_textures.get(), m_jobSystem);
+	m_mainRenderCamera = std::make_unique<Render::Camera>();
 
 	return true;
 }
@@ -310,6 +312,7 @@ bool Graphics::Initialise()
 	};
 	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
 
+	auto windowSize = m_renderSystem->GetWindow()->GetSize();
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();
 	m_debugCamera->SetPosition({0.f,0.0f,20.0f});
 	m_debugCamera->SetPitch(0.0f);
@@ -320,6 +323,9 @@ bool Graphics::Initialise()
 	m_arcballCamera->SetPosition({ 7.1f,8.0f,15.0f });
 	m_arcballCamera->SetTarget({ 0.0f,5.0f,0.0f });
 	m_arcballCamera->SetUp({ 0.0f,1.0f,0.0f });
+	
+	float aspect = (float)windowSize.x / (float)windowSize.y;
+	m_mainRenderCamera->SetProjection(70.0f, aspect, 0.1f, 1000.0f);
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
 	gMenu.AddItem("Reload Shaders", [this]() { m_renderer->Reset(); m_shaders->ReloadAll(); });
@@ -464,7 +470,8 @@ void Graphics::ProcessEntities()
 	// SDF Models
 	{
 		SDE_PROF_EVENT("ProcessSDFModels");
-		world->ForEachComponent<SDFModel>([this, &world, &transforms](SDFModel& m, EntityHandle owner) {
+		Engine::Frustum viewFrustum(m_mainRenderCamera->ProjectionMatrix() * m_mainRenderCamera->ViewMatrix());
+		world->ForEachComponent<SDFModel>([this, &world, &transforms,&viewFrustum](SDFModel& m, EntityHandle owner) {
 			static SDFModel::MeshMode meshMode = SDFModel::SurfaceNet;
 			const Transform* transform = transforms->Find(owner);
 			if (!transform)
@@ -475,20 +482,22 @@ void Graphics::ProcessEntities()
 				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
 			}
 
-			if (m.GetDebugEnabled())
+			if (m.NeedsRemesh() /*&& viewFrustum.IsBoxVisible(m.GetBoundsMin(), m.GetBoundsMax(), transform->GetMatrix())*/)
 			{
-				SDFDebugDraw debug;
-				debug.cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
-				debug.dbg = m_debugRender.get();
-				debug.gui = m_debugGui;
-				debug.transform = transform->GetMatrix();
-				m.UpdateMesh(debug);
+				if (m.GetDebugEnabled())
+				{
+					SDFDebugDraw debug;
+					debug.cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
+					debug.dbg = m_debugRender.get();
+					debug.gui = m_debugGui;
+					debug.transform = transform->GetMatrix();
+					m.UpdateMesh(debug);
+				}
+				else
+				{
+					m.UpdateMesh();
+				}
 			}
-			else
-			{
-				m.UpdateMesh();
-			}
-			
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{
 				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax());
@@ -504,7 +513,7 @@ void Graphics::ShowGui(int framesPerSecond)
 	if (g_showCameraInfo)
 	{
 		m_debugGui->BeginWindow(g_showCameraInfo, "Camera");
-		glm::vec3 posVec = g_useArcballCam ? m_arcballCamera->GetPosition() : m_debugCamera->GetPosition();
+		glm::vec3 posVec = m_mainRenderCamera->Position();
 		m_debugGui->DragVector("Position", posVec);
 		m_debugGui->EndWindow();
 	}
@@ -545,17 +554,13 @@ void Graphics::ShowGui(int framesPerSecond)
 
 void Graphics::ProcessCamera(float timeDelta)
 {
-	Render::Camera c;
-	auto windowSize = m_renderSystem->GetWindow()->GetSize();
-	float aspect = (float)windowSize.x / (float)windowSize.y;
-	c.SetProjection(70.0f, aspect, 0.1f, 1000.0f);
 	if (g_useArcballCam)
 	{
 		if (!m_debugGui->IsCapturingMouse())
 		{
 			m_arcballCamera->Update(m_inputSystem->GetMouseState(), timeDelta);
 		}
-		c.LookAt(m_arcballCamera->GetPosition(), m_arcballCamera->GetTarget(), m_arcballCamera->GetUp());
+		m_mainRenderCamera->LookAt(m_arcballCamera->GetPosition(), m_arcballCamera->GetTarget(), m_arcballCamera->GetUp());
 	}
 	else
 	{
@@ -568,9 +573,9 @@ void Graphics::ProcessCamera(float timeDelta)
 		{
 			m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
 		}
-		m_debugCamera->ApplyToCamera(c);
+		m_debugCamera->ApplyToCamera(*m_mainRenderCamera);
 	}
-	m_renderer->SetCamera(c);
+	m_renderer->SetCamera(*m_mainRenderCamera);
 }
 
 bool Graphics::Tick(float timeDelta)

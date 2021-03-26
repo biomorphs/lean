@@ -22,6 +22,10 @@ namespace Engine
 	class DebugRender;
 	class Model;	
 }
+namespace Render
+{
+	class Camera;
+}
 class EntitySystem;
 
 class Graphics : public Engine::System
@@ -47,6 +51,7 @@ private:
 	std::unique_ptr<Engine::ShaderManager> m_shaders;
 	std::unique_ptr<Engine::DebugCamera> m_debugCamera;
 	std::unique_ptr<Engine::ArcballCamera> m_arcballCamera;
+	std::unique_ptr<Render::Camera> m_mainRenderCamera;
 	glm::ivec2 m_windowSize = { 0,0 };
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;

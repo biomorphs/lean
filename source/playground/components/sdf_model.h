@@ -44,6 +44,7 @@ public:
 	void SetMeshDualContour() { m_meshMode = DualContour; }
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }
 	void Remesh() { m_remesh = true; }
+	bool NeedsRemesh() { return m_remesh; }
 	MeshMode GetMeshMode() const { return m_meshMode; }
 	void SetMeshMode(MeshMode m) { m_meshMode = m; }
 	void SetShader(Engine::ShaderHandle s) { m_shader = s; }
@@ -95,7 +96,7 @@ public:
 	// build mesh data from quads
 
 private:
-	bool m_remesh = true;
+	bool m_remesh = false;
 	bool m_debugRender = false;
 	MeshMode m_meshMode = SurfaceNet;
 	Engine::ShaderHandle m_shader;
@@ -105,13 +106,27 @@ private:
 	glm::vec3 m_boundsMax = { 1.0f,1.0f,1.0f };
 	glm::ivec3 m_meshResolution = {11,11,11};
 	SampleFn m_sampleFunction = [](float x, float y, float z) -> std::tuple<float, int> {
-		float sphere = glm::length(glm::vec3(x, y - 0.1f, z)) - 0.75f;
-		float plane = glm::dot(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, 0.0f)) + 1.0f;
-		float opUnion = glm::min(sphere, plane);
-		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 1, y - 0.1, z)) - 0.6f);
-		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 1.8, y - 0.1, z)) - 0.4f);
-		opUnion = glm::min(opUnion, glm::length(glm::vec3(x - 2.4, y - 0.1, z)) - 0.25f);
-		opUnion = glm::min(opUnion, glm::length(glm::vec2(glm::length(glm::vec2(x, z-1.0f)) - 1.5f, y+0.5f)) - 0.2f);
-		return std::make_tuple(opUnion, 0);
+
+		auto Sphere = [](glm::vec3 p, float r) -> float
+		{
+			return glm::length(p) - r;
+		};
+		auto Plane = [](glm::vec3 p, glm::vec3 n, float h) -> float
+		{
+			return glm::dot(p, n) + h;
+		};
+		auto Union = [](float p0, float p1)
+		{
+			return glm::min(p0, p1);
+		};
+		auto Repeat = [](glm::vec3 p, glm::vec3 c)
+		{
+			return glm::mod(p + c * 0.5f, c) - c * 0.5f;
+		};
+
+		float d = Sphere(Repeat({ x,y,z }, {4.0f,4.0f,4.0f}), 0.7f);
+		d = Union(d, Plane({ x,y - (sin(x) * 0.5f) + (sinf(z + 23.3) * 0.3f),z }, { 0.0f,1.0f,0.0f }, 0.0f));
+
+		return std::make_tuple(d, 0);
 	};
 };

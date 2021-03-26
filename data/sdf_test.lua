@@ -38,7 +38,6 @@ function Torus( p, t ) -- pos(3), torus wid/leng?(2)
   return Vec2Length(q)-t[2];
 end
 
-
 function TriPrism( p, h )	-- pos, w/h
   local q = { math.abs(p[1]), math.abs(p[2]), math.abs(p[3]) };
   return math.max(q[3]-h[2],math.max(q[1]*0.866025+p[2]*0.5,-p[2])-h[1]*0.5);
@@ -50,19 +49,23 @@ end
 
 local a = 0
 local sdfEntities = {}
-local blockSize = {10,5,10}
-local res = {32,16,32}
-local blockCounts = {2,1,2}
+local blockSize = {4,3,4}
+local res = {32,20,32}
+local blockCounts = {40,1,40}
+local remeshPerFrame = 2
+local debugMeshing = true
+local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
+local useLuaSampleFn = false
 
 function TestSampleFn(x,y,z)
 	--local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.7),Plane({x,y,z}, {0.0,0.5,0.0}, 1.0))
-	local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.7),Plane({x,y,z}, {0.0,2.0 - math.cos(x + a * 4) * 1.0,0.0}, 1.0))
+	local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.5),Plane({x,y,z}, {0.0,2.0 - math.cos(x + a * 4) * 1.0 + 1.0 + math.sin(z + a * 0.3),0.0}, 1.0))
 	--local d = Plane({x,y,z},{0.0,1.0,0.0},-0.5)
-	--d = OpUnion(Sphere({x-1,y-0.1,z}, 0.1 + (1.0 + math.cos(a * 0.3 + 0.5)) * 0.25),d)
+	--	d = OpUnion(Sphere({x-1,y-0.1,z}, 0.1 + (1.0 + math.cos(a * 0.3 + 0.5)) * 0.25),d)
 	--d = OpUnion(Sphere({x-1.8,y-0.1,z}, 0.8),d)
 	--d = OpUnion(Sphere({x+2.4,y-0.1,z}, 0.5),d)
 	d = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
-	d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
+	--d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
 	return d, 10
 end
 
@@ -75,9 +78,9 @@ function MakeSunEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.917,0.788,0.607)
-	light:SetColour(0.1,0.1,0.1)
-	light:SetAmbient(0.15)
-	light:SetBrightness(0.5)
+	--light:SetColour(0.1,0.1,0.1)
+	light:SetAmbient(0.3)
+	light:SetBrightness(0.3)
 	light:SetDistance(82)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
@@ -95,10 +98,17 @@ function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)
 	sdfModel:SetBoundsMax(bmax[1],bmax[2],bmax[3])
 	sdfModel:SetResolution(res[1],res[2],res[3])
 	sdfModel:SetShader(DiffuseShader)
-	sdfModel:SetSampleFunction(fn)
-	sdfModel:SetMeshBlocky()
-	sdfModel:SetMeshSurfaceNet()
-	sdfModel:SetMeshDualContour()
+	if(useLuaSampleFn) then
+		sdfModel:SetSampleFunction(fn)
+	end
+	if(meshMode == "Blocky") then 
+		sdfModel:SetMeshBlocky()
+	elseif meshMode == "SurfaceNet" then
+		sdfModel:SetMeshSurfaceNet()
+	else
+		sdfModel:SetMeshDualContour()
+	end
+	sdfModel:SetDebugEnabled(debugMeshing)
 	table.insert(sdfEntities,sdf_entity)
 end
 
@@ -119,24 +129,45 @@ function SDFTest.Init()
 	end
 end
 
-local keepRemeshing = true
+local keepRemeshing = false
+local meshAll = false
 local windowOpen = true
 local lastRemeshed = 1
-local remeshPerFrame = 4
+local currentTime = 0
+local remeshStart = 0
 
-function SDFTest.Tick(deltaTime)
-	a = a + deltaTime * 0.5
-	Graphics.DebugDrawAxis(0,0,0,1)
-	
+function SDFTest.Tick(deltaTime)	
 	DebugGui.BeginWindow(windowOpen, "SDF Test")
 		keepRemeshing = DebugGui.Checkbox("Build every frame", keepRemeshing)
+		meshAll = DebugGui.Checkbox("Remesh all", meshAll)
+		remeshPerFrame = DebugGui.DragFloat("Remesh per frame", remeshPerFrame, 1, 0, 64)
+		local currentRes = {res[1],res[2],res[3]}
+		res[1] = DebugGui.DragFloat("ResX", res[1], 1, 1, 128)
+		res[2] = DebugGui.DragFloat("ResY", res[2], 1, 1, 128)
+		res[3] = DebugGui.DragFloat("ResZ", res[3], 1, 1, 128)
+		if(res[1] ~= currentRes[1] or res[2] ~= currentRes[2] or res[3] ~= currentRes[3]) then
+			for m=1, #sdfEntities do
+				local model = World.GetComponent_SDFModel(sdfEntities[m])
+				model:SetResolution(res[1],res[2],res[3])
+			end
+		end
+		
 	DebugGui.EndWindow()
 	
+	currentTime = currentTime + deltaTime
 	if keepRemeshing then
 		if(lastRemeshed >= #sdfEntities) then 
 			lastRemeshed = 1
+			a = a + (currentTime - remeshStart) / remeshPerFrame
+			remeshStart = currentTime
 		end
-		for m=lastRemeshed, math.min(#sdfEntities,lastRemeshed+remeshPerFrame) do
+		local firstMesh = lastRemeshed
+		local lastMesh = math.min(#sdfEntities,lastRemeshed+remeshPerFrame)
+		if meshAll then
+			firstMesh = 1
+			lastMesh = #sdfEntities
+		end
+		for m=firstMesh, lastMesh do
 			local model = World.GetComponent_SDFModel(sdfEntities[m])
 			model:Remesh()
 			lastRemeshed = m
