@@ -381,6 +381,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 		auto firstInstance = list.m_instances.begin();
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
+		uint32_t firstTextureUnit = 0;							// so we can bind shadows per shader instead of per mesh
 		while (firstInstance != list.m_instances.end())
 		{
 			// Batch by shader and mesh
@@ -405,16 +406,20 @@ namespace Engine
 					{
 						uniforms->Apply(d, *theShader);
 					}
+					if (bindShadowmaps)
+					{
+						firstTextureUnit = BindShadowmaps(d, *theShader, 0);
+					}
+					else
+					{
+						firstTextureUnit = 0;
+					}
 					lastShaderUsed = theShader;
 				}
 
 				// apply mesh material uniforms and samplers
-				uint32_t textureUnit = 0;
+				uint32_t textureUnit = firstTextureUnit;
 				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, g_defaultTextures, textureUnit);
-				if (bindShadowmaps)
-				{
-					textureUnit = BindShadowmaps(d, *theShader, textureUnit+1);
-				}
 
 				// bind vertex array + instancing streams immediately after mesh vertex streams
 				m_frameStats.m_vertexArrayBinds++;

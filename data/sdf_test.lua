@@ -2,6 +2,7 @@ SDFTest = {}
 
 ProFi = require 'ProFi'
 
+Graphics.LoadShader("simplediffuse", "simplediffuse.vs", "simplediffuse.fs")
 local DiffuseShader = Graphics.LoadShader("sdf_diffuse", "sdf_model.vs", "sdf_model_diffuse.fs")
 local ShadowShader = Graphics.LoadShader("sdf_shadows", "sdf_shadow.vs", "sdf_shadow.fs")
 
@@ -49,31 +50,26 @@ end
 
 local a = 0
 local sdfEntities = {}
-local blockSize = {4,3,4}
-local res = {32,20,32}
-local blockCounts = {40,1,40}
-local remeshPerFrame = 2
-local debugMeshing = true
+local blockSize = {32,12,32}	-- dimensions in meters
+local res = {128,36,128}		-- grid resolution
+local blockCounts = {32,1,32}	-- blocks in the scene
+local remeshPerFrame = 1
+local debugMeshing = false
 local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
 local useLuaSampleFn = false
 
 function TestSampleFn(x,y,z)
-	--local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.7),Plane({x,y,z}, {0.0,0.5,0.0}, 1.0))
 	local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.5),Plane({x,y,z}, {0.0,2.0 - math.cos(x + a * 4) * 1.0 + 1.0 + math.sin(z + a * 0.3),0.0}, 1.0))
-	--local d = Plane({x,y,z},{0.0,1.0,0.0},-0.5)
-	--	d = OpUnion(Sphere({x-1,y-0.1,z}, 0.1 + (1.0 + math.cos(a * 0.3 + 0.5)) * 0.25),d)
-	--d = OpUnion(Sphere({x-1.8,y-0.1,z}, 0.8),d)
-	--d = OpUnion(Sphere({x+2.4,y-0.1,z}, 0.5),d)
 	d = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
-	--d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
+	d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
 	return d, 10
 end
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(-0.5,36.25,8.75)
-	transform:SetRotation(148.5,0,133)
+	transform:SetPosition(-282.25,229.5,194.5)
+	transform:SetRotation(226.5,0,133)
 	
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
@@ -81,11 +77,11 @@ function MakeSunEntity()
 	--light:SetColour(0.1,0.1,0.1)
 	light:SetAmbient(0.3)
 	light:SetBrightness(0.3)
-	light:SetDistance(82)
+	light:SetDistance(700)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
-	light:SetShadowBias(0.005)
-	light:SetShadowOrthoScale(45.5)
+	light:SetShadowBias(0.001)
+	light:SetShadowOrthoScale(329)
 end
 
 function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)
@@ -114,6 +110,7 @@ end
 
 function SDFTest.Init()
 	Graphics.SetShadowShader(DiffuseShader, ShadowShader)
+	Graphics.SetClearColour(0.3,0.55,0.8)
 	MakeSunEntity()
 	
 	local cellDims = {blockSize[1] / res[1],blockSize[2] / res[2],blockSize[3] / res[3]}
@@ -139,7 +136,13 @@ local remeshStart = 0
 function SDFTest.Tick(deltaTime)	
 	DebugGui.BeginWindow(windowOpen, "SDF Test")
 		keepRemeshing = DebugGui.Checkbox("Build every frame", keepRemeshing)
-		meshAll = DebugGui.Checkbox("Remesh all", meshAll)
+		if(DebugGui.Button("Remesh all")) then 
+			print("Reset time")
+			for m=1, #sdfEntities do
+				local model = World.GetComponent_SDFModel(sdfEntities[m])
+				model:Remesh()
+			end
+		end
 		remeshPerFrame = DebugGui.DragFloat("Remesh per frame", remeshPerFrame, 1, 0, 64)
 		local currentRes = {res[1],res[2],res[3]}
 		res[1] = DebugGui.DragFloat("ResX", res[1], 1, 1, 128)

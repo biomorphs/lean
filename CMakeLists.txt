@@ -182,6 +182,8 @@ set(ENGINE_SOURCES
 	Source/engine/file_picker_dialog.cpp
 	Source/engine/file_picker_dialog.h
 	Source/engine/frustum.h
+	Source/engine/sdf_mesh_builder.h
+	Source/engine/sdf_mesh_builder.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})
@@ -189,6 +191,7 @@ target_include_directories(Engine PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Engine PRIVATE ${JSONIncludePaths})
 target_include_directories(Engine PRIVATE external/imgui-docking/)
 target_include_directories(Engine PRIVATE external/assimp-5.0.1/include/)
+target_include_directories(Engine PRIVATE external/qef/)
 target_link_libraries(Engine PRIVATE Core)
 target_link_libraries(Engine PRIVATE Render)
 target_link_libraries(Engine PRIVATE ImguiLib)
@@ -234,7 +237,6 @@ target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Playground PRIVATE ${JSONIncludePaths})
-target_include_directories(Playground PRIVATE external/qef/)
 target_compile_options(Playground PRIVATE ${CommonCompilerOptions})
 
 add_executable(Lean Source/main/main.cpp)

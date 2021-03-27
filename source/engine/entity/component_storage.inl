@@ -33,7 +33,7 @@ void LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
 	if (noDuplicate)
 	{
 		m_owners.push_back(owner);
-		m_components.push_back(ComponentType());
+		m_components.emplace_back(std::move(ComponentType()));
 		uint32_t newIndex = m_components.size() - 1;
 		m_entityToComponent.insert({ owner.GetID(), newIndex });
 	}

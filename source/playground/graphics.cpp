@@ -35,24 +35,14 @@ bool g_useArcballCam = false;
 bool g_showCameraInfo = false;
 bool g_enableShadowUpdate = true;
 
-struct SDFDebugDraw : public SDFDebug
+struct SDFDebugDraw : public Engine::SDFMeshBuilder::Debug
 {
 	Engine::DebugRender* dbg;
 	Engine::DebugGuiSystem* gui;
 	glm::vec3 cellSize;
 	glm::mat4 transform;
 	float alpha = 0.5f;
-
-	void DrawCellCorner(glm::vec3 p, float d)
-	{
-		if (d <= 0)
-		{
-			// heavy! for debugging meshing only
-			//dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.1f, glm::vec4(1.0f, 1.0f, 1.0f, alpha));
-		}
-	}
-
-	void DrawQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)
+	void OnQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)
 	{
 		// push the vertices out a tiny amount so we dont have z-fighting
 		float c_bias = 0.01f;	
@@ -79,13 +69,9 @@ struct SDFDebugDraw : public SDFDebug
 		dbg->AddLines(v, c, 4);
 	}
 
-	void DrawCellVertex(glm::vec3 p)
+	void OnCellVertex(glm::vec3 p, glm::vec3 n)
 	{
 		dbg->AddBox(glm::vec3(transform * glm::vec4(p, 1.0f)), cellSize * 0.2f, glm::vec4(1.0f, 0.0f, 0.0f, alpha));
-	}
-
-	void DrawCellNormal(glm::vec3 p, glm::vec3 n)
-	{
 		glm::vec4 p4 = transform * glm::vec4(p, 1.0f);
 		glm::vec3 normal = glm::mat3(transform) * n;
 		glm::vec4 v[] = {
@@ -216,11 +202,6 @@ bool Graphics::Initialise()
 		}
 	});
 
-	m_scriptSystem->Globals().new_usertype<SDFModel::Sample>(
-		"SDFModelSample", sol::constructors<SDFModel::Sample()>(),
-		"distance", &SDFModel::Sample::distance,
-		"material", &SDFModel::Sample::material
-	);
 	m_entitySystem->RegisterComponentType<SDFModel>();
 	m_entitySystem->RegisterComponentUi<SDFModel>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
@@ -228,7 +209,7 @@ bool Graphics::Initialise()
 		const char* types[] = { "Blocky", "Surface Net", "Dual Contour" };
 		if (dbg.ComboBox("Mesh Type", types, 3, typeIndex))
 		{
-			m.SetMeshMode(static_cast<SDFModel::MeshMode>(typeIndex));
+			m.SetMeshMode(static_cast<Engine::SDFMeshBuilder::MeshMode>(typeIndex));
 			m.Remesh();
 		}
 		auto bMin = m.GetBoundsMin();
@@ -472,31 +453,28 @@ void Graphics::ProcessEntities()
 		SDE_PROF_EVENT("ProcessSDFModels");
 		Engine::Frustum viewFrustum(m_mainRenderCamera->ProjectionMatrix() * m_mainRenderCamera->ViewMatrix());
 		world->ForEachComponent<SDFModel>([this, &world, &transforms,&viewFrustum](SDFModel& m, EntityHandle owner) {
-			static SDFModel::MeshMode meshMode = SDFModel::SurfaceNet;
 			const Transform* transform = transforms->Find(owner);
 			if (!transform)
 				return;
 
 			if (m_showBounds)
 			{
-				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), glm::vec4(0.0f, 0.5f, 0.0f, 0.5f), transform->GetMatrix());
+				auto colour = m.IsRemeshing() ? glm::vec4(0.5f, 0.5f, 0.0f, 0.5f) : glm::vec4(0.0f, 0.5f, 0.0f, 0.5f);
+				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
 			}
 
-			if (m.NeedsRemesh() /*&& viewFrustum.IsBoxVisible(m.GetBoundsMin(), m.GetBoundsMax(), transform->GetMatrix())*/)
+			if (m.GetDebugEnabled())
 			{
-				if (m.GetDebugEnabled())
-				{
-					SDFDebugDraw debug;
-					debug.cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
-					debug.dbg = m_debugRender.get();
-					debug.gui = m_debugGui;
-					debug.transform = transform->GetMatrix();
-					m.UpdateMesh(debug);
-				}
-				else
-				{
-					m.UpdateMesh();
-				}
+				SDFDebugDraw debug;
+				debug.cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
+				debug.dbg = m_debugRender.get();
+				debug.gui = m_debugGui;
+				debug.transform = transform->GetMatrix();
+				m.UpdateMesh(m_jobSystem, debug);
+			}
+			else
+			{
+				m.UpdateMesh(m_jobSystem);
 			}
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{

@@ -40,8 +40,8 @@ namespace Engine
 	private:
 		struct Config
 		{
-			uint32_t m_windowWidth = 1440;
-			uint32_t m_windowHeight = 900;
+			uint32_t m_windowWidth = 1920;
+			uint32_t m_windowHeight = 1080;
 			std::string m_windowTitle = "LEAN";
 			bool m_fullscreen = false;
 		} m_config;
