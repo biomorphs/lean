@@ -50,9 +50,9 @@ end
 
 local a = 0
 local sdfEntities = {}
-local blockSize = {32,12,32}	-- dimensions in meters
-local res = {128,36,128}		-- grid resolution
-local blockCounts = {32,1,32}	-- blocks in the scene
+local blockSize = {16,12,16}	-- dimensions in meters
+local res = {64,36,64}		-- grid resolution
+local blockCounts = {64,1,64}	-- blocks in the scene
 local remeshPerFrame = 1
 local debugMeshing = false
 local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour

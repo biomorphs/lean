@@ -147,7 +147,7 @@ namespace Engine
 			auto shadowShader = m_shaders->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, mesh, shadowShader);
+				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, mesh, shadowShader, boundsMin, boundsMax);
 			}
 		}
 

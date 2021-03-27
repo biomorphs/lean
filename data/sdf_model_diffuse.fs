@@ -174,4 +174,5 @@ void main()
 	
 	// apply exposure here, assuming next pass is postfx
 	fs_out_colour = vec4(finalColour * HDRExposure,1.0);
+	//fs_out_colour = vec4(clamp(finalNormal,0.0,1.0),1.0);
 }
