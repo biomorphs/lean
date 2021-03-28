@@ -55,37 +55,41 @@ end
 
 local a = 0
 local sdfEntities = {}
-local blockSize = {16,12,16}	-- dimensions in meters
-local res = {64,32,64}		-- grid resolution
-local blockCounts = {32,1,32}	-- blocks in the scene
+local blockSize = {16,16,16}	-- dimensions in meters
+local res = {64,64,64}		-- grid resolution
+local blockCounts = {1,1,1}	-- blocks in the scene
 local remeshPerFrame = 1
-local debugMeshing = false
+local debugMeshing = true
 local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
-local useLuaSampleFn = false
-local normalSmoothness = 0
+local useLuaSampleFn = true
+local normalSmoothness = 1
 
 function TestSampleFn(x,y,z)
 	local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.5),Plane({x,y,z}, {0.0,2.0 - math.cos(x + a * 4) * 1.0 + 1.0 + math.sin(z + a * 0.3),0.0}, 1.0))
-	d = OpUnion(Torus({x,y+0.5,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
+	d = OpUnion(Torus({x-3,y-0.8,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
 	d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
 	return d, 10
+end
+
+function SampleGridFn(resolution,origin,cellSize,data)
+	
 end
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(178.75,229.5,119.75)
-	transform:SetRotation(13.5,-25.9,-53)
+	transform:SetPosition(4,6.25,10.5)
+	transform:SetRotation(67.8,21.1,-18.5)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.917,0.788,0.607)
-	light:SetAmbient(0.025)
-	light:SetBrightness(0.008)
-	light:SetDistance(714.5)
+	light:SetAmbient(0.092)
+	light:SetBrightness(0.267)
+	light:SetDistance(27.6)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
-	light:SetShadowBias(0.001)
-	light:SetShadowOrthoScale(346.2)
+	light:SetShadowBias(0.002)
+	light:SetShadowOrthoScale(10.4)
 	
 	local ne2 = World.AddEntity()
 	transform = World.AddComponent_Transform(ne2)
@@ -122,6 +126,7 @@ function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)
 		sdfModel:SetMeshDualContour()
 	end
 	sdfModel:SetDebugEnabled(debugMeshing)
+	sdfModel:Remesh()
 	table.insert(sdfEntities,sdf_entity)
 end
 
@@ -150,6 +155,23 @@ local currentTime = 0
 local remeshStart = 0
 
 function SDFTest.Tick(deltaTime)	
+
+	-- test sampling speed
+	local index = 0
+	local p = {0,0,0}
+	local cellDims = {blockSize[1] / res[1],blockSize[2] / res[2],blockSize[3] / res[3]}
+	local overlap = {cellDims[1]*2,cellDims[2]*2,cellDims[3]*2}
+	local offset = {-blockCounts[1]*(blockSize[1]-cellDims[1]*2)*0.5,-1,-blockCounts[3]*(blockSize[3]-cellDims[3]*2)*0.5}
+	for z=0,res[3] do
+		for y=0,res[2] do 
+			for x=0,res[1] do 
+				index = x + (y * res[1]) + (z * res[1] * res[2])
+				p = {x,y,z}	-- we dont really care where we sample, it should be the same anywhere
+				d, m = TestSampleFn(x,y,z)
+			end
+		end
+	end
+
 	DebugGui.BeginWindow(windowOpen, "SDF Test")
 		keepRemeshing = DebugGui.Checkbox("Build every frame", keepRemeshing)
 		if(DebugGui.Button("Remesh all")) then 

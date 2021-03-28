@@ -40,7 +40,7 @@ namespace Engine
 		return key;
 	}
 
-	std::unique_ptr<Render::MeshBuilder> SDFMeshBuilder::MakeMeshBuilder(MeshMode mode, SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, Debug& debug)
+	std::unique_ptr<Render::MeshBuilder> SDFMeshBuilder::MakeMeshBuilder(MeshMode mode, SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, bool smoothNormals, Debug& debug)
 	{
 		m_fn = fn;
 		m_origin = origin;
@@ -63,9 +63,19 @@ namespace Engine
 		auto builder = std::make_unique<Render::MeshBuilder>();
 		builder->AddVertexStream(3);	// pos
 		builder->AddVertexStream(3);	// normal
-		auto quad = [&builder, this](glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3,
+		auto quad = [&builder, smoothNormals, this](glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3,
 			glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)
 		{
+			if (!smoothNormals)
+			{
+				auto l0 = v1 - v0;
+				auto l1 = v2 - v0;
+				auto normal = glm::normalize(glm::cross(l0, l1));
+				n0 = normal;
+				n1 = normal;
+				n2 = normal;
+				n3 = normal;
+			}
 			builder->BeginTriangle();
 			builder->SetStreamData(0, v0, v1, v2);
 			builder->SetStreamData(1, n0, n1, n2);

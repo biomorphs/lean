@@ -1,0 +1,7 @@
+{
+  "ClassName": "Scene",
+  "Name": "",
+  "Scripts": [
+    "sdf_occlusion_test.lua"
+  ]
+}

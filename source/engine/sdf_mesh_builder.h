@@ -15,6 +15,7 @@ namespace Engine
 	{
 	public:
 		using SampleFn = std::function<std::tuple<float, int>(float, float, float)>;	// pos(3), out distance, out material
+		using SampleGridFn = std::function<void(int[3],glm::vec3, glm::vec3, std::vector<>)>;
 		enum MeshMode
 		{
 			Blocky,
@@ -26,7 +27,7 @@ namespace Engine
 			virtual void OnQuad(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3) {}
 			virtual void OnCellVertex(glm::vec3 p, glm::vec3 n) {}
 		};
-		std::unique_ptr<Render::MeshBuilder> MakeMeshBuilder(MeshMode mode,SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, Debug& debug = Debug());
+		std::unique_ptr<Render::MeshBuilder> MakeMeshBuilder(MeshMode mode,SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, bool smoothNormals = true, Debug& debug = Debug());
 	private:
 		glm::ivec3 m_resolution;
 		glm::vec3 m_origin;

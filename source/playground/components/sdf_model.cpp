@@ -16,7 +16,8 @@ COMPONENT_SCRIPTS(SDFModel,
 	"GetDebugEnabled", &SDFModel::GetDebugEnabled,
 	"SetMeshBlocky", &SDFModel::SetMeshBlocky,
 	"SetMeshSurfaceNet", &SDFModel::SetMeshSurfaceNet,
-	"SetMeshDualContour", &SDFModel::SetMeshDualContour
+	"SetMeshDualContour", &SDFModel::SetMeshDualContour,
+	"SetNormalSmoothness", &SDFModel::SetNormalSmoothness
 )
 
 void SDFModel::UpdateMesh(Engine::JobSystem* js, Engine::SDFMeshBuilder::Debug& dbg)
@@ -34,7 +35,7 @@ void SDFModel::UpdateMesh(Engine::JobSystem* js, Engine::SDFMeshBuilder::Debug& 
 		auto buildMeshJob = [this, meshMode, sampleFn, origin, cellSize, resolution](void*)
 		{
 			Engine::SDFMeshBuilder builder;
-			auto meshBuilder = builder.MakeMeshBuilder(meshMode, sampleFn, origin, cellSize, resolution);
+			auto meshBuilder = builder.MakeMeshBuilder(meshMode, sampleFn, origin, cellSize, resolution, m_normalSmoothness>0.0f);
 			{
 				m_buildResults = std::move(meshBuilder);
 			}
