@@ -19,6 +19,7 @@ namespace Engine
 		DebugRender(ShaderManager* sm);
 		~DebugRender() = default;
 
+		void DrawLine(glm::vec3 p0, glm::vec3 p1, glm::vec3 c);
 		void AddLines(const glm::vec4* v, const glm::vec4* c, uint32_t count);
 		void AddAxisAtPoint(const glm::vec4& point, float scale = 1.0f);
 		void AddBox(glm::vec3 center, glm::vec3 dimensions, glm::vec4 colour);

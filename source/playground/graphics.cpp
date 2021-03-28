@@ -452,7 +452,7 @@ void Graphics::ProcessEntities()
 	{
 		SDE_PROF_EVENT("ProcessSDFModels");
 		Engine::Frustum viewFrustum(m_mainRenderCamera->ProjectionMatrix() * m_mainRenderCamera->ViewMatrix());
-		world->ForEachComponent<SDFModel>([this, &world, &transforms,&viewFrustum](SDFModel& m, EntityHandle owner) {
+		world->ForEachComponent<SDFModel>([this, &world, &transforms, &viewFrustum](SDFModel& m, EntityHandle owner) {
 			const Transform* transform = transforms->Find(owner);
 			if (!transform)
 				return;
@@ -476,6 +476,18 @@ void Graphics::ProcessEntities()
 			{
 				m.UpdateMesh(m_jobSystem);
 			}
+
+			auto camPos = m_mainRenderCamera->Position();
+			auto camTarget = m_mainRenderCamera->Target();
+			auto dir = glm::normalize(camTarget - camPos);
+			static float s_rayLength = 10.0f;
+			static float s_rayStep = 0.05f;
+			float t = -1.0f;
+			int hitMaterial = 0.0f;
+			glm::vec3 rayTarget = camPos + dir * s_rayLength;
+
+			m_debugRender->DrawLine(camPos, rayTarget, glm::vec3(1.0f,0.0f,0.0f));
+
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{
 				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax());

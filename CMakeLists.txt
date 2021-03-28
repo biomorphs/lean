@@ -184,6 +184,8 @@ set(ENGINE_SOURCES
 	Source/engine/frustum.h
 	Source/engine/sdf_mesh_builder.h
 	Source/engine/sdf_mesh_builder.cpp
+	Source/engine/sdf.h
+	Source/engine/sdf.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})

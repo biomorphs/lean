@@ -177,8 +177,6 @@ namespace Render
 			}
 			++streamIndex;
 		}
-
-		streamIndex = 0;
 	}
 
 	bool MeshBuilder::CreateMesh(Mesh& target, bool createDynamicMesh, size_t minVbSize)

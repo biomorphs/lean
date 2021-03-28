@@ -57,12 +57,12 @@ local a = 0
 local sdfEntities = {}
 local blockSize = {16,12,16}	-- dimensions in meters
 local res = {64,32,64}		-- grid resolution
-local blockCounts = {32,1,32}	-- blocks in the scene
+local blockCounts = {16,2,16}	-- blocks in the scene
 local remeshPerFrame = 1
 local debugMeshing = false
 local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
 local useLuaSampleFn = false
-local normalSmoothness = 0
+local normalSmoothness = 1
 
 function TestSampleFn(x,y,z)
 	local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.5),Plane({x,y,z}, {0.0,2.0 - math.cos(x + a * 4) * 1.0 + 1.0 + math.sin(z + a * 0.3),0.0}, 1.0))
@@ -79,25 +79,25 @@ function MakeSunEntity()
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.917,0.788,0.607)
-	light:SetAmbient(0.025)
-	light:SetBrightness(0.008)
-	light:SetDistance(714.5)
+	light:SetAmbient(0.3)
+	light:SetBrightness(0.208)
+	light:SetDistance(620.5)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
-	light:SetShadowBias(0.001)
+	light:SetShadowBias(0.0005)
 	light:SetShadowOrthoScale(346.2)
 	
-	local ne2 = World.AddEntity()
-	transform = World.AddComponent_Transform(ne2)
-	transform:SetPosition(-15,64.75,-107.25)
-	transform:SetRotation(0,-95.5,44.7)
-	light = World.AddComponent_Light(ne2)
-	light:SetDirectional();
-	light:SetColour(0.003,0.083,0.275)
-	light:SetAmbient(0.0)
-	light:SetBrightness(0.048)
-	light:SetDistance(100)
-	light:SetCastsShadows(false)
+	-- local ne2 = World.AddEntity()
+	-- transform = World.AddComponent_Transform(ne2)
+	-- transform:SetPosition(-15,64.75,-107.25)
+	-- transform:SetRotation(0,-95.5,44.7)
+	-- light = World.AddComponent_Light(ne2)
+	-- light:SetDirectional();
+	-- light:SetColour(0.003,0.083,0.275)
+	-- light:SetAmbient(0.0)
+	-- light:SetBrightness(0.048)
+	-- light:SetDistance(100)
+	-- light:SetCastsShadows(false)
 end
 
 function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)

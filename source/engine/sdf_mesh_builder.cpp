@@ -1,5 +1,6 @@
 #include "sdf_mesh_builder.h"
 #include "core/profiler.h"
+#include "core/log.h"
 #include "render/mesh_builder.h"
 
 #define QEF_INCLUDE_IMPL
@@ -40,14 +41,85 @@ namespace Engine
 		return key;
 	}
 
-	std::unique_ptr<Render::MeshBuilder> SDFMeshBuilder::MakeMeshBuilder(MeshMode mode, SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, bool smoothNormals, Debug& debug)
+	void SDFMeshBuilder::GenerateAO(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, std::vector<float>& ao)
 	{
+		SDE_PROF_EVENT();
+		const int c_raysToFire = 40;
+		static float s_mainRayLength = 16.0f;
+		static float s_step = 16.0f;
+		for (int v=0;v<vertices.size();++v)
+		{
+			glm::vec3 v0 = vertices[v];
+			glm::vec3 n0 = normals[v];
+
+			// try to find a start point that is in air along the normal within a certain range
+			// since most likely the vert chosen isnt exactly on the boundary
+			Sample s0;
+			float t = -1.0f;
+			int mat = 0;
+			std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
+			if (s0.distance <= 0.0f)	// initial point is inside the object
+			{
+				if (SDF::Raycast(v0, v0 + n0 * m_cellSize, glm::compMin(m_cellSize) * 0.5f, m_fn, t, mat))
+				{
+					v0 = v0 + n0 * t + 0.01f;		// munge factor needed?
+					std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
+					if (s0.distance <= 0.0f)	// if we still hit something solid, give up write 0
+					{
+						ao[v] = 1.0f;	// max occlusion
+						continue;
+					}
+				}
+			}
+
+			float occlusion = 0.0f;
+			int occluded = 0;
+			int raysRemaining = c_raysToFire;
+			while (raysRemaining > 0)
+			{
+				// fire some rays out in a hemisphere in the direction of the normal
+				// this is not really uniform, but its fast
+				// The Marsaglia 1972 rejection method to generate points on a sphere
+				float s = 2.0f;
+				float x1, x2;
+				while (s > 1.0f)
+				{
+					x1 = 2.0 * ((float)rand() / (float)RAND_MAX) - 1.0f;
+					x2 = 2.0 * ((float)rand() / (float)RAND_MAX) - 1.0f;
+					s = x1 * x1 + x2 * x2;
+				}
+				glm::vec3 pointOnSphere;
+				pointOnSphere.x = 2.0 * x1 * sqrt(1.0 - s);
+				pointOnSphere.y = 2.0 * x2 * sqrt(1.0 - s);
+				pointOnSphere.z = abs(1.0 - 2.0 * s);
+
+				float angleToNormal = glm::dot(pointOnSphere, n0);
+				if (abs(angleToNormal) < (3.14159265358979323846f * 0.5f))
+				{
+					if (SDF::Raycast(v0, v0 + pointOnSphere * s_mainRayLength, s_step, m_fn, t, mat))
+					{
+						occlusion += 1.0 - t;
+						occluded++;
+					}
+					raysRemaining--;
+				}
+			}
+			occlusion = occlusion / (float)c_raysToFire;
+			ao[v] = occlusion;
+		}
+	}
+
+	std::unique_ptr<Render::MeshBuilder> SDFMeshBuilder::MakeMeshBuilder(MeshMode mode, SDF::SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, float smoothNormals, Debug& debug)
+	{
+		SDE_PROF_EVENT();
+
 		m_fn = fn;
 		m_origin = origin;
 		m_cellSize = cellSize;
 		m_resolution = sampleResolution;
 		m_mode = mode;
 		m_debug = &debug;
+		m_normalSmoothness = smoothNormals;
 
 		// sample the density function at all points on the fixed grid
 		std::vector<Sample> cachedSamples;
@@ -59,14 +131,23 @@ namespace Engine
 		robin_hood::unordered_map<uint64_t, uint32_t> cellToVertex;	// map of cell to vertex (uses cell hash below)
 		FindVertices(cachedSamples, vertices, normals, cellToVertex);
 
+		// build ambient occlusion data for each vertex
+		std::vector<float> occlusion;
+		occlusion.resize(vertices.size());
+		GenerateAO(vertices, normals, occlusion);
+
 		// Build the mesh(builder)
 		auto builder = std::make_unique<Render::MeshBuilder>();
 		builder->AddVertexStream(3);	// pos
 		builder->AddVertexStream(3);	// normal
-		auto quad = [&builder, smoothNormals, this](glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3,
-			glm::vec3 n0, glm::vec3 n1, glm::vec3 n2, glm::vec3 n3)
+		builder->AddVertexStream(1);	// ao
+		auto quad = [&builder, &vertices, &normals, &occlusion, this](int i0, int i1, int i2, int i3)
 		{
-			if (!smoothNormals)
+			auto v0 = vertices[i0];	auto v1 = vertices[i1];
+			auto v2 = vertices[i2];	auto v3 = vertices[i3];
+			auto n0 = normals[i0];	auto n1 = normals[i1];
+			auto n2 = normals[i2];	auto n3 = normals[i3];
+			if (m_normalSmoothness == 0.0f)
 			{
 				auto l0 = v1 - v0;
 				auto l1 = v2 - v0;
@@ -79,22 +160,23 @@ namespace Engine
 			builder->BeginTriangle();
 			builder->SetStreamData(0, v0, v1, v2);
 			builder->SetStreamData(1, n0, n1, n2);
+			builder->SetStreamData(2, occlusion[i0], occlusion[i1], occlusion[i2]);
 			builder->EndTriangle();
 			builder->BeginTriangle();
 			builder->SetStreamData(0, v2, v3, v0);
 			builder->SetStreamData(1, n2, n3, n0);
+			builder->SetStreamData(2, occlusion[i2], occlusion[i3], occlusion[i0]);
 			builder->EndTriangle();
 			m_debug->OnQuad(v0, v1, v2, v3, n0, n1, n2, n3);
 		};
 		builder->BeginChunk();
-		FindQuads(cachedSamples, vertices, normals, cellToVertex, quad);
+		FindQuads(cachedSamples, cellToVertex, quad);
 		builder->EndChunk();
 
 		return builder;
 	}
 
-	void SDFMeshBuilder::FindQuads(const std::vector<Sample>& samples, const std::vector<glm::vec3>& v, const std::vector<glm::vec3>& n,
-		robin_hood::unordered_map<uint64_t, uint32_t>& cellToVert, QuadFn fn)
+	void SDFMeshBuilder::FindQuads(const std::vector<Sample>& samples, robin_hood::unordered_map<uint64_t, uint32_t>& cellToVert, QuadFn fn)
 	{
 		SDE_PROF_EVENT();
 		// for each cell, generate quads from edges with sign differences
@@ -117,17 +199,13 @@ namespace Engine
 							auto i1 = cellToVert[CellHash(x - 0, y - 1, z)];
 							auto i2 = cellToVert[CellHash(x - 0, y - 0, z)];
 							auto i3 = cellToVert[CellHash(x - 1, y - 0, z)];
-							auto v0 = v[i0];	auto v1 = v[i1];
-							auto v2 = v[i2];	auto v3 = v[i3];
-							auto n0 = n[i0];	auto n1 = n[i1];
-							auto n2 = n[i2];	auto n3 = n[i3];
 							if (s1.distance > 0.0f)
 							{
-								fn(v0, v1, v2, v3, n0, n1, n2, n3);
+								fn(i0, i1, i2, i3);
 							}
 							else
 							{
-								fn(v3, v2, v1, v0, n3, n2, n1, n0);
+								fn(i3, i2, i1, i0);
 							}
 						}
 					}
@@ -142,17 +220,13 @@ namespace Engine
 							auto i1 = cellToVert[CellHash(x - 0, y, z - 1)];
 							auto i2 = cellToVert[CellHash(x - 0, y, z - 0)];
 							auto i3 = cellToVert[CellHash(x - 1, y, z - 0)];
-							auto v0 = v[i0];	auto v1 = v[i1];
-							auto v2 = v[i2];	auto v3 = v[i3];
-							auto n0 = n[i0];	auto n1 = n[i1];
-							auto n2 = n[i2];	auto n3 = n[i3];
 							if (s0.distance > 0.0f)
 							{
-								fn(v0, v1, v2, v3, n0, n1, n2, n3);
+								fn(i0, i1, i2, i3);
 							}
 							else
 							{
-								fn(v3, v2, v1, v0, n3, n2, n1, n0);
+								fn(i3, i2, i1, i0);
 							}
 						}
 					}
@@ -167,17 +241,13 @@ namespace Engine
 							auto i1 = cellToVert[CellHash(x, y - 0, z - 1)];
 							auto i2 = cellToVert[CellHash(x, y - 0, z - 0)];
 							auto i3 = cellToVert[CellHash(x, y - 1, z - 0)];
-							auto v0 = v[i0];	auto v1 = v[i1];
-							auto v2 = v[i2];	auto v3 = v[i3];
-							auto n0 = n[i0];	auto n1 = n[i1];
-							auto n2 = n[i2];	auto n3 = n[i3];
 							if (s1.distance > 0.0f)
 							{
-								fn(v0, v1, v2, v3, n0, n1, n2, n3);
+								fn(i0, i1, i2, i3);
 							}
 							else
 							{
-								fn(v3, v2, v1, v0, n3, n2, n1, n0);
+								fn(i3, i2, i1, i0);
 							}
 						}
 					}
@@ -255,8 +325,9 @@ namespace Engine
 					};
 					if (addVertex)
 					{
-						auto v = glm::compMax(m_cellSize) * m_normalSmoothness;
-						glm::vec3 normal = SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, v);
+						glm::vec3 normal(0.0f);
+						auto v = glm::compMax(m_cellSize) * glm::max(m_normalSmoothness,0.01f);
+						normal = SampleNormal(cellVertex.x, cellVertex.y, cellVertex.z, v);
 						m_debug->OnCellVertex(cellVertex, normal);
 						outV.push_back(cellVertex);
 						outN.push_back(normal);

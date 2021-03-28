@@ -61,7 +61,7 @@ local blockCounts = {1,1,1}	-- blocks in the scene
 local remeshPerFrame = 1
 local debugMeshing = true
 local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
-local useLuaSampleFn = true
+local useLuaSampleFn = false
 local normalSmoothness = 1
 
 function TestSampleFn(x,y,z)
@@ -69,10 +69,6 @@ function TestSampleFn(x,y,z)
 	d = OpUnion(Torus({x-3,y-0.8,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
 	d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
 	return d, 10
-end
-
-function SampleGridFn(resolution,origin,cellSize,data)
-	
 end
 
 function MakeSunEntity()
@@ -88,7 +84,7 @@ function MakeSunEntity()
 	light:SetDistance(27.6)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
-	light:SetShadowBias(0.002)
+	light:SetShadowBias(0.008)
 	light:SetShadowOrthoScale(10.4)
 	
 	local ne2 = World.AddEntity()
@@ -131,7 +127,7 @@ function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)
 end
 
 function SDFTest.Init()
-	Graphics.SetClearColour(0.3,0.55,0.8)
+	Graphics.SetClearColour(0.15,0.26,0.4)
 	MakeSunEntity()
 	
 	local cellDims = {blockSize[1] / res[1],blockSize[2] / res[2],blockSize[3] / res[3]}
@@ -155,23 +151,6 @@ local currentTime = 0
 local remeshStart = 0
 
 function SDFTest.Tick(deltaTime)	
-
-	-- test sampling speed
-	local index = 0
-	local p = {0,0,0}
-	local cellDims = {blockSize[1] / res[1],blockSize[2] / res[2],blockSize[3] / res[3]}
-	local overlap = {cellDims[1]*2,cellDims[2]*2,cellDims[3]*2}
-	local offset = {-blockCounts[1]*(blockSize[1]-cellDims[1]*2)*0.5,-1,-blockCounts[3]*(blockSize[3]-cellDims[3]*2)*0.5}
-	for z=0,res[3] do
-		for y=0,res[2] do 
-			for x=0,res[1] do 
-				index = x + (y * res[1]) + (z * res[1] * res[2])
-				p = {x,y,z}	-- we dont really care where we sample, it should be the same anywhere
-				d, m = TestSampleFn(x,y,z)
-			end
-		end
-	end
-
 	DebugGui.BeginWindow(windowOpen, "SDF Test")
 		keepRemeshing = DebugGui.Checkbox("Build every frame", keepRemeshing)
 		if(DebugGui.Button("Remesh all")) then 

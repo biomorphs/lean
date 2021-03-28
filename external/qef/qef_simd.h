@@ -85,7 +85,7 @@ union Mat4x4
 };
 
 #define SVD_NUM_SWEEPS 5
-const float PSUEDO_INVERSE_THRESHOLD = 0.001f;
+const float PSUEDO_INVERSE_THRESHOLD = 0.005f;
 
 // ----------------------------------------------------------------------------
 

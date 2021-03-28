@@ -47,7 +47,8 @@ public:
 
 	// sdf data provider
 	void SetSampleScriptFunction(sol::protected_function fn);
-	void SetSampleFunction(Engine::SDFMeshBuilder::SampleFn fn) { m_sampleFunction = fn; }
+	void SetSampleFunction(Engine::SDF::SampleFn fn) { m_sampleFunction = fn; }
+	const Engine::SDF::SampleFn& GetSampleFn() const { return m_sampleFunction; }
 
 	// meshing stuff (probably refactor out)
 	void Remesh() { m_remesh = true; }
@@ -66,7 +67,7 @@ private:
 	glm::vec3 m_boundsMax = { 1.0f,1.0f,1.0f };
 	glm::ivec3 m_meshResolution = {11,11,11};
 	std::unique_ptr<Render::MeshBuilder> m_buildResults;
-	Engine::SDFMeshBuilder::SampleFn m_sampleFunction = [](float x, float y, float z) -> std::tuple<float, int> {
+	Engine::SDF::SampleFn m_sampleFunction = [](float x, float y, float z) -> std::tuple<float, int> {
 
 		auto Sphere = [](glm::vec3 p, float r) -> float
 		{
@@ -85,12 +86,15 @@ private:
 			return glm::mod(p + c * 0.5f, c) - c * 0.5f;
 		};
 
-		float dd = glm::perlin(glm::vec3(x * 0.05f, y * 0.05f, z * 0.05f)) * 2.0f + 
+		float dd = glm::perlin(glm::vec3(27445 + x * 0.0025f, 5166 + y * 0.0025f, 14166 + z * 0.0025f)) * 4.0f +
+			glm::perlin(glm::vec3(x * 0.05f, y * 0.05f, z * 0.05f)) * 2.0f + 
 			glm::perlin(glm::vec3(x * 0.1f, y * 0.1f, z * 0.1f)) * 1.0f + 
 			glm::perlin(glm::vec3(x + 23 * 0.4f, y - 12 * 0.4f, z + 14 * 0.5f)) * 0.5f + 
 			glm::perlin(glm::vec3(x + 71 * 1.0f, y * 1.0f, z * 1.0f) * 0.25f);
-		float d = y - dd * 4;
-		d = Union(d, Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.0f));
+		float d = y - dd * 8.0f;
+		//float d = Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.4f);
+		//d = Union(d, Sphere(Repeat({ x,y,z }, { 8.0f,8.0f,8.0f }), 2.0f));
+		d = Union(d,Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.0f));
 
 		return std::make_tuple(d, 0);
 	};

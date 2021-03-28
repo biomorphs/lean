@@ -2,7 +2,8 @@
 
 layout(location = 0) in vec3 vs_in_position;
 layout(location = 1) in vec3 vs_in_normal;
-layout(location = 2) in mat4 vs_in_instance_modelmat;
+layout(location = 2) in float vs_in_ao;
+layout(location = 3) in mat4 vs_in_instance_modelmat;
 
 #pragma sde include "global_uniforms.h"
 

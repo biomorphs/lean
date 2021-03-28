@@ -3,6 +3,8 @@
 
 in vec3 vs_out_normal;
 in vec3 vs_out_position;
+in float vs_out_ao;
+
 out vec4 fs_out_colour;
 
 uniform sampler2D ShadowMaps[16];
@@ -31,12 +33,13 @@ float CalculateShadows(vec3 normal, vec3 position, float shadowIndex, mat4 light
 	// simple pcf
 	float currentDepth = projCoords.z;
 	float shadow = 0.0;
+	float mul = 0.25;
 	vec2 texelSize = 1.0 / textureSize(ShadowMaps[int(shadowIndex)], 0);
 	for(int x = -1; x <= 1; ++x)
 	{
 		for(int y = -1; y <= 1; ++y)
 		{
-			float pcfDepth = texture(ShadowMaps[int(shadowIndex)], projCoords.xy + vec2(x, y) * texelSize).r; 
+			float pcfDepth = texture(ShadowMaps[int(shadowIndex)], projCoords.xy + vec2(x, y) * texelSize * mul).r; 
 			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
 		}    
 	}
@@ -59,7 +62,7 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	// pcf
 	float shadow = 0.0;
 	int samples  = 20;
-	float diskRadius = 0.1;
+	float diskRadius = 0.05;
 	float currentDepth = length(fragToLight);
 	for(int i = 0; i < samples; ++i)
 	{
@@ -152,10 +155,10 @@ void main()
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
-			vec3 diffuse = matColour * diffuseFactor;
+			vec3 diffuse = matColour * diffuseFactor * (1.0 - vs_out_ao);
 
 			// ambient light
-			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a;
+			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a * (1.0 - vs_out_ao);
 
 			// specular light (blinn phong)
 			vec3 specular = vec3(0.0);
@@ -175,4 +178,5 @@ void main()
 	// apply exposure here, assuming next pass is postfx
 	fs_out_colour = vec4(finalColour * HDRExposure,1.0);
 	//fs_out_colour = vec4(clamp(finalNormal,0.0,1.0),1.0);
+	//fs_out_colour = vec4(vec3(1.0-vs_out_ao),1.0);
 }
