@@ -22,14 +22,14 @@ namespace Engine
 			{
 				// we trust the SDF enough to step by the distance if we are in air
 				// using a small step can still brute force if data is not trustworthy
-				float step = glm::clamp(d, 0.01f, maxstep);
+				float step = glm::clamp(d, 0.05f, maxstep);
 				v = v + dir * step;
 
 				float t = glm::length(v - p0) / glm::length(p1 - p0);
 				if (t > 1.0f)
 				{
 					return false;
-				}				
+				}
 
 				std::tie(d, mat) = fn(v.x, v.y, v.z);
 				if ((d > 0.0f) != (p0distance > 0.0f))

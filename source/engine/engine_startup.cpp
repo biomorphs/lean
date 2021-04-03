@@ -10,6 +10,7 @@
 #include "platform.h"
 #include "core/log.h"
 #include "core/timer.h"
+#include "core/random.h"
 #include <cassert>
 
 namespace Engine
@@ -35,6 +36,9 @@ namespace Engine
 		{
 			return 1;
 		}
+
+		// Init random number generator
+		Core::Random::ResetGlobalSeed();
 
 		SystemManager sysManager;
 		sysManager.RegisterSystem("Events", new EventSystem);

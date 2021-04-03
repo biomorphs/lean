@@ -135,6 +135,7 @@ vec3 CalculateDirection(int i)
 void main()
 {
 	vec3 finalColour = vec3(0.0);
+	float lightReached = (1.0 - vs_out_ao);
 
 	// transform normal map to world space
 	vec3 finalNormal = normalize(vs_out_normal);
@@ -155,10 +156,10 @@ void main()
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
-			vec3 diffuse = matColour * diffuseFactor * (1.0 - vs_out_ao);
+			vec3 diffuse = matColour * diffuseFactor * lightReached;
 
 			// ambient light
-			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a * (1.0 - vs_out_ao);
+			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a * lightReached;
 
 			// specular light (blinn phong)
 			vec3 specular = vec3(0.0);

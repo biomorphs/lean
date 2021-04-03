@@ -92,6 +92,7 @@ private:
 			glm::perlin(glm::vec3(x + 23 * 0.4f, y - 12 * 0.4f, z + 14 * 0.5f)) * 0.5f + 
 			glm::perlin(glm::vec3(x + 71 * 1.0f, y * 1.0f, z * 1.0f) * 0.25f);
 		float d = y - dd * 8.0f;
+
 		//float d = Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.4f);
 		//d = Union(d, Sphere(Repeat({ x,y,z }, { 8.0f,8.0f,8.0f }), 2.0f));
 		d = Union(d,Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.0f));

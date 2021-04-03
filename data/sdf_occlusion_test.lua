@@ -56,18 +56,20 @@ end
 local a = 0
 local sdfEntities = {}
 local blockSize = {16,16,16}	-- dimensions in meters
-local res = {64,64,64}		-- grid resolution
+local res = {32,32,32}		-- grid resolution
 local blockCounts = {1,1,1}	-- blocks in the scene
 local remeshPerFrame = 1
 local debugMeshing = true
 local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
-local useLuaSampleFn = false
-local normalSmoothness = 1
+local useLuaSampleFn = true
+local normalSmoothness = 1.0
 
 function TestSampleFn(x,y,z)
-	local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.5),Plane({x,y,z}, {0.0,2.0 - math.cos(x + a * 4) * 1.0 + 1.0 + math.sin(z + a * 0.3),0.0}, 1.0))
-	d = OpUnion(Torus({x-3,y-0.8,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
-	d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
+	--local d = OpUnion(Sphere({x,y-0.1,z}, 0.2 + (1.0 + math.cos(a * 0.7 + 1.2)) * 0.5),Plane({x,y,z}, {0.0,2.0 - math.cos(x + a * 4) * 1.0 + 1.0 + math.sin(z + a * 0.3),0.0}, 1.0))
+	--d = OpUnion(Torus({x-3,y-0.8,z-1},{1.5,0.1 + (1.0 + math.cos(a)) * 0.25}), d)
+	--d = OpUnion(TriPrism({x,z-2.0,y-2},{0.5,1.0}), d)
+	local d = Plane({x,y,z},{0.0,1.0,0.0}, 0.0)
+	d = OpUnion(Sphere({x,y-4,z},3.0), d)
 	return d, 10
 end
 

@@ -59,7 +59,9 @@ set(CORE_SOURCES
 	Source/core/timer.h
 	Source/core/timer.cpp
 	Source/core/mutex.h
-	Source/core/mutex.cpp)
+	Source/core/mutex.cpp
+	Source/core/random.h
+	Source/core/random.cpp)
 target_sources(Core PRIVATE ${CORE_SOURCES})
 target_include_directories(Core PRIVATE ${CommonIncludePaths})
 target_compile_options(Core PRIVATE ${CommonCompilerOptions})

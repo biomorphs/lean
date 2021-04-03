@@ -1,6 +1,7 @@
 #include "sdf_mesh_builder.h"
 #include "core/profiler.h"
 #include "core/log.h"
+#include "core/random.h"
 #include "render/mesh_builder.h"
 
 #define QEF_INCLUDE_IMPL
@@ -44,9 +45,16 @@ namespace Engine
 	void SDFMeshBuilder::GenerateAO(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, std::vector<float>& ao)
 	{
 		SDE_PROF_EVENT();
-		const int c_raysToFire = 40;
+		const int c_raysToFire = 48;
 		static float s_mainRayLength = 16.0f;
-		static float s_step = 16.0f;
+		static float s_step = s_mainRayLength;
+		int totalSamples = 0;
+		int initialSurfaceFails = 0;
+		int sphereAngleFails = 0;
+		const auto countSamples = [&totalSamples, this](float x, float y, float z) -> std::tuple<float, int> {
+			totalSamples++;
+			return m_fn(x, y, z);
+		};
 		for (int v=0;v<vertices.size();++v)
 		{
 			glm::vec3 v0 = vertices[v];
@@ -57,12 +65,13 @@ namespace Engine
 			Sample s0;
 			float t = -1.0f;
 			int mat = 0;
-			std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
+			std::tie(s0.distance, s0.material) = countSamples(v0.x, v0.y, v0.z);
 			if (s0.distance <= 0.0f)	// initial point is inside the object
 			{
-				if (SDF::Raycast(v0, v0 + n0 * m_cellSize, glm::compMin(m_cellSize) * 0.5f, m_fn, t, mat))
+				initialSurfaceFails++;
+				if (SDF::Raycast(v0, v0 + n0 * glm::compMin(m_cellSize), glm::compMin(m_cellSize), countSamples, t, mat))
 				{
-					v0 = v0 + n0 * t + 0.01f;		// munge factor needed?
+					v0 = v0 + n0 * t * 1.01f;		// munge factor needed?
 					std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
 					if (s0.distance <= 0.0f)	// if we still hit something solid, give up write 0
 					{
@@ -77,36 +86,43 @@ namespace Engine
 			int raysRemaining = c_raysToFire;
 			while (raysRemaining > 0)
 			{
-				// fire some rays out in a hemisphere in the direction of the normal
+				// fire some rays out in a sphere in the direction of the normal(ish)
 				// this is not really uniform, but its fast
 				// The Marsaglia 1972 rejection method to generate points on a sphere
 				float s = 2.0f;
 				float x1, x2;
-				while (s > 1.0f)
+				do
 				{
-					x1 = 2.0 * ((float)rand() / (float)RAND_MAX) - 1.0f;
-					x2 = 2.0 * ((float)rand() / (float)RAND_MAX) - 1.0f;
+					x1 = Core::Random::GetFloat(-1.0f, 1.0f);
+					x2 = Core::Random::GetFloat(-1.0f, 1.0f);
 					s = x1 * x1 + x2 * x2;
-				}
+				} while (s > 1.0f);
+
 				glm::vec3 pointOnSphere;
 				pointOnSphere.x = 2.0 * x1 * sqrt(1.0 - s);
 				pointOnSphere.y = 2.0 * x2 * sqrt(1.0 - s);
-				pointOnSphere.z = abs(1.0 - 2.0 * s);
+				pointOnSphere.z = 1.0 - 2.0 * s;
+				pointOnSphere - glm::normalize(pointOnSphere);
 
-				float angleToNormal = glm::dot(pointOnSphere, n0);
-				if (abs(angleToNormal) < (3.14159265358979323846f * 0.5f))
+				float angleToNormal = acosf(glm::dot(pointOnSphere, n0));
+				if(angleToNormal < (3.14f * 0.49f))
 				{
-					if (SDF::Raycast(v0, v0 + pointOnSphere * s_mainRayLength, s_step, m_fn, t, mat))
+					if (SDF::Raycast(v0, v0 + pointOnSphere * s_mainRayLength, s_step, countSamples, t, mat))
 					{
-						occlusion += 1.0 - t;
+						occlusion += 1.0f;
 						occluded++;
 					}
 					raysRemaining--;
+				}
+				else
+				{
+					sphereAngleFails++;
 				}
 			}
 			occlusion = occlusion / (float)c_raysToFire;
 			ao[v] = occlusion;
 		}
+		SDE_LOG("%d vertices, %d samples, %d surface fails, %d angle fails", vertices.size(), totalSamples, initialSurfaceFails, sphereAngleFails);
 	}
 
 	std::unique_ptr<Render::MeshBuilder> SDFMeshBuilder::MakeMeshBuilder(MeshMode mode, SDF::SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, float smoothNormals, Debug& debug)
