@@ -35,6 +35,7 @@ namespace Engine
 		MeshMode m_mode = Blocky;
 		Debug* m_debug = nullptr;
 		SDF::SampleFn m_fn;
+		std::vector<glm::vec3> m_spherePoints;
 
 		struct Sample {
 			float distance = -1.0f;

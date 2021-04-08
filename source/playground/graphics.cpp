@@ -203,7 +203,7 @@ bool Graphics::Initialise()
 	});
 
 	m_entitySystem->RegisterComponentType<SDFModel>();
-	m_entitySystem->RegisterComponentUi<SDFModel>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+	m_entitySystem->RegisterComponentUi<SDFModel>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
 		int typeIndex = static_cast<int>(m.GetMeshMode());
 		const char* types[] = { "Blocky", "Surface Net", "Dual Contour" };
@@ -223,6 +223,17 @@ bool Graphics::Initialise()
 		r.z = dbg.DragInt("ResZ", r.z, 1, 1);
 		m.SetResolution(r.x, r.y, r.z);
 		m.SetNormalSmoothness(dbg.DragFloat("Normal Smooth", m.GetNormalSmoothness(), 0.01f, 0.0f));
+		std::string texturePath = m_textures->GetTexturePath(m.GetDiffuseTexture());
+		texturePath = "Diffuse: " + texturePath;
+		if (dbg.Button(texturePath.c_str()))
+		{
+			std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
+			if (newFile != "")
+			{
+				auto loadedTexture = m_textures->LoadTexture(newFile);
+				m.SetDiffuseTexture(loadedTexture);
+			}
+		}
 		if (dbg.Button("Remesh Now"))
 		{
 			m.Remesh();
@@ -476,17 +487,6 @@ void Graphics::ProcessEntities()
 			{
 				m.UpdateMesh(m_jobSystem);
 			}
-
-			auto camPos = m_mainRenderCamera->Position();
-			auto camTarget = m_mainRenderCamera->Target();
-			auto dir = glm::normalize(camTarget - camPos);
-			static float s_rayLength = 10.0f;
-			static float s_rayStep = 0.05f;
-			float t = -1.0f;
-			int hitMaterial = 0.0f;
-			glm::vec3 rayTarget = camPos + dir * s_rayLength;
-
-			m_debugRender->DrawLine(camPos, rayTarget, glm::vec3(1.0f,0.0f,0.0f));
 
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{

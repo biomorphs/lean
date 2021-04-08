@@ -17,8 +17,21 @@ COMPONENT_SCRIPTS(SDFModel,
 	"SetMeshBlocky", &SDFModel::SetMeshBlocky,
 	"SetMeshSurfaceNet", &SDFModel::SetMeshSurfaceNet,
 	"SetMeshDualContour", &SDFModel::SetMeshDualContour,
-	"SetNormalSmoothness", &SDFModel::SetNormalSmoothness
+	"SetNormalSmoothness", &SDFModel::SetNormalSmoothness,
+	"SetDiffuseTexture", &SDFModel::SetDiffuseTexture
 )
+
+// Use the common samples names as we get free default textures
+const char* c_textureSamplerName = "DiffuseTexture";
+
+void SDFModel::SetDiffuseTexture(Engine::TextureHandle t)
+{
+	m_diffuseTexture = t;
+	if (m_mesh != nullptr)
+	{
+		m_mesh->GetMaterial().SetSampler(c_textureSamplerName, m_diffuseTexture.m_index);
+	}
+}
 
 void SDFModel::UpdateMesh(Engine::JobSystem* js, Engine::SDFMeshBuilder::Debug& dbg)
 {
@@ -60,6 +73,7 @@ void SDFModel::UpdateMesh(Engine::JobSystem* js, Engine::SDFMeshBuilder::Debug& 
 				m_mesh = std::make_unique<Render::Mesh>();
 				m_buildResults->CreateMesh(*m_mesh);
 				m_buildResults->CreateVertexArray(*m_mesh);
+				m_mesh->GetMaterial().SetSampler(c_textureSamplerName, m_diffuseTexture.m_index);
 			}
 			m_buildResults = nullptr;
 			m_isRemeshing = false;

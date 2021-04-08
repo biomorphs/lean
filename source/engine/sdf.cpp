@@ -16,6 +16,7 @@ namespace Engine
 			float p0distance = 0.0f;
 			std::tie(p0distance, mat) = fn(p0.x, p0.y, p0.z);
 			glm::vec3 dir = normalize(p1 - p0);
+			float rayLength = glm::length(p1 - p0);
 			float d = p0distance;
 			glm::vec3 v = p0;
 			while (true)
@@ -25,7 +26,7 @@ namespace Engine
 				float step = glm::clamp(d, 0.05f, maxstep);
 				v = v + dir * step;
 
-				float t = glm::length(v - p0) / glm::length(p1 - p0);
+				float t = glm::length(v - p0) / rayLength;
 				if (t > 1.0f)
 				{
 					return false;

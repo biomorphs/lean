@@ -7,11 +7,12 @@ in float vs_out_ao;
 
 out vec4 fs_out_colour;
 
+uniform sampler2D DiffuseTexture;
 uniform sampler2D ShadowMaps[16];
 uniform samplerCube ShadowCubeMaps[16];
 
 uniform vec4 MeshDiffuseOpacity = vec4(1.0,1.0,1.0,1.0);
-uniform vec4 MeshSpecular = vec4(1.0,1.0,1.0,1.0);	//r,g,b,strength
+uniform vec4 MeshSpecular = vec4(1.0,1.0,1.0,0.0);	//r,g,b,strength
 uniform float MeshShininess = 1.0;
 
 float CalculateShadows(vec3 normal, vec3 position, float shadowIndex, mat4 lightSpaceTransform, float bias)
@@ -135,11 +136,25 @@ vec3 CalculateDirection(int i)
 void main()
 {
 	vec3 finalColour = vec3(0.0);
-	float lightReached = (1.0 - vs_out_ao);
 
 	// transform normal map to world space
 	vec3 finalNormal = normalize(vs_out_normal);
+	
+	// triplanar mapping 
+	vec3 blending = abs( finalNormal );
+	blending = normalize(max(blending, 0.00001)); // Force weights to sum to 1.0
+	float b = (blending.x + blending.y + blending.z);
+	blending /= vec3(b, b, b);
+	
+	vec4 xaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.yz * 0.03f) );
+	vec4 yaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xz * 0.03f) );
+	vec4 zaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xy * 0.03f) );
+	
+	// blend the results of the 3 planar projections.
+	vec4 diffuseTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+	
 	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
+	
 	for(int i=0;i<LightCount;++i)
 	{
 		vec3 lightDir = CalculateDirection(i);
@@ -152,14 +167,14 @@ void main()
 				shadow = CalculateShadow(i, finalNormal);
 			}
 			
-			vec3 matColour = MeshDiffuseOpacity.rgb * Lights[i].ColourAndAmbient.rgb;
+			vec3 matColour = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb;
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
-			vec3 diffuse = matColour * diffuseFactor * lightReached;
+			vec3 diffuse = matColour * diffuseFactor * (1.0 - vs_out_ao * 0.8);
 
 			// ambient light
-			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a * lightReached;
+			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a * (1.0 - vs_out_ao);
 
 			// specular light (blinn phong)
 			vec3 specular = vec3(0.0);
@@ -177,7 +192,7 @@ void main()
 	}
 	
 	// apply exposure here, assuming next pass is postfx
-	fs_out_colour = vec4(finalColour * HDRExposure,1.0);
+	fs_out_colour = vec4(finalColour.rgb * HDRExposure,1.0);
 	//fs_out_colour = vec4(clamp(finalNormal,0.0,1.0),1.0);
 	//fs_out_colour = vec4(vec3(1.0-vs_out_ao),1.0);
 }

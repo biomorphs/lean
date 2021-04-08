@@ -7,6 +7,7 @@ local ModelShadow = Graphics.LoadShader("model_shadow", "simpleshadow.vs", "simp
 local BasicShader = Graphics.LoadShader("model_basic",  "basic.vs", "basic.fs")
 local DiffuseShader = Graphics.LoadShader("sdf_diffuse", "sdf_model.vs", "sdf_model_diffuse.fs")
 local ShadowShader = Graphics.LoadShader("sdf_shadows", "sdf_shadow.vs", "sdf_shadow.fs")
+local TerrainDiffuse = Graphics.LoadTexture("Rock_028_SD/Rock_028_COLOR.jpg")
 Graphics.SetShadowShader(DiffuseShader, ShadowShader)
 Graphics.SetShadowShader(ModelDiff, ModelShadow)
 Graphics.SetShadowShader(BasicShader, ModelShadow)
@@ -55,9 +56,9 @@ end
 
 local a = 0
 local sdfEntities = {}
-local blockSize = {16,24,16}	-- dimensions in meters
-local res = {64,96,64}		-- grid resolution
-local blockCounts = {16,1,16}	-- blocks in the scene
+local blockSize = {32,32,32}	-- dimensions in meters
+local res = {32,32,32}		-- grid resolution
+local blockCounts = {32,4,32}	-- blocks in the scene
 local remeshPerFrame = 1
 local debugMeshing = false
 local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
@@ -80,12 +81,12 @@ function MakeSunEntity()
 	light:SetDirectional();
 	light:SetColour(0.917,0.788,0.607)
 	light:SetAmbient(0.3)
-	light:SetBrightness(0.208)
-	light:SetDistance(620.5)
+	light:SetBrightness(0.85)
+	light:SetDistance(900.5)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
 	light:SetShadowBias(0.0005)
-	light:SetShadowOrthoScale(346.2)
+	light:SetShadowOrthoScale(650)
 	
 	-- local ne2 = World.AddEntity()
 	-- transform = World.AddComponent_Transform(ne2)
@@ -111,6 +112,7 @@ function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)
 	sdfModel:SetResolution(res[1],res[2],res[3])
 	sdfModel:SetShader(DiffuseShader)
 	sdfModel:SetNormalSmoothness(normalSmoothness)
+	sdfModel:SetDiffuseTexture(TerrainDiffuse)
 	if(useLuaSampleFn) then
 		sdfModel:SetSampleFunction(fn)
 	end

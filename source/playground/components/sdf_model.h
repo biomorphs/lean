@@ -4,6 +4,7 @@
 #include "core/glm_headers.h"
 #include "engine/shader_manager.h"
 #include "engine/sdf_mesh_builder.h"
+#include "engine/texture_manager.h"
 #include <functional>
 
 namespace Render
@@ -44,6 +45,8 @@ public:
 	void SetDebugEnabled(bool d) { m_debugRender = d; }
 	float GetNormalSmoothness() { return m_normalSmoothness; }
 	void SetNormalSmoothness(float s) { m_normalSmoothness = s; }
+	void SetDiffuseTexture(Engine::TextureHandle t);
+	Engine::TextureHandle GetDiffuseTexture() const { return m_diffuseTexture; }
 
 	// sdf data provider
 	void SetSampleScriptFunction(sol::protected_function fn);
@@ -55,6 +58,7 @@ public:
 	bool NeedsRemesh() { return m_remesh; }
 
 private:
+	Engine::TextureHandle m_diffuseTexture = Engine::TextureHandle::Invalid();
 	bool m_useMulticoreMeshing = true;
 	bool m_isRemeshing = false;
 	bool m_remesh = false;
@@ -81,21 +85,37 @@ private:
 		{
 			return glm::min(p0, p1);
 		};
+		auto Subtract = [](float d1, float d2)
+		{
+			return glm::max(-d1, d2);
+		};
 		auto Repeat = [](glm::vec3 p, glm::vec3 c)
 		{
 			return glm::mod(p + c * 0.5f, c) - c * 0.5f;
 		};
+		auto RidgeNoise = [](glm::vec2 p) {
+			return 2.0f * (0.5f - fabs(0.5f - glm::simplex(p)));
+		};
 
-		float dd = glm::perlin(glm::vec3(27445 + x * 0.0025f, 5166 + y * 0.0025f, 14166 + z * 0.0025f)) * 4.0f +
-			glm::perlin(glm::vec3(x * 0.05f, y * 0.05f, z * 0.05f)) * 2.0f + 
-			glm::perlin(glm::vec3(x * 0.1f, y * 0.1f, z * 0.1f)) * 1.0f + 
-			glm::perlin(glm::vec3(x + 23 * 0.4f, y - 12 * 0.4f, z + 14 * 0.5f)) * 0.5f + 
-			glm::perlin(glm::vec3(x + 71 * 1.0f, y * 1.0f, z * 1.0f) * 0.25f);
-		float d = y - dd * 8.0f;
+		//float dd = glm::simplex(glm::vec3(27445 + x * 0.0025f, 5166 + y * 0.0025f, 14166 + z * 0.0025f)) * 4.0f +
+		//	glm::simplex(glm::vec3(x * 0.05f, y * 0.05f, z * 0.05f)) * 2.0f +
+		//	glm::simplex(glm::vec3(x * 0.1f, y * 0.1f, z * 0.1f)) * 1.0f +
+		//	glm::simplex(glm::vec3(x + 23 * 0.4f, y - 12 * 0.4f, z + 14 * 0.5f)) * 0.5f +
+		//	glm::simplex(glm::vec3(x + 71 * 1.0f, y * 1.0f, z * 1.0f) * 0.25f);
+		//float d = 1.0f - dd;
+
+		float terrainNoise = RidgeNoise(glm::vec2(12.3f + x * 0.01f, 51.2f + z * 0.01f)) * 1.0f +
+							 RidgeNoise(glm::vec2(40.1f + x * 0.02f, 27.2f + z * 0.02f)) * 0.5f + 
+							 RidgeNoise(glm::vec2(97.4f + x * 0.04f, 64.2f + z * 0.04f)) * 0.25f + 
+							 RidgeNoise(glm::vec2(13.1f + x * 0.08f, 89.2f + z * 0.08f)) * 0.125f + 
+							 RidgeNoise(glm::vec2(76.3f + x * 0.16f, 12.2f + z * 0.16f)) * 0.0625f;
+		terrainNoise = terrainNoise / (1.0f + 0.5f +	0.25f +	0.125f + 0.0625f);
+		float d = y - 16 + terrainNoise * 48;
+		d = Subtract(glm::simplex(glm::vec3(x * 0.0005f,y * 0.0005f,z * 0.0005f) * 64.0f) - terrainNoise, d);
+		d = Union(d,Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.0f));
 
 		//float d = Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.4f);
 		//d = Union(d, Sphere(Repeat({ x,y,z }, { 8.0f,8.0f,8.0f }), 2.0f));
-		d = Union(d,Plane({ x,y,z }, { 0.0f,1.0f,0.0f }, 0.0f));
 
 		return std::make_tuple(d, 0);
 	};

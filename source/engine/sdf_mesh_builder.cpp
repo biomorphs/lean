@@ -25,6 +25,8 @@
 //			find the vertices from adjacent cells sharing this edge (4 of them) and make a quad
 // build mesh data from quads
 
+const int c_points = 2048;
+
 namespace Engine
 {
 	inline uint32_t CellToIndex(int x, int y, int z, glm::ivec3 res)
@@ -45,7 +47,7 @@ namespace Engine
 	void SDFMeshBuilder::GenerateAO(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, std::vector<float>& ao)
 	{
 		SDE_PROF_EVENT();
-		const int c_raysToFire = 48;
+		const int c_raysToFire = 32;
 		static float s_mainRayLength = 16.0f;
 		static float s_step = s_mainRayLength;
 		int totalSamples = 0;
@@ -69,13 +71,13 @@ namespace Engine
 			if (s0.distance <= 0.0f)	// initial point is inside the object
 			{
 				initialSurfaceFails++;
-				if (SDF::Raycast(v0, v0 + n0 * glm::compMin(m_cellSize), glm::compMin(m_cellSize), countSamples, t, mat))
+				if (SDF::Raycast(v0, v0 + n0 * glm::compMax(m_cellSize), glm::compMax(m_cellSize), countSamples, t, mat))
 				{
 					v0 = v0 + n0 * t * 1.01f;		// munge factor needed?
 					std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
 					if (s0.distance <= 0.0f)	// if we still hit something solid, give up write 0
 					{
-						ao[v] = 1.0f;	// max occlusion
+						ao[v] = 0.5f;	// ??
 						continue;
 					}
 				}
@@ -86,23 +88,10 @@ namespace Engine
 			int raysRemaining = c_raysToFire;
 			while (raysRemaining > 0)
 			{
-				// fire some rays out in a sphere in the direction of the normal(ish)
-				// this is not really uniform, but its fast
-				// The Marsaglia 1972 rejection method to generate points on a sphere
-				float s = 2.0f;
-				float x1, x2;
-				do
-				{
-					x1 = Core::Random::GetFloat(-1.0f, 1.0f);
-					x2 = Core::Random::GetFloat(-1.0f, 1.0f);
-					s = x1 * x1 + x2 * x2;
-				} while (s > 1.0f);
-
-				glm::vec3 pointOnSphere;
-				pointOnSphere.x = 2.0 * x1 * sqrt(1.0 - s);
-				pointOnSphere.y = 2.0 * x2 * sqrt(1.0 - s);
-				pointOnSphere.z = 1.0 - 2.0 * s;
-				pointOnSphere - glm::normalize(pointOnSphere);
+				//int spherePointIdx = Core::Random::GetInt(0, m_spherePoints.size()-1);	slow
+				int spherePointIdx = rand() % m_spherePoints.size();
+				assert(spherePointIdx < m_spherePoints.size());
+				glm::vec3 pointOnSphere = m_spherePoints[spherePointIdx];
 
 				float angleToNormal = acosf(glm::dot(pointOnSphere, n0));
 				if(angleToNormal < (3.14f * 0.49f))
@@ -122,7 +111,7 @@ namespace Engine
 			occlusion = occlusion / (float)c_raysToFire;
 			ao[v] = occlusion;
 		}
-		SDE_LOG("%d vertices, %d samples, %d surface fails, %d angle fails", vertices.size(), totalSamples, initialSurfaceFails, sphereAngleFails);
+		//SDE_LOG("%d vertices, %d samples, %d surface fails, %d angle fails", vertices.size(), totalSamples, initialSurfaceFails, sphereAngleFails);
 	}
 
 	std::unique_ptr<Render::MeshBuilder> SDFMeshBuilder::MakeMeshBuilder(MeshMode mode, SDF::SampleFn fn, glm::vec3 origin, glm::vec3 cellSize, glm::ivec3 sampleResolution, float smoothNormals, Debug& debug)
@@ -136,6 +125,26 @@ namespace Engine
 		m_mode = mode;
 		m_debug = &debug;
 		m_normalSmoothness = smoothNormals;
+
+		// precalculate a set of evenly distributed points on a sphere
+		m_spherePoints.reserve(c_points);
+		for (int i = 0; i < c_points; ++i)
+		{
+			float s = 2.0f;
+			float x1, x2;
+			do
+			{
+				x1 = Core::Random::GetFloat(-1.0f, 1.0f);
+				x2 = Core::Random::GetFloat(-1.0f, 1.0f);
+				s = x1 * x1 + x2 * x2;
+			} while (s > 1.0f);
+
+			glm::vec3 pointOnSphere;
+			pointOnSphere.x = 2.0 * x1 * sqrt(1.0 - s);
+			pointOnSphere.y = 2.0 * x2 * sqrt(1.0 - s);
+			pointOnSphere.z = 1.0 - 2.0 * s;
+			m_spherePoints.push_back(glm::normalize(pointOnSphere));
+		}
 
 		// sample the density function at all points on the fixed grid
 		std::vector<Sample> cachedSamples;
