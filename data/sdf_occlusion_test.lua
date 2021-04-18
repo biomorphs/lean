@@ -56,11 +56,11 @@ end
 local a = 0
 local sdfEntities = {}
 local blockSize = {16,16,16}	-- dimensions in meters
-local res = {32,32,32}		-- grid resolution
+local res = {64,64,64}		-- grid resolution
 local blockCounts = {1,1,1}	-- blocks in the scene
 local remeshPerFrame = 1
 local debugMeshing = true
-local meshMode = "SurfaceNet"	-- Blocky/SurfaceNet/DualContour
+local meshMode = "DualContour"	-- Blocky/SurfaceNet/DualContour
 local useLuaSampleFn = true
 local normalSmoothness = 1.0
 

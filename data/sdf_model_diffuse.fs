@@ -171,7 +171,7 @@ void main()
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
-			vec3 diffuse = matColour * diffuseFactor * (1.0 - vs_out_ao * 0.8);
+			vec3 diffuse = matColour * diffuseFactor * (1.0 - vs_out_ao * 0.5);
 
 			// ambient light
 			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a * (1.0 - vs_out_ao);
