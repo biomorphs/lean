@@ -188,6 +188,16 @@ set(ENGINE_SOURCES
 	Source/engine/sdf_mesh_builder.cpp
 	Source/engine/sdf.h
 	Source/engine/sdf.cpp
+	Source/engine/graphics_system.h
+	Source/engine/graphics_system.cpp
+	Source/engine/components/component_sdf_model.h
+	Source/engine/components/component_sdf_model.cpp
+	Source/engine/components/component_model.h
+	Source/engine/components/component_model.cpp
+	Source/engine/components/component_transform.h
+	Source/engine/components/component_transform.cpp
+	Source/engine/components/component_light.h
+	Source/engine/components/component_light.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})
@@ -203,14 +213,14 @@ target_compile_options(Engine PRIVATE ${CommonCompilerOptions})
 
 add_library(Entity STATIC)
 set(ENTITY_SOURCES
-	Source/engine/entity/entity_handle.h
-	Source/engine/entity/world.h
-	Source/engine/entity/world.cpp
-	Source/engine/entity/entity_system.h
-	Source/engine/entity/entity_system.cpp
-	Source/engine/entity/component.h
-	Source/engine/entity/component_storage.h
-	Source/engine/entity/component_storage.inl
+	Source/entity/entity_handle.h
+	Source/entity/world.h
+	Source/entity/world.cpp
+	Source/entity/entity_system.h
+	Source/entity/entity_system.cpp
+	Source/entity/component.h
+	Source/entity/component_storage.h
+	Source/entity/component_storage.inl
 )
 target_sources(Entity PRIVATE ${ENTITY_SOURCES})
 target_include_directories(Entity PRIVATE ${CommonIncludePaths})
@@ -219,20 +229,8 @@ target_include_directories(Entity PRIVATE ${JSONIncludePaths})
 
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
-	Source/playground/components/sdf_model.h
-	Source/playground/components/sdf_model.cpp
-	Source/playground/components/model.h
-	Source/playground/components/model.cpp
-	Source/playground/components/transform.h
-	Source/playground/components/transform.cpp
-	Source/playground/components/light.h
-	Source/playground/components/light.cpp
 	Source/playground/playground.h
 	Source/playground/playground.cpp
-	Source/playground/graphics.h
-	Source/playground/graphics.cpp
-	Source/playground/debug_gui_script_binding.h
-	Source/playground/debug_gui_script_binding.cpp
 	Source/playground/scene.h
 	Source/playground/scene.cpp
 	Source/playground/scene_editor.h

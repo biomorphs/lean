@@ -32,7 +32,7 @@ namespace Engine
 	bool JobSystem::PostInit()
 	{
 		SDE_PROF_EVENT();
-		int32_t threadsPerPool = std::max(1, m_threadCount / 2);
+		int32_t threadsPerPool = std::max(1, m_threadCount);
 		auto jobThread = [this](uint32_t threadIndex)
 		{
 			if (m_jobThreadStopRequested == 0)	// This is to stop deadlock on the semaphore when shutting down
@@ -53,7 +53,7 @@ namespace Engine
 				}
 			}
 		};
-		m_threadPool.Start("JobSystem", threadsPerPool, jobThread, m_threadInitFn);
+		m_threadPool.Start("JobSystem", threadsPerPool, jobThread);
 		auto jobThreadSlow = [this](uint32_t threadIndex)
 		{
 			if (m_jobThreadStopRequested == 0)	// This is to stop deadlock on the semaphore when shutting down
@@ -74,7 +74,7 @@ namespace Engine
 				}
 			}
 		};
-		m_threadPoolSlow.Start("JobSystem_Slow", threadsPerPool, jobThreadSlow, m_threadInitFn, threadsPerPool);
+		m_threadPoolSlow.Start("JobSystem_Slow", threadsPerPool, jobThreadSlow, m_threadInitFn);
 		return true;
 	}
 

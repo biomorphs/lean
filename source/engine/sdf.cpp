@@ -8,7 +8,6 @@ namespace Engine
 	{
 		bool Raycast(glm::vec3 p0, glm::vec3 p1, float maxstep, SDF::SampleFn fn, float& tOut, int& matHit)
 		{
-			SDE_PROF_EVENT();
 			assert(glm::length(p1 - p0) > 0.0f);
 			assert(maxstep > 0.0f);
 

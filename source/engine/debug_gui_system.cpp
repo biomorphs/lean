@@ -5,6 +5,7 @@
 #include "system_enumerator.h"
 #include "render_system.h"
 #include "event_system.h"
+#include "script_system.h"
 #include "render/texture.h"
 #include "core/profiler.h"
 #include <imgui\imgui.h>
@@ -25,6 +26,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		m_renderSystem = (RenderSystem*)systemEnumerator.GetSystem("Render");
+		m_scriptSystem = (ScriptSystem*)systemEnumerator.GetSystem("Script");
 		auto EventSystem = (Engine::EventSystem*)systemEnumerator.GetSystem("Events");
 		EventSystem->RegisterEventHandler([this](void* e)
 		{
@@ -37,6 +39,40 @@ namespace Engine
 	bool DebugGuiSystem::Initialise()
 	{
 		SDE_PROF_EVENT();
+		auto dbgui = m_scriptSystem->Globals()["DebugGui"].get_or_create<sol::table>();
+		dbgui["BeginWindow"] = [this](bool isOpen, std::string title) -> bool {
+			return BeginWindow(isOpen, title.c_str());
+		};
+		dbgui["EndWindow"] = [this]() {
+			EndWindow();
+		};
+		dbgui["DragFloat"] = [this](std::string label, float v, float step, float min, float max) -> float {
+			return DragFloat(label.c_str(), v, step, min, max);
+		};
+		dbgui["Text"] = [this](std::string txt) {
+			Text(txt.c_str());
+		};
+		dbgui["TextInput"] = [this](std::string label, std::string currentValue, int maxLength) -> std::string {
+			char outBuffer[1024] = { '\0' };
+			if (maxLength < 1024 && currentValue.length() < 1024)
+			{
+				strcpy_s(outBuffer, 1024, currentValue.c_str());
+				TextInput(label.c_str(), outBuffer, maxLength);
+			}
+			return outBuffer;
+		};
+		dbgui["Button"] = [this](std::string txt) -> bool {
+			return Button(txt.c_str());
+		};
+		dbgui["Selectable"] = [this](std::string txt, bool selected) -> bool {
+			return Selectable(txt.c_str(), selected);
+		};
+		dbgui["Separator"] = [this]() {
+			return Separator();
+		};
+		dbgui["Checkbox"] = [this](std::string txt, bool checked) -> bool {
+			return Checkbox(txt.c_str(), checked);
+		};
 		return true;
 	}
 

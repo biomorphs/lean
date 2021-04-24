@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/entity/component.h"
+#include "entity/component.h"
 #include "core/glm_headers.h"
 #include "engine/shader_manager.h"
 #include "engine/sdf_mesh_builder.h"

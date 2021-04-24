@@ -1,4 +1,4 @@
-#include "sdf_model.h"
+#include "component_sdf_model.h"
 #include "engine/job_system.h"
 #include "render/mesh.h"
 #include "render/mesh_builder.h"

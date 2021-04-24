@@ -1,13 +1,11 @@
 #include "engine/engine_startup.h"
 #include "playground/playground.h"
-#include "playground/graphics.h"
-#include "engine/entity/entity_system.h"
+#include "entity/entity_system.h"
 #include "core/log.h"
 
 void CreateSystems(Engine::SystemRegister& r)
 {
 	r.Register("Playground", new Playground());
-	r.Register("Graphics", new Graphics());
 }
 
 int main(int argc, char** args)

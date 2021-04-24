@@ -1,4 +1,4 @@
-#include "light.h"
+#include "component_light.h"
 #include "render/frame_buffer.h"
 
 COMPONENT_SCRIPTS(Light,

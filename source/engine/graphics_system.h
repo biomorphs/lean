@@ -28,11 +28,11 @@ namespace Render
 }
 class EntitySystem;
 
-class Graphics : public Engine::System
+class GraphicsSystem : public Engine::System
 {
 public:
-	Graphics();
-	virtual ~Graphics();
+	GraphicsSystem();
+	virtual ~GraphicsSystem();
 	virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
 	virtual bool Initialise();
 	virtual bool Tick(float timeDelta);

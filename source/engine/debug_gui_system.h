@@ -15,6 +15,7 @@ namespace Render
 namespace Engine
 {
 	class RenderSystem;
+	class ScriptSystem;
 	class ImguiSdlGL3RenderPass;
 	class GraphDataBuffer;
 	class MenuBar;
@@ -60,5 +61,6 @@ namespace Engine
 	private:
 		RenderSystem* m_renderSystem;
 		std::unique_ptr<ImguiSdlGL3RenderPass> m_imguiPass;
+		Engine::ScriptSystem* m_scriptSystem = nullptr;
 	};
 }

@@ -5,6 +5,7 @@
 #include "input_system.h"
 #include "render_system.h"
 #include "script_system.h"
+#include "graphics_system.h"
 #include "debug_gui_system.h"
 #include "entity/entity_system.h"
 #include "platform.h"
@@ -51,6 +52,7 @@ namespace Engine
 		systemCreation(registerSystems);
 
 		sysManager.RegisterSystem("Entities", new EntitySystem);
+		sysManager.RegisterSystem("Graphics", new GraphicsSystem);
 		sysManager.RegisterSystem("Render", new RenderSystem);
 
 		// Run the engine

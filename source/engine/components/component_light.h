@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/entity/component.h"
+#include "entity/component.h"
 #include "core/glm_headers.h"
 
 namespace Render

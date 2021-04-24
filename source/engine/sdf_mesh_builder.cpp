@@ -157,9 +157,11 @@ namespace Engine
 		FindVertices(cachedSamples, vertices, normals, cellToVertex);
 
 		// build ambient occlusion data for each vertex
-		std::vector<float> occlusion;
-		occlusion.resize(vertices.size());
-		GenerateAO(vertices, normals, occlusion);
+		std::vector<float> occlusion(vertices.size(), 0.0f);
+		if (m_generateAO)
+		{
+			GenerateAO(vertices, normals, occlusion);
+		}
 
 		// Build the mesh(builder)
 		auto builder = std::make_unique<Render::MeshBuilder>();

@@ -1,4 +1,4 @@
-#include "graphics.h"
+#include "graphics_system.h"
 #include "core/log.h"
 #include "engine/system_enumerator.h"
 #include "engine/debug_gui_system.h"
@@ -22,11 +22,11 @@
 #include "core/profiler.h"
 #include "core/timer.h"
 #include "engine/arcball_camera.h"
-#include "engine/entity/entity_system.h"
-#include "components/light.h"
-#include "components/transform.h"
-#include "components/model.h"
-#include "components/sdf_model.h"
+#include "entity/entity_system.h"
+#include "engine/components/component_light.h"
+#include "engine/components/component_transform.h"
+#include "engine/components/component_model.h"
+#include "engine/components/component_sdf_model.h"
 
 Engine::MenuBar g_graphicsMenu;
 bool g_showTextureGui = false;
@@ -83,15 +83,15 @@ struct SDFDebugDraw : public Engine::SDFMeshBuilder::Debug
 	}
 };
 
-Graphics::Graphics()
+GraphicsSystem::GraphicsSystem()
 {
 }
 
-Graphics::~Graphics()
+GraphicsSystem::~GraphicsSystem()
 {
 }
 
-bool Graphics::PreInit(Engine::SystemEnumerator& systemEnumerator)
+bool GraphicsSystem::PreInit(Engine::SystemEnumerator& systemEnumerator)
 {
 	SDE_PROF_EVENT();
 
@@ -110,7 +110,7 @@ bool Graphics::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	return true;
 }
 
-bool Graphics::Initialise()
+bool GraphicsSystem::Initialise()
 {
 	SDE_PROF_EVENT();
 
@@ -245,22 +245,16 @@ bool Graphics::Initialise()
 	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
 
-	// expose TextureHandle to lua
+	// expose types to lua
 	m_scriptSystem->Globals().new_usertype<Engine::TextureHandle>("TextureHandle",sol::constructors<Engine::TextureHandle()>());
-
-	// expose ModelHandle to lua
 	m_scriptSystem->Globals().new_usertype<Engine::ModelHandle>("ModelHandle",sol::constructors<Engine::ModelHandle()>());
-
-	// expose ShaderHandle to lua
 	m_scriptSystem->Globals().new_usertype<Engine::ShaderHandle>("ShaderHandle", sol::constructors<Engine::ShaderHandle()>());
-
-	// expose vec3 to lua
 	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float,float,float)>(),
 		"x", &glm::vec3::x,
 		"y", &glm::vec3::y,
 		"z", &glm::vec3::z);
 
-	//// expose Graphics namespace functions
+	//// expose Graphics script functions
 	auto graphics = m_scriptSystem->Globals()["Graphics"].get_or_create<sol::table>();
 	graphics["SetClearColour"] = [this](float r, float g, float b) {
 		m_renderer->SetClearColour(glm::vec4(r, g, b, 1.0f));
@@ -342,7 +336,7 @@ bool Graphics::Initialise()
 	return true;
 }
 
-void Graphics::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
+void GraphicsSystem::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
 {
 	SDE_PROF_EVENT();
 	for (const auto& part : m.Parts())
@@ -354,7 +348,7 @@ void Graphics::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
 	m_debugRender->DrawBox(m.BoundsMin(), m.BoundsMax(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), transform);
 }
 
-void Graphics::ProcessLight(Light& l, const Transform* transform)
+void GraphicsSystem::ProcessLight(Light& l, const Transform* transform)
 {
 	SDE_PROF_EVENT();
 	const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
@@ -415,7 +409,7 @@ void Graphics::ProcessLight(Light& l, const Transform* transform)
 	}
 };
 
-void Graphics::ProcessEntities()
+void GraphicsSystem::ProcessEntities()
 {
 	SDE_PROF_EVENT();
 
@@ -496,7 +490,7 @@ void Graphics::ProcessEntities()
 	}
 }
 
-void Graphics::ShowGui(int framesPerSecond)
+void GraphicsSystem::ShowGui(int framesPerSecond)
 {
 	m_debugGui->MainMenuBar(g_graphicsMenu);
 
@@ -542,7 +536,7 @@ void Graphics::ShowGui(int framesPerSecond)
 	m_debugGui->EndWindow();
 }
 
-void Graphics::ProcessCamera(float timeDelta)
+void GraphicsSystem::ProcessCamera(float timeDelta)
 {
 	if (g_useArcballCam)
 	{
@@ -568,7 +562,7 @@ void Graphics::ProcessCamera(float timeDelta)
 	m_renderer->SetCamera(*m_mainRenderCamera);
 }
 
-bool Graphics::Tick(float timeDelta)
+bool GraphicsSystem::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
 
@@ -599,7 +593,7 @@ bool Graphics::Tick(float timeDelta)
 	return true;
 }
 
-void Graphics::Shutdown()
+void GraphicsSystem::Shutdown()
 {
 	SDE_PROF_EVENT();
 

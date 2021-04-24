@@ -146,9 +146,9 @@ void main()
 	float b = (blending.x + blending.y + blending.z);
 	blending /= vec3(b, b, b);
 	
-	vec4 xaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.yz * 0.03f) );
-	vec4 yaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xz * 0.03f) );
-	vec4 zaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xy * 0.03f) );
+	vec4 xaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.yz * 0.05f) );
+	vec4 yaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xz * 0.05f) );
+	vec4 zaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xy * 0.05f) );
 	
 	// blend the results of the 3 planar projections.
 	vec4 diffuseTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;

@@ -1,4 +1,4 @@
-#include "transform.h"
+#include "component_transform.h"
 
 COMPONENT_SCRIPTS(Transform,
 	"SetPosition", &Transform::SetPos3,

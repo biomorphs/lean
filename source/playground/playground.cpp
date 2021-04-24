@@ -9,8 +9,7 @@
 #include "engine/script_system.h"
 #include "engine/file_picker_dialog.h"
 #include "engine/serialisation.h"
-#include "debug_gui_script_binding.h"
-#include "engine/entity/entity_system.h"
+#include "entity/entity_system.h"
 #include <cassert>
 
 std::string g_configFile = "playground_config.json";
@@ -150,7 +149,6 @@ bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_scriptSystem = (Engine::ScriptSystem*)systemEnumerator.GetSystem("Script");
 	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
 
-	DebugGuiScriptBinding::Go(m_debugGui, m_scriptSystem->Globals());
 	m_sceneEditor.Init(&m_scene, m_debugGui);
 
 	auto& fileMenu = g_menuBar.AddSubmenu(ICON_FK_FILE_O " File");
