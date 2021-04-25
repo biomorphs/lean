@@ -12,6 +12,7 @@ namespace Engine
 	class ScriptSystem;
 }
 class EntitySystem;
+class CreatureSystem;
 
 class Playground : public Engine::System
 {
@@ -35,4 +36,5 @@ private:
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
+	CreatureSystem* m_creatures = nullptr;
 };

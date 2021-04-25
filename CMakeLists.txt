@@ -121,6 +121,8 @@ target_compile_options(ImguiLib PRIVATE ${CommonCompilerOptions})
 
 add_library(Engine STATIC)
 set(ENGINE_SOURCES
+	Source/engine/tag.h
+	Source/engine/tag.cpp
 	Source/engine/platform.h
 	Source/engine/platform.cpp
 	Source/engine/system.h
@@ -234,7 +236,11 @@ set(PLAYGROUND_SOURCES
 	Source/playground/scene.h
 	Source/playground/scene.cpp
 	Source/playground/scene_editor.h
-	Source/playground/scene_editor.cpp)
+	Source/playground/scene_editor.cpp
+	Source/playground/creatures/creature_system.h
+	Source/playground/creatures/creature_system.cpp
+	Source/playground/creatures/component_creature.h
+	Source/playground/creatures/component_creature.cpp)
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})

@@ -37,6 +37,7 @@ public:
 	virtual bool Initialise();
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
+	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
 private:
 	void ShowGui(int fps);
 	void ProcessLight(class Light& l, const class Transform* transform);

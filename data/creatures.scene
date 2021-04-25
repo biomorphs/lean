@@ -1,0 +1,7 @@
+{
+  "ClassName": "Scene",
+  "Name": "Creatures",
+  "Scripts": [
+    "creature_test.lua"
+  ]
+}
