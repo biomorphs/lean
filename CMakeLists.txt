@@ -200,6 +200,8 @@ set(ENGINE_SOURCES
 	Source/engine/components/component_transform.cpp
 	Source/engine/components/component_light.h
 	Source/engine/components/component_light.cpp
+	Source/engine/components/component_tags.h
+	Source/engine/components/component_tags.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})
@@ -240,7 +242,9 @@ set(PLAYGROUND_SOURCES
 	Source/playground/creatures/creature_system.h
 	Source/playground/creatures/creature_system.cpp
 	Source/playground/creatures/component_creature.h
-	Source/playground/creatures/component_creature.cpp)
+	Source/playground/creatures/component_creature.cpp
+	Source/playground/creatures/behaviour_library.h
+	Source/playground/creatures/behaviour_library.cpp)
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})

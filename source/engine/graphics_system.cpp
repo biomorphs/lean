@@ -27,6 +27,7 @@
 #include "engine/components/component_transform.h"
 #include "engine/components/component_model.h"
 #include "engine/components/component_sdf_model.h"
+#include "engine/components/component_tags.h"
 
 Engine::MenuBar g_graphicsMenu;
 bool g_showTextureGui = false;
@@ -116,6 +117,30 @@ bool GraphicsSystem::Initialise()
 
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
+
+	m_entitySystem->RegisterComponentType<Tags>();
+	m_entitySystem->RegisterComponentUi<Tags>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		auto& t = *static_cast<Tags::StorageType&>(cs).Find(e);
+		if (dbg.TreeNode("All Tags", true))
+		{
+			for (const auto it : t.AllTags())
+			{
+				if (dbg.TreeNode(it.c_str()))
+				{
+					dbg.TreePop();
+				}
+			}
+			dbg.TreePop();
+		}
+		static std::string newTagStr;
+		dbg.TextInput("New Tag", newTagStr);
+		dbg.SameLine();
+		if (dbg.Button("Add") && newTagStr.size() > 0)
+		{
+			t.AddTag(newTagStr);
+			newTagStr = "";
+		}
+	});
 
 	m_entitySystem->RegisterComponentType<Transform>();
 	m_entitySystem->RegisterComponentUi<Transform>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {

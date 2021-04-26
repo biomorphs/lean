@@ -1,6 +1,10 @@
 #include "component_creature.h"
 
 COMPONENT_SCRIPTS(Creature, 
+	"SetAge", &Creature::SetAge,
+	"GetAge", &Creature::GetAge,
+	"SetMaxAge", &Creature::SetMaxAge,
+	"GetMaxAge", &Creature::GetMaxAge,
 	"SetMoveTarget", &Creature::SetMoveTarget,
 	"GetMoveTarget", &Creature::GetMoveTarget,
 	"SetMoveSpeed", &Creature::SetMoveSpeed,
@@ -23,7 +27,9 @@ COMPONENT_SCRIPTS(Creature,
 	"SetFoodTarget", &Creature::SetFoodTarget,
 	"GetFoodTarget", &Creature::GetFoodTarget,
 	"SetWanderDistance", &Creature::SetWanderDistance,
-	"GetWanderDistance", &Creature::GetWanderDistance
+	"GetWanderDistance", &Creature::GetWanderDistance,
+	"AddFoodSourceTag", &Creature::AddFoodSourceTag,
+	"GetFoodSourceTags", &Creature::GetFoodSourceTags
 );
 
 void Creature::AddBehaviour(Engine::Tag state, Engine::Tag behaviour)
