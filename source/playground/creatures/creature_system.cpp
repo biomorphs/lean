@@ -9,6 +9,7 @@
 #include "engine/components/component_transform.h"
 #include "engine/components/component_tags.h"
 #include "behaviour_library.h"
+#include "blackboard.h"
 
 CreatureSystem::CreatureSystem()
 {
@@ -42,7 +43,9 @@ void CreatureSystem::AddScriptBehaviour(Engine::Tag tag, sol::protected_function
 		sol::protected_function_result result = fn(h, c, delta);
 		if (!result.valid())
 		{
-			SDE_LOG("Failed to call behaviour function '%s'", tag.c_str());
+			sol::error err = result;
+			std::string what = err.what();
+			SDE_LOG("Failed to call behaviour function '%s'\n\t%s", tag.c_str(), what.c_str());
 		}
 		bool r = result;
 		return r;
@@ -63,16 +66,31 @@ bool CreatureSystem::Initialise()
 	// 'dying' - transition state used as a trigger so behaviours can do stuff on death
 	//		(nothing will die by default, you must handle the state transition yourself!)
 
-	// Move to target, transition to idle on completion
 	AddBehaviour("move_to_target", BehaviourLibrary::MoveToTarget(*m_entitySystem, *m_graphicsSystem, "idle"));
 	AddBehaviour("photosynthesize", BehaviourLibrary::Photosynthesize());
 	AddBehaviour("die_at_max_age", BehaviourLibrary::DieAtMaxAge());
 	AddBehaviour("die_at_zero_energy", BehaviourLibrary::DieAtZeroEnergy());
+	AddBehaviour("flee_enemy", BehaviourLibrary::Flee(*m_entitySystem, *m_graphicsSystem));
 
 	auto scripts = m_scriptSystem->Globals()["Creatures"].get_or_create<sol::table>();
 	scripts["AddBehaviour"] = [this](Engine::Tag tag, sol::protected_function fn) {
 		AddScriptBehaviour(tag, fn);
 	};
+
+	m_scriptSystem->Globals().new_usertype<Blackboard>("Blackboard", sol::constructors<Blackboard()>(),
+		"ContainsInt", &Blackboard::ContainsInt,
+		"SetInt", &Blackboard::SetInt,
+		"GetInt", &Blackboard::GetInt,
+		"RemoveInt", &Blackboard::RemoveInt,
+		"ContainsEntity", &Blackboard::ContainsEntity,
+		"SetEntity", &Blackboard::SetEntity,
+		"GetEntity", &Blackboard::GetEntity,
+		"RemoveEntity", &Blackboard::RemoveEntity,
+		"ContainsVector", &Blackboard::ContainsVector,
+		"SetVector", &Blackboard::SetVector3,
+		"GetVector", &Blackboard::GetVector,
+		"RemoveVector", &Blackboard::RemoveVector
+	);
 
 	m_entitySystem->RegisterComponentType<Creature>();
 	m_entitySystem->RegisterComponentUi<Creature>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
@@ -92,7 +110,15 @@ bool CreatureSystem::Initialise()
 		{
 			for (const auto& it : c.GetFoodSourceTags())
 			{
-				dbg.TreeNode(it.c_str());
+				dbg.Text(it.c_str());
+			}
+			dbg.TreePop();
+		}
+		if (dbg.TreeNode("Flee From tags"))
+		{
+			for (const auto& it : c.GetFleeFromTags())
+			{
+				dbg.Text(it.c_str());
 			}
 			dbg.TreePop();
 		}
@@ -101,6 +127,26 @@ bool CreatureSystem::Initialise()
 		char text[256] = { '\0' };
 		sprintf(text,"Visible Entities: %d", (int)c.GetVisibleEntities().size());
 		dbg.Text(text);
+		if (dbg.TreeNode("Blackboard"))
+		{
+			char text[256] = "";
+			for (const auto& v : c.GetBlackboard()->GetInts())
+			{
+				sprintf(text, "%s: %d", v.first.c_str(), v.second);
+				dbg.Text(text);
+			}
+			for (const auto& v : c.GetBlackboard()->GetEntities())
+			{
+				sprintf(text, "%s: Entity %d", v.first.c_str(), v.second.GetID());
+				dbg.Text(text);
+			}
+			for (const auto& v : c.GetBlackboard()->GetVectors())
+			{
+				sprintf(text, "%s: %f, %f, %f", v.first.c_str(), v.second.x, v.second.y, v.second.z);
+				dbg.Text(text);
+			}
+			dbg.TreePop();
+		}
 		dbg.Text("Behaviours:");
 		const auto& sb = c.GetBehaviours();
 		for (const auto& state : sb)
@@ -109,10 +155,7 @@ bool CreatureSystem::Initialise()
 			{
 				for (const auto& b : state.second)
 				{
-					if (dbg.TreeNode(b.c_str()))
-					{
-						dbg.TreePop();
-					}
+					dbg.Text(b.c_str());
 				}
 				dbg.TreePop();
 			}

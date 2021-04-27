@@ -22,4 +22,7 @@ namespace BehaviourLibrary
 
 	// Photosynthesize - increase energy a small amount each frame if in the sun
 	Creature::Behaviour Photosynthesize();
+
+	// Flee creatures containing flee tags
+	Creature::Behaviour Flee(EntitySystem& es, GraphicsSystem& gs);
 }

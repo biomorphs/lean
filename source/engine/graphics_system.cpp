@@ -121,16 +121,9 @@ bool GraphicsSystem::Initialise()
 	m_entitySystem->RegisterComponentType<Tags>();
 	m_entitySystem->RegisterComponentUi<Tags>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 		auto& t = *static_cast<Tags::StorageType&>(cs).Find(e);
-		if (dbg.TreeNode("All Tags", true))
+		for (const auto it : t.AllTags())
 		{
-			for (const auto it : t.AllTags())
-			{
-				if (dbg.TreeNode(it.c_str()))
-				{
-					dbg.TreePop();
-				}
-			}
-			dbg.TreePop();
+			dbg.Text(it.c_str());
 		}
 		static std::string newTagStr;
 		dbg.TextInput("New Tag", newTagStr);

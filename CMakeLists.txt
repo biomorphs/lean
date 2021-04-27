@@ -244,7 +244,9 @@ set(PLAYGROUND_SOURCES
 	Source/playground/creatures/component_creature.h
 	Source/playground/creatures/component_creature.cpp
 	Source/playground/creatures/behaviour_library.h
-	Source/playground/creatures/behaviour_library.cpp)
+	Source/playground/creatures/behaviour_library.cpp
+	Source/playground/creatures/blackboard.h
+	Source/playground/creatures/blackboard.cpp)
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})
