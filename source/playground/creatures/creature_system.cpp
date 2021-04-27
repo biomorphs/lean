@@ -7,6 +7,7 @@
 #include "engine/script_system.h"
 #include "entity/entity_system.h"
 #include "engine/components/component_transform.h"
+#include "engine/components/component_tags.h"
 #include "behaviour_library.h"
 
 CreatureSystem::CreatureSystem()
@@ -132,23 +133,43 @@ void CreatureSystem::UpdateVision(Creature& looker, glm::vec3 pos)
 
 	auto world = m_entitySystem->GetWorld();
 	auto transforms = world->GetAllComponents<Transform>();
+	auto tags = world->GetAllComponents<Tags>();
 	using VisRecord = std::pair<EntityHandle, float>;
 	std::vector<VisRecord> visibleCreatures;
 	std::vector<EntityHandle> visibleEntities;
 	{
 		SDE_PROF_EVENT("CollectAllInRadius");
-		world->ForEachComponent<Creature>([this, &transforms, pos, &looker, &visibleCreatures](Creature& c, EntityHandle owner) {
+		world->ForEachComponent<Creature>([this, &transforms, &tags, pos, &looker, &visibleCreatures](Creature& c, EntityHandle owner) {
 			if (&looker != &c)
 			{
-				auto trans = transforms->Find(owner);
-				if (trans)
+				bool canSeeObject = true;
+				if (looker.GetVisionTags().size() > 0)
 				{
-					// use distance based on x and z axis only!
-					auto p = trans->GetPosition();
-					float d = glm::distance(p, pos);
-					if (d < looker.GetVisionRadius())
+					auto foundTags = tags->Find(owner);
+					if (foundTags != nullptr)
 					{
-						visibleCreatures.push_back({ owner,d });
+						bool tagMatch = false;
+						for (const auto& t : looker.GetVisionTags())
+						{
+							tagMatch |= foundTags->ContainsTag(t);
+							if (tagMatch)
+								break;
+						}
+						canSeeObject = tagMatch;
+					}
+				}
+				if (canSeeObject)
+				{
+					auto trans = transforms->Find(owner);
+					if (trans)
+					{
+						// use distance based on x and z axis only!
+						auto p = trans->GetPosition();
+						float d = glm::distance(p, pos);
+						if (d < looker.GetVisionRadius())
+						{
+							visibleCreatures.push_back({ owner,d });
+						}
 					}
 				}
 			}
@@ -181,29 +202,31 @@ bool CreatureSystem::Tick(float timeDelta)
 		SDE_PROF_EVENT("UpdateVision");
 		static std::vector<std::pair<Creature*, EntityHandle>> s_allCreaturesToUpdate;
 		static int s_lastCreatureUpdated = 0;
-		static int s_updatesPerTick = 50;
+		static double s_visionMaxTime = 0.008f;		// spend 8ms max on visibility per frame
 		if (s_lastCreatureUpdated >= s_allCreaturesToUpdate.size())
 		{
 			// populate creature list to timeslice
 			s_allCreaturesToUpdate.clear();
 			world->ForEachComponent<Creature>([this](Creature& c, EntityHandle owner) {
-				s_allCreaturesToUpdate.push_back({ &c,owner });
-				});
+				if (c.GetVisionRadius() > 0.0f && c.GetEnergy() > 0.0f && c.GetState() != "dead")
+				{
+					s_allCreaturesToUpdate.push_back({ &c,owner });
+				}
+			});
 			s_lastCreatureUpdated = 0;
 		}
 		int toUpdate = s_lastCreatureUpdated;
 		int visionUpdates = 0;
-		while ((visionUpdates < s_updatesPerTick) && toUpdate < s_allCreaturesToUpdate.size())
+		Core::Timer visionTimer;
+		const double startTime = visionTimer.GetSeconds();
+		while ((visionTimer.GetSeconds() - startTime < s_visionMaxTime) && toUpdate < s_allCreaturesToUpdate.size())
 		{
 			auto& c = s_allCreaturesToUpdate[toUpdate];
-			if (c.first->GetVisionRadius() > 0.0f && c.first->GetEnergy() > 0.0f)
+			auto trans = transforms->Find(c.second);
+			if (trans)
 			{
-				auto trans = transforms->Find(c.second);
-				if (trans)
-				{
-					UpdateVision(*c.first, trans->GetPosition());
-					++visionUpdates;
-				}
+				UpdateVision(*c.first, trans->GetPosition());
+				++visionUpdates;
 			}
 			toUpdate++;
 		}
@@ -215,7 +238,10 @@ bool CreatureSystem::Tick(float timeDelta)
 		SDE_PROF_EVENT("RunBehaviours");
 		world->ForEachComponent<Creature>([this, &world, &transforms, timeDelta](Creature& c, EntityHandle owner) {
 			// If something is shared across all creatures, do it here. DO NOT ABUSE IT
-			c.SetAge(c.GetAge() + timeDelta);	// age is special, increment it here
+			if (c.GetEnergy() > 0 && c.GetState() != "dead")
+			{
+				c.SetAge(c.GetAge() + timeDelta);	// age is special, increment it here
+			}
 			auto& state = c.GetState();
 			auto foundBehaviours = c.GetBehaviours().find(state);
 			if (foundBehaviours != c.GetBehaviours().end())
@@ -225,9 +251,9 @@ bool CreatureSystem::Tick(float timeDelta)
 					auto registeredFn = m_behaviours.find(b);
 					if (registeredFn != m_behaviours.end())
 					{
-						//char debugName[1024] = { '\0' };
-						//sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
-						//SDE_PROF_EVENT_DYN(debugName);
+						char debugName[1024] = { '\0' };
+						sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
+						SDE_PROF_EVENT_DYN(debugName);
 						if (!registeredFn->second(owner, c, timeDelta))
 						{
 							break;	// we're done dealing with this state

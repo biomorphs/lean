@@ -29,7 +29,11 @@ COMPONENT_SCRIPTS(Creature,
 	"SetWanderDistance", &Creature::SetWanderDistance,
 	"GetWanderDistance", &Creature::GetWanderDistance,
 	"AddFoodSourceTag", &Creature::AddFoodSourceTag,
-	"GetFoodSourceTags", &Creature::GetFoodSourceTags
+	"GetFoodSourceTags", &Creature::GetFoodSourceTags,
+	"AddVisionTag", &Creature::AddVisionTag,
+	"GetVisionTags", &Creature::GetVisionTags,
+	"GetMaxVisibleEntities", &Creature::GetMaxVisibleEntities,
+	"SetMaxVisibleEntities", &Creature::SetMaxVisibleEntities
 );
 
 void Creature::AddBehaviour(Engine::Tag state, Engine::Tag behaviour)

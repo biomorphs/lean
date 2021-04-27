@@ -20,9 +20,9 @@ public:
 	SERIALISED_CLASS();
 
 	EntityHandle AddEntity();
-	void RemoveEntity(EntityHandle h);
-	const std::vector<uint32_t>& AllEntities() const { return m_allEntities; }
-	void RemoveAllEntities();
+	void RemoveEntity(EntityHandle h);	// defers actual deletion until CollectGarbage() called
+	const std::vector<uint32_t>& AllEntities() const { return m_activeEntities; }
+	void RemoveAllEntities();		// instant, use with caution
 
 	template<class ComponentType>
 	void RegisterComponentType();
@@ -46,9 +46,12 @@ public:
 	template<class ComponentType>
 	void RemoveComponent(EntityHandle owner);
 
+	void CollectGarbage();					// destroy all entities pending deletion
+
 private:
 	uint32_t m_entityIDCounter;
-	std::vector<uint32_t> m_allEntities;	// all active entity IDs
+	std::vector<uint32_t> m_activeEntities;	// all active entity IDs
+	std::vector<uint32_t> m_pendingDelete;	// all entities to be deleted
 	robin_hood::unordered_map<ComponentType, std::unique_ptr<ComponentStorage>> m_components;	// all component data
 };
 

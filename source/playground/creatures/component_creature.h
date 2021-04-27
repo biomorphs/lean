@@ -33,6 +33,8 @@ public:
 	float GetFullThreshold() { return m_fullThreshold; }
 	void AddFoodSourceTag(Engine::Tag t) { m_foodSourceTags.push_back(t); }
 	const std::vector<Engine::Tag>& GetFoodSourceTags() const { return m_foodSourceTags; }
+	void AddVisionTag(Engine::Tag t) { m_visionTags.push_back(t); }
+	const std::vector<Engine::Tag>& GetVisionTags() const { return m_visionTags; }
 	
 	void SetFoodTarget(EntityHandle e) { m_foodTarget = e; }
 	EntityHandle GetFoodTarget() { return m_foodTarget; }
@@ -66,6 +68,7 @@ private:
 	float m_eatSpeed = 10.0f;		// energy gain/second when eating
 	float m_maxAge = 100.0f;		// die after some time regardless of anything else
 	std::vector<Engine::Tag> m_foodSourceTags;	// tags used to find edible creatures
+	std::vector<Engine::Tag> m_visionTags;	// tags used to filter which creatures are visible to us
 
 	// state
 	std::vector<EntityHandle> m_visibleEntities;	// what can I see?

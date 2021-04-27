@@ -95,6 +95,7 @@ bool EntitySystem::PreInit(Engine::SystemEnumerator& s)
 	// World is a global singleton in script land for simplicity
 	auto world = scripts["World"].get_or_create<sol::table>();
 	world["AddEntity"] = [this]() { return m_world->AddEntity(); };
+	world["RemoveEntity"] = [this](EntityHandle e) { return m_world->RemoveEntity(e); };
 
 	return true;
 }
@@ -113,6 +114,7 @@ bool EntitySystem::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
 	ShowDebugGui();
+	m_world->CollectGarbage();
 	return true;
 }
 

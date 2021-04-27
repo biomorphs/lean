@@ -6,15 +6,27 @@
 #include <algorithm>
 
 SERIALISE_BEGIN(World)
-SERIALISE_PROPERTY("AllEntities", m_allEntities)
+SERIALISE_PROPERTY("AllEntities", m_activeEntities)
 //SERIALISE_PROPERTY("ComponentStorage", m_components)
 SERIALISE_END()
+
+void World::CollectGarbage()
+{
+	for (auto entityId : m_pendingDelete)
+	{
+		for (auto& components : m_components)
+		{
+			components.second->Destroy(entityId);
+		}
+	}
+	m_pendingDelete.clear();
+}
 
 EntityHandle World::AddEntity()
 {
 	SDE_PROF_EVENT();
 	auto newId = m_entityIDCounter++;
-	m_allEntities.push_back(newId);
+	m_activeEntities.push_back(newId);
 	return EntityHandle(newId);
 }
 
@@ -67,7 +79,8 @@ std::vector<ComponentType> World::GetOwnedComponentTypes(EntityHandle owner)
 void World::RemoveAllEntities()
 {
 	SDE_PROF_EVENT();
-	m_allEntities.clear();
+	m_activeEntities.clear();
+	m_pendingDelete.clear();
 	for (auto& components : m_components)
 	{
 		components.second->DestroyAll();
@@ -79,15 +92,11 @@ void World::RemoveEntity(EntityHandle h)
 	SDE_PROF_EVENT();
 	if (h.IsValid())
 	{
-		auto foundIt = std::find(m_allEntities.begin(), m_allEntities.end(), h.GetID());
-		if (foundIt != m_allEntities.end())
+		auto foundIt = std::find(m_activeEntities.begin(), m_activeEntities.end(), h.GetID());
+		if (foundIt != m_activeEntities.end())
 		{
-			for (auto& components : m_components)
-			{
-				components.second->Destroy(*foundIt);
-			}
-
-			m_allEntities.erase(foundIt);
+			m_activeEntities.erase(foundIt);
+			m_pendingDelete.push_back(h.GetID());
 		}
 	}
 }

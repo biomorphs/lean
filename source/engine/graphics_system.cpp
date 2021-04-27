@@ -336,7 +336,7 @@ bool GraphicsSystem::Initialise()
 	m_arcballCamera->SetUp({ 0.0f,1.0f,0.0f });
 	
 	float aspect = (float)windowSize.x / (float)windowSize.y;
-	m_mainRenderCamera->SetProjection(70.0f, aspect, 0.1f, 1000.0f);
+	m_mainRenderCamera->SetProjection(70.0f, aspect, 0.1f, 2000.0f);
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
 	gMenu.AddItem("Reload Shaders", [this]() { m_renderer->Reset(); m_shaders->ReloadAll(); });
