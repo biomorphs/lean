@@ -1,15 +1,19 @@
 #include "creature_system.h"
 #include "core/log.h"
+#include "core/thread.h"
 #include "engine/system_enumerator.h"
 #include "engine/graphics_system.h"
 #include "engine/debug_render.h"
 #include "engine/debug_gui_system.h"
 #include "engine/script_system.h"
 #include "entity/entity_system.h"
+#include "engine/job_system.h"
 #include "engine/components/component_transform.h"
 #include "engine/components/component_tags.h"
 #include "behaviour_library.h"
 #include "blackboard.h"
+
+glm::vec2 c_gridCellSize = {32.0f,32.0f};
 
 CreatureSystem::CreatureSystem()
 {
@@ -33,6 +37,7 @@ bool CreatureSystem::PreInit(Engine::SystemEnumerator& systemEnumerator)
 	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
 	m_graphicsSystem = (GraphicsSystem*)systemEnumerator.GetSystem("Graphics");
 	m_scriptSystem = (Engine::ScriptSystem*)systemEnumerator.GetSystem("Script");
+	m_jobSystem = (Engine::JobSystem*)systemEnumerator.GetSystem("Jobs");
 
 	return true;
 }
@@ -82,6 +87,10 @@ bool CreatureSystem::Initialise()
 		"SetInt", &Blackboard::SetInt,
 		"GetInt", &Blackboard::GetInt,
 		"RemoveInt", &Blackboard::RemoveInt,
+		"ContainsFloat", &Blackboard::ContainsFloat,
+		"SetFloat", &Blackboard::SetFloat,
+		"GetFloat", &Blackboard::GetFloat,
+		"RemoveFloat", &Blackboard::RemoveFloat,
 		"ContainsEntity", &Blackboard::ContainsEntity,
 		"SetEntity", &Blackboard::SetEntity,
 		"GetEntity", &Blackboard::GetEntity,
@@ -135,6 +144,11 @@ bool CreatureSystem::Initialise()
 				sprintf(text, "%s: %d", v.first.c_str(), v.second);
 				dbg.Text(text);
 			}
+			for (const auto& v : c.GetBlackboard()->GetFloats())
+			{
+				sprintf(text, "%s: %f", v.first.c_str(), v.second);
+				dbg.Text(text);
+			}
 			for (const auto& v : c.GetBlackboard()->GetEntities())
 			{
 				sprintf(text, "%s: Entity %d", v.first.c_str(), v.second.GetID());
@@ -170,6 +184,139 @@ void CreatureSystem::Reset()
 	m_behaviours = {};
 }
 
+uint64_t VisHash(const glm::vec3& p)
+{
+	const auto i = glm::floor(p) / glm::vec3(c_gridCellSize.x, 1.0f, c_gridCellSize.y);
+	auto gridcell = (glm::ivec3)i;
+	return (uint64_t)(gridcell.x) << 32 | (uint64_t)gridcell.z;
+}
+
+uint64_t VisHash(const glm::ivec2& p)
+{
+	auto x = (((uint64_t)p.x) & 0x00000000ffffffff) << 32;
+	auto y = ((uint64_t)p.y) & 0x00000000ffffffff;
+	return x | y;
+}
+
+void CreatureSystem::UpdateVision(const std::vector<VisibilityRecord>& allCreatures, robin_hood::unordered_map<uint64_t, std::vector<VisibilityRecord>>& grid, Creature& looker, glm::vec3 pos)
+{
+	SDE_PROF_EVENT();
+
+	using VisRecord = std::pair<VisibilityRecord, float>;	// keep distance to creature for later
+	std::vector<VisRecord> visibleCreatures;
+	visibleCreatures.reserve(32);
+
+	const auto minBounds = glm::ivec3(glm::floor(pos - looker.GetVisionRadius()) / glm::vec3(c_gridCellSize.x, 1.0f, c_gridCellSize.y));
+	const auto maxBounds = glm::ivec3(glm::floor(pos + looker.GetVisionRadius()) / glm::vec3(c_gridCellSize.x, 1.0f, c_gridCellSize.y));
+	const auto tagCount = looker.GetVisionTags().size();
+	for (int gridx = minBounds.x; gridx <= maxBounds.x; ++gridx)
+	{
+		for (int gridz = minBounds.z; gridz <= maxBounds.z; ++gridz)
+		{
+			const uint64_t gridHash = VisHash(glm::ivec2(gridx, gridz));
+			const auto foundCell = grid.find(gridHash);
+			if (foundCell != grid.end())
+			{
+				for (const auto& record : foundCell->second)
+				{
+					auto [c, tags, owner, testpos] = record;
+					if (&looker != c)
+					{
+						bool canSeeObject = true;
+						if (tags && tagCount > 0)
+						{
+							bool tagMatch = false;
+							for (const auto& t : looker.GetVisionTags())
+							{
+								tagMatch |= tags->ContainsTag(t);
+								if (tagMatch)
+									break;
+							}
+							canSeeObject = tagMatch;
+						}
+						if (canSeeObject)
+						{
+							// use distance based on x and z axis only!
+							float d = glm::distance(testpos, pos);
+							if (d < looker.GetVisionRadius())
+							{
+								visibleCreatures.push_back({ record, d });
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	std::sort(visibleCreatures.begin(), visibleCreatures.end(), [](const VisRecord& s0, const VisRecord& s1)
+		{
+			return std::get<1>(s0) < std::get<1>(s1);
+		});
+	std::vector<EntityHandle> visibleEntities;
+	auto entitiesToAdd = glm::min((uint32_t)visibleCreatures.size(), looker.GetMaxVisibleEntities());
+	visibleEntities.reserve(entitiesToAdd);
+	for (int i = 0; i < entitiesToAdd; ++i)
+	{
+		visibleEntities.push_back(std::get<2>(std::get<0>(visibleCreatures[i])));
+	}
+	looker.SetVisibleEntities(std::move(visibleEntities));
+}
+
+void CreatureSystem::UpdateVision(const std::vector<VisibilityRecord>& allCreatures, Creature& looker, glm::vec3 pos)
+{
+	SDE_PROF_EVENT();
+
+	using VisRecord = std::pair<VisibilityRecord, float>;	// keep distance to creature for later
+	std::vector<VisRecord> visibleCreatures;
+	visibleCreatures.reserve(allCreatures.size());
+	const auto tagCount = looker.GetVisionTags().size();
+	for (const auto& oneCreature : allCreatures)
+	{
+		auto [c, tags, owner, testpos] = oneCreature;
+		if (&looker != c)
+		{
+			bool canSeeObject = true;
+			if (tagCount > 0)
+			{
+				if (tags)
+				{
+					bool tagMatch = false;
+					for (const auto& t : looker.GetVisionTags())
+					{
+						tagMatch |= tags->ContainsTag(t);
+						if (tagMatch)
+							break;
+					}
+					canSeeObject = tagMatch;
+				}
+			}
+			if (canSeeObject)
+			{
+				// use distance based on x and z axis only!
+				float d = glm::distance(testpos, pos);
+				if (d < looker.GetVisionRadius())
+				{
+					visibleCreatures.push_back({ oneCreature, d });
+				}
+			}
+		}
+	}
+
+	std::sort(visibleCreatures.begin(), visibleCreatures.end(), [](const VisRecord& s0, const VisRecord& s1)
+	{
+		return std::get<1>(s0) < std::get<1>(s1);
+	});
+	std::vector<EntityHandle> visibleEntities;
+	auto entitiesToAdd = glm::min((uint32_t)visibleCreatures.size(), looker.GetMaxVisibleEntities());
+	visibleEntities.reserve(entitiesToAdd);
+	for (int i = 0; i < entitiesToAdd; ++i)
+	{
+		visibleEntities.push_back(std::get<2>(std::get<0>(visibleCreatures[i])));
+	}
+	looker.SetVisibleEntities(std::move(visibleEntities));
+}
+
 void CreatureSystem::UpdateVision(Creature& looker, glm::vec3 pos)
 {
 	SDE_PROF_EVENT();
@@ -179,56 +326,53 @@ void CreatureSystem::UpdateVision(Creature& looker, glm::vec3 pos)
 	auto tags = world->GetAllComponents<Tags>();
 	using VisRecord = std::pair<EntityHandle, float>;
 	std::vector<VisRecord> visibleCreatures;
+	visibleCreatures.reserve(32);
 	std::vector<EntityHandle> visibleEntities;
-	{
-		SDE_PROF_EVENT("CollectAllInRadius");
-		world->ForEachComponent<Creature>([this, &transforms, &tags, pos, &looker, &visibleCreatures](Creature& c, EntityHandle owner) {
-			if (&looker != &c)
+	const auto tagCount = looker.GetVisionTags().size();
+	world->ForEachComponent<Creature>([this, &transforms, &tagCount , &tags, pos, &looker, &visibleCreatures](Creature& c, EntityHandle owner) {
+		if (&looker != &c)
+		{
+			bool canSeeObject = true;
+			if (tags && tagCount > 0)
 			{
-				bool canSeeObject = true;
-				if (looker.GetVisionTags().size() > 0)
+				auto foundTags = tags->Find(owner);
+				if (foundTags != nullptr)
 				{
-					auto foundTags = tags->Find(owner);
-					if (foundTags != nullptr)
+					bool tagMatch = false;
+					for (const auto& t : looker.GetVisionTags())
 					{
-						bool tagMatch = false;
-						for (const auto& t : looker.GetVisionTags())
-						{
-							tagMatch |= foundTags->ContainsTag(t);
-							if (tagMatch)
-								break;
-						}
-						canSeeObject = tagMatch;
+						tagMatch |= foundTags->ContainsTag(t);
+						if (tagMatch)
+							break;
 					}
+					canSeeObject = tagMatch;
 				}
-				if (canSeeObject)
+			}
+			if (canSeeObject)
+			{
+				auto trans = transforms->Find(owner);
+				if (trans)
 				{
-					auto trans = transforms->Find(owner);
-					if (trans)
+					// use distance based on x and z axis only!
+					auto p = trans->GetPosition();
+					float d = glm::distance(p, pos);
+					if (d < looker.GetVisionRadius())
 					{
-						// use distance based on x and z axis only!
-						auto p = trans->GetPosition();
-						float d = glm::distance(p, pos);
-						if (d < looker.GetVisionRadius())
-						{
-							visibleCreatures.push_back({ owner,d });
-						}
+						visibleCreatures.push_back({ owner,d });
 					}
 				}
 			}
-		});
-	}
-	{
-		SDE_PROF_EVENT("SortAndCollect");
-		std::sort(visibleCreatures.begin(), visibleCreatures.end(), [](const VisRecord& s0, const VisRecord& s1)
-		{
-			return s0.second < s1.second;
-		});
-		visibleEntities.reserve(visibleCreatures.size());
-		for (int i = 0; i < glm::min((uint32_t)visibleCreatures.size(), looker.GetMaxVisibleEntities()); ++i)
-		{
-			visibleEntities.push_back(visibleCreatures[i].first);
 		}
+	});
+	std::sort(visibleCreatures.begin(), visibleCreatures.end(), [](const VisRecord& s0, const VisRecord& s1)
+	{
+		return s0.second < s1.second;
+	});
+	auto maxToCollect = glm::min((uint32_t)visibleCreatures.size(), looker.GetMaxVisibleEntities());
+	visibleEntities.reserve(maxToCollect);
+	for (int i = 0; i < maxToCollect; ++i)
+	{
+		visibleEntities.push_back(visibleCreatures[i].first);
 	}
 	looker.SetVisibleEntities(std::move(visibleEntities));
 }
@@ -239,64 +383,94 @@ bool CreatureSystem::Tick(float timeDelta)
 
 	auto world = m_entitySystem->GetWorld();
 	auto transforms = world->GetAllComponents<Transform>();
+	auto alltags = world->GetAllComponents<Tags>();
 
-	// time slicing for vision updates
+	// Populate the full list of creatures along with their positions and tags
+	// Also populate of creatures that need vis queries
+	robin_hood::unordered_map<uint64_t, std::vector<VisibilityRecord>> grid;	// indexes into allcreatures
+	std::vector<VisibilityRecord> allCreatures;
+	std::vector<VisibilityRecord> creaturesToUpdate;
 	{
-		SDE_PROF_EVENT("UpdateVision");
-		static std::vector<std::pair<Creature*, EntityHandle>> s_allCreaturesToUpdate;
-		static int s_lastCreatureUpdated = 0;
-		static double s_visionMaxTime = 0.008f;		// spend 8ms max on visibility per frame
-		if (s_lastCreatureUpdated >= s_allCreaturesToUpdate.size())
-		{
-			// populate creature list to timeslice
-			s_allCreaturesToUpdate.clear();
-			world->ForEachComponent<Creature>([this](Creature& c, EntityHandle owner) {
+		SDE_PROF_EVENT("CollectAll");
+		allCreatures.reserve(8000);
+		creaturesToUpdate.reserve(2000);
+		world->ForEachComponent<Creature>([&allCreatures, &grid, &creaturesToUpdate, &alltags, &transforms](Creature& c, EntityHandle owner) {
+			auto transform = transforms->Find(owner);
+			auto tags = alltags->Find(owner);
+			if (transform != nullptr)
+			{
+				auto hash = VisHash(transform->GetPosition());
+				VisibilityRecord r = { &c, tags, owner, transform->GetPosition() };
+				allCreatures.push_back(r);
+				grid[hash].push_back(r);
 				if (c.GetVisionRadius() > 0.0f && c.GetEnergy() > 0.0f && c.GetState() != "dead")
 				{
-					s_allCreaturesToUpdate.push_back({ &c,owner });
+					creaturesToUpdate.push_back(r);
 				}
-			});
-			s_lastCreatureUpdated = 0;
-		}
-		int toUpdate = s_lastCreatureUpdated;
-		int visionUpdates = 0;
-		Core::Timer visionTimer;
-		const double startTime = visionTimer.GetSeconds();
-		while ((visionTimer.GetSeconds() - startTime < s_visionMaxTime) && toUpdate < s_allCreaturesToUpdate.size())
-		{
-			auto& c = s_allCreaturesToUpdate[toUpdate];
-			auto trans = transforms->Find(c.second);
-			if (trans)
-			{
-				UpdateVision(*c.first, trans->GetPosition());
-				++visionUpdates;
 			}
-			toUpdate++;
+		});
+	}
+	const bool s_useJobs = true;
+	if(!s_useJobs)
+	{
+		SDE_PROF_EVENT("TestVisNaive");
+		for (const auto& c : creaturesToUpdate)
+		{
+			auto creature = std::get<0>(c);
+			UpdateVision(allCreatures, grid, *creature, std::get<3>(c));
 		}
-		s_lastCreatureUpdated = toUpdate;
+	}
+	else
+	{
+		SDE_PROF_EVENT("TestVisJobs");
+		const int c_testsPerJob = 32;
+		std::atomic<int> jobsRemaining = 0;
+		for (int c = 0; c < creaturesToUpdate.size(); c += c_testsPerJob)
+		{
+			int startIndex = c;
+			int endIndex = std::min(c + c_testsPerJob, (int)creaturesToUpdate.size());
+			auto visJob = [this,&allCreatures,&grid,&creaturesToUpdate,&jobsRemaining,startIndex,endIndex](void*)
+			{
+				SDE_PROF_EVENT("VisJob");
+				for (int index = startIndex; index < endIndex; ++index)
+				{
+					auto creature = std::get<0>(creaturesToUpdate[index]);
+					UpdateVision(allCreatures, grid, *creature, std::get<3>(creaturesToUpdate[index]));
+				}
+				jobsRemaining--;
+			};
+			jobsRemaining++;
+			m_jobSystem->PushJob(visJob);
+		}
+		{
+			SDE_PROF_STALL("WaitForVisJobs");
+			while (jobsRemaining > 0)
+			{
+				Core::Thread::Sleep(0);
+			}
+		}
 	}
 
 	// tick all behaviours for current state
 	{
 		SDE_PROF_EVENT("RunBehaviours");
 		world->ForEachComponent<Creature>([this, &world, &transforms, timeDelta](Creature& c, EntityHandle owner) {
-			// If something is shared across all creatures, do it here. DO NOT ABUSE IT
 			if (c.GetEnergy() > 0 && c.GetState() != "dead")
 			{
-				c.SetAge(c.GetAge() + timeDelta);	// age is special, increment it here
+				c.SetAge(c.GetAge() + timeDelta);	// age is special, increment it here for convenience
 			}
 			auto& state = c.GetState();
 			auto foundBehaviours = c.GetBehaviours().find(state);
 			if (foundBehaviours != c.GetBehaviours().end())
 			{
-				for (auto b : foundBehaviours->second)
+				for (const auto& b : foundBehaviours->second)
 				{
 					auto registeredFn = m_behaviours.find(b);
 					if (registeredFn != m_behaviours.end())
 					{
-						char debugName[1024] = { '\0' };
-						sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
-						SDE_PROF_EVENT_DYN(debugName);
+						//char debugName[1024] = { '\0' };
+						//sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
+						//SDE_PROF_EVENT_DYN(debugName);
 						if (!registeredFn->second(owner, c, timeDelta))
 						{
 							break;	// we're done dealing with this state

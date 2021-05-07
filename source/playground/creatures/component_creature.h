@@ -39,8 +39,8 @@ public:
 	const std::vector<Engine::Tag>& GetFleeFromTags() const { return m_fleeFromTags; }
 
 	// Current state
-	Engine::Tag GetState() { return m_currentState; }
-	void SetState(Engine::Tag state) { m_currentState = state; }
+	const Engine::Tag& GetState() { return m_currentState; }
+	void SetState(const Engine::Tag& state) { m_currentState = state; }
 	void SetEnergy(float e) { m_currentEnergy = e; }
 	float GetEnergy() { return m_currentEnergy; }
 	void SetAge(float a) { m_age = a; }

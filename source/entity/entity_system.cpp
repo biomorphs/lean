@@ -4,6 +4,7 @@
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
+#include "engine/tag.h"
 
 Engine::MenuBar g_entityMenu;
 bool g_showWindow = false;
@@ -86,6 +87,12 @@ bool EntitySystem::PreInit(Engine::SystemEnumerator& s)
 	assert(m_debugGui);
 
 	auto& scripts = m_scriptSystem->Globals();
+
+	// Tag
+	// This is probably not a good place for it
+	scripts.new_usertype<Engine::Tag>("Tag", sol::constructors<Engine::Tag(), Engine::Tag(const char*)>(),
+		"AsString", &Engine::Tag::c_str,
+		"GetHash", &Engine::Tag::GetHash);
 
 	// Entity Handle
 	scripts.new_usertype<EntityHandle>("EntityHandle", sol::constructors<EntityHandle()>(),

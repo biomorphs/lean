@@ -1,5 +1,6 @@
 #include "behaviour_library.h"
 #include "component_creature.h"
+#include "core/random.h"
 #include "entity/entity_system.h"
 #include "engine/graphics_system.h"
 #include "engine/debug_render.h"
@@ -43,6 +44,8 @@ namespace BehaviourLibrary
 						auto m = monstertransform->GetPosition();
 						auto dir = glm::normalize(p - m);
 						p = p + dir * 32.0f;
+						// add some randomness
+						p = p + glm::vec3(1.0f,0.0f,1.0f) * Core::Random::GetFloat(-8.0f, 8.0f);
 						//gs.DebugRenderer().DrawLine(p + glm::vec3(0.0f, 1.0f, 0.0f), m + glm::vec3(0.0f, 1.0f, 0.0f), { 1.0f,0.0f,0.0f });
 						c.GetBlackboard()->SetVector("MoveToTarget", p);
 						c.SetState("moveto");

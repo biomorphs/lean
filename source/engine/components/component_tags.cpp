@@ -3,21 +3,24 @@
 COMPONENT_SCRIPTS(Tags,
 	"AddTag", &Tags::AddTag,
 	"RemoveTag", &Tags::RemoveTag,
-	"ContainsTag", &Tags::ContainsTag,
-	"AllTags", &Tags::AllTags
+	"ContainsTag", &Tags::ContainsTag
 );
 
-void Tags::AddTag(Engine::Tag t)
+void Tags::AddTag(const Engine::Tag& t)
 {
-	m_tags.insert(t);
+	m_tags.push_back(t);
 }
 
-void Tags::RemoveTag(Engine::Tag t)
+void Tags::RemoveTag(const Engine::Tag& t)
 {
-	m_tags.erase(t);
+	auto found = std::find(m_tags.begin(), m_tags.end(), t);
+	if (found != m_tags.end())
+	{
+		m_tags.erase(found);
+	}
 }
 
-bool Tags::ContainsTag(Engine::Tag t)
+bool Tags::ContainsTag(const Engine::Tag& t) const
 {
-	return m_tags.find(t) != m_tags.end();
+	return std::find(m_tags.begin(), m_tags.end(), t) != m_tags.end();
 }

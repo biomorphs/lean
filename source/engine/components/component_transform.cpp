@@ -4,6 +4,7 @@ COMPONENT_SCRIPTS(Transform,
 	"SetPosition", &Transform::SetPos3,
 	"SetRotation", &Transform::SetRotation,
 	"SetScale", &Transform::SetScale3,
+	"GetScale", &Transform::GetScale,
 	"GetPosition", &Transform::GetPosition,
 	"GetRotationDegrees", &Transform::GetRotationDegrees
 )

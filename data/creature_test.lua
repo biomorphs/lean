@@ -15,9 +15,17 @@ local GraveModel = Graphics.LoadModel("kenney_graveyardkit_3/gravestoneCross.fbx
 local MonsterModel = Graphics.LoadModel("udim-monster.fbx")
 local FloorTexture = Graphics.LoadTexture("grass01.jpg")
 
-local c_floorSize = {1000,1000}
+local c_floorSize = {2000,2000}
 local g_simLivingPlants = 0
 local g_simLivingBunnies = 0
+
+function MakeTag(str)
+	return Tag.new(str)
+end
+
+local TAG_MoveToTarget = MakeTag("MoveToTarget")
+local TAG_ClosestFood = MakeTag("ClosestFood")
+local TAG_PlantReproLastTickTime = MakeTag("PlantReproLastTickTime")
 
 function RandomFloat(minv,maxv) 
 	return minv + (math.random() * (maxv-minv))
@@ -26,18 +34,18 @@ end
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(197.75,403.75,279.5)
+	transform:SetPosition(197.75,472.25,799.5)
 	transform:SetRotation(38.7,21.1,-18.4)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
-	light:SetColour(0.917,0.788,0.607)
+	light:SetColour(1,1,1)
 	light:SetAmbient(0.2)
 	light:SetBrightness(0.267)
-	light:SetDistance(1000)
+	light:SetDistance(2500)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
 	light:SetShadowBias(0.001)
-	light:SetShadowOrthoScale(700)
+	light:SetShadowOrthoScale(1524)
 	
 	newEntity = World.AddEntity()
 	transform = World.AddComponent_Transform(newEntity)
@@ -57,7 +65,7 @@ function MakePlant(model, pos)
 	transform:SetScale(scale,scale,scale)
 	
 	local newTags = World.AddComponent_Tags(newEntity)
-	newTags:AddTag("plant")
+	newTags:AddTag(MakeTag("plant"))
 
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(model)
@@ -75,37 +83,37 @@ function MakePlant(model, pos)
 	
 	for state,behaviours in pairs(plantBehaviour) do 
 		for b=1,#behaviours do
-			newCreature:AddBehaviour(state, behaviours[b])
+			newCreature:AddBehaviour(MakeTag(state), MakeTag(behaviours[b]))
 		end
 	end
-	newCreature:SetState("idle")
+	newCreature:SetState(MakeTag("idle"))
 	g_simLivingPlants = g_simLivingPlants + 1
 end
 
 function MakeBunny()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	local p = {RandomFloat(-c_floorSize[1]/2,c_floorSize[1]/2), 0, RandomFloat(-c_floorSize[2]/2,c_floorSize[2]/2)}
+	local p = {RandomFloat(-c_floorSize[1]/8,c_floorSize[1]/8), 0, RandomFloat(-c_floorSize[2]/8,c_floorSize[2]/8)}
 	transform:SetPosition(p[1],p[2],p[3])
-	transform:SetPosition(0,0,0)
+	--transform:SetPosition(0,0,0)
 	local scale = 4 + math.random() * 8.0
 	transform:SetScale(scale,scale,scale)
 
 	local newTags = World.AddComponent_Tags(newEntity)
-	newTags:AddTag("bunny")
+	newTags:AddTag(MakeTag("bunny"))
 
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(BunnyModel)
 	newModel:SetShader(ModelDiffuseShader)
 	
 	local newCreature = World.AddComponent_Creature(newEntity)
-	newCreature:SetVisionRadius(200)
+	newCreature:SetVisionRadius(math.random(200,400))
 	newCreature:SetMaxVisibleEntities(32)
-	newCreature:AddFoodSourceTag("plant")
-	newCreature:AddVisionTag("plant")
-	newCreature:AddVisionTag("monster")
-	newCreature:AddFleeFromTag("monster")
-	newCreature:SetState("idle")
+	newCreature:AddFoodSourceTag(MakeTag("plant"))
+	newCreature:AddVisionTag(MakeTag("plant"))
+	newCreature:AddVisionTag(MakeTag("monster"))
+	newCreature:AddFleeFromTag(MakeTag("monster"))
+	newCreature:SetState(MakeTag("idle"))
 	
 	newCreature:SetMoveSpeed(RandomFloat(100,250))
 	newCreature:SetHungerThreshold(RandomFloat(20,70))
@@ -121,9 +129,10 @@ function MakeBunny()
 	bunnyBehaviour["moveto"] = { "die_at_max_age", "die_at_zero_energy", "move_to_target" }
 	bunnyBehaviour["eat"] = { "die_at_max_age", "die_at_zero_energy", "flee_enemy", "eat_target_food" }
 	bunnyBehaviour["dying"] = { "kill_creature" }
+	bunnyBehaviour["dead"] = { "remove_corpse" }
 	for state,behaviours in pairs(bunnyBehaviour) do 
 		for b=1,#behaviours do
-			newCreature:AddBehaviour(state, behaviours[b])
+			newCreature:AddBehaviour(MakeTag(state), MakeTag(behaviours[b]))
 		end
 	end
 	
@@ -133,12 +142,12 @@ end
 function MakeMonster()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	local p = {RandomFloat(-c_floorSize[1]/2,c_floorSize[1]/2), 0, RandomFloat(-c_floorSize[2]/2,c_floorSize[2]/2)}
+	local p = {RandomFloat(-c_floorSize[1]/2,c_floorSize[1]/2), 0.0, RandomFloat(-c_floorSize[2]/2,c_floorSize[2]/2)}
 	transform:SetPosition(p[1],p[2],p[3])
 	transform:SetScale(16,16,16)
 
 	local newTags = World.AddComponent_Tags(newEntity)
-	newTags:AddTag("monster")
+	newTags:AddTag(MakeTag("monster"))
 
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(MonsterModel)
@@ -146,9 +155,9 @@ function MakeMonster()
 	
 	local newCreature = World.AddComponent_Creature(newEntity)
 	newCreature:SetVisionRadius(300)
-	newCreature:AddVisionTag("bunny")
+	newCreature:AddVisionTag(MakeTag("bunny"))
 	newCreature:SetMaxVisibleEntities(32)
-	newCreature:SetMoveSpeed(200)
+	newCreature:SetMoveSpeed(300)
 	newCreature:SetHungerThreshold(30000000)
 	newCreature:SetEnergy(500)
 	newCreature:SetFullThreshold(500)
@@ -156,17 +165,28 @@ function MakeMonster()
 	newCreature:SetEatingSpeed(10000)
 	newCreature:SetWanderDistance(RandomFloat(64,128))
 	newCreature:SetMaxAge(10000000000)
-	newCreature:AddFoodSourceTag("bunny")
-	newCreature:SetState("idle")
+	newCreature:AddFoodSourceTag(MakeTag("bunny"))
+	newCreature:SetState(MakeTag("idle"))
+	
+	local light = World.AddComponent_Light(newEntity)
+	light:SetPointLight();
+	light:SetColour(1,0.3,0)
+	light:SetAmbient(0.0)
+	light:SetBrightness(8.0)
+	light:SetAttenuation(3.5)
+	light:SetDistance(200)
+	light:SetCastsShadows(false)
+	light:SetShadowmapSize(512,512)
+	light:SetShadowBias(0.5)
 	
 	local monsterBehaviour = {}
 	monsterBehaviour["idle"] = { "find_food", "eat_if_hungry", "random_wander", "die_at_zero_energy" }
 	monsterBehaviour["moveto"] = { "move_to_target", "die_at_zero_energy" }
-	monsterBehaviour["eat"] = { "eat_target_food", "die_at_zero_energy" }
+	monsterBehaviour["eat"] = { "monster_eat_grow", "eat_target_food", "die_at_zero_energy" }
 	monsterBehaviour["dying"] = { "kill_creature" }
 	for state,behaviours in pairs(monsterBehaviour) do 
 		for b=1,#behaviours do
-			newCreature:AddBehaviour(state, behaviours[b])
+			newCreature:AddBehaviour(MakeTag(state), MakeTag(behaviours[b]))
 		end
 	end
 end
@@ -200,12 +220,12 @@ end
 function MakeFloorEntity()
 	sdf_entity = World.AddEntity()
 	local transform = World.AddComponent_Transform(sdf_entity)
-	transform:SetPosition(0,0,0)
+	transform:SetPosition(0,-0.4,0)
 	transform:SetScale(1,1,1)
 	
 	local sdfModel = World.AddComponent_SDFModel(sdf_entity)
-	sdfModel:SetBoundsMin(-c_floorSize[1],-1,-c_floorSize[2])
-	sdfModel:SetBoundsMax(c_floorSize[1],1,c_floorSize[2])
+	sdfModel:SetBoundsMin(-c_floorSize[1] * 2,-1,-c_floorSize[2] * 2)
+	sdfModel:SetBoundsMax(c_floorSize[1] * 2,1,c_floorSize[2] * 2)
 	sdfModel:SetResolution(8,4,8)
 	sdfModel:SetShader(SDFDiffuseShader)
 	sdfModel:SetNormalSmoothness(0)
@@ -216,8 +236,8 @@ function MakeFloorEntity()
 end
 
 function MoveCreatureTo(owner,creature,pos)
-	creature:GetBlackboard():SetVector("MoveToTarget", pos.x, pos.y, pos.z)
-	creature:SetState("moveto")
+	creature:GetBlackboard():SetVector(TAG_MoveToTarget, pos.x, pos.y, pos.z)
+	creature:SetState(MakeTag("moveto"))
 	
 	-- rotate to face target
 	local t = World.GetComponent_Transform(owner)
@@ -230,6 +250,9 @@ function MoveCreatureTo(owner,creature,pos)
 		dir = Vec3Normalize(dir)
 		local angle = math.acos(Vec3Dot({dir.x,dir.y,dir.z},{1,0,0}))
 		local rot = t:GetRotationDegrees()
+		if(angle > 1.57) then
+			angle = -angle
+		end
 		rot.y = math.deg(angle) + 90
 		t:SetRotation(rot.x,rot.y,rot.z)
 	end
@@ -238,12 +261,12 @@ end
 function MoveToTarget(owner,creature,delta)
 	local transform = World.GetComponent_Transform(owner)
 	local p = transform:GetPosition()
-	local t = creature:GetBlackboard():GetVector("MoveToTarget")
+	local t = creature:GetBlackboard():GetVector(TAG_MoveToTarget)
 	local d = {t.x - p.x, t.y - p.y, t.z - p.z}
 	local l = Vec3Length(d)
 	local speed = creature:GetMoveSpeed()
 	if(l < creature:GetMoveSpeed() * delta) then 	-- close to target!
-		creature:SetState("idle")
+		creature:SetState(MakeTag("idle"))
 		return false
 	end
 	d = {d[1]/l,d[2]/l,d[3]/l}	-- normalise dir
@@ -277,7 +300,7 @@ function RandomPointNearPos(pos,maxDistance)
 	local originalPos = pos
 	local p = pos
 	local failsafe = 0
-	while(failsafe < 8) do  
+	while(failsafe < 4) do  
 		local dir = {-1.0 + math.random() * 2.0, 0, -1.0 + math.random() * 2.0}
 		local dl = Vec3Length(dir)
 		dir = {dir[1]/dl,0,dir[3]/dl}	-- normalise
@@ -300,19 +323,40 @@ function RandomPointNearPos(pos,maxDistance)
 end
 
 function RandomWander(owner,creature,delta)
-	local transform = World.GetComponent_Transform(owner)
-	local p = RandomPointNearPos(transform:GetPosition(), creature:GetWanderDistance())
-	MoveCreatureTo(owner,creature,p)
-	return false
+	local doWander = false 
+	if(creature:GetEnergy() < creature:GetHungerThreshold()) then
+		doWander = true -- always wander if hungry
+	elseif(math.random(0,100)<3) then
+		doWander = true
+	end
+	
+	if(doWander) then 
+		local transform = World.GetComponent_Transform(owner)
+		local p = RandomPointNearPos(transform:GetPosition(), creature:GetWanderDistance())
+		MoveCreatureTo(owner,creature,p)
+	end
+	return doWander==false
+end
+
+function MonsterEatGrow(owner,creature,delta)
+	local t = World.GetComponent_Transform(owner)
+	if(t ~= nil) then 
+		local scale = t:GetScale()
+		scale.x = scale.x + 0.3
+		scale.y = scale.y + 0.3
+		scale.z = scale.z + 0.3
+		t:SetScale(scale.x,scale.y,scale.z)
+	end
+	return true
 end
 
 function EatFood(owner,creature,delta)
-	if(creature:GetBlackboard():ContainsEntity("ClosestFood") == false) then 
-		creature:SetState("idle")
+	if(creature:GetBlackboard():ContainsEntity(TAG_ClosestFood) == false) then 
+		creature:SetState(MakeTag("idle"))
 		return false
 	end
 	
-	local target = creature:GetBlackboard():GetEntity("ClosestFood")
+	local target = creature:GetBlackboard():GetEntity(TAG_ClosestFood)
 	local targetCreature = World.GetComponent_Creature(target)	
 	if(targetCreature ~= nil) then
 		local foodAmount = creature:GetEatingSpeed() * delta
@@ -323,15 +367,15 @@ function EatFood(owner,creature,delta)
 		creature:SetEnergy(e + foodAmount)
 		targetCreature:SetEnergy(targetCreature:GetEnergy() - foodAmount)	-- do damage?
 		if(e > creature:GetFullThreshold()) then 
-			creature:SetState("idle")
+			creature:SetState(MakeTag("idle"))
 			return false
 		end
 		if(targetCreature:GetEnergy() <= 0) then 
-			creature:SetState("idle")
+			creature:SetState(MakeTag("idle"))
 			return false
 		end
 	else
-		creature:SetState("idle")
+		creature:SetState(MakeTag("idle"))
 		return false
 	end
 	return true
@@ -349,21 +393,23 @@ function FindFood(owner,creature,delta)
 			local tags = World.GetComponent_Tags(handle)
 			if(c ~= nil and tags ~= nil) then 
 				local isEdible = false
-				if(tags ~= nil) then	
-					for mytag = 1, #creature:GetFoodSourceTags() do 
-						if(tags:ContainsTag(creature:GetFoodSourceTags()[mytag])) then 
-							isEdible = true
+				if(c:GetEnergy() > 0 and c:GetState() ~= "dead") then 
+					if(tags ~= nil) then	
+						for mytag = 1, #creature:GetFoodSourceTags() do 
+							if(tags:ContainsTag(creature:GetFoodSourceTags()[mytag])) then 
+								isEdible = true
+							end
 						end
 					end
 				end
-				if(isEdible and c:GetEnergy() > 0 and c:GetState() ~= "dead") then 
-					creature:GetBlackboard():SetEntity("ClosestFood",handle)
+				if(isEdible) then 
+					creature:GetBlackboard():SetEntity(TAG_ClosestFood,handle)
 					return true
 				end
 			end
 		end
 		-- nothing found
-		creature:GetBlackboard():RemoveEntity("ClosestFood")
+		creature:GetBlackboard():RemoveEntity(TAG_ClosestFood)
 	end
 	return true
 end
@@ -372,17 +418,17 @@ function EatIfHungry(owner,creature,delta)
 	if(creature:GetEnergy() > creature:GetHungerThreshold()) then
 		return true
 	end
-	if(creature:GetBlackboard():ContainsEntity("ClosestFood")) then 
+	if(creature:GetBlackboard():ContainsEntity(TAG_ClosestFood)) then 
 		local mytransform = World.GetComponent_Transform(owner)
 		local mypos = mytransform:GetPosition()
-		local handle = creature:GetBlackboard():GetEntity("ClosestFood")
+		local handle = creature:GetBlackboard():GetEntity(TAG_ClosestFood)
 		local transform = World.GetComponent_Transform(handle)
 		if(transform ~= nil) then 
 			local foodpos = transform:GetPosition()
 			local d = {mypos.x-foodpos.x,mypos.y-foodpos.y,mypos.z-foodpos.z}
 			local l = Vec3Length(d)
 			if(l < creature:GetMoveSpeed() * 0.1) then
-				creature:SetState("eat")
+				creature:SetState(MakeTag("eat"))
 			else
 				local p = transform:GetPosition()
 				MoveCreatureTo(owner,creature,p)
@@ -395,7 +441,7 @@ end
 
 function DieAtZeroEnergy(owner,creature,delta)
 	if(creature:GetEnergy() <= 0) then
-		creature:SetState("dying")
+		creature:SetState(MakeTag("dying"))
 		return false
 	end
 	return true
@@ -404,7 +450,7 @@ end
 function DieAtMaxAge(owner,creature,delta)
 	local currentAge = creature:GetAge()
 	if(currentAge > creature:GetMaxAge()) then
-		creature:SetState("dying")
+		creature:SetState(MakeTag("dying"))
 		return false
 	end
 	return true
@@ -416,14 +462,28 @@ function Photosynthesize(owner,creature,delta)
 end
 
 function PlantReproduction(owner,creature,delta)
-	if(creature:GetAge() > (creature:GetMaxAge() * 0.5) and creature:GetAge() < (creature:GetMaxAge() * 0.8)) then 
-		if(math.random(0,1000) < 1) then
-			local mytransform = World.GetComponent_Transform(owner)
-			local mypos = mytransform:GetPosition()
-			local p = {RandomFloat(mypos.x - 64, mypos.x + 64), 0, RandomFloat(mypos.z - 64, mypos.z + 64)}
-			
-			MakePlant(TreeModel, p)
-		end
+	local age = creature:GetAge()
+	local maxAge = creature:GetMaxAge()
+	if(age > (maxAge * 0.5) and age < (maxAge * 0.8)) then 
+	
+	local lastTickTime = 0
+	if(creature:GetBlackboard():ContainsFloat(TAG_PlantReproLastTickTime)) then
+		lastTickTime = creature:GetBlackboard():GetFloat(TAG_PlantReproLastTickTime)
+	else 
+		lastTickTime = creature:GetAge()
+		creature:GetBlackboard():SetFloat(TAG_PlantReproLastTickTime, lastTickTime)
+	end
+	 	
+	 if(age - lastTickTime > 1.0) then 
+	 	if(math.random(0,1000) < 1) then
+	 		local mytransform = World.GetComponent_Transform(owner)
+	 		local mypos = mytransform:GetPosition()
+	 		local p = {RandomFloat(mypos.x - 64, mypos.x + 64), 0, RandomFloat(mypos.z - 64, mypos.z + 64)}
+	 		
+	 		MakePlant(TreeModel, p)
+	 	end
+	 	creature:GetBlackboard():SetFloat(TAG_PlantReproLastTickTime, lastTickTime)
+	 end
 	end
 	return true
 end
@@ -469,7 +529,7 @@ function KillCreature(owner,creature,delta)
 	local t = World.GetComponent_Transform(owner)
 	local tags = World.GetComponent_Tags(owner)
 	if( m ~= nil and t ~= nil and tags ~= nil ) then 
-		if(tags:ContainsTag("plant"))	then -- plant?
+		if(tags:ContainsTag(MakeTag("plant")))	then -- plant?
 			m:SetModel(DeadTreeModel)
 			t:SetScale(0.05,0.05,0.05)
 			g_simLivingPlants = g_simLivingPlants - 1
@@ -479,38 +539,41 @@ function KillCreature(owner,creature,delta)
 			g_simLivingBunnies = g_simLivingBunnies - 1
 		end
 	end
-	creature:SetState("dead")
+	creature:SetState(MakeTag("dead"))
 	return false
 end
 
 function CreatureTest.Init()	
+	Graphics.SetClearColour(0.3,0.55,0.8)
 	MakeSunEntity()
 	MakeFloorEntity()
 	
 	-- behaviours are global
-	-- Creatures.AddBehaviour("move_to_target", MoveToTarget)
+	-- Creatures.AddBehaviour("move_to_target", TAG_MoveToTarget)
 	-- Creatures.AddBehaviour("die_at_max_age", DieAtMaxAge)
 	-- Creatures.AddBehaviour("die_at_zero_energy", DieAtZeroEnergy)
-	Creatures.AddBehaviour("random_wander", RandomWander)
-	Creatures.AddBehaviour("find_food", FindFood)
-	Creatures.AddBehaviour("eat_target_food", EatFood)
-	Creatures.AddBehaviour("kill_creature", KillCreature)
 	--Creatures.AddBehaviour("flee_enemy", FleeEnemy)
-	Creatures.AddBehaviour("plant_reproduction", PlantReproduction)
 	-- Creatures.AddBehaviour("photosynthesize", Photosynthesize)
-	Creatures.AddBehaviour("remove_corpse", RemoveCorpse)
-	Creatures.AddBehaviour("eat_if_hungry", EatIfHungry)
 	
-	for i=1,2000 do
+	Creatures.AddBehaviour(MakeTag("random_wander"), RandomWander)
+	Creatures.AddBehaviour(MakeTag("find_food"), FindFood)
+	Creatures.AddBehaviour(MakeTag("eat_target_food"), EatFood)
+	Creatures.AddBehaviour(MakeTag("kill_creature"), KillCreature)
+	Creatures.AddBehaviour(MakeTag("plant_reproduction"), PlantReproduction)
+	Creatures.AddBehaviour(MakeTag("remove_corpse"), RemoveCorpse)
+	Creatures.AddBehaviour(MakeTag("eat_if_hungry"), EatIfHungry)
+	Creatures.AddBehaviour(MakeTag("monster_eat_grow"), MonsterEatGrow)
+	
+	for i=1,4000 do
 		MakeBunny()
 	end
 	
-	for i=1,4000 do 
+	for i=1,1000 do 
 		local p = {RandomFloat(-c_floorSize[1]/2,c_floorSize[1]/2), 0, RandomFloat(-c_floorSize[2]/2,c_floorSize[2]/2)}
 		MakePlant(TreeModel, p)
 	end
 	
-	for i=1,20 do
+	for i=1,10 do
 		MakeMonster()
 	end
 end
