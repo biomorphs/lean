@@ -13,7 +13,7 @@
 #include "behaviour_library.h"
 #include "blackboard.h"
 
-glm::vec2 c_gridCellSize = {32.0f,32.0f};
+glm::vec2 c_gridCellSize = {128.0f,128.0f};
 
 CreatureSystem::CreatureSystem()
 {
@@ -206,6 +206,7 @@ void CreatureSystem::UpdateVision(const std::vector<VisibilityRecord>& allCreatu
 	std::vector<VisRecord> visibleCreatures;
 	visibleCreatures.reserve(32);
 
+	const auto visionRadiusSq = looker.GetVisionRadius() * looker.GetVisionRadius();
 	const auto minBounds = glm::ivec3(glm::floor(pos - looker.GetVisionRadius()) / glm::vec3(c_gridCellSize.x, 1.0f, c_gridCellSize.y));
 	const auto maxBounds = glm::ivec3(glm::floor(pos + looker.GetVisionRadius()) / glm::vec3(c_gridCellSize.x, 1.0f, c_gridCellSize.y));
 	const auto tagCount = looker.GetVisionTags().size();
@@ -219,26 +220,24 @@ void CreatureSystem::UpdateVision(const std::vector<VisibilityRecord>& allCreatu
 			{
 				for (const auto& record : foundCell->second)
 				{
-					auto [c, tags, owner, testpos] = record;
+					const auto c = std::get<0>(record);
 					if (&looker != c)
 					{
-						bool canSeeObject = true;
-						if (tags && tagCount > 0)
+						float d = glm::distance2(std::get<3>(record), pos);		// distance squared
+						if (d < visionRadiusSq)
 						{
-							bool tagMatch = false;
-							for (const auto& t : looker.GetVisionTags())
+							bool canSeeObject = tagCount == 0;
+							const auto tags = std::get<1>(record);
+							if (tags && tagCount > 0)
 							{
-								tagMatch |= tags->ContainsTag(t);
-								if (tagMatch)
-									break;
+								for (const auto& t : looker.GetVisionTags())
+								{
+									canSeeObject |= tags->ContainsTag(t);
+									if (canSeeObject)
+										break;
+								}
 							}
-							canSeeObject = tagMatch;
-						}
-						if (canSeeObject)
-						{
-							// use distance based on x and z axis only!
-							float d = glm::distance(testpos, pos);
-							if (d < looker.GetVisionRadius())
+							if (canSeeObject)
 							{
 								visibleCreatures.push_back({ record, d });
 							}
@@ -468,9 +467,9 @@ bool CreatureSystem::Tick(float timeDelta)
 					auto registeredFn = m_behaviours.find(b);
 					if (registeredFn != m_behaviours.end())
 					{
-						//char debugName[1024] = { '\0' };
-						//sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
-						//SDE_PROF_EVENT_DYN(debugName);
+						char debugName[1024] = { '\0' };
+						sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
+						SDE_PROF_EVENT_DYN(debugName);
 						if (!registeredFn->second(owner, c, timeDelta))
 						{
 							break;	// we're done dealing with this state

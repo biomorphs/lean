@@ -21,6 +21,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/fast_square_root.hpp>
 #include <glm/gtc/noise.hpp>
+#include <glm/gtx/norm.hpp>
 
 #ifdef I_DISABLED_DEBUG
 #undef NDEBUG

@@ -31,7 +31,7 @@ public:
 	void AddBehaviour(Engine::Tag tag, Creature::Behaviour b);
 private:
 	using VisibilityRecord = std::tuple<Creature*, Tags*, EntityHandle, glm::vec3>;
-	void UpdateVision(const std::vector<VisibilityRecord>& allCreatures, robin_hood::unordered_map<uint64_t, std::vector<VisibilityRecord>>& grid, Creature& c, glm::vec3 pos);
+	void __vectorcall UpdateVision(const std::vector<VisibilityRecord>& allCreatures, robin_hood::unordered_map<uint64_t, std::vector<VisibilityRecord>>& grid, Creature& c, glm::vec3 pos);
 	void UpdateVision(const std::vector<VisibilityRecord>& allCreatures, Creature& c, glm::vec3 pos);
 	void UpdateVision(Creature& c, glm::vec3 pos);	// old
 	EntitySystem* m_entitySystem = nullptr;

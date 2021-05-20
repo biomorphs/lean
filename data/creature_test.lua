@@ -95,7 +95,7 @@ function MakeBunny()
 	local transform = World.AddComponent_Transform(newEntity)
 	local p = {RandomFloat(-c_floorSize[1]/8,c_floorSize[1]/8), 0, RandomFloat(-c_floorSize[2]/8,c_floorSize[2]/8)}
 	transform:SetPosition(p[1],p[2],p[3])
-	--transform:SetPosition(0,0,0)
+	transform:SetPosition(0,0,0)
 	local scale = 4 + math.random() * 8.0
 	transform:SetScale(scale,scale,scale)
 
@@ -107,7 +107,7 @@ function MakeBunny()
 	newModel:SetShader(ModelDiffuseShader)
 	
 	local newCreature = World.AddComponent_Creature(newEntity)
-	newCreature:SetVisionRadius(math.random(200,400))
+	newCreature:SetVisionRadius(math.random(100,300))
 	newCreature:SetMaxVisibleEntities(32)
 	newCreature:AddFoodSourceTag(MakeTag("plant"))
 	newCreature:AddVisionTag(MakeTag("plant"))

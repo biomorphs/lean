@@ -20,8 +20,8 @@ namespace Engine
 		Tag(const Tag&) = default;
 		Tag& operator=(const Tag& t) = default;
 		Tag& operator=(Tag&& t) = default;
-		bool operator==(const Tag& t) const { return m_hash == t.m_hash; }
-		bool operator!=(const Tag& t) const { return m_hash != t.m_hash; }
+		inline bool operator==(const Tag& t) const { return m_hash == t.m_hash; }
+		inline bool operator!=(const Tag& t) const { return m_hash != t.m_hash; }
 
 		const char* c_str() const { return m_string.c_str(); }
 		uint32_t GetHash() const { return m_hash; }
