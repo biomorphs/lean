@@ -7,6 +7,7 @@
 #include "script_system.h"
 #include "graphics_system.h"
 #include "debug_gui_system.h"
+#include "physics_system.h"
 #include "entity/entity_system.h"
 #include "platform.h"
 #include "core/log.h"
@@ -47,6 +48,7 @@ namespace Engine
 		sysManager.RegisterSystem("Input", new InputSystem);
 		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
+		sysManager.RegisterSystem("Physics", new PhysicsSystem);
 		
 		EngineSystemRegister registerSystems(sysManager);
 		systemCreation(registerSystems);

@@ -37,6 +37,11 @@ set(JSONIncludePaths
 	external/json-3.9.1/include/
 )
 
+set(PysXIncludePaths
+	../physx/physx/include/
+	../physx/pxshared/include/
+)
+
 set(CommonCompilerOptions /WX /MP)
 
 add_library(Core STATIC)
@@ -121,6 +126,10 @@ target_compile_options(ImguiLib PRIVATE ${CommonCompilerOptions})
 
 add_library(Engine STATIC)
 set(ENGINE_SOURCES
+	Source/engine/physics_handle.h
+	Source/engine/physics_handle.cpp
+	Source/engine/physics_system.h
+	Source/engine/physics_system.cpp
 	Source/engine/tag.h
 	Source/engine/tag.cpp
 	Source/engine/platform.h
@@ -202,11 +211,14 @@ set(ENGINE_SOURCES
 	Source/engine/components/component_light.cpp
 	Source/engine/components/component_tags.h
 	Source/engine/components/component_tags.cpp
+	Source/engine/components/component_physics.h
+	Source/engine/components/component_physics.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})
 target_include_directories(Engine PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Engine PRIVATE ${JSONIncludePaths})
+target_include_directories(Engine PRIVATE ${PysXIncludePaths})
 target_include_directories(Engine PRIVATE external/imgui-docking/)
 target_include_directories(Engine PRIVATE external/assimp-5.0.1/include/)
 target_include_directories(Engine PRIVATE external/qef/)
@@ -262,6 +274,12 @@ target_link_libraries(Lean PRIVATE Core)
 target_link_libraries(Lean PRIVATE Engine)
 target_link_libraries(Lean PRIVATE Entity)
 target_link_libraries(Lean PRIVATE Playground)
+target_link_libraries(Lean PRIVATE E:/Git/PhysX/physx/bin/win.x86_64.vc142.mt/checked/PhysX_64.lib)
+target_link_libraries(Lean PRIVATE E:/Git/PhysX/physx/bin/win.x86_64.vc142.mt/checked/PhysXCommon_64.lib)
+target_link_libraries(Lean PRIVATE E:/Git/PhysX/physx/bin/win.x86_64.vc142.mt/checked/PhysXCooking_64.lib)
+target_link_libraries(Lean PRIVATE E:/Git/PhysX/physx/bin/win.x86_64.vc142.mt/checked/PhysXFoundation_64.lib)
+target_link_libraries(Lean PRIVATE E:/Git/PhysX/physx/bin/win.x86_64.vc142.mt/checked/PhysXPvdSDK_static_64.lib)
+target_link_libraries(Lean PRIVATE E:/Git/PhysX/physx/bin/win.x86_64.vc142.mt/checked/PhysXExtensions_static_64.lib)
 target_link_libraries(Lean PRIVATE ../external/assimp-5.0.1/lib/release/assimp-vc142-mt)
 target_link_libraries(Lean PRIVATE ../external/glew-2.1.0/lib/Release/x64/glew32)
 if(UseLuaJIT)
