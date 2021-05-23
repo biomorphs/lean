@@ -18,7 +18,7 @@ function MakeSunEntity()
 	
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(91.25,236.25,148.5)
-	transform:SetRotation(38.7,21.1,-15.4)
+	transform:SetRotation(36.6,47.7,0)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(1,1,1)
@@ -28,7 +28,7 @@ function MakeSunEntity()
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
 	light:SetShadowBias(0.001)
-	light:SetShadowOrthoScale(400)
+	light:SetShadowOrthoScale(500)
 	
 	newEntity = World.AddEntity()
 	local newTags = World.AddComponent_Tags(newEntity)
@@ -144,17 +144,19 @@ function CreatureTest.Init()
 	MakeSunEntity()
 	MakeFloorEntity()
 	
-	for x=1,5000 do 
+	for x=1,2000 do 
 		MakeSphereEntity({math.random(0,100),64 + math.random(0,300), math.random(0,100)},0.5 + math.random(1,10)/3.0, true)
+		local boxSize = 0.5 + math.random(1,10)/3.0
+		MakeBoxEntity({math.random(0,100),64 + math.random(0,300), math.random(0,100)},{boxSize,boxSize,boxSize}, true)
 	end
 	
 	MakeSphereEntity({32,0,32},64,false)
 	MakeSphereEntity({128,0,32},32,false)
-	MakeBoxEntity({-32,16,0},{32,32,32},false)
-	MakeBoxEntity({128,16,128},{32,32,32},false)
-	MakeBoxEntity({64,16,128},{32,32,32},false)
-	MakeBoxEntity({0,32,128},{16,64,16},false)
-	MakeBoxEntity({32,32,128},{64,8,8},false)
+	--MakeBoxEntity({-32,16.5,0},{32,32,32},true)
+	MakeBoxEntity({128,16.5,128},{32,32,32},true)
+	MakeBoxEntity({64,16.5,128},{32,32,32},true)
+	MakeBoxEntity({0,32.5,128},{16,64,16},true)
+	MakeBoxEntity({32,128,128},{64,8,8},true)
 end
 
 function CreatureTest.Tick(deltaTime)

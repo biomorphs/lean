@@ -22,6 +22,8 @@
 #include <glm/gtx/fast_square_root.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #ifdef I_DISABLED_DEBUG
 #undef NDEBUG

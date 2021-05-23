@@ -154,7 +154,8 @@ namespace Engine
 		}
 
 		const auto pos = transformComponent->GetPosition();
-		physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z));	// todo, rotate, scale
+		const auto orient = transformComponent->GetOrientation();
+		physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
 		physx::PxMaterial* material = m_physics->createMaterial(p.GetStaticFriction(), p.GetDynamicFriction(), p.GetRestitution());
 		physx::PxRigidActor* body = nullptr;
 		if (p.IsStatic())
@@ -171,7 +172,7 @@ namespace Engine
 			physx::PxVec3 normal = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
 			physx::PxVec3 origin = { std::get<1>(collider).x, std::get<1>(collider).y, std::get<1>(collider).z };
 			auto planePose = physx::PxTransformFromPlaneEquation(physx::PxPlane(origin, normal));
-			auto shape = m_physics->createShape(physx::PxPlaneGeometry(), *material);
+			auto shape = m_physics->createShape(physx::PxPlaneGeometry(), *material, true);
 			shape->setLocalPose(planePose);
 			body->attachShape(*shape);
 		}
@@ -179,7 +180,7 @@ namespace Engine
 		{
 			physx::PxVec3 offset = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
 			float radius = std::get<1>(collider);
-			auto shape = m_physics->createShape(physx::PxSphereGeometry(radius), *material);
+			auto shape = m_physics->createShape(physx::PxSphereGeometry(radius), *material, true);
 			shape->setLocalPose(physx::PxTransform(offset));
 			body->attachShape(*shape);
 		}
@@ -187,9 +188,13 @@ namespace Engine
 		{
 			physx::PxVec3 offset = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
 			physx::PxVec3 dims = { std::get<1>(collider).x/2.0f, std::get<1>(collider).y/2.0f, std::get<1>(collider).z/2.0f };
-			auto shape = m_physics->createShape(physx::PxBoxGeometry(dims.x,dims.y,dims.z), *material);
+			auto shape = m_physics->createShape(physx::PxBoxGeometry(dims.x,dims.y,dims.z), *material, true);
 			shape->setLocalPose(physx::PxTransform(offset));
 			body->attachShape(*shape);
+		}
+		if (!p.IsStatic())
+		{
+			physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(body), 1.0f);
 		}
 		p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(body));
 		m_scene->addActor(*body);
@@ -234,6 +239,7 @@ namespace Engine
 					{
 						const auto& pose = p.GetActor()->getGlobalPose();
 						transform->SetPosition({pose.p.x, pose.p.y, pose.p.z});
+						transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
 					}
 				}
 			});
