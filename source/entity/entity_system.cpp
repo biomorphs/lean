@@ -4,6 +4,7 @@
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
+#include "engine/components/component_tags.h"
 #include "engine/tag.h"
 
 Engine::MenuBar g_entityMenu;
@@ -33,8 +34,21 @@ void EntitySystem::ShowDebugGui()
 			const auto& allEntities = m_world->AllEntities();
 			for (auto entityID : allEntities)
 			{
-				char text[256] = "";
+				char text[1024] = "";
 				sprintf_s(text, "Entity %d", entityID);
+				auto tags = m_world->GetComponent<Tags>(entityID);
+				if (tags && tags->AllTags().size() > 0)
+				{
+					char tagtext[1024] = "";
+					strcat_s(text, " (");
+					for (const auto& tag : tags->AllTags())
+					{
+						int index = &tag - tags->AllTags().data();
+						sprintf_s(tagtext, "%s%s", tag.c_str(), index < tags->AllTags().size()-1 ? "," : "");
+						strcat_s(text, tagtext);
+					}
+					strcat_s(text, ")");
+				}
 				if (m_debugGui->TreeNode(text))
 				{
 					std::vector<ComponentType> owned = m_world->GetOwnedComponentTypes(entityID);

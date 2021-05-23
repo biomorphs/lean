@@ -30,6 +30,8 @@ local spinnyLights = {}		-- array of entityHandle
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
+	local newTags = World.AddComponent_Tags(newEntity)
+	newTags:AddTag(Tag.new("Sunlight"))
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(-40,500,0)
 	transform:SetRotation(2.2,11,14.7)
@@ -52,6 +54,8 @@ end
 
 function MakeLightEntity()
 	local newEntity = World.AddEntity()
+	local newTags = World.AddComponent_Tags(newEntity)
+	newTags:AddTag(Tag.new("Point light"))
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
 	transform:SetPosition(-20,5,-5)
@@ -79,6 +83,9 @@ end
 
 function MakeShadowLightEntity()
 	local newEntity = World.AddEntity()
+	local newTags = World.AddComponent_Tags(newEntity)
+	newTags:AddTag(Tag.new("Point light"))
+	newTags:AddTag(Tag.new("Shadow Caster"))
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(math.random(lightBoxMin[1],lightBoxMax[1]),math.random(lightBoxMin[2],lightBoxMax[2]),math.random(lightBoxMin[3],lightBoxMax[3]))
 	transform:SetPosition(-20,5,-5)
@@ -109,6 +116,9 @@ end
 
 function MakeSpotLight(x,y,z, rx, ry, rz)
 	local newEntity = World.AddEntity()
+	local newTags = World.AddComponent_Tags(newEntity)
+	newTags:AddTag(Tag.new("Spot light"))
+	newTags:AddTag(Tag.new("Shadow Caster"))
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(x,y,z)
 	transform:SetRotation(rx, ry, rz)
@@ -138,8 +148,10 @@ function MakeSpotLight(x,y,z, rx, ry, rz)
 	table.insert(bouncyLights,{newEntity, {0.0,0.0,0.0}})
 end
 
-function MakeModelEntity(x,y,z,scale,model,shader)
+function MakeModelEntity(x,y,z,scale,model,shader, name)
 	local newEntity = World.AddEntity()
+	local newTags = World.AddComponent_Tags(newEntity)
+	newTags:AddTag(Tag.new(name))
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(x,y,z)
 	transform:SetScale(scale,scale,scale)
@@ -161,13 +173,13 @@ function EntityTest.Init()
 		MakeShadowLightEntity()
 	end
 	
-	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader)
+	MakeModelEntity(0,0,0,0.2,SponzaModel,DiffuseShader, "Sponza")
 	local gap = 10
 	local offset = -(InstancingTestCount * gap) / 2
 	for x=0,InstancingTestCount do
 		for y=0,InstancingTestCount do
 			for z=0,InstancingTestCount do
-				MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 8,1,SphereModel,DiffuseShader)
+				MakeModelEntity(offset + x * 6,8 + y * 6,offset + z * 8,1,SphereModel,DiffuseShader, "Sphere")
 			end
 		end		
 	end
