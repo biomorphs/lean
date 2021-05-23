@@ -40,6 +40,10 @@ public:
 	void AddSphereCollider(glm::vec3 offset, float radius) { m_sphereColliders.push_back({offset, radius}); }
 	SphereColliders& GetSphereColliders() { return m_sphereColliders; }
 
+	using BoxColliders = std::vector< std::tuple<glm::vec3, glm::vec3> >;	// offset, dimensions
+	void AddBoxCollider(glm::vec3 offset, glm::vec3 dim) { m_boxColliders.push_back({ offset, dim }); }
+	BoxColliders& GetBoxColliders() { return m_boxColliders; }
+
 	void Rebuild() { m_needsRebuild = true; }
 	bool NeedsRebuild() { return m_needsRebuild; }
 	void SetNeedsRebuild(bool b) { m_needsRebuild = b; }
@@ -58,6 +62,7 @@ private:
 
 	PlaneColliders m_planeColliders;
 	SphereColliders m_sphereColliders;
+	BoxColliders m_boxColliders;
 
 	Engine::PhysicsHandle<physx::PxRigidActor> m_actor;
 };

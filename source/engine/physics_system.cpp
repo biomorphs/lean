@@ -13,8 +13,6 @@
 #include <pvd/PxPvdTransport.h>
 #include <malloc.h>
 
-#pragma optimize("",off)
-
 namespace Engine
 {
 	class AllocatorCallback : public physx::PxAllocatorCallback
@@ -131,6 +129,15 @@ namespace Engine
 						dbg.TreePop();
 					}
 				}
+				for (auto& it : p.GetBoxColliders())
+				{
+					if (dbg.TreeNode("Box"))
+					{
+						std::get<0>(it) = dbg.DragVector("Offset", std::get<0>(it), 0.01f);
+						std::get<1>(it) = dbg.DragVector("Dimensions", std::get<1>(it), 0.01f, 0.0f, 100000.0f);
+						dbg.TreePop();
+					}
+				}
 				dbg.TreePop();
 			}
 		});
@@ -176,7 +183,15 @@ namespace Engine
 			shape->setLocalPose(physx::PxTransform(offset));
 			body->attachShape(*shape);
 		}
-		p.SetActor(body);
+		for (const auto& collider : p.GetBoxColliders())
+		{
+			physx::PxVec3 offset = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
+			physx::PxVec3 dims = { std::get<1>(collider).x/2.0f, std::get<1>(collider).y/2.0f, std::get<1>(collider).z/2.0f };
+			auto shape = m_physics->createShape(physx::PxBoxGeometry(dims.x,dims.y,dims.z), *material);
+			shape->setLocalPose(physx::PxTransform(offset));
+			body->attachShape(*shape);
+		}
+		p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(body));
 		m_scene->addActor(*body);
 		p.SetNeedsRebuild(false);
 	}
@@ -209,11 +224,12 @@ namespace Engine
 		// Apply new transforms to all dynamic bodies
 		{
 			SDE_PROF_EVENT("ApplyTransforms");
-			m_entitySystem->GetWorld()->ForEachComponent<Physics>([this](Physics& p, EntityHandle e)
+			auto transforms = m_entitySystem->GetWorld()->GetAllComponents<Transform>();
+			m_entitySystem->GetWorld()->ForEachComponent<Physics>([this,&transforms](Physics& p, EntityHandle e)
 			{
 				if (!p.IsStatic() && p.GetActor().Get() != nullptr)
 				{
-					auto transform = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
+					auto transform = transforms->Find(e);
 					if (transform)
 					{
 						const auto& pose = p.GetActor()->getGlobalPose();
@@ -232,7 +248,7 @@ namespace Engine
 
 		m_entitySystem->GetWorld()->ForEachComponent<Physics>([this](Physics& p, EntityHandle e)
 		{
-			p.SetActor(nullptr);
+			p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(nullptr));
 		});
 
 		m_scene = nullptr;
@@ -241,5 +257,3 @@ namespace Engine
 		m_foundation = nullptr;
 	}
 }
-
-#pragma optimize("",on)

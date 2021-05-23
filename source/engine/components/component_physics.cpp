@@ -12,6 +12,7 @@ COMPONENT_SCRIPTS(Physics,
 	"GetRestitution", &Physics::GetRestitution,
 	"AddPlaneCollider", &Physics::AddPlaneCollider,
 	"AddSphereCollider", &Physics::AddSphereCollider,
+	"AddBoxCollider", &Physics::AddBoxCollider,
 	"Rebuild", &Physics::Rebuild
 )
 
@@ -22,5 +23,5 @@ Physics::Physics()
 
 Physics::~Physics()
 {
-
+	m_actor = nullptr;
 }

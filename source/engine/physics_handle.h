@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#pragma optimize("",off)
-
 namespace Engine
 {
 	template<class T>
@@ -23,7 +21,16 @@ namespace Engine
 		};
 
 		PhysicsHandle() = default;
-		inline PhysicsHandle(T* ptr) { m_v = ptr; }
+		inline explicit PhysicsHandle(T* ptr) { m_v = ptr; }
+		inline PhysicsHandle& operator=(T* ptr)
+		{
+			if (m_v)
+			{
+				m_v->release();
+			}
+			m_v = ptr;
+			return *this;
+		}
 		inline ~PhysicsHandle()
 		{
 			if (m_v)
@@ -62,5 +69,3 @@ namespace Engine
 		T* m_v = nullptr;
 	};
 }
-
-#pragma optimize("",on)

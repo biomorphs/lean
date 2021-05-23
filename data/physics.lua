@@ -7,7 +7,8 @@ local ModelShadowShader = Graphics.LoadShader("model_shadow", "simpleshadow.vs",
 Graphics.SetShadowShader(SDFDiffuseShader, SDFShadowShader)
 Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
 
-local SphereModel = Graphics.LoadModel("sphere_low.fbx")
+local CubeModel = Graphics.LoadModel("cube.fbx")
+local SphereModel = Graphics.LoadModel("sphere.fbx")
 local FloorTexture = Graphics.LoadTexture("grass01.jpg")
 
 function MakeSunEntity()
@@ -24,7 +25,7 @@ function MakeSunEntity()
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(4096,4096)
 	light:SetShadowBias(0.001)
-	light:SetShadowOrthoScale(200)
+	light:SetShadowOrthoScale(400)
 	
 	newEntity = World.AddEntity()
 	transform = World.AddComponent_Transform(newEntity)
@@ -72,7 +73,7 @@ function MakeFloorEntity()
 	physics:Rebuild()
 end
 
-function MakeSphereEntity(p, radius)
+function MakeSphereEntity(p, radius, dynamic)
 	e = World.AddEntity()
 	local transform = World.AddComponent_Transform(e)
 	transform:SetPosition(p[1],p[2],p[3])
@@ -83,8 +84,41 @@ function MakeSphereEntity(p, radius)
 	newModel:SetShader(ModelDiffuseShader)
 	
 	local physics = World.AddComponent_Physics(e)
-	physics:SetStatic(false)
+	physics:SetStatic(not dynamic)
 	physics:AddSphereCollider(vec3.new(0.0,0.0,0.0),radius)
+	physics:Rebuild()
+	
+	if(math.random(0,1000)<15) then 
+		local light = World.AddComponent_Light(e)
+		light:SetPointLight();
+		light:SetColour(1,1,1)
+		light:SetAmbient(0.1)
+		light:SetAttenuation(2.5)
+		light:SetBrightness(1.5)
+		light:SetDistance(32)
+		if(math.random(0,1000)<50) then 
+			light:SetCastsShadows(true)
+		else
+			light:SetCastsShadows(false)
+		end
+		light:SetShadowmapSize(512,512)
+		light:SetShadowBias(0.5)
+	end
+end
+
+function MakeBoxEntity(p, dims, dynamic)
+	e = World.AddEntity()
+	local transform = World.AddComponent_Transform(e)
+	transform:SetPosition(p[1],p[2],p[3])
+	transform:SetScale(dims[1],dims[2],dims[3])
+	
+	local newModel = World.AddComponent_Model(e)
+	newModel:SetModel(CubeModel)
+	newModel:SetShader(ModelDiffuseShader)
+	
+	local physics = World.AddComponent_Physics(e)
+	physics:SetStatic(not dynamic)
+	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(dims[1],dims[2],dims[3]))
 	physics:Rebuild()
 end
 
@@ -95,9 +129,15 @@ function CreatureTest.Init()
 	MakeFloorEntity()
 	
 	for x=1,5000 do 
-		MakeSphereEntity({math.random(0,100),1 + math.random(0,100), math.random(0,100)},math.random(1,10)/3.0)
+		MakeSphereEntity({math.random(0,100),64 + math.random(0,200), math.random(0,100)},0.5 + math.random(1,10)/3.0, true)
 	end
 	
+	MakeSphereEntity({32,0,32},64,false)
+	MakeSphereEntity({128,0,32},32,false)
+	MakeBoxEntity({-32,16,0},{32,32,32},false)
+	MakeBoxEntity({128,16,128},{32,32,32},false)
+	MakeBoxEntity({64,16,128},{32,32,32},false)
+	MakeBoxEntity({0,32,128},{16,64,16},false)
 end
 
 function CreatureTest.Tick(deltaTime)
