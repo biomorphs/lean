@@ -4,6 +4,7 @@ local SDFDiffuseShader = Graphics.LoadShader("sdf_diffuse", "sdf_model.vs", "sdf
 local SDFShadowShader = Graphics.LoadShader("sdf_shadows", "sdf_shadow.vs", "sdf_shadow.fs")
 local ModelDiffuseShader = Graphics.LoadShader("model_diffuse", "simplediffuse.vs", "simplediffuse.fs")
 local ModelShadowShader = Graphics.LoadShader("model_shadow", "simpleshadow.vs", "simpleshadow.fs");
+local ModelNoLighting = Graphics.LoadShader("model_nolight",  "basic.vs", "basic.fs")
 Graphics.SetShadowShader(SDFDiffuseShader, SDFShadowShader)
 Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
 
@@ -17,18 +18,18 @@ function MakeSunEntity()
 	newTags:AddTag(Tag.new("Sunlight"))
 	
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(91.25,236.25,148.5)
-	transform:SetRotation(36.6,47.7,0)
+	transform:SetPosition(1151.25,2052.5,1473.75)
+	transform:SetRotation(0.7,2.2,0)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(1,1,1)
-	light:SetAmbient(0.2)
+	light:SetAmbient(0.05)
 	light:SetBrightness(0.267)
-	light:SetDistance(400)
+	light:SetDistance(3000)
 	light:SetCastsShadows(true)
-	light:SetShadowmapSize(4096,4096)
+	light:SetShadowmapSize(8192,8192)
 	light:SetShadowBias(0.001)
-	light:SetShadowOrthoScale(500)
+	light:SetShadowOrthoScale(2200)
 	
 	newEntity = World.AddEntity()
 	local newTags = World.AddComponent_Tags(newEntity)
@@ -104,18 +105,30 @@ function MakeSphereEntity(p, radius, dynamic)
 	physics:AddSphereCollider(vec3.new(0.0,0.0,0.0),radius)
 	physics:Rebuild()
 	
-	if(math.random(0,1000)<15) then 
+	if(math.random(0,1000)<5) then 
 		newTags:AddTag(Tag.new("Lit"))
 		local light = World.AddComponent_Light(e)
 		light:SetPointLight();
-		light:SetColour(math.random(90,100)/100.0,math.random(5,30)/100.0,0)
-		light:SetAmbient(0.1)
-		light:SetAttenuation(3.0)
-		light:SetBrightness(4.0)
-		light:SetDistance(32)
-		light:SetCastsShadows(false)
-		light:SetShadowmapSize(512,512)
-		light:SetShadowBias(0.5)
+		if(math.random(0,1000)<80) then 
+			light:SetColour(0,math.random(5,20)/100.0,math.random(90,100)/100.0)
+			light:SetAmbient(0.015)
+			light:SetBrightness(8.0)
+			light:SetDistance(256)
+			light:SetAttenuation(8.0)
+			light:SetCastsShadows(true)
+			light:SetShadowmapSize(512,512)
+			light:SetShadowBias(4.0)
+			newTags:AddTag(Tag.new("Blue"))
+		else
+			light:SetColour(math.random(90,100)/100.0,math.random(5,30)/100.0,0)
+			light:SetAmbient(0.04)
+			light:SetBrightness(6.0)
+			light:SetDistance(48)
+			light:SetAttenuation(5.0)
+			light:SetCastsShadows(false)
+		end
+		newModel:SetShader(ModelNoLighting)
+		
 	end
 	
 	return e
@@ -139,6 +152,20 @@ function MakeBoxEntity(p, dims, dynamic, kinematic)
 	physics:SetKinematic(kinematic)
 	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(dims[1],dims[2],dims[3]))
 	physics:Rebuild()
+	
+	if(math.random(0,1000)<5) then 
+		newTags:AddTag(Tag.new("Lit"))
+		local light = World.AddComponent_Light(e)
+		light:SetPointLight();
+		light:SetColour(math.random(90,100)/100.0,math.random(5,30)/100.0,0)
+		light:SetAmbient(0.05)
+		light:SetAttenuation(8.0)
+		light:SetBrightness(6.0)
+		light:SetDistance(64)
+		light:SetCastsShadows(false)
+		light:SetShadowmapSize(512,512)
+		light:SetShadowBias(0.5)
+	end
 	
 	return e
 end

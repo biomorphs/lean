@@ -47,8 +47,8 @@ namespace Engine
 	void SDFMeshBuilder::GenerateAO(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, std::vector<float>& ao)
 	{
 		SDE_PROF_EVENT();
-		const int c_raysToFire = 64;
-		static float s_mainRayLength = 64.0f;
+		const int c_raysToFire = 32;
+		static float s_mainRayLength = 32.0f;
 		static float s_step = s_mainRayLength;
 		for (int v=0;v<vertices.size();++v)
 		{

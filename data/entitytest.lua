@@ -34,7 +34,7 @@ function MakeSunEntity()
 	newTags:AddTag(Tag.new("Sunlight"))
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(-40,500,0)
-	transform:SetRotation(2.2,11,14.7)
+	transform:SetRotation(-0.1,-0.9,0)
 	transform:SetScale(4,16,4)
 	
 	local light = World.AddComponent_Light(newEntity)
@@ -198,9 +198,7 @@ function EntityTest.Tick(deltaTime)
 	for s=1,#spinnyLights do 
 		local entity = spinnyLights[s]
 		local transform = World.GetComponent_Transform(entity)
-		local rotation = transform:GetRotationDegrees()
-		rotation.y = rotation.y + deltaTime * 200
-		transform:SetRotation(rotation.x,rotation.y,rotation.z)
+		transform:RotateEuler(vec3.new(0,0,3 * deltaTime))
 	end
 	for b=1,#bouncyLights do 
 		local entity = bouncyLights[b][1]
