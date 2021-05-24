@@ -126,7 +126,7 @@ namespace Engine
 						std::get<0>(it) = dbg.DragVector("Normal", std::get<0>(it), 0.01f, -1.0f, 1.0f);
 						std::get<1>(it) = dbg.DragVector("Origin", std::get<1>(it), 0.01f, -1.0f, 1.0f);
 						dbg.TreePop();
-						m_graphicsSystem->DebugRenderer().DrawLine(std::get<0>(it), std::get<0>(it) + std::get<1>(it), { 0.0f,1.0f,1.0f });
+						m_graphicsSystem->DebugRenderer().DrawLine(std::get<1>(it), std::get<1>(it) + std::get<0>(it), { 0.0f,1.0f,1.0f });
 					}
 				}
 				for (auto& it : p.GetSphereColliders())
@@ -142,7 +142,10 @@ namespace Engine
 						{
 							auto bMin = std::get<0>(it) - std::get<1>(it);
 							auto bMax = std::get<0>(it) + std::get<1>(it);
-							m_graphicsSystem->DebugRenderer().DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, transform->GetMatrix());
+							// ignore scale since we dont pass it to physx
+							glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
+							matrix = matrix * glm::toMat4(transform->GetOrientation());
+							m_graphicsSystem->DebugRenderer().DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, matrix);
 						}
 					}
 				}

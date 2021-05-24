@@ -154,7 +154,7 @@ function CreatureTest.Init()
 	Spinner = MakeBoxEntity({0,70,128}, {150,8,8}, true, true)
 	World.GetComponent_Tags(Spinner):AddTag(Tag.new("Spinner"))
 	
-	for x=1,4000 do 
+	for x=1,3000 do 
 		MakeSphereEntity({math.random(0,100),64 + math.random(0,1000), math.random(0,100)},0.5 + math.random(1,10)/3.0, true)
 		local boxSize = 1.0 + math.random(1,10)/1.5
 		MakeBoxEntity({math.random(0,100),64 + math.random(0,1000), math.random(0,100)},{boxSize,boxSize,boxSize}, true, false)
