@@ -17,6 +17,7 @@ namespace physx
 class EntitySystem;
 class EntityHandle;
 class Physics;
+class GraphicsSystem;
 namespace Engine
 {
 	class JobSystem;
@@ -37,6 +38,7 @@ namespace Engine
 		class JobDispatcher;
 		JobSystem* m_jobSystem = nullptr;
 		EntitySystem* m_entitySystem = nullptr;
+		GraphicsSystem* m_graphicsSystem = nullptr;
 		float m_timeAccumulator = 0.0f;
 		float m_timeStep = 1.0f / 60.0f;	// fixed time step for now
 		PhysicsHandle<physx::PxFoundation> m_foundation;

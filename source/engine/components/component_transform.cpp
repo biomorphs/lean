@@ -6,7 +6,8 @@ COMPONENT_SCRIPTS(Transform,
 	"SetScale", &Transform::SetScale3,
 	"GetScale", &Transform::GetScale,
 	"GetPosition", &Transform::GetPosition,
-	"GetRotationDegrees", &Transform::GetRotationDegrees
+	"GetRotationDegrees", &Transform::GetRotationDegrees,
+	"RotateEuler", &Transform::RotateEuler
 )
 
 void Transform::RebuildMatrix()
@@ -15,4 +16,11 @@ void Transform::RebuildMatrix()
 	glm::mat4 rotation = glm::toMat4(m_orientation);
 	modelMat = modelMat * rotation;
 	m_matrix = glm::scale(modelMat, m_scale);
+}
+
+void Transform::RotateEuler(glm::vec3 anglesRadians)
+{
+	glm::quat q(anglesRadians);
+	m_orientation = m_orientation * q;
+	RebuildMatrix();
 }

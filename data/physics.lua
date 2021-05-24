@@ -117,9 +117,11 @@ function MakeSphereEntity(p, radius, dynamic)
 		light:SetShadowmapSize(512,512)
 		light:SetShadowBias(0.5)
 	end
+	
+	return e
 end
 
-function MakeBoxEntity(p, dims, dynamic)
+function MakeBoxEntity(p, dims, dynamic, kinematic)
 	e = World.AddEntity()
 	local newTags = World.AddComponent_Tags(e)
 	newTags:AddTag(Tag.new("Box"))
@@ -134,9 +136,14 @@ function MakeBoxEntity(p, dims, dynamic)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(not dynamic)
+	physics:SetKinematic(kinematic)
 	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(dims[1],dims[2],dims[3]))
 	physics:Rebuild()
+	
+	return e
 end
+
+local Spinner = {}
 
 function CreatureTest.Init()	
 	Graphics.SetClearColour(0.3,0.55,0.8)
@@ -146,20 +153,25 @@ function CreatureTest.Init()
 	
 	for x=1,2000 do 
 		MakeSphereEntity({math.random(0,100),64 + math.random(0,300), math.random(0,100)},0.5 + math.random(1,10)/3.0, true)
-		local boxSize = 0.5 + math.random(1,10)/3.0
-		MakeBoxEntity({math.random(0,100),64 + math.random(0,300), math.random(0,100)},{boxSize,boxSize,boxSize}, true)
+		local boxSize = 1.0 + math.random(1,10)/1.5
+		MakeBoxEntity({math.random(0,100),64 + math.random(0,300), math.random(0,100)},{boxSize,boxSize,boxSize}, true, false)
 	end
 	
 	MakeSphereEntity({32,0,32},64,false)
 	MakeSphereEntity({128,0,32},32,false)
 	--MakeBoxEntity({-32,16.5,0},{32,32,32},true)
-	MakeBoxEntity({128,16.5,128},{32,32,32},true)
-	MakeBoxEntity({64,16.5,128},{32,32,32},true)
-	MakeBoxEntity({0,32.5,128},{16,64,16},true)
-	MakeBoxEntity({32,128,128},{64,8,8},true)
+	MakeBoxEntity({128,16.5,128},{32,32,32},true,false)
+	MakeBoxEntity({64,16.5,128},{32,32,32},true,false)
+	MakeBoxEntity({0,32.5,128},{16,64,16},true,false)
+	MakeBoxEntity({32,128,128},{64,8,8},true,false)
+	
+	Spinner = MakeBoxEntity({0,70,128}, {128,8,8}, true, true)
+	World.GetComponent_Tags(Spinner):AddTag(Tag.new("Spinner"))
 end
 
 function CreatureTest.Tick(deltaTime)
+	local transform = World.GetComponent_Transform(Spinner)
+	transform:RotateEuler(vec3.new(0,-6 * deltaTime,0))
 end
 
 	

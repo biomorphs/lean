@@ -4,6 +4,7 @@
 COMPONENT_SCRIPTS(Physics,
 	"IsStatic", &Physics::IsStatic,
 	"SetStatic", &Physics::SetStatic,
+	"SetKinematic", &Physics::SetKinematic,
 	"GetStaticFriction", &Physics::GetStaticFriction,
 	"SetStaticFriction", &Physics::SetStaticFriction,
 	"SetDynamicFriction", &Physics::SetDynamicFriction,

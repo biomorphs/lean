@@ -13,6 +13,7 @@ public:
 	void SetRotationDegrees(glm::vec3 rotation) { SetOrientation(glm::quat(glm::radians(rotation))); }
 	void SetPosition(glm::vec3 p) { m_position = p; RebuildMatrix(); }
 	void SetScale(glm::vec3 s) { m_scale = s; RebuildMatrix(); }
+	void RotateEuler(glm::vec3 anglesRadians);
 	glm::quat GetOrientation() const { return m_orientation; }
 	glm::vec3 GetPosition() const { return m_position; }
 	glm::vec3 GetRotationRadians() const { return glm::eulerAngles(m_orientation); }

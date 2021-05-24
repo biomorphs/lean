@@ -2,6 +2,8 @@
 #include "system_enumerator.h"
 #include "debug_gui_system.h"
 #include "job_system.h"
+#include "graphics_system.h"
+#include "debug_render.h"
 #include "components/component_physics.h"
 #include "components/component_transform.h"
 #include "entity/entity_system.h"
@@ -72,6 +74,7 @@ namespace Engine
 
 		m_jobSystem = (Engine::JobSystem*)systemEnumerator.GetSystem("Jobs");
 		m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
+		m_graphicsSystem = (GraphicsSystem*)systemEnumerator.GetSystem("Graphics");
 
 		m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_physxAllocator, g_physxErrors);
 
@@ -102,43 +105,86 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		m_entitySystem->RegisterComponentType<Physics>();
-		m_entitySystem->RegisterComponentUi<Physics>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		m_entitySystem->RegisterComponentUi<Physics>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 			auto& p = *static_cast<Physics::StorageType&>(cs).Find(e);
-			auto isStatic = p.IsStatic();
-			p.SetStatic(dbg.Checkbox("Static", isStatic));
+			p.SetStatic(dbg.Checkbox("Static", p.IsStatic()));
+			if (!p.IsStatic())
+			{
+				p.SetKinematic(dbg.Checkbox("Kinematic", p.IsKinematic()));
+			}
 			p.SetStaticFriction(dbg.DragFloat("Friction (Static)", p.GetStaticFriction(), 0.01f, 0.0f, 10.0f));
 			p.SetDynamicFriction(dbg.DragFloat("Friction (Dynamic)", p.GetDynamicFriction(), 0.01f, 0.0f, 10.0f));
 			p.SetRestitution(dbg.DragFloat("Restitution", p.GetRestitution(), 0.01f, 0.0f, 10.0f));
 			if (dbg.TreeNode("Colliders", true))
 			{
+				char text[256] = "";
 				for (auto& it : p.GetPlaneColliders())
 				{
-					if (dbg.TreeNode("Plane"))
+					sprintf(text, "Plane %d", (int)(&it - p.GetPlaneColliders().data()));
+					if (dbg.TreeNode(text))
 					{
 						std::get<0>(it) = dbg.DragVector("Normal", std::get<0>(it), 0.01f, -1.0f, 1.0f);
 						std::get<1>(it) = dbg.DragVector("Origin", std::get<1>(it), 0.01f, -1.0f, 1.0f);
 						dbg.TreePop();
+						m_graphicsSystem->DebugRenderer().DrawLine(std::get<0>(it), std::get<0>(it) + std::get<1>(it), { 0.0f,1.0f,1.0f });
 					}
 				}
 				for (auto& it : p.GetSphereColliders())
 				{
-					if (dbg.TreeNode("Sphere"))
+					sprintf(text, "Sphere %d", (int)(&it - p.GetSphereColliders().data()));
+					if (dbg.TreeNode(text))
 					{
 						std::get<0>(it) = dbg.DragVector("Offset", std::get<0>(it), 0.01f);
 						std::get<1>(it) = dbg.DragFloat("Radius", std::get<1>(it), 0.01f, 0.0f, 100000.0f);
 						dbg.TreePop();
+						auto transform = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
+						if (transform)
+						{
+							auto bMin = std::get<0>(it) - std::get<1>(it);
+							auto bMax = std::get<0>(it) + std::get<1>(it);
+							m_graphicsSystem->DebugRenderer().DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, transform->GetMatrix());
+						}
 					}
 				}
 				for (auto& it : p.GetBoxColliders())
 				{
-					if (dbg.TreeNode("Box"))
+					sprintf(text, "Box %d", (int)(&it - p.GetBoxColliders().data()));
+					if (dbg.TreeNode(text))
 					{
 						std::get<0>(it) = dbg.DragVector("Offset", std::get<0>(it), 0.01f);
 						std::get<1>(it) = dbg.DragVector("Dimensions", std::get<1>(it), 0.01f, 0.0f, 100000.0f);
 						dbg.TreePop();
+						auto transform = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
+						if (transform && transform->GetScale().length() != 0.0f)
+						{
+							auto bMin = std::get<0>(it) - std::get<1>(it) * 0.5f;
+							auto bMax = std::get<0>(it) + std::get<1>(it) * 0.5f;
+							// ignore scale since we dont pass it to physx
+							glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
+							matrix = matrix * glm::toMat4(transform->GetOrientation());
+							m_graphicsSystem->DebugRenderer().DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, matrix);
+						}
 					}
 				}
+				if (dbg.Button("+ Plane"))
+				{
+					p.AddPlaneCollider({ 0,1,0 }, { 0,0,0 });
+				}
+				dbg.SameLine();
+				if (dbg.Button("+ Sphere"))
+				{
+					p.AddSphereCollider({ 0,0,0 }, 1.0f);
+				}
+				dbg.SameLine();
+				if (dbg.Button("+ Box"))
+				{
+					p.AddBoxCollider({ 0,0,0 }, { 1,1,1 });
+				}
 				dbg.TreePop();
+				if (dbg.Button("Rebuild"))
+				{
+					p.Rebuild();
+				}
 			}
 		});
 
@@ -165,6 +211,7 @@ namespace Engine
 		else
 		{
 			body = m_physics->createRigidDynamic(trans);
+			static_cast<physx::PxRigidDynamic*>(body)->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, p.IsKinematic());
 		}
 	
 		for (const auto& collider : p.GetPlaneColliders())
@@ -214,6 +261,18 @@ namespace Engine
 				{
 					RebuildActor(p, e);
 				}
+				// update kinematic target transforms
+				if (!p.IsStatic() && p.IsKinematic() && p.GetActor().Get() != nullptr)
+				{
+					auto transformComponent = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
+					if (transformComponent)
+					{
+						const auto pos = transformComponent->GetPosition();
+						const auto orient = transformComponent->GetOrientation();
+						physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
+						static_cast<physx::PxRigidDynamic*>(p.GetActor().Get())->setKinematicTarget(trans);
+					}
+				}
 			});
 		}
 
@@ -226,13 +285,13 @@ namespace Engine
 			m_scene->fetchResults(true);
 		}
 
-		// Apply new transforms to all dynamic bodies
+		// Apply new transforms to all non-kinematic dynamic bodies
 		{
 			SDE_PROF_EVENT("ApplyTransforms");
 			auto transforms = m_entitySystem->GetWorld()->GetAllComponents<Transform>();
 			m_entitySystem->GetWorld()->ForEachComponent<Physics>([this,&transforms](Physics& p, EntityHandle e)
 			{
-				if (!p.IsStatic() && p.GetActor().Get() != nullptr)
+				if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
 				{
 					auto transform = transforms->Find(e);
 					if (transform)

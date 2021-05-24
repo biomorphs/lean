@@ -23,6 +23,9 @@ public:
 	bool IsStatic() { return m_isStatic; }
 	void SetStatic(bool s) { m_isStatic = s; }
 
+	bool IsKinematic() { return m_isKinematic; }
+	void SetKinematic(bool k) { m_isKinematic = k; }
+
 	float GetStaticFriction() { return m_staticFriction; }
 	void SetStaticFriction(float s) { m_staticFriction = s; }
 
@@ -48,12 +51,13 @@ public:
 	bool NeedsRebuild() { return m_needsRebuild; }
 	void SetNeedsRebuild(bool b) { m_needsRebuild = b; }
 
-	const Engine::PhysicsHandle<physx::PxRigidActor>& GetActor() { return m_actor; }
+	Engine::PhysicsHandle<physx::PxRigidActor>& GetActor() { return m_actor; }
 	void SetActor(Engine::PhysicsHandle<physx::PxRigidActor>&& a) { m_actor = std::move(a); }
 
 private:
 	bool m_needsRebuild = false;
 	bool m_isStatic = false;
+	bool m_isKinematic = false;		
 
 	// Material parameters
 	float m_staticFriction = 0.5f;
