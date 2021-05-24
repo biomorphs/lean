@@ -147,8 +147,9 @@ void main()
 
 	// transform normal map to world space
 	vec3 finalNormal = texture(NormalsTexture, vs_out_uv).rgb;
-	finalNormal = finalNormal * 2.0 - 1.0;   
+	finalNormal = normalize(finalNormal * 2.0 - 1.0);   
 	finalNormal = normalize(vs_out_tbnMatrix * finalNormal);
+	finalNormal = normalize(vs_out_normal);	// fixme, tbn is wrong with transforms (non orthaganol?)
 
 	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
 	for(int i=0;i<LightCount;++i)

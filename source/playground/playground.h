@@ -29,6 +29,7 @@ private:
 	void SaveScene(std::string filename);
 	void TickScene(float timeDelta);
 	void ReloadScripts();
+	void ShowSystemProfiler();
 
 	Scene m_scene;
 	SceneEditor m_sceneEditor;

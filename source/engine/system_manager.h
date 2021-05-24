@@ -2,6 +2,7 @@
 
 #include "system_enumerator.h"
 #include <vector>
+#include <tuple>
 #include <map>
 
 namespace Engine
@@ -24,11 +25,15 @@ namespace Engine
 		bool Tick(float timeDelta);
 		void Shutdown();
 
+		using ProfilerData = std::map<std::string, double>;
+		const ProfilerData& GetLastUpdateTimes() const { return m_lastUpdateTime; }
+
 	private:
-		typedef std::vector<System*> SystemArray;
+		typedef std::vector<std::tuple<std::string, System*>> SystemArray;
 		typedef std::map<uint32_t, System*> SystemMap;
 		typedef std::pair<uint32_t, System*> SystemPair;
 
+		ProfilerData m_lastUpdateTime;
 		SystemArray m_systems;
 		SystemMap m_systemMap;
 	};

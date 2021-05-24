@@ -7,9 +7,9 @@ local ModelShadowShader = Graphics.LoadShader("model_shadow", "simpleshadow.vs",
 Graphics.SetShadowShader(SDFDiffuseShader, SDFShadowShader)
 Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
 
-local CubeModel = Graphics.LoadModel("cube.fbx")
-local SphereModel = Graphics.LoadModel("sphere.fbx")
-local FloorTexture = Graphics.LoadTexture("grass01.jpg")
+local CubeModel = Graphics.LoadModel("cube2.fbx")
+local SphereModel = Graphics.LoadModel("sphere_low.fbx")
+local FloorTexture = Graphics.LoadTexture("white.bmp")
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
@@ -66,8 +66,8 @@ function MakeFloorEntity()
 	transform:SetScale(1,1,1)
 	
 	local sdfModel = World.AddComponent_SDFModel(sdf_entity)
-	sdfModel:SetBoundsMin(-1000,-2,-1000)
-	sdfModel:SetBoundsMax(1000,2,1000)
+	sdfModel:SetBoundsMin(-2000,-2,-2000)
+	sdfModel:SetBoundsMax(2000,2,2000)
 	sdfModel:SetResolution(8,8,8)
 	sdfModel:SetShader(SDFDiffuseShader)
 	sdfModel:SetNormalSmoothness(0)
@@ -79,6 +79,10 @@ function MakeFloorEntity()
 	local physics = World.AddComponent_Physics(sdf_entity)
 	physics:SetStatic(true)
 	physics:AddPlaneCollider(vec3.new(0.0,1.0,0.0),vec3.new(0.0,0.0,0.0))
+	physics:AddPlaneCollider(vec3.new(1.0,0.0,0.0),vec3.new(-1000.0,0.0,0.0))
+	physics:AddPlaneCollider(vec3.new(-1.0,0.0,0.0),vec3.new(1000.0,0.0,0.0))
+	physics:AddPlaneCollider(vec3.new(0.0,0.0,1.0),vec3.new(0.0,0.0,-1000.0))
+	physics:AddPlaneCollider(vec3.new(0.0,0.0,-1.0),vec3.new(0.0,0.0,1000.0))
 	physics:Rebuild()
 end
 
@@ -100,20 +104,16 @@ function MakeSphereEntity(p, radius, dynamic)
 	physics:AddSphereCollider(vec3.new(0.0,0.0,0.0),radius)
 	physics:Rebuild()
 	
-	if(math.random(0,1000)<15) then 
+	if(math.random(0,1000)<20) then 
 		newTags:AddTag(Tag.new("Lit"))
 		local light = World.AddComponent_Light(e)
 		light:SetPointLight();
-		light:SetColour(1,1,1)
+		light:SetColour(math.random(90,100)/100.0,math.random(5,30)/100.0,0)
 		light:SetAmbient(0.1)
-		light:SetAttenuation(2.5)
-		light:SetBrightness(1.5)
+		light:SetAttenuation(3.0)
+		light:SetBrightness(4.0)
 		light:SetDistance(32)
-		if(math.random(0,1000)<50) then 
-			light:SetCastsShadows(true)
-		else
-			light:SetCastsShadows(false)
-		end
+		light:SetCastsShadows(false)
 		light:SetShadowmapSize(512,512)
 		light:SetShadowBias(0.5)
 	end
@@ -151,27 +151,30 @@ function CreatureTest.Init()
 	MakeSunEntity()
 	MakeFloorEntity()
 	
-	for x=1,2000 do 
-		MakeSphereEntity({math.random(0,100),64 + math.random(0,300), math.random(0,100)},0.5 + math.random(1,10)/3.0, true)
+	Spinner = MakeBoxEntity({0,70,128}, {150,8,8}, true, true)
+	World.GetComponent_Tags(Spinner):AddTag(Tag.new("Spinner"))
+	
+	for x=1,4000 do 
+		MakeSphereEntity({math.random(0,100),64 + math.random(0,1000), math.random(0,100)},0.5 + math.random(1,10)/3.0, true)
 		local boxSize = 1.0 + math.random(1,10)/1.5
-		MakeBoxEntity({math.random(0,100),64 + math.random(0,300), math.random(0,100)},{boxSize,boxSize,boxSize}, true, false)
+		MakeBoxEntity({math.random(0,100),64 + math.random(0,1000), math.random(0,100)},{boxSize,boxSize,boxSize}, true, false)
 	end
 	
 	MakeSphereEntity({32,0,32},64,false)
 	MakeSphereEntity({128,0,32},32,false)
-	--MakeBoxEntity({-32,16.5,0},{32,32,32},true)
 	MakeBoxEntity({128,16.5,128},{32,32,32},true,false)
 	MakeBoxEntity({64,16.5,128},{32,32,32},true,false)
 	MakeBoxEntity({0,32.5,128},{16,64,16},true,false)
 	MakeBoxEntity({32,128,128},{64,8,8},true,false)
-	
-	Spinner = MakeBoxEntity({0,70,128}, {128,8,8}, true, true)
-	World.GetComponent_Tags(Spinner):AddTag(Tag.new("Spinner"))
 end
 
 function CreatureTest.Tick(deltaTime)
-	local transform = World.GetComponent_Transform(Spinner)
-	transform:RotateEuler(vec3.new(0,-6 * deltaTime,0))
+	if(Spinner ~= nil) then 
+		local transform = World.GetComponent_Transform(Spinner)
+		if(transform ~= nil) then
+			transform:RotateEuler(vec3.new(0,-3 * deltaTime,0))
+		end
+	end
 end
 
 	

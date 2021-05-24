@@ -3,6 +3,7 @@
 #include "core/time.h"
 #include "core/log.h"
 #include "core/profiler.h"
+#include "core/glm_headers.h"
 #include "engine/system_enumerator.h"
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
@@ -183,11 +184,20 @@ bool Playground::PostInit()
 	return true;
 }
 
+void Playground::ShowSystemProfiler()
+{
+	bool open = true;
+	m_debugGui->BeginWindow(open, "System Profiler");
+	m_debugGui->EndWindow();
+}
+
 bool Playground::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
 
 	m_debugGui->MainMenuBar(g_menuBar);
+	ShowSystemProfiler();
+
 	if (m_sceneEditor.Tick())
 	{
 		ReloadScripts();

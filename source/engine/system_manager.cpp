@@ -3,6 +3,7 @@
 #include "core/string_hashing.h"
 #include "core/log.h"
 #include "core/profiler.h"
+#include "core/timer.h"
 #include <cassert>
 
 namespace Engine
@@ -20,7 +21,7 @@ namespace Engine
 		assert(theSystem);
 		uint32_t nameHash = Core::StringHashing::GetHash(systemName);
 		assert(m_systemMap.find(nameHash) == m_systemMap.end());
-		m_systems.push_back(theSystem);
+		m_systems.push_back({ systemName, theSystem });
 		m_systemMap.insert(SystemPair(nameHash, theSystem));
 	}
 
@@ -43,7 +44,7 @@ namespace Engine
 			SDE_PROF_EVENT("PreInit");
 			for (const auto it : m_systems)
 			{
-				if (!it->PreInit(*this))
+				if (!std::get<1>(it)->PreInit(*this))
 				{
 					return false;
 				}
@@ -53,7 +54,7 @@ namespace Engine
 			SDE_PROF_EVENT("Initialise");
 			for (const auto it : m_systems)
 			{
-				if (!it->Initialise())
+				if (!std::get<1>(it)->Initialise())
 				{
 					return false;
 				}
@@ -63,7 +64,7 @@ namespace Engine
 			SDE_PROF_EVENT("PostInit");
 			for (const auto it : m_systems)
 			{
-				if (!it->PostInit())
+				if (!std::get<1>(it)->PostInit())
 				{
 					return false;
 				}
@@ -78,9 +79,13 @@ namespace Engine
 		SDE_PROF_FRAME("Main Thread");
 		SDE_PROF_EVENT();
 		bool keepRunning = true;
+		Core::Timer t;
 		for (const auto it : m_systems)
 		{
-			keepRunning &= it->Tick(timeDelta);
+			auto startTime = t.GetSeconds();
+			keepRunning &= std::get<1>(it)->Tick(timeDelta);
+			auto endTime = t.GetSeconds();
+			m_lastUpdateTime[std::get<0>(it)] = endTime - startTime;
 		}
 		return keepRunning;
 	}
@@ -91,19 +96,19 @@ namespace Engine
 		SDE_PROF_EVENT();
 		for (const auto it : m_systems)
 		{
-			it->PreShutdown();
+			std::get<1>(it)->PreShutdown();
 		}
 		for (const auto it : m_systems)
 		{
-			it->Shutdown();
+			std::get<1>(it)->Shutdown();
 		}
 		for (const auto it : m_systems)
 		{
-			it->PostShutdown();
+			std::get<1>(it)->PostShutdown();
 		}
 		for (const auto it : m_systems)
 		{
-			delete it;
+			delete std::get<1>(it);
 		}
 		m_systems.clear();
 		m_systemMap.clear();
