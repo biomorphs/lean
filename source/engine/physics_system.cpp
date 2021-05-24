@@ -112,6 +112,7 @@ namespace Engine
 			{
 				p.SetKinematic(dbg.Checkbox("Kinematic", p.IsKinematic()));
 			}
+			p.SetDensity(dbg.DragFloat("Density", p.GetDensity(), 0.01f, 0.0f, 100000.0f));
 			p.SetStaticFriction(dbg.DragFloat("Friction (Static)", p.GetStaticFriction(), 0.01f, 0.0f, 10.0f));
 			p.SetDynamicFriction(dbg.DragFloat("Friction (Dynamic)", p.GetDynamicFriction(), 0.01f, 0.0f, 10.0f));
 			p.SetRestitution(dbg.DragFloat("Restitution", p.GetRestitution(), 0.01f, 0.0f, 10.0f));
@@ -244,7 +245,7 @@ namespace Engine
 		}
 		if (!p.IsStatic())
 		{
-			physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(body), 1.0f);
+			physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(body), p.GetDensity());
 		}
 		p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(body));
 		m_scene->addActor(*body);

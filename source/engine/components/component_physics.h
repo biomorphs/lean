@@ -26,6 +26,9 @@ public:
 	bool IsKinematic() { return m_isKinematic; }
 	void SetKinematic(bool k) { m_isKinematic = k; }
 
+	float GetDensity() { return m_density; }
+	void SetDensity(float d) { m_density = d; }
+
 	float GetStaticFriction() { return m_staticFriction; }
 	void SetStaticFriction(float s) { m_staticFriction = s; }
 
@@ -60,6 +63,7 @@ private:
 	bool m_isKinematic = false;		
 
 	// Material parameters
+	float m_density = 1.0f;
 	float m_staticFriction = 0.5f;
 	float m_dynamicFriction = 0.5f;
 	float m_restitution = 0.6f;

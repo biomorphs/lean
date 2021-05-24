@@ -104,7 +104,7 @@ function MakeSphereEntity(p, radius, dynamic)
 	physics:AddSphereCollider(vec3.new(0.0,0.0,0.0),radius)
 	physics:Rebuild()
 	
-	if(math.random(0,1000)<20) then 
+	if(math.random(0,1000)<15) then 
 		newTags:AddTag(Tag.new("Lit"))
 		local light = World.AddComponent_Light(e)
 		light:SetPointLight();
@@ -152,9 +152,10 @@ function CreatureTest.Init()
 	MakeFloorEntity()
 	
 	Spinner = MakeBoxEntity({0,70,128}, {150,8,8}, true, true)
+	World.GetComponent_Physics(Spinner):SetDensity(100.0)
 	World.GetComponent_Tags(Spinner):AddTag(Tag.new("Spinner"))
 	
-	for x=1,3000 do 
+	for x=1,5000 do 
 		MakeSphereEntity({math.random(0,100),64 + math.random(0,1000), math.random(0,100)},0.5 + math.random(1,10)/3.0, true)
 		local boxSize = 1.0 + math.random(1,10)/1.5
 		MakeBoxEntity({math.random(0,100),64 + math.random(0,1000), math.random(0,100)},{boxSize,boxSize,boxSize}, true, false)
@@ -164,7 +165,8 @@ function CreatureTest.Init()
 	MakeSphereEntity({128,0,32},32,false)
 	MakeBoxEntity({128,16.5,128},{32,32,32},true,false)
 	MakeBoxEntity({64,16.5,128},{32,32,32},true,false)
-	MakeBoxEntity({0,32.5,128},{16,64,16},true,false)
+	local tallBoy = MakeBoxEntity({0,32.5,128},{16,64,16},true,false)
+	World.GetComponent_Physics(tallBoy):SetDensity(1.0)
 	MakeBoxEntity({32,128,128},{64,8,8},true,false)
 end
 
