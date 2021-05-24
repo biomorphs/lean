@@ -13,7 +13,7 @@ namespace Engine
 	public:
 		InputSystem();
 		virtual ~InputSystem();
-		virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
+		virtual bool PreInit(Engine::SystemManager& manager);
 		virtual bool Initialise();
 		virtual bool Tick(float timeDelta);
 

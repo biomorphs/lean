@@ -15,7 +15,7 @@ class EntitySystem : public Engine::System
 public:
 	EntitySystem();
 	virtual ~EntitySystem() = default;
-	bool PreInit(Engine::SystemEnumerator&);
+	bool PreInit(Engine::SystemManager&);
 	bool Initialise();
 	bool Tick(float timeDelta);
 	void Shutdown();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "system_enumerator.h"
+#include <string>
 #include <vector>
 #include <tuple>
 #include <map>
@@ -10,17 +10,14 @@ namespace Engine
 	class System;
 
 	// This class handles ownership and updates of systems
-	class SystemManager : public SystemEnumerator
+	class SystemManager
 	{
 	public:
 		SystemManager();
 		~SystemManager();
 
-		// SystemEnumerator
 		virtual System* GetSystem(const char* systemName);
-
 		void RegisterSystem(const char* systemName, System* theSystem);
-
 		bool Initialise();
 		bool Tick(float timeDelta);
 		void Shutdown();

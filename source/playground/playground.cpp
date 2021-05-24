@@ -4,7 +4,7 @@
 #include "core/log.h"
 #include "core/profiler.h"
 #include "core/glm_headers.h"
-#include "engine/system_enumerator.h"
+#include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
@@ -145,13 +145,14 @@ Engine::MenuBar g_menuBar;
 bool g_keepRunning = true;
 bool g_pauseScriptDelta = false;
 
-bool Playground::PreInit(Engine::SystemEnumerator& systemEnumerator)
+bool Playground::PreInit(Engine::SystemManager& manager)
 {
 	SDE_PROF_EVENT();
-	m_debugGui = (Engine::DebugGuiSystem*)systemEnumerator.GetSystem("DebugGui");
-	m_scriptSystem = (Engine::ScriptSystem*)systemEnumerator.GetSystem("Script");
-	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
-	m_creatures = (CreatureSystem*)systemEnumerator.GetSystem("Creatures");
+	m_systemManager = &manager;
+	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
+	m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
+	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
+	m_creatures = (CreatureSystem*)manager.GetSystem("Creatures");
 
 	m_sceneEditor.Init(&m_scene, m_debugGui);
 
@@ -188,6 +189,16 @@ void Playground::ShowSystemProfiler()
 {
 	bool open = true;
 	m_debugGui->BeginWindow(open, "System Profiler");
+	char text[256] = "";
+	double totalTime = 0.0;
+	for (const auto& it : m_systemManager->GetLastUpdateTimes())
+	{
+		totalTime += std::get<1>(it);
+		sprintf_s(text, "%s: %3.3fms", std::get<0>(it).c_str(), (float)std::get<1>(it) * 1000.0f);
+		m_debugGui->Text(text);
+	}
+	sprintf_s(text, "Total: %3.3fms", (float)totalTime * 1000.0f);
+	m_debugGui->Text(text);
 	m_debugGui->EndWindow();
 }
 

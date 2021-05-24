@@ -135,7 +135,6 @@ set(ENGINE_SOURCES
 	Source/engine/platform.h
 	Source/engine/platform.cpp
 	Source/engine/system.h
-	Source/engine/system_enumerator.h
 	Source/engine/system_manager.cpp
 	Source/engine/system_manager.h
 	Source/engine/engine_startup.cpp

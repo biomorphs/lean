@@ -2,7 +2,7 @@
 #include "imgui_sdl_gl3_render.h"
 #include "graph_data_buffer.h"
 #include "debug_gui_menubar.h"
-#include "system_enumerator.h"
+#include "engine/system_manager.h"
 #include "render_system.h"
 #include "event_system.h"
 #include "script_system.h"
@@ -21,13 +21,13 @@ namespace Engine
 	{
 	}
 
-	bool DebugGuiSystem::PreInit(SystemEnumerator& systemEnumerator)
+	bool DebugGuiSystem::PreInit(SystemManager& manager)
 	{
 		SDE_PROF_EVENT();
 
-		m_renderSystem = (RenderSystem*)systemEnumerator.GetSystem("Render");
-		m_scriptSystem = (ScriptSystem*)systemEnumerator.GetSystem("Script");
-		auto EventSystem = (Engine::EventSystem*)systemEnumerator.GetSystem("Events");
+		m_renderSystem = (RenderSystem*)manager.GetSystem("Render");
+		m_scriptSystem = (ScriptSystem*)manager.GetSystem("Script");
+		auto EventSystem = (Engine::EventSystem*)manager.GetSystem("Events");
 		EventSystem->RegisterEventHandler([this](void* e)
 		{
 			this->m_imguiPass->HandleEvent(e);

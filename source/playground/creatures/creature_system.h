@@ -21,7 +21,7 @@ class CreatureSystem : public Engine::System
 public:
 	CreatureSystem();
 	virtual ~CreatureSystem();
-	virtual bool PreInit(Engine::SystemEnumerator& systemEnumerator);
+	virtual bool PreInit(Engine::SystemManager& manager);
 	virtual bool Initialise();
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();

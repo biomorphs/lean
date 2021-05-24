@@ -89,7 +89,7 @@ namespace Engine
 		}
 	}
 
-	bool ScriptSystem::PreInit(SystemEnumerator& systemEnumerator)
+	bool ScriptSystem::PreInit(SystemManager& manager)
 	{
 		SDE_PROF_EVENT();
 

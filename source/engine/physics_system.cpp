@@ -1,11 +1,11 @@
 #include "physics_system.h"
-#include "system_enumerator.h"
 #include "debug_gui_system.h"
 #include "job_system.h"
 #include "graphics_system.h"
 #include "debug_render.h"
 #include "components/component_physics.h"
 #include "components/component_transform.h"
+#include "engine/system_manager.h"
 #include "entity/entity_system.h"
 #include "entity/entity_handle.h"
 #include "core/log.h"
@@ -68,13 +68,13 @@ namespace Engine
 	{
 	}
 
-	bool PhysicsSystem::PreInit(SystemEnumerator& systemEnumerator)
+	bool PhysicsSystem::PreInit(SystemManager& manager)
 	{
 		SDE_PROF_EVENT();
 
-		m_jobSystem = (Engine::JobSystem*)systemEnumerator.GetSystem("Jobs");
-		m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
-		m_graphicsSystem = (GraphicsSystem*)systemEnumerator.GetSystem("Graphics");
+		m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
+		m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
+		m_graphicsSystem = (GraphicsSystem*)manager.GetSystem("Graphics");
 
 		m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_physxAllocator, g_physxErrors);
 

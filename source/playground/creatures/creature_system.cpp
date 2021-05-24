@@ -1,7 +1,7 @@
 #include "creature_system.h"
 #include "core/log.h"
 #include "core/thread.h"
-#include "engine/system_enumerator.h"
+#include "engine/system_manager.h"
 #include "engine/graphics_system.h"
 #include "engine/debug_render.h"
 #include "engine/debug_gui_system.h"
@@ -30,14 +30,14 @@ void CreatureSystem::AddBehaviour(Engine::Tag tag, Creature::Behaviour b)
 	m_behaviours[tag] = b;
 }
 
-bool CreatureSystem::PreInit(Engine::SystemEnumerator& systemEnumerator)
+bool CreatureSystem::PreInit(Engine::SystemManager& manager)
 {
 	SDE_PROF_EVENT();
 
-	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
-	m_graphicsSystem = (GraphicsSystem*)systemEnumerator.GetSystem("Graphics");
-	m_scriptSystem = (Engine::ScriptSystem*)systemEnumerator.GetSystem("Script");
-	m_jobSystem = (Engine::JobSystem*)systemEnumerator.GetSystem("Jobs");
+	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
+	m_graphicsSystem = (GraphicsSystem*)manager.GetSystem("Graphics");
+	m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
+	m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
 
 	return true;
 }

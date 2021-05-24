@@ -1,6 +1,6 @@
 #include "input_system.h"
 #include "core/profiler.h"
-#include "system_enumerator.h"
+#include "engine/system_manager.h"
 #include "engine/event_system.h"
 #include <SDL_joystick.h>
 #include <SDL_gamecontroller.h>
@@ -79,9 +79,9 @@ namespace Engine
 		}
 	}
 
-	bool InputSystem::PreInit(SystemEnumerator& systemEnumerator)
+	bool InputSystem::PreInit(SystemManager& manager)
 	{
-		auto eventSystem = (EventSystem*)systemEnumerator.GetSystem("Events");
+		auto eventSystem = (EventSystem*)manager.GetSystem("Events");
 		eventSystem->RegisterEventHandler([this](void* e) { OnSystemEvent(e); });
 
 		return true;

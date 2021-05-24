@@ -1,6 +1,6 @@
 #include "graphics_system.h"
 #include "core/log.h"
-#include "engine/system_enumerator.h"
+#include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
@@ -92,16 +92,16 @@ GraphicsSystem::~GraphicsSystem()
 {
 }
 
-bool GraphicsSystem::PreInit(Engine::SystemEnumerator& systemEnumerator)
+bool GraphicsSystem::PreInit(Engine::SystemManager& manager)
 {
 	SDE_PROF_EVENT();
 
-	m_scriptSystem = (Engine::ScriptSystem*)systemEnumerator.GetSystem("Script");
-	m_renderSystem = (Engine::RenderSystem*)systemEnumerator.GetSystem("Render");
-	m_inputSystem = (Engine::InputSystem*)systemEnumerator.GetSystem("Input");
-	m_jobSystem = (Engine::JobSystem*)systemEnumerator.GetSystem("Jobs");
-	m_debugGui = (Engine::DebugGuiSystem*)systemEnumerator.GetSystem("DebugGui");
-	m_entitySystem = (EntitySystem*)systemEnumerator.GetSystem("Entities");
+	m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
+	m_renderSystem = (Engine::RenderSystem*)manager.GetSystem("Render");
+	m_inputSystem = (Engine::InputSystem*)manager.GetSystem("Input");
+	m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
+	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
+	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
 
 	m_shaders = std::make_unique<Engine::ShaderManager>();
 	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);

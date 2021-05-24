@@ -1,6 +1,6 @@
 #include "render_system.h"
-#include "system_enumerator.h"
 #include "job_system.h"
+#include "engine/system_manager.h"
 #include "render/window.h"
 #include "render/device.h"
 #include "core/profiler.h"
@@ -17,10 +17,10 @@ namespace Engine
 	{
 	}
 
-	bool RenderSystem::PreInit(SystemEnumerator& systemEnumerator)
+	bool RenderSystem::PreInit(SystemManager& manager)
 	{
 		SDE_PROF_EVENT();
-		m_jobSystem = (JobSystem*)systemEnumerator.GetSystem("Jobs");
+		m_jobSystem = (JobSystem*)manager.GetSystem("Jobs");
 
 		// Create the window + device asap
 		Render::Window::Properties winProps(m_config.m_windowTitle, m_config.m_windowWidth, m_config.m_windowHeight);

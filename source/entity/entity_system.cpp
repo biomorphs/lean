@@ -1,6 +1,6 @@
 #include "entity_system.h"
 #include "world.h"
-#include "engine/system_enumerator.h"
+#include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/script_system.h"
@@ -91,7 +91,7 @@ void EntitySystem::ShowDebugGui()
 	m_debugGui->MainMenuBar(g_entityMenu);
 }
 
-bool EntitySystem::PreInit(Engine::SystemEnumerator& s)
+bool EntitySystem::PreInit(Engine::SystemManager& s)
 {
 	SDE_PROF_EVENT();
 

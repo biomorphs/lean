@@ -25,7 +25,7 @@ namespace Engine
 		DebugGuiSystem();
 		virtual ~DebugGuiSystem();
 
-		virtual bool PreInit(SystemEnumerator& systemEnumerator);
+		virtual bool PreInit(SystemManager& manager);
 		virtual bool Initialise() override;
 		virtual bool PostInit() override;
 		virtual bool Tick(float timeDelta) override;

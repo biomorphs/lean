@@ -1,6 +1,5 @@
 #include "job_system.h"
 #include "core/profiler.h"
-#include "system_enumerator.h"
 #include "SDL_cpuinfo.h"
 #include <cassert>
 
