@@ -12,6 +12,7 @@ namespace physx
 	class PxScene;
 	class PxCpuDispatcher;
 	class PxCooking;
+	class PxCudaContextManager;
 }
 
 class EntitySystem;
@@ -45,6 +46,7 @@ namespace Engine
 		PhysicsHandle<physx::PxPvd> m_pvd;
 		PhysicsHandle<physx::PxPhysics> m_physics;
 		PhysicsHandle<physx::PxCooking> m_cooker;
+		PhysicsHandle<physx::PxCudaContextManager> m_cudaManager;
 		PhysicsHandle<physx::PxScene> m_scene;
 	};
 }

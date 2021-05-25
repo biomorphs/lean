@@ -318,7 +318,7 @@ bool GraphicsSystem::Initialise()
 
 	auto windowSize = m_renderSystem->GetWindow()->GetSize();
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();
-	m_debugCamera->SetPosition({0.f,0.0f,20.0f});
+	m_debugCamera->SetPosition({-165.0f,230.0f,500.0f});
 	m_debugCamera->SetPitch(0.0f);
 	m_debugCamera->SetYaw(0.0f);
 

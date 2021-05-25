@@ -9,7 +9,7 @@ public:
 	COMPONENT(Transform);
 
 	void SetOrientation(glm::quat q) { m_orientation = glm::normalize(q); RebuildMatrix(); }
-	void SetRotation(float x, float y, float z) { SetOrientation(glm::quat(glm::vec3(x, y, z))); };
+	void SetRotationDegrees3(float x, float y, float z) { SetOrientation(glm::quat(glm::radians(glm::vec3(x, y, z)))); };
 	void SetRotationDegrees(glm::vec3 rotation) { SetOrientation(glm::quat(glm::radians(rotation))); }
 	void SetPosition(glm::vec3 p) { m_position = p; RebuildMatrix(); }
 	void SetScale(glm::vec3 s) { m_scale = s; RebuildMatrix(); }

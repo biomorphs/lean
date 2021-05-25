@@ -24,19 +24,38 @@ void EntitySystem::NewWorld()
 void EntitySystem::ShowDebugGui()
 {
 	SDE_PROF_EVENT();
+	static std::string filterText = "";
 
 	if(g_showWindow)
 	{
 		m_debugGui->BeginWindow(g_showWindow, "Entity System");
+		m_debugGui->TextInput("Tag Filter", filterText);
 		if (m_debugGui->TreeNode("All Entities", true))
 		{
 			auto allComponentTypes = m_world->GetAllComponentTypes();
 			const auto& allEntities = m_world->AllEntities();
 			for (auto entityID : allEntities)
 			{
+				auto tags = m_world->GetComponent<Tags>(entityID);
+				if (filterText.size() > 0 && tags != nullptr)
+				{
+					bool foundMatching = false;
+					for (const auto& tag : tags->AllTags())
+					{
+						if (strstr(tag.c_str(), filterText.c_str()) != nullptr)
+						{
+							foundMatching = true;
+							break;
+						}
+					}
+					if (!foundMatching)
+					{
+						continue;
+					}
+				}
+
 				char text[1024] = "";
 				sprintf_s(text, "Entity %d", entityID);
-				auto tags = m_world->GetComponent<Tags>(entityID);
 				if (tags && tags->AllTags().size() > 0)
 				{
 					char tagtext[1024] = "";

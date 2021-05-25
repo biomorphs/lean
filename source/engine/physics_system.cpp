@@ -89,11 +89,21 @@ namespace Engine
 		m_cooker = PxCreateCooking(PX_PHYSICS_VERSION, *m_foundation.Get(), cookingParams);
 		PxInitExtensions(*m_physics.Get(), m_pvd.Get());
 
-		// Hook up our own job dispatcher and create the scene
+		// Hook up our own job dispatcher, CUDA and create the scene
+		physx::PxCudaContextManagerDesc cudaContextManagerDesc;
+		m_cudaManager = PxCreateCudaContextManager(*m_foundation.Get(), cudaContextManagerDesc, PxGetProfilerCallback());
+
+		const bool c_useCUDA = true;
 		g_dispatcher.m_jobs = m_jobSystem;
 		physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 		sceneDesc.cpuDispatcher = &g_dispatcher;
+		if (c_useCUDA)
+		{
+			sceneDesc.cudaContextManager = m_cudaManager.Get();
+			sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
+			sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
+		}
 		sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
 		m_scene = m_physics->createScene(sceneDesc);
 
