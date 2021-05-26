@@ -2,5 +2,6 @@
 
 COMPONENT_SCRIPTS(Model,
 	"SetShader", &Model::SetShader,
-	"SetModel", &Model::SetModel
+	"SetModel", &Model::SetModel,
+	"SetMaterialEntity", &Model::SetMaterialEntity
 )

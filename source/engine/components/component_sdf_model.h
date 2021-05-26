@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entity/component.h"
+#include "entity/entity_handle.h"
 #include "core/glm_headers.h"
 #include "engine/shader_manager.h"
 #include "engine/sdf_mesh_builder.h"
@@ -26,6 +27,9 @@ public:
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }
 
 	// params
+	void SetMaterialEntity(EntityHandle e) { m_materialEntity = e; }
+	EntityHandle GetMaterialEntity() { return m_materialEntity; }
+
 	bool IsRemeshing() { return m_isRemeshing; }
 	void SetShader(Engine::ShaderHandle s) { m_shader = s; }
 	Engine::ShaderHandle GetShader() const { return m_shader; }
@@ -58,6 +62,7 @@ public:
 	bool NeedsRemesh() { return m_remesh; }
 
 private:
+	EntityHandle m_materialEntity;
 	Engine::TextureHandle m_diffuseTexture = Engine::TextureHandle::Invalid();
 	bool m_useMulticoreMeshing = true;
 	bool m_isRemeshing = false;

@@ -33,9 +33,9 @@ namespace Engine
 		void Reset();
 		void RenderAll(Render::Device&);
 		void SetCamera(const Render::Camera& c);
-		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader);
-		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax);
-		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader);
+		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat = nullptr);
+		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat = nullptr);
+		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat = nullptr);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation,
 					  Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
@@ -79,8 +79,8 @@ namespace Engine
 
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
 		void RenderShadowmap(Render::Device& d, Light& l);
-		void SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader);
-		void SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax);
+		void SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat = nullptr);
+		void SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
 		int PrepareOpaqueInstances(InstanceList& list);
 		int PrepareTransparentInstances(InstanceList& list);
 		int PrepareCulledShadowInstances(InstanceList& visibleInstances);

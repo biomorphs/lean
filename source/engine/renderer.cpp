@@ -124,22 +124,22 @@ namespace Engine
 		m_camera = c;
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax)
+	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
 		float distanceToCamera = glm::length(glm::vec3(trns[3]) - cam);
 		const auto foundShader = m_shaders->GetShader(shader);
-		list.m_instances.emplace_back(std::move(MeshInstance{ trns, aabbMin, aabbMax, foundShader, &mesh, distanceToCamera }));
+		list.m_instances.emplace_back(std::move(MeshInstance{ trns, aabbMin, aabbMax, foundShader, &mesh, instanceMat, distanceToCamera }));
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat)
 	{
 		// objects submitted with no bounds have infinite aabb
 		const auto boundsMin = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 		const auto boundsMax = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-		SubmitInstance(list, cameraPos, transform, mesh, shader, boundsMin, boundsMax);
+		SubmitInstance(list, cameraPos, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 	}
 
-	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax)
+	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat)
 	{
 		bool castShadow = true;
 		if (castShadow)
@@ -153,15 +153,15 @@ namespace Engine
 
 		bool isTransparent = mesh.GetMaterial().GetIsTransparent();
 		InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-		SubmitInstance(instances, m_camera.Position(), transform, mesh, shader, boundsMin, boundsMax);
+		SubmitInstance(instances, m_camera.Position(), transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 	}
 
-	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat)
 	{
-		SubmitInstance(transform, mesh, shader, { -FLT_MAX, -FLT_MAX, -FLT_MAX }, { FLT_MAX, FLT_MAX, FLT_MAX });
+		SubmitInstance(transform, mesh, shader, { -FLT_MAX, -FLT_MAX, -FLT_MAX }, { FLT_MAX, FLT_MAX, FLT_MAX }, instanceMat);
 	}
 
-	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat)
 	{
 		const auto theModel = m_models->GetModel(model);
 		const auto theShader = m_shaders->GetShader(shader);
@@ -187,7 +187,7 @@ namespace Engine
 
 				bool isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
 				InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-				SubmitInstance(instances, m_camera.Position(), instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax);
+				SubmitInstance(instances, m_camera.Position(), instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
 			}
 		}
 	}
@@ -381,15 +381,17 @@ namespace Engine
 		SDE_PROF_EVENT();
 		auto firstInstance = list.m_instances.begin();
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
+		const Render::Mesh* lastMeshUsed = nullptr;				// avoid binding the same vertex arrays
 		uint32_t firstTextureUnit = 0;							// so we can bind shadows per shader instead of per mesh
 		while (firstInstance != list.m_instances.end())
 		{
-			// Batch by shader and mesh
+			// Batch by shader, mesh and instance material
 			auto lastMeshInstance = std::find_if(firstInstance, list.m_instances.end(), [firstInstance](const MeshInstance& m) -> bool {
-				return  m.m_mesh != firstInstance->m_mesh || m.m_shader != firstInstance->m_shader;
+				return  m.m_mesh != firstInstance->m_mesh || m.m_shader != firstInstance->m_shader || firstInstance->m_material != m.m_material;
 				});
 			auto instanceCount = (uint32_t)(lastMeshInstance - firstInstance);
 			const Render::Mesh* theMesh = firstInstance->m_mesh;
+			const Render::Material* instanceMaterial = firstInstance->m_material;
 			Render::ShaderProgram* theShader = firstInstance->m_shader;
 			if (theShader != nullptr && theMesh != nullptr)
 			{
@@ -421,14 +423,24 @@ namespace Engine
 				uint32_t textureUnit = firstTextureUnit;
 				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, g_defaultTextures, textureUnit);
 
+				// apply instance material uniforms and samplers (materials can be shared across instances!)
+				if (instanceMaterial != nullptr)
+				{
+					ApplyMaterial(d, *theShader, *instanceMaterial, *m_textures, g_defaultTextures, textureUnit);
+				}
+
 				// bind vertex array + instancing streams immediately after mesh vertex streams
-				m_frameStats.m_vertexArrayBinds++;
-				int instancingSlotIndex = theMesh->GetVertexArray().GetStreamCount();
-				d.BindVertexArray(theMesh->GetVertexArray());
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, 0, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 4, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 8, 4);
-				d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 12, 4);
+				if (theMesh != lastMeshUsed)
+				{
+					m_frameStats.m_vertexArrayBinds++;
+					int instancingSlotIndex = theMesh->GetVertexArray().GetStreamCount();
+					d.BindVertexArray(theMesh->GetVertexArray());
+					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, 0, 4);
+					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 4, 4);
+					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 8, 4);
+					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 12, 4);
+					lastMeshUsed = theMesh;
+				}
 
 				// draw the chunks
 				for (const auto& chunk : theMesh->GetChunks())
@@ -650,6 +662,16 @@ namespace Engine
 			{
 				return false;
 			}
+			auto q1Mat = reinterpret_cast<uintptr_t>(q1.m_material);	// per-instance material
+			auto q2Mat = reinterpret_cast<uintptr_t>(q2.m_material);
+			if (q1Mat < q2Mat)
+			{
+				return true;
+			}
+			else if (q1Mat > q2Mat)
+			{
+				return false;
+			}
 			return false;
 		});
 		return PopulateInstanceBuffers(visibleInstances);
@@ -715,6 +737,16 @@ namespace Engine
 				{
 					return false;
 				}
+				auto q1Mat = reinterpret_cast<uintptr_t>(q1.m_material);	// per-instance material
+				auto q2Mat = reinterpret_cast<uintptr_t>(q2.m_material);
+				if (q1Mat < q2Mat)
+				{
+					return true;
+				}
+				else if (q1Mat > q2Mat)
+				{
+					return false;
+				}
 				return false;
 			});
 		}
@@ -753,6 +785,16 @@ namespace Engine
 					return true;
 				}
 				else if (q1Mesh > q2Mesh)
+				{
+					return false;
+				}
+				auto q1Mat = reinterpret_cast<uintptr_t>(q1.m_material);	// per-instance material
+				auto q2Mat = reinterpret_cast<uintptr_t>(q2.m_material);
+				if (q1Mat < q2Mat)
+				{
+					return true;
+				}
+				else if (q1Mat > q2Mat)
 				{
 					return false;
 				}
@@ -815,6 +857,7 @@ namespace Engine
 			SDE_PROF_STALL("WaitForCulling");
 			while (jobsRemaining > 0)
 			{
+				m_jobSystem->ProcessJobThisThread();
 				Core::Thread::Sleep(0);
 			}
 		}

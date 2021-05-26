@@ -212,6 +212,8 @@ set(ENGINE_SOURCES
 	Source/engine/components/component_tags.cpp
 	Source/engine/components/component_physics.h
 	Source/engine/components/component_physics.cpp
+	Source/engine/components/component_material.h
+	Source/engine/components/component_material.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})

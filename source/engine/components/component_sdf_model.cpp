@@ -18,7 +18,8 @@ COMPONENT_SCRIPTS(SDFModel,
 	"SetMeshSurfaceNet", &SDFModel::SetMeshSurfaceNet,
 	"SetMeshDualContour", &SDFModel::SetMeshDualContour,
 	"SetNormalSmoothness", &SDFModel::SetNormalSmoothness,
-	"SetDiffuseTexture", &SDFModel::SetDiffuseTexture
+	"SetDiffuseTexture", &SDFModel::SetDiffuseTexture,
+	"SetMaterialEntity", &SDFModel::SetMaterialEntity
 )
 
 // Use the common samples names as we get free default textures

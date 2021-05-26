@@ -28,6 +28,7 @@
 #include "engine/components/component_model.h"
 #include "engine/components/component_sdf_model.h"
 #include "engine/components/component_tags.h"
+#include "engine/components/component_material.h"
 
 Engine::MenuBar g_graphicsMenu;
 bool g_showTextureGui = false;
@@ -117,6 +118,53 @@ bool GraphicsSystem::Initialise()
 
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
+
+	m_entitySystem->RegisterComponentType<Material>();
+	m_entitySystem->RegisterComponentUi<Material>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		auto& m = *static_cast<Material::StorageType&>(cs).Find(e);
+		auto& rmat = m.GetRenderMaterial();
+		auto& uniforms = rmat.GetUniforms();
+		auto& samplers = rmat.GetSamplers();
+		char text[1024] = { '\0' };
+		for (auto& v : uniforms.FloatValues())
+		{
+			sprintf_s(text, "%s", v.second.m_name.c_str());
+			v.second.m_value = dbg.DragFloat(text, v.second.m_value);
+		}
+		for (auto& v : uniforms.Vec4Values())
+		{
+			sprintf_s(text, "%s", v.second.m_name.c_str());
+			v.second.m_value = dbg.DragVector(text, v.second.m_value);
+		}
+		for (auto& v : uniforms.IntValues())
+		{
+			sprintf_s(text, "%s", v.second.m_name.c_str());
+			v.second.m_value = dbg.DragInt(text, v.second.m_value);
+		}
+		for (auto& t : samplers)
+		{
+			sprintf_s(text, "%s", t.second.m_name.c_str());
+			if (t.second.m_handle != 0 && dbg.TreeNode(text))
+			{
+				auto texture = m_textures->GetTexture({ t.second.m_handle });
+				auto path = m_textures->GetTexturePath({ t.second.m_handle });
+				if (texture)
+				{
+					dbg.Image(*texture, { 256,256 });
+				}
+				sprintf_s(text, "%s", t.second.m_name.c_str());
+				if (dbg.Button(text))
+				{
+					std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
+					if (newFile != "")
+					{
+						auto loadedTexture = m_textures->LoadTexture(newFile.c_str());
+						t.second.m_handle = loadedTexture.m_index;
+					}
+				}
+			}
+		}
+	});
 
 	m_entitySystem->RegisterComponentType<Tags>();
 	m_entitySystem->RegisterComponentUi<Tags>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
@@ -271,6 +319,11 @@ bool GraphicsSystem::Initialise()
 		"x", &glm::vec3::x,
 		"y", &glm::vec3::y,
 		"z", &glm::vec3::z);
+	m_scriptSystem->Globals().new_usertype<glm::vec4>("vec4", sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>(),
+		"x", &glm::vec4::x,
+		"y", &glm::vec4::y,
+		"z", &glm::vec4::z,
+		"w", &glm::vec4::z);
 
 	//// expose Graphics script functions
 	auto graphics = m_scriptSystem->Globals()["Graphics"].get_or_create<sol::table>();
@@ -433,6 +486,7 @@ void GraphicsSystem::ProcessEntities()
 
 	auto world = m_entitySystem->GetWorld();
 	auto transforms = world->GetAllComponents<Transform>();
+	auto materials = world->GetAllComponents<Material>();
 
 	// submit all lights
 	{
@@ -449,11 +503,17 @@ void GraphicsSystem::ProcessEntities()
 	// submit all models
 	{
 		SDE_PROF_EVENT("SubmitEntities");
-		world->ForEachComponent<Model>([this, &world, &transforms](Model& model, EntityHandle owner) {
+		world->ForEachComponent<Model>([this, &world, &transforms, &materials](Model& model, EntityHandle owner) {
 			const Transform* transform = transforms->Find(owner);
 			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
 			{
-				m_renderer->SubmitInstance(transform->GetMatrix(), model.GetModel(), model.GetShader());
+				Render::Material* instanceMaterial = nullptr;
+				if (model.GetMaterialEntity().GetID() != -1)
+				{
+					auto matComponent = materials->Find(model.GetMaterialEntity());
+					instanceMaterial = &matComponent->GetRenderMaterial();
+				}
+				m_renderer->SubmitInstance(transform->GetMatrix(), model.GetModel(), model.GetShader(), instanceMaterial);
 			}
 		});
 	}
@@ -475,7 +535,7 @@ void GraphicsSystem::ProcessEntities()
 	{
 		SDE_PROF_EVENT("ProcessSDFModels");
 		Engine::Frustum viewFrustum(m_mainRenderCamera->ProjectionMatrix() * m_mainRenderCamera->ViewMatrix());
-		world->ForEachComponent<SDFModel>([this, &world, &transforms, &viewFrustum](SDFModel& m, EntityHandle owner) {
+		world->ForEachComponent<SDFModel>([this, &world, &transforms, &materials, &viewFrustum](SDFModel& m, EntityHandle owner) {
 			const Transform* transform = transforms->Find(owner);
 			if (!transform)
 				return;
@@ -502,7 +562,13 @@ void GraphicsSystem::ProcessEntities()
 
 			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{
-				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax());
+				Render::Material* instanceMaterial = nullptr;
+				if (m.GetMaterialEntity().GetID() != -1)
+				{
+					auto matComponent = materials->Find(m.GetMaterialEntity());
+					instanceMaterial = &matComponent->GetRenderMaterial();
+				}
+				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
 			}
 		});
 	}

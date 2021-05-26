@@ -14,6 +14,28 @@ local CubeModel = Graphics.LoadModel("cube2.fbx")
 local SphereModel = Graphics.LoadModel("sphere_low.fbx")
 local FloorTexture = Graphics.LoadTexture("white.bmp")
 
+-- list of entity id
+local MaterialEntities = {}
+local RandomTextures = {"sponza_roof_diff.png", "sponza_floor_a_diff.png", "sponza_ceiling_a_diff.png"}
+
+function MakeMaterials()
+	-- make a bunch of random materials
+	for m=0,50 do 
+		local e = World.AddEntity()
+		local t = World.AddComponent_Tags(e)
+		t:AddTag(Tag.new("Material Proxy"))
+		local m = World.AddComponent_Material(e)
+		m:SetVec4("MeshDiffuseOpacity", vec4.new(math.random(0,255)/125.0,math.random(0,255)/125.0,math.random(0,255)/125.0,1.0))
+		m:SetSampler("DiffuseTexture", Graphics.LoadTexture(RandomTextures[math.random(1, #RandomTextures)]))
+		table.insert(MaterialEntities, e)
+	end
+end
+
+function RandomMaterial()
+	local i = math.random(1, #MaterialEntities)
+	return MaterialEntities[i]
+end
+
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local newTags = World.AddComponent_Tags(newEntity)
@@ -59,9 +81,13 @@ function MakeFloorEntity()
 	transform:SetPosition(0,-1,0)
 	transform:SetScale(2000 * WSM,1.0,2000 * WSM)
 	
+	local material = World.AddComponent_Material(e)
+	material:SetVec4("MeshDiffuseOpacity", vec4.new(1.0,1.0,1.0,1.0))
+	
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
+	newModel:SetMaterialEntity(e)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(true)
@@ -73,7 +99,7 @@ function MakeFloorEntity()
 	physics:Rebuild()
 end
 
-function MakeSphereEntity(p, radius, dynamic)
+function MakeSphereEntity(p, radius, dynamic, matEntity)
 	e = World.AddEntity()
 	local newTags = World.AddComponent_Tags(e)
 	newTags:AddTag(Tag.new("Sphere"))
@@ -85,6 +111,7 @@ function MakeSphereEntity(p, radius, dynamic)
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(SphereModel)
 	newModel:SetShader(ModelDiffuseShader)
+	newModel:SetMaterialEntity(matEntity)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(not dynamic)
@@ -110,17 +137,16 @@ function MakeSphereEntity(p, radius, dynamic)
 			light:SetAmbient(0.04)
 			light:SetBrightness(6.0)
 			light:SetDistance(48 * WSM)
-			light:SetAttenuation(8.0)
+			light:SetAttenuation(12.0)
 			light:SetCastsShadows(false)
 		end
 		newModel:SetShader(ModelNoLighting)
-		
 	end
 	
 	return e
 end
 
-function MakeBoxEntity(p, dims, dynamic, kinematic)
+function MakeBoxEntity(p, dims, dynamic, kinematic, matEntity)
 	e = World.AddEntity()
 	local newTags = World.AddComponent_Tags(e)
 	newTags:AddTag(Tag.new("Box"))
@@ -132,6 +158,7 @@ function MakeBoxEntity(p, dims, dynamic, kinematic)
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
+	newModel:SetMaterialEntity(matEntity)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(not dynamic)
@@ -145,7 +172,7 @@ function MakeBoxEntity(p, dims, dynamic, kinematic)
 		light:SetPointLight();
 		light:SetColour(math.random(90,100)/100.0,math.random(5,30)/100.0,0)
 		light:SetAmbient(0.05)
-		light:SetAttenuation(8.0)
+		light:SetAttenuation(12.0)
 		light:SetBrightness(6.0)
 		light:SetDistance(64 * WSM)
 		light:SetCastsShadows(false)
@@ -165,23 +192,25 @@ function CreatureTest.Init()
 	MakeSunEntity()
 	MakeFloorEntity()
 	
-	Spinner = MakeBoxEntity({0,70 * WSM,128 * WSM}, {150 * WSM,8 * WSM,8 * WSM}, true, true)
+	MakeMaterials()
+	
+	Spinner = MakeBoxEntity({0,70 * WSM,128 * WSM}, {150 * WSM,8 * WSM,8 * WSM}, true, true, RandomMaterial())
 	World.GetComponent_Physics(Spinner):SetDensity(100.0)
 	World.GetComponent_Tags(Spinner):AddTag(Tag.new("Spinner"))
 	
 	for x=1,5000 do 
-		MakeSphereEntity({math.random(0,100) * WSM,200 * WSM + math.random(0,1000) * WSM, math.random(0,100) * WSM},0.5 * WSM + math.random(1,10)/3.0 * WSM, true)
+		MakeSphereEntity({math.random(0,100) * WSM,200 * WSM + math.random(0,1000) * WSM, math.random(0,100) * WSM},0.5 * WSM + math.random(1,10)/3.0 * WSM, true, RandomMaterial())
 		local boxSize = WSM * 4 + math.random(1,10)/1.5 * WSM * 1.5
-		MakeBoxEntity({math.random(0,100) * WSM,200 * WSM + math.random(0,1000) * WSM, math.random(0,100) * WSM},{boxSize * WSM * 4,boxSize * WSM * 4,boxSize * WSM * 4}, true, false)
+		MakeBoxEntity({math.random(0,100) * WSM,200 * WSM + math.random(0,1000) * WSM, math.random(0,100) * WSM},{boxSize * WSM * 4,boxSize * WSM * 4,boxSize * WSM * 4}, true, false,  RandomMaterial())
 	end
 	
-	MakeSphereEntity({32*WSM,0,32*WSM},64*WSM,false)
-	MakeSphereEntity({128*WSM,32.5*WSM,32*WSM},32*WSM,false)
-	MakeBoxEntity({128*WSM,16.5*WSM,128*WSM},{32*WSM,32*WSM,32*WSM},true,false)
-	MakeBoxEntity({64*WSM,16.5*WSM,128*WSM},{32*WSM,32*WSM,32*WSM},true,false)
-	local tallBoy = MakeBoxEntity({0,32.5*WSM,128*WSM},{16*WSM,64*WSM,16*WSM},true,false)
+	MakeSphereEntity({32*WSM,0,32*WSM},64*WSM,false, RandomMaterial())
+	MakeSphereEntity({128*WSM,32.5*WSM,32*WSM},32*WSM,false, RandomMaterial())
+	MakeBoxEntity({128*WSM,16.5*WSM,128*WSM},{32*WSM,32*WSM,32*WSM},true,false, RandomMaterial())
+	MakeBoxEntity({64*WSM,16.5*WSM,128*WSM},{32*WSM,32*WSM,32*WSM},true,false, RandomMaterial())
+	local tallBoy = MakeBoxEntity({0,32.5*WSM,128*WSM},{16*WSM,64*WSM,16*WSM},true,false, RandomMaterial())
 	World.GetComponent_Physics(tallBoy):SetDensity(1.0)
-	MakeBoxEntity({32*WSM,128*WSM,128*WSM},{64*WSM,8*WSM,8*WSM},true,false)
+	MakeBoxEntity({32*WSM,128*WSM,128*WSM},{64*WSM,8*WSM,8*WSM},true,false, RandomMaterial())
 end
 
 function CreatureTest.Tick(deltaTime)

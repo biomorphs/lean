@@ -444,7 +444,8 @@ bool CreatureSystem::Tick(float timeDelta)
 		{
 			SDE_PROF_STALL("WaitForVisJobs");
 			while (jobsRemaining > 0)
-			{
+			{	
+				m_jobSystem->ProcessJobThisThread();
 				Core::Thread::Sleep(0);
 			}
 		}

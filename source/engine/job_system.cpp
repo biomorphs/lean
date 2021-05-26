@@ -28,6 +28,17 @@ namespace Engine
 		m_threadInitFn = fn;
 	}
 
+	void JobSystem::ProcessJobThisThread()
+	{
+		SDE_PROF_EVENT();
+
+		Job currentJob;
+		if (m_pendingJobs.PopJob(currentJob))	// we only run fast jobs
+		{
+			currentJob.Run();
+		}
+	}
+
 	bool JobSystem::PostInit()
 	{
 		SDE_PROF_EVENT();
@@ -45,11 +56,6 @@ namespace Engine
 				{
 					currentJob.Run();
 				}
-				else
-				{
-					// If no job was handled (due to scheduling), re-trigger threads
-					m_jobThreadTrigger.Post();
-				}
 			}
 		};
 		m_threadPool.Start("JobSystem", threadsPerPool, jobThread);
@@ -65,11 +71,6 @@ namespace Engine
 				if (m_pendingSlowJobs.PopJob(currentJob))
 				{
 					currentJob.Run();
-				}
-				else
-				{
-					// If no job was handled (due to scheduling), re-trigger threads
-					m_slowJobThreadTrigger.Post();
 				}
 			}
 		};

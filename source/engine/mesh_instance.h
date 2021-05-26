@@ -6,6 +6,7 @@ namespace Render
 {
 	class ShaderProgram;
 	class Mesh;
+	class Material;
 }
 
 namespace Engine
@@ -25,6 +26,7 @@ namespace Engine
 		glm::vec3 m_aabbMax;
 		Render::ShaderProgram* m_shader;
 		const Render::Mesh* m_mesh;
+		const Render::Material* m_material;
 		float m_distanceToCamera;
 	};
 }

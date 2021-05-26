@@ -17,6 +17,7 @@ namespace Engine
 		bool PostInit();
 		void Shutdown();
 
+		void ProcessJobThisThread();
 		void PushSlowJob(Job::JobThreadFunction threadFn);
 		void PushJob(Job::JobThreadFunction threadFn);
 		void SetThreadInitFn(std::function<void(uint32_t)> fn);
