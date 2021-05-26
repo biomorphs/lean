@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/serialisation.h"
+#include "engine/job_system.h"
 #include "entity_handle.h"
 #include "component.h"
 #include "component_storage.h"
@@ -8,7 +9,7 @@
 
 namespace Engine
 {
-	class ScriptSystem;
+	class JobSystem;
 }
 
 class EntityHandle;
@@ -29,6 +30,9 @@ public:
 
 	template<class ComponentType>
 	void ForEachComponent(std::function<void(ComponentType&, EntityHandle)> fn);
+
+	template<class ComponentType>
+	void ForEachComponentAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& jsys, int32_t componentsPerJob=100);
 
 	void AddComponent(EntityHandle owner, ComponentType type);
 	std::vector<ComponentType> GetAllComponentTypes();
@@ -61,6 +65,16 @@ void World::RegisterComponentType()
 	assert(m_components.find(ComponentType::GetType()) == m_components.end());
 	auto storage = std::make_unique<typename ComponentType::StorageType>();
 	m_components[ComponentType::GetType()] = std::move(storage);
+}
+
+template<class ComponentType>
+void World::ForEachComponentAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& jsys, int32_t componentsPerJob)
+{
+	auto foundStorage = m_components.find(ComponentType::GetType());
+	if (foundStorage != m_components.end())
+	{
+		return static_cast<ComponentType::StorageType*>(foundStorage->second.get())->ForEachAsync(fn, jsys, componentsPerJob);
+	}
 }
 
 template<class ComponentType>
@@ -107,4 +121,10 @@ ComponentType* World::GetComponent(EntityHandle owner)
 		}
 	}
 	return nullptr;
+}
+
+template<class ComponentType>
+void ForEachComponentAsync(std::function<void(ComponentType&, EntityHandle)> fn, class JobSystem*, int32_t componentsPerJob = 100)
+{
+
 }

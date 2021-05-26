@@ -205,6 +205,27 @@ namespace Engine
 		return true;
 	}
 
+	physx::PxMaterial* PhysicsSystem::GetOrCreateMaterial(Physics& p)
+	{
+		// Annoying, physx has limited material slots. I dont want to expose them
+		// so instead we keep an internal cache of materials with matching values
+		auto foundMaterial = std::find_if(m_materialCache.begin(), m_materialCache.end(), [&p](const PhysicsMaterial& mat)
+		{
+			return mat.m_staticFriction == p.GetStaticFriction() && mat.m_dynamicFriction == p.GetDynamicFriction() && mat.m_restitution == p.GetRestitution();
+		});
+		if (foundMaterial == m_materialCache.end())
+		{
+			auto material = m_physics->createMaterial(p.GetStaticFriction(), p.GetDynamicFriction(), p.GetRestitution());
+			auto newHandle = PhysicsHandle<physx::PxMaterial>(material);
+			m_materialCache.push_back({ p.GetRestitution(), p.GetStaticFriction(), p.GetDynamicFriction(), std::move(newHandle) });
+			return material;
+		}
+		else
+		{
+			return foundMaterial->m_handle.Get();
+		}
+	}
+
 	void PhysicsSystem::RebuildActor(Physics& p, EntityHandle& e)
 	{
 		auto transformComponent = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
@@ -212,11 +233,9 @@ namespace Engine
 		{
 			return;
 		}
-
 		const auto pos = transformComponent->GetPosition();
 		const auto orient = transformComponent->GetOrientation();
-		physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
-		physx::PxMaterial* material = m_physics->createMaterial(p.GetStaticFriction(), p.GetDynamicFriction(), p.GetRestitution());
+		physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));		
 		physx::PxRigidActor* body = nullptr;
 		if (p.IsStatic())
 		{
@@ -228,6 +247,7 @@ namespace Engine
 			static_cast<physx::PxRigidDynamic*>(body)->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, p.IsKinematic());
 		}
 	
+		auto material = GetOrCreateMaterial(p);
 		for (const auto& collider : p.GetPlaneColliders())
 		{
 			physx::PxVec3 normal = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
@@ -297,25 +317,25 @@ namespace Engine
 			m_timeAccumulator -= m_timeStep;
 			m_scene->simulate(m_timeStep);	// Do not write to any physics objects during this!
 			m_scene->fetchResults(true);
-		}
 
-		// Apply new transforms to all non-kinematic dynamic bodies
-		{
-			SDE_PROF_EVENT("ApplyTransforms");
-			auto transforms = m_entitySystem->GetWorld()->GetAllComponents<Transform>();
-			m_entitySystem->GetWorld()->ForEachComponent<Physics>([this,&transforms](Physics& p, EntityHandle e)
+			// Apply new transforms to all non-kinematic dynamic bodies
 			{
-				if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
+				SDE_PROF_EVENT("ApplyTransforms");
+				auto transforms = m_entitySystem->GetWorld()->GetAllComponents<Transform>();
+				m_entitySystem->GetWorld()->ForEachComponentAsync<Physics>([this, &transforms](Physics& p, EntityHandle e)
 				{
-					auto transform = transforms->Find(e);
-					if (transform)
+					if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
 					{
-						const auto& pose = p.GetActor()->getGlobalPose();
-						transform->SetPosition({pose.p.x, pose.p.y, pose.p.z});
-						transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
+						auto transform = transforms->Find(e);
+						if (transform)
+						{
+							const auto& pose = p.GetActor()->getGlobalPose();
+							transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
+							transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
+						}
 					}
-				}
-			});
+				} , * m_jobSystem, 400);
+			}
 		}
 
 		return true;
@@ -329,10 +349,12 @@ namespace Engine
 		{
 			p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(nullptr));
 		});
+		m_materialCache.clear();
 
 		m_scene = nullptr;
 		m_physics = nullptr;
 		m_pvd = nullptr;
+		m_cudaManager = nullptr;
 		m_foundation = nullptr;
 	}
 }

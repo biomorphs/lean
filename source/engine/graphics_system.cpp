@@ -184,11 +184,24 @@ bool GraphicsSystem::Initialise()
 	});
 
 	m_entitySystem->RegisterComponentType<Transform>();
-	m_entitySystem->RegisterComponentUi<Transform>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+	m_entitySystem->RegisterComponentUi<Transform>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
 		auto& t = *static_cast<Transform::StorageType&>(cs).Find(e);
 		t.SetPosition(dbg.DragVector("Position", t.GetPosition(), 0.25f, -100000.0f, 100000.0f));
 		t.SetRotationDegrees(dbg.DragVector("Rotation", t.GetRotationDegrees(), 0.1f));
 		t.SetScale(dbg.DragVector("Scale", t.GetScale(), 0.05f, 0.0f));
+		glm::vec4 p0 = glm::vec4(t.GetPosition(),1.0f);
+		glm::mat4 mat = t.GetMatrix();
+		glm::vec4 lines[] = {
+			p0, mat * glm::vec4(1.0f,0.0f,0.0f,1.0f),
+			p0, mat * glm::vec4(0.0f,1.0f,0.0f,1.0f),
+			p0, mat * glm::vec4(0.0f,0.0f,1.0f,1.0f),
+		};
+		glm::vec4 colours[] = {
+			{1.0f,0.0f,0.0f,1.0f},{1.0f,0.0f,0.0f,1.0f},
+			{0.0f,1.0f,0.0f,1.0f},{0.0f,1.0f,0.0f,1.0f},
+			{0.0f,0.0f,1.0f,1.0f},{0.0f,0.0f,1.0f,1.0f},
+		};
+		m_debugRender->AddLines(lines, colours, 3);
 	});
 
 	m_entitySystem->RegisterComponentType<Light>();
@@ -371,7 +384,7 @@ bool GraphicsSystem::Initialise()
 
 	auto windowSize = m_renderSystem->GetWindow()->GetSize();
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();
-	m_debugCamera->SetPosition({-165.0f,230.0f,500.0f});
+	m_debugCamera->SetPosition({2.52f,36.3f,73.5f});
 	m_debugCamera->SetPitch(0.0f);
 	m_debugCamera->SetYaw(0.0f);
 

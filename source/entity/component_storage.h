@@ -3,6 +3,11 @@
 
 class EntityHandle;
 
+namespace Engine
+{
+	class JobSystem;
+}
+
 // generic storage interface
 class ComponentStorage
 {
@@ -25,6 +30,7 @@ public:
 	LinearComponentStorage();
 	ComponentType* Find(EntityHandle owner);
 	void ForEach(std::function<void(ComponentType&, EntityHandle)> fn);
+	void ForEachAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& js, int32_t componentsPerJob);
 
 	virtual void Create(EntityHandle owner);
 	virtual bool Contains(EntityHandle owner) { return Find(owner) != nullptr; }

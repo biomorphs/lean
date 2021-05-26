@@ -1,5 +1,7 @@
 #include "core/profiler.h"
 #include "core/log.h"
+#include "core/thread.h"
+#include <atomic>
 
 constexpr int c_maxComponents = 1024 * 64;
 
@@ -8,6 +10,59 @@ LinearComponentStorage<ComponentType>::LinearComponentStorage()
 {
 	m_owners.reserve(c_maxComponents);
 	m_components.reserve(c_maxComponents);
+}
+
+template<class ComponentType>
+void LinearComponentStorage<ComponentType>::ForEachAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& js, int32_t componentsPerJob)
+{
+	SDE_PROF_EVENT();
+
+	// We need to ensure the integrity of the list during iterations
+	// You can safely add components during iteration, but you CANNOT delete them!
+	++m_iterationDepth;
+	assert(m_owners.size() == m_components.size() && m_entityToComponent.size() == m_owners.size());
+
+	// more safety nets, ensure storage doesn't move
+	void* storagePtr = m_components.data();
+
+	std::atomic<int> jobsRemaining = 0;
+	{
+		SDE_PROF_EVENT("PushJobs");
+		const int32_t currentActiveComponents = m_components.size();
+		for (int32_t i = 0; i < m_components.size(); i += componentsPerJob)
+		{
+			const int startIndex = i;
+			const int endIndex = std::min(i + componentsPerJob, currentActiveComponents);
+			auto runJob = [this, startIndex, endIndex, &jobsRemaining, &fn](void*) {
+				for (int c = startIndex; c < endIndex; ++c)
+				{
+					fn(m_components[c], m_owners[c]);
+				}
+				jobsRemaining--;
+			};
+			jobsRemaining++;
+			js.PushJob(runJob);
+		}
+	}
+
+	// wait for the results
+	{
+		SDE_PROF_STALL("WaitForResults");
+		while (jobsRemaining > 0)
+		{
+			js.ProcessJobThisThread();
+			Core::Thread::Sleep(0);
+		}
+	}
+
+	if (storagePtr != m_components.data())
+	{
+		SDE_LOG("NO! Storage ptr was changed during iteration!");
+		assert(!"NO! Storage ptr was changed during iteration!");
+		*((int*)0x0) = 3;	// force crash
+	}
+
+	--m_iterationDepth;
 }
 
 template<class ComponentType>
@@ -117,7 +172,7 @@ void LinearComponentStorage<ComponentType>::Destroy(EntityHandle owner)
 		std::iter_swap(m_components.begin() + currentIndex, m_components.end() - 1);
 		m_components.pop_back();
 
-		if (currentIndex < m_owners.size())
+		if (currentIndex < m_owners.size())	// why? investigate
 		{
 			// fix up the lookup for the component we just moved
 			auto ownerEntity = m_owners[currentIndex];

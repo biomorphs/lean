@@ -10,21 +10,33 @@ local ModelNoLighting = Graphics.LoadShader("model_nolight",  "basic.vs", "basic
 Graphics.SetShadowShader(SDFDiffuseShader, SDFShadowShader)
 Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
 
+local BunnyModel = Graphics.LoadModel("bunny/bunny_low.obj")
 local CubeModel = Graphics.LoadModel("cube2.fbx")
 local SphereModel = Graphics.LoadModel("sphere_low.fbx")
 local FloorTexture = Graphics.LoadTexture("white.bmp")
 
 -- list of entity id
 local MaterialEntities = {}
-local RandomTextures = {"sponza_roof_diff.png", "sponza_floor_a_diff.png", "sponza_ceiling_a_diff.png"}
+local RandomTextures = {"sponza_roof_diff.png", 
+						"sponza_floor_a_diff.png", 
+						"sponza_ceiling_a_diff.png", 
+						"Tree_Bark.jpg",
+						"sponza_thorn_bump.png",
+						"Pebbles_015_SD/Pebbles_015_baseColor.jpg",
+						"Pebbles_016_SD/Pebbles_016_baseColor.jpg",
+						"Pebbles_017_SD/Pebbles_017_baseColor.jpg",
+						"Pebbles_022_SD/Pebbles_022_baseColor.jpg",
+						"Sea_Rock_001_SD/Sea_Rock_001_BaseColor.jpg"}
 
 function MakeMaterials()
 	-- make a bunch of random materials
-	for m=0,50 do 
+	for m=0,100 do 
 		local e = World.AddEntity()
 		local t = World.AddComponent_Tags(e)
 		t:AddTag(Tag.new("Material Proxy"))
 		local m = World.AddComponent_Material(e)
+		m:SetFloat("MeshShininess", math.random(0,200))
+		m:SetVec4("MeshSpecular", vec4.new(math.random(0,255)/255.0,math.random(0,255)/255.0,math.random(0,255)/255.0,math.random(1,1000)/800.0))
 		m:SetVec4("MeshDiffuseOpacity", vec4.new(math.random(0,255)/125.0,math.random(0,255)/125.0,math.random(0,255)/125.0,1.0))
 		m:SetSampler("DiffuseTexture", Graphics.LoadTexture(RandomTextures[math.random(1, #RandomTextures)]))
 		table.insert(MaterialEntities, e)
@@ -42,18 +54,18 @@ function MakeSunEntity()
 	newTags:AddTag(Tag.new("Sunlight"))
 	
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(1151.25 * WSM,2052.5 * WSM,1473.75 * WSM)
+	transform:SetPosition(-723.75 * WSM,2052.5 * WSM,866.25 * WSM)
 	transform:SetRotation(30,-40.2,0)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(1,1,1)
 	light:SetAmbient(0.05)
 	light:SetBrightness(0.267)
-	light:SetDistance(3000 * WSM)
+	light:SetDistance(3820 * WSM)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(8192,8192)
-	light:SetShadowBias(0.001)
-	light:SetShadowOrthoScale(2200 * WSM)
+	light:SetShadowBias(0.0001)
+	light:SetShadowOrthoScale(1420 * WSM)
 	
 	newEntity = World.AddEntity()
 	local newTags = World.AddComponent_Tags(newEntity)
@@ -111,7 +123,6 @@ function MakeSphereEntity(p, radius, dynamic, matEntity)
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(SphereModel)
 	newModel:SetShader(ModelDiffuseShader)
-	newModel:SetMaterialEntity(matEntity)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(not dynamic)
@@ -141,9 +152,37 @@ function MakeSphereEntity(p, radius, dynamic, matEntity)
 			light:SetCastsShadows(false)
 		end
 		newModel:SetShader(ModelNoLighting)
+	else
+		newModel:SetMaterialEntity(matEntity)
 	end
 	
 	return e
+end
+
+function MakeBunnyEntity(p, scale, dynamic, kinematic, matEntity)
+	e = World.AddEntity()
+	local newTags = World.AddComponent_Tags(e)
+	newTags:AddTag(Tag.new("Wabbit"))
+	
+	local transform = World.AddComponent_Transform(e)
+	transform:SetPosition(p[1],p[2],p[3])
+	transform:SetScale(scale,scale,scale)
+	
+	local newModel = World.AddComponent_Model(e)
+	newModel:SetModel(BunnyModel)
+	newModel:SetShader(ModelDiffuseShader)
+	newModel:SetMaterialEntity(matEntity)
+	
+	local physics = World.AddComponent_Physics(e)
+	physics:SetStatic(not dynamic)
+	physics:SetKinematic(kinematic)
+	physics:AddBoxCollider(vec3.new(-0.33*scale,1.46*scale,0.0*scale),vec3.new(0.56*scale,0.3*scale,0.42*scale))
+	physics:AddBoxCollider(vec3.new(-0.73*scale,1.39*scale,-0.21*scale),vec3.new(0.18*scale,0.38*scale,0.86*scale))
+	physics:AddSphereCollider(vec3.new(-0.7*scale,1.09*scale,0.36*scale),0.26*scale)
+	physics:AddSphereCollider(vec3.new(-0.55*scale,0.67*scale,0.2*scale),0.36*scale)
+	physics:AddSphereCollider(vec3.new(0.0*scale,0.55*scale,0.12*scale),0.46*scale)
+	physics:AddSphereCollider(vec3.new(0.65*scale,0.29*scale,0.19*scale),0.16*scale)
+	physics:Rebuild()
 end
 
 function MakeBoxEntity(p, dims, dynamic, kinematic, matEntity)
@@ -158,7 +197,6 @@ function MakeBoxEntity(p, dims, dynamic, kinematic, matEntity)
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
-	newModel:SetMaterialEntity(matEntity)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(not dynamic)
@@ -179,6 +217,8 @@ function MakeBoxEntity(p, dims, dynamic, kinematic, matEntity)
 		light:SetShadowmapSize(512,512)
 		light:SetShadowBias(0.5)
 		newModel:SetShader(ModelNoLighting)
+	else
+		newModel:SetMaterialEntity(matEntity)
 	end
 	
 	return e
@@ -197,6 +237,10 @@ function CreatureTest.Init()
 	Spinner = MakeBoxEntity({0,70 * WSM,128 * WSM}, {150 * WSM,8 * WSM,8 * WSM}, true, true, RandomMaterial())
 	World.GetComponent_Physics(Spinner):SetDensity(100.0)
 	World.GetComponent_Tags(Spinner):AddTag(Tag.new("Spinner"))
+	
+	for x=1,50 do
+		MakeBunnyEntity({math.random(0,100) * WSM,200 * WSM + math.random(0,1000) * WSM, math.random(0,100) * WSM},math.random(50,100)/40.0, true, false,  RandomMaterial())
+	end
 	
 	for x=1,5000 do 
 		MakeSphereEntity({math.random(0,100) * WSM,200 * WSM + math.random(0,1000) * WSM, math.random(0,100) * WSM},0.5 * WSM + math.random(1,10)/3.0 * WSM, true, RandomMaterial())

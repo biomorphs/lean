@@ -21,8 +21,8 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		static bool s_showWindow = true;
-		gui.BeginWindow(s_showWindow, "ModelManager");
+		bool showWindow = true;
+		gui.BeginWindow(showWindow, "ModelManager");
 		char text[1024] = { '\0' };
 		int32_t inFlight = m_inFlightModels;
 		sprintf_s(text, "Loading: %d", inFlight);
@@ -99,7 +99,7 @@ namespace Engine
 			gui.TreePop();
 		}
 		gui.EndWindow();
-		return s_showWindow;
+		return showWindow;
 	}
 
 	void ModelManager::ReloadAll()
