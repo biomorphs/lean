@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <string>
 
 namespace Engine
 {
@@ -46,6 +47,7 @@ namespace Engine
 		KEY_SPACE,
 		KEY_MAX
 	};
+	
 	struct KeyboardState
 	{
 		std::array<bool, KEY_MAX>  m_keyPressed = { false };

@@ -1,0 +1,7 @@
+{
+  "ClassName": "Scene",
+  "Name": "Fish Tank!",
+  "Scripts": [
+    "fishtank.lua"
+  ]
+}

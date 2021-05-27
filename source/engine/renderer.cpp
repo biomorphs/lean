@@ -141,7 +141,15 @@ namespace Engine
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat)
 	{
-		bool castShadow = true;
+		bool castShadow = mesh.GetMaterial().GetCastsShadows();
+		bool isTransparent = mesh.GetMaterial().GetIsTransparent();
+
+		if (instanceMat != nullptr)
+		{
+			castShadow |= instanceMat->GetCastsShadows();
+			isTransparent |= instanceMat->GetIsTransparent();
+		}
+
 		if (castShadow)
 		{
 			auto shadowShader = m_shaders->GetShadowsShader(shader);
@@ -150,8 +158,7 @@ namespace Engine
 				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, mesh, shadowShader, boundsMin, boundsMax);
 			}
 		}
-
-		bool isTransparent = mesh.GetMaterial().GetIsTransparent();
+		
 		InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
 		SubmitInstance(instances, m_camera.Position(), transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 	}
@@ -168,6 +175,10 @@ namespace Engine
 		ShaderHandle shadowShader = ShaderHandle::Invalid();
 
 		bool castShadow = true;
+		if (instanceMat != nullptr)
+		{
+			castShadow &= instanceMat->GetCastsShadows();
+		}
 		if (castShadow)
 		{
 			shadowShader = m_shaders->GetShadowsShader(shader);
@@ -180,12 +191,16 @@ namespace Engine
 			{
 				const glm::mat4 instanceTransform = transform * part.m_transform;
 				glm::vec3 boundsMin = part.m_boundsMin, boundsMax = part.m_boundsMax;
-				if (shadowShader.m_index != (uint32_t)-1)
+				if (castShadow && shadowShader.m_index != (uint32_t)-1)
 				{
 					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
 				}
 
 				bool isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
+				if (instanceMat != nullptr)
+				{
+					isTransparent |= instanceMat->GetIsTransparent();
+				}
 				InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
 				SubmitInstance(instances, m_camera.Position(), instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
 			}

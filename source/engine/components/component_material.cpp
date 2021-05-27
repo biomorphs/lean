@@ -8,9 +8,9 @@ COMPONENT_SCRIPTS(Material,
 	"SetMat4", &Material::SetMat4,
 	"SetInt32", &Material::SetInt32,
 	"SetSampler", &Material::SetSampler,
-	"SetIsTransparent", &Material::SetIsTransparent
+	"SetIsTransparent", &Material::SetIsTransparent,
+	"SetCastShadows", &Material::SetCastShadows
 )
-
 
 Material::Material()
 {
@@ -45,4 +45,9 @@ void Material::SetSampler(const char* name, const Engine::TextureHandle& v)
 void Material::SetIsTransparent(bool t)
 { 
 	m_material->SetIsTransparent(t);
+}
+
+void Material::SetCastShadows(bool s)
+{
+	m_material->SetCastsShadows(s);
 }

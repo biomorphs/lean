@@ -15,6 +15,8 @@ namespace Render
 		Material();
 		~Material();
 
+		bool GetCastsShadows() const { return m_castsShadows; }
+		void SetCastsShadows(bool s) { m_castsShadows = s; }
 		bool GetIsTransparent() const { return m_isTransparent; }
 		void SetIsTransparent(bool m) { m_isTransparent = m; }
 		inline UniformBuffer& GetUniforms()							{ return m_uniforms; }
@@ -31,6 +33,7 @@ namespace Render
 	private:
 		Samplers m_samplers;
 		UniformBuffer m_uniforms;
-		std::atomic<bool> m_isTransparent = false;
+		bool m_isTransparent = false;
+		bool m_castsShadows = true;
 	};
 }

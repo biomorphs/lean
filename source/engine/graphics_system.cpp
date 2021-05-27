@@ -126,15 +126,17 @@ bool GraphicsSystem::Initialise()
 		auto& uniforms = rmat.GetUniforms();
 		auto& samplers = rmat.GetSamplers();
 		char text[1024] = { '\0' };
+		m.SetIsTransparent(dbg.Checkbox("Transparent", m.GetRenderMaterial().GetIsTransparent()));
+		m.SetCastShadows(dbg.Checkbox("Cast Shadows", m.GetRenderMaterial().GetCastsShadows()));
 		for (auto& v : uniforms.FloatValues())
 		{
 			sprintf_s(text, "%s", v.second.m_name.c_str());
-			v.second.m_value = dbg.DragFloat(text, v.second.m_value);
+			v.second.m_value = dbg.DragFloat(text, v.second.m_value,0.05f);
 		}
 		for (auto& v : uniforms.Vec4Values())
 		{
 			sprintf_s(text, "%s", v.second.m_name.c_str());
-			v.second.m_value = dbg.DragVector(text, v.second.m_value);
+			v.second.m_value = dbg.DragVector(text, v.second.m_value, 0.05f);
 		}
 		for (auto& v : uniforms.IntValues())
 		{
@@ -524,7 +526,10 @@ void GraphicsSystem::ProcessEntities()
 				if (model.GetMaterialEntity().GetID() != -1)
 				{
 					auto matComponent = materials->Find(model.GetMaterialEntity());
-					instanceMaterial = &matComponent->GetRenderMaterial();
+					if (matComponent != nullptr)
+					{
+						instanceMaterial = &matComponent->GetRenderMaterial();
+					}
 				}
 				m_renderer->SubmitInstance(transform->GetMatrix(), model.GetModel(), model.GetShader(), instanceMaterial);
 			}
@@ -579,7 +584,10 @@ void GraphicsSystem::ProcessEntities()
 				if (m.GetMaterialEntity().GetID() != -1)
 				{
 					auto matComponent = materials->Find(m.GetMaterialEntity());
-					instanceMaterial = &matComponent->GetRenderMaterial();
+					if (matComponent != nullptr)
+					{
+						instanceMaterial = &matComponent->GetRenderMaterial();
+					}
 				}
 				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
 			}

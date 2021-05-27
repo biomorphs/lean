@@ -30,6 +30,7 @@ public:
 	void SetInt32(const char* name, int32_t v);
 	void SetSampler(const char* name, const Engine::TextureHandle& v); 
 	void SetIsTransparent(bool t);
+	void SetCastShadows(bool s);
 
 private:
 	std::unique_ptr<Render::Material> m_material;

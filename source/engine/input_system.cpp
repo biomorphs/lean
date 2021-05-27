@@ -2,12 +2,14 @@
 #include "core/profiler.h"
 #include "engine/system_manager.h"
 #include "engine/event_system.h"
+#include "engine/script_system.h"
 #include <SDL_joystick.h>
 #include <SDL_gamecontroller.h>
 #include <SDL_mouse.h>
 #include <SDL_events.h>
 #include <algorithm>
 #include <map>
+#include <assert.h>
 
 namespace Engine
 {
@@ -53,6 +55,48 @@ namespace Engine
 		{ SDLK_SPACE, KEY_SPACE },
 	};
 
+	const std::map<std::string, Key> c_keyStringMapping = {
+		{"KEY_0", Key::KEY_0},
+		{"KEY_1", Key::KEY_1},
+		{"KEY_2", Key::KEY_2},
+		{"KEY_3", Key::KEY_3},
+		{"KEY_4", Key::KEY_4},
+		{"KEY_5", Key::KEY_5},
+		{"KEY_6", Key::KEY_6},
+		{"KEY_7", Key::KEY_7},
+		{"KEY_8", Key::KEY_8},
+		{"KEY_9", Key::KEY_9},
+		{"KEY_a", Key::KEY_a},
+		{"KEY_b", Key::KEY_b},
+		{"KEY_c", Key::KEY_c},
+		{"KEY_d", Key::KEY_d},
+		{"KEY_e", Key::KEY_e},
+		{"KEY_f", Key::KEY_f},
+		{"KEY_g", Key::KEY_g},
+		{"KEY_h", Key::KEY_h},
+		{"KEY_i", Key::KEY_i},
+		{"KEY_j", Key::KEY_j},
+		{"KEY_k", Key::KEY_k},
+		{"KEY_l", Key::KEY_l},
+		{"KEY_m", Key::KEY_m},
+		{"KEY_n", Key::KEY_n},
+		{"KEY_o", Key::KEY_o},
+		{"KEY_p", Key::KEY_p},
+		{"KEY_q", Key::KEY_q},
+		{"KEY_r", Key::KEY_r},
+		{"KEY_s", Key::KEY_s},
+		{"KEY_t", Key::KEY_t},
+		{"KEY_u", Key::KEY_u},
+		{"KEY_v", Key::KEY_v},
+		{"KEY_w", Key::KEY_w},
+		{"KEY_x", Key::KEY_x},
+		{"KEY_y", Key::KEY_y},
+		{"KEY_z", Key::KEY_z},
+		{"KEY_LSHIFT", Key::KEY_LSHIFT },
+		{"KEY_RSHIFT", Key::KEY_RSHIFT },
+		{"KEY_SPACE", Key::KEY_SPACE }
+	};
+
 	InputSystem::InputSystem()
 		: m_controllerAxisDeadZone( 0.5f )
 	{
@@ -83,6 +127,8 @@ namespace Engine
 	{
 		auto eventSystem = (EventSystem*)manager.GetSystem("Events");
 		eventSystem->RegisterEventHandler([this](void* e) { OnSystemEvent(e); });
+
+		m_scripts = (ScriptSystem*)manager.GetSystem("Script");
 
 		return true;
 	}
@@ -184,10 +230,30 @@ namespace Engine
 		}
 	}
 
+	bool InputSystem::IsKeyDown(const char* keyStr)
+	{
+		const auto foundKeyLookup = c_keyStringMapping.find(keyStr);
+		assert(foundKeyLookup != c_keyStringMapping.end());
+		if (foundKeyLookup != c_keyStringMapping.end())
+		{
+			return GetKeyboardState().m_keyPressed[foundKeyLookup->second];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	bool InputSystem::Initialise()
 	{
 		SDE_PROF_EVENT();
 		EnumerateControllers();
+
+		auto scripts = m_scripts->Globals()["Input"].get_or_create<sol::table>();
+		scripts["IsKeyPressed"] = [this](const char* keyStr) {
+			return IsKeyDown(keyStr);
+		};
+
 		return true;
 	}
 

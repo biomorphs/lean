@@ -8,6 +8,7 @@
 
 namespace Engine
 {
+	class ScriptSystem;
 	class InputSystem : public System
 	{
 	public:
@@ -21,6 +22,7 @@ namespace Engine
 		const ControllerRawState ControllerState(uint32_t padIndex) const;
 		const MouseRawState& GetMouseState() const { return m_mouseState; }
 		const KeyboardState& GetKeyboardState() const { return m_keysState;	}
+		bool IsKeyDown(const char* keyStr);
 
 	private:
 		void UpdateControllerState();
@@ -39,5 +41,6 @@ namespace Engine
 		int32_t m_currentMouseScroll = 0;
 		MouseRawState m_mouseState;
 		KeyboardState m_keysState;
+		ScriptSystem* m_scripts = nullptr;
 	};
 }
