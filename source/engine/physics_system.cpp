@@ -96,13 +96,14 @@ namespace Engine
 		const bool c_useCUDA = true;
 		g_dispatcher.m_jobs = m_jobSystem;
 		physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
-		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+		sceneDesc.gravity = physx::PxVec3(0.0f, -20, 0.0f);
 		sceneDesc.cpuDispatcher = &g_dispatcher;
 		if (c_useCUDA)
 		{
 			sceneDesc.cudaContextManager = m_cudaManager.Get();
 			sceneDesc.flags |= physx::PxSceneFlag::eENABLE_GPU_DYNAMICS;
 			sceneDesc.broadPhaseType = physx::PxBroadPhaseType::eGPU;
+			sceneDesc.gpuDynamicsConfig.patchStreamSize = 1024 * 128;		// required for big scenes
 		}
 		sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
 		m_scene = m_physics->createScene(sceneDesc);
@@ -311,7 +312,7 @@ namespace Engine
 		}
 
 		m_timeAccumulator += timeDelta;
-		if (m_timeAccumulator >= m_timeStep)
+		while (m_timeAccumulator >= m_timeStep)
 		{
 			SDE_PROF_EVENT("Simulate");
 			m_timeAccumulator -= m_timeStep;

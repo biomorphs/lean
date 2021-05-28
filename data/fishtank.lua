@@ -3,6 +3,7 @@ Fishtank = {}
 local offsetY = 38
 local nukeEntity = nil
 local nukeBrightness = 0.0
+local TankWalls = {}
 
 function Fishtank.Init()
 	Graphics.SetClearColour(0.3,0.55,0.8)
@@ -16,16 +17,18 @@ function Fishtank.Init()
 	MakeLampEntity({60.0,38.5,-2.75},0.9)
 	
 	-- walls
-	MakeTankWall({0,offsetY+20,20},{51,40,1})
-	MakeTankWall({0,offsetY+20,-20},{51,40,1})
-	MakeTankWall({25,offsetY+20,0},{1,40,39})
-	MakeTankWall({-25,offsetY+20,0},{1,40,39})
+	table.insert(TankWalls, MakeTankWall({0,offsetY+20,20},{51,40,1}))
+	table.insert(TankWalls, MakeTankWall({0,offsetY+20,-20},{51,40,1}))
+	table.insert(TankWalls, MakeTankWall({25,offsetY+20,0},{1,40,39}))
+	table.insert(TankWalls, MakeTankWall({-25,offsetY+20,0},{1,40,39}))
 	
 	-- floor
 	MakeTankWall({0,offsetY+1,0},{49,1,39})
 	
 	-- sand base
 	MakeSandBox({0,offsetY+4,0},{49,5,39})
+	
+	MakeRandomMaterials()
 end
 
 function Fishtank.Tick(deltaTime)
@@ -45,34 +48,63 @@ function Fishtank.Tick(deltaTime)
 		end
 	end
 	
+	if(Input.IsKeyPressed("KEY_c")) then
+		for b=0,5 do 
+			local pos = {RandomFloat(-4,4), offsetY+RandomFloat(10,35), RandomFloat(-4,4)}
+			local scale = RandomFloat(1.5,2.5)
+			MakeBox(pos,{RandomFloat(1.5,2.5),RandomFloat(1.5,2.5),RandomFloat(1.5,2.5)})
+		end
+	end
+	
+	if(Input.IsKeyPressed("KEY_r")) then
+		Playground.ReloadScripts()
+	end
+	
 	if(nukeEntity == nil and Input.IsKeyPressed("KEY_n")) then 
 		nukeEntity = World.AddEntity()
 		local t = World.AddComponent_Tags(nukeEntity)
 		t:AddTag(Tag.new("Nuke!"))
 		local transform = World.AddComponent_Transform(nukeEntity)
-		transform:SetPosition(0,46,0)
+		transform:SetPosition(RandomFloat(-15,15),46,RandomFloat(-15,15))
 		local physics = World.AddComponent_Physics(nukeEntity)
-		physics:SetStatic(true)
-		physics:AddSphereCollider(vec3.new(0.0,0.0,0.0),20)
+		physics:SetStatic(false)
+		physics:SetKinematic(true)
+		physics:AddSphereCollider(vec3.new(0,-4,0), RandomFloat(15,22))
 		physics:Rebuild()
 		local light = World.AddComponent_Light(nukeEntity)
 		light:SetPointLight();
 		light:SetColour(1,0.2,0.0)
-		light:SetAmbient(0.1)
-		light:SetBrightness(16.0)
-		nukeBrightness = 16.0
+		light:SetAmbient(0.09)
+		light:SetBrightness(32.0)
+		nukeBrightness = 20.0
 		light:SetDistance(100)
 		light:SetAttenuation(2.0)
 		light:SetCastsShadows(false)
 		light:SetShadowmapSize(1024,1024)
 		light:SetShadowBias(0.5)
+		
+		-- blow the bloody walls off
+		if(math.random(0,100) < 10) then 
+			for i=1,#TankWalls do
+				local physics = World.GetComponent_Physics(TankWalls[i])
+				if(physics ~= nil) then
+					physics:SetStatic(false)
+					physics:Rebuild()
+				end
+			end
+		end
+		
 		hasNuked = true
 	end
 	
 	if(nukeEntity ~= nil) then 
+		local t = World.GetComponent_Transform(nukeEntity)
 		local l = World.GetComponent_Light(nukeEntity)
-		if(l ~= nil) then 
-			nukeBrightness = nukeBrightness - deltaTime * 25.0
+		if(l ~= nil and t ~= nil) then 
+			local p = t:GetPosition()
+			p.y = p.y + deltaTime * 48.0
+			t:SetPosition(p.x,p.y,p.z)
+			nukeBrightness = nukeBrightness - deltaTime * 32.0
 			if(nukeBrightness > 0) then 
 				l:SetBrightness(nukeBrightness)
 			else
@@ -81,6 +113,13 @@ function Fishtank.Tick(deltaTime)
 			end
 		end
 	end
+	
+	DebugGui.BeginWindow(true, "Fish Tank!")
+	DebugGui.Text("Controls:\n\tHold left click to rotate\n\tWSAD To Move\n\tSHIFT to move faster")
+	DebugGui.Text("\t'C' - Spawn cubes\n\t'B' - Spawn bunnies\n\t'SPACE' - Spawn spheres")
+	DebugGui.Text("\t'N' - Set off the bomb!")
+	DebugGui.Text("\t'R' - Reload Scripts")
+	DebugGui.EndWindow()
 end
 
 local ModelDiffuseShader = Graphics.LoadShader("model_diffuse", "simplediffuse.vs", "simplediffuse.fs")
@@ -112,7 +151,7 @@ function MakeRandomMaterials()
 		table.insert(MaterialEntities, e)
 	end
 end
-MakeRandomMaterials()
+
 
 function RandomFloat(minv,maxv) 
 	return minv + (math.random() * (maxv-minv))
@@ -143,10 +182,30 @@ function MakeBunny(p, scale)
 	physics:Rebuild()
 end
 
+function MakeBox(pos, dims)	
+	e = World.AddEntity()
+	local newTags = World.AddComponent_Tags(e)
+	newTags:AddTag(Tag.new("Box"))
+	
+	local transform = World.AddComponent_Transform(e)
+	transform:SetPosition(pos[1],pos[2],pos[3])
+	transform:SetScale(dims[1],dims[2],dims[3])
+	
+	local newModel = World.AddComponent_Model(e)
+	newModel:SetModel(CubeModel)
+	newModel:SetShader(ModelDiffuseShader)
+	newModel:SetMaterialEntity(MaterialEntities[math.random(1,#MaterialEntities)])
+	
+	local physics = World.AddComponent_Physics(e)
+	physics:SetStatic(false)
+	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(dims[1],dims[2],dims[3]))
+	physics:Rebuild()
+end
+
 function MakeBall(pos, radius)	
 	e = World.AddEntity()
 	local newTags = World.AddComponent_Tags(e)
-	newTags:AddTag(Tag.new("Sandball"))
+	newTags:AddTag(Tag.new("Ball"))
 	
 	local transform = World.AddComponent_Transform(e)
 	transform:SetPosition(pos[1],pos[2],pos[3])
@@ -200,9 +259,9 @@ function MakeTankWall(pos, dims)
 		local t = World.AddComponent_Tags(TankMaterial)
 		t:AddTag(Tag.new("Tank wall material"))
 		local m = World.AddComponent_Material(TankMaterial)
-		m:SetFloat("MeshShininess", 46.55)
-		m:SetVec4("MeshSpecular", vec4.new(1,1,1,47))
-		m:SetVec4("MeshDiffuseOpacity", vec4.new(0.95,0.97,1,0.15))
+		m:SetFloat("MeshShininess", 50.55)
+		m:SetVec4("MeshSpecular", vec4.new(1,1,1,8))
+		m:SetVec4("MeshDiffuseOpacity", vec4.new(0.95,0.97,1,0.3))
 		m:SetIsTransparent(true)
 		m:SetCastShadows(false)
 	end
@@ -224,6 +283,8 @@ function MakeTankWall(pos, dims)
 	physics:SetStatic(true)
 	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(dims[1],dims[2],dims[3]))
 	physics:Rebuild()
+	
+	return e
 end
 
 function MakeTable(pos, scale)
@@ -337,13 +398,13 @@ function MakeFloorEntity()
 	newTags:AddTag(Tag.new("Floor"))
 	
 	local transform = World.AddComponent_Transform(e)
-	transform:SetPosition(0,-1,0)
-	transform:SetScale(200,2.0,200)
+	transform:SetPosition(0,-8,0)
+	transform:SetScale(400,8.0,400)
 	
 	local material = World.AddComponent_Material(e)
 	material:SetVec4("MeshDiffuseOpacity", vec4.new(1.0,1.0,1.0,1.0))
 	material:SetSampler("DiffuseTexture", Graphics.LoadTexture("mramor6x6.png"))
-	material:SetVec4("MeshUVOffsetScale", vec4.new(0,0,8,8))
+	material:SetVec4("MeshUVOffsetScale", vec4.new(0,0,16,16))
 	
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(CubeModel)
@@ -352,11 +413,11 @@ function MakeFloorEntity()
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(true)
-	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(200,1.0,200))
-	physics:AddPlaneCollider(vec3.new(1.0,0.0,0.0),vec3.new(-100.0,0.0,0.0))
-	physics:AddPlaneCollider(vec3.new(-1.0,0.0,0.0),vec3.new(100.0,0.0,0.0))
-	physics:AddPlaneCollider(vec3.new(0.0,0.0,1.0),vec3.new(0.0,0.0,-100.0))
-	physics:AddPlaneCollider(vec3.new(0.0,0.0,-1.0),vec3.new(0.0,0.0,100.0))
+	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(400,8.0,400))
+	physics:AddPlaneCollider(vec3.new(1.0,0.0,0.0),vec3.new(-200.0,0.0,0.0))
+	physics:AddPlaneCollider(vec3.new(-1.0,0.0,0.0),vec3.new(200.0,0.0,0.0))
+	physics:AddPlaneCollider(vec3.new(0.0,0.0,1.0),vec3.new(0.0,0.0,-200.0))
+	physics:AddPlaneCollider(vec3.new(0.0,0.0,-1.0),vec3.new(0.0,0.0,200.0))
 	physics:Rebuild()
 end
 

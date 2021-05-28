@@ -45,3 +45,6 @@ videos/*
 *.mtl
 *.obj
 *.txt
+*.skp
+*.tif
+*.hdr

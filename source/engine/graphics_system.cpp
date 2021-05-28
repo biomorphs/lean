@@ -386,9 +386,9 @@ bool GraphicsSystem::Initialise()
 
 	auto windowSize = m_renderSystem->GetWindow()->GetSize();
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();
-	m_debugCamera->SetPosition({2.52f,36.3f,73.5f});
-	m_debugCamera->SetPitch(0.0f);
-	m_debugCamera->SetYaw(0.0f);
+	m_debugCamera->SetPosition({60.65f,101.791f,82.469f});
+	m_debugCamera->SetPitch(-0.438);
+	m_debugCamera->SetYaw(0.524f);
 
 	m_arcballCamera = std::make_unique<Engine::ArcballCamera>();
 	m_arcballCamera->SetWindowSize(m_renderSystem->GetWindow()->GetSize());

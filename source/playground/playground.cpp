@@ -182,6 +182,12 @@ bool Playground::PostInit()
 	{
 		LoadScene(g_playgroundConfig.m_lastLoadedScene);
 	}
+
+	auto scripts = m_scriptSystem->Globals()["Playground"].get_or_create<sol::table>();
+	scripts["ReloadScripts"] = [this]() {
+		m_reloadScripts = true;
+	};
+
 	return true;
 }
 
@@ -209,9 +215,10 @@ bool Playground::Tick(float timeDelta)
 	m_debugGui->MainMenuBar(g_menuBar);
 	ShowSystemProfiler();
 
-	if (m_sceneEditor.Tick())
+	if (m_sceneEditor.Tick() || m_reloadScripts)
 	{
 		ReloadScripts();
+		m_reloadScripts = false;
 	}
 
 	if (g_pauseScriptDelta)
