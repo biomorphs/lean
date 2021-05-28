@@ -49,6 +49,12 @@ namespace Engine
 		dbgui["DragFloat"] = [this](std::string label, float v, float step, float min, float max) -> float {
 			return DragFloat(label.c_str(), v, step, min, max);
 		};
+		dbgui["DragVec3"] = [this](std::string label, glm::vec3 v, float step, float min, float max) {
+			return DragVector(label.c_str(), v, step, min, max);
+		};
+		dbgui["DragVec4"] = [this](std::string label, glm::vec4 v, float step, float min, float max) {
+			return DragVector(label.c_str(), v, step, min, max);
+		};
 		dbgui["Text"] = [this](std::string txt) {
 			Text(txt.c_str());
 		};

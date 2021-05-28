@@ -4,6 +4,7 @@ local offsetY = 38
 local nukeEntity = nil
 local nukeBrightness = 0.0
 local TankWalls = {}
+local Brush = {}
 
 function Fishtank.Init()
 	Graphics.SetClearColour(0.3,0.55,0.8)
@@ -28,14 +29,16 @@ function Fishtank.Init()
 	-- sand base
 	MakeSandBox({0,offsetY+4,0},{49,5,39})
 	
+	MakeBrush()	
+	
 	MakeRandomMaterials()
 end
 
 function Fishtank.Tick(deltaTime)
 	if(Input.IsKeyPressed("KEY_SPACE")) then
-		for b=0,10 do 
+		for b=0,5 do 
 			local pos = {RandomFloat(-4,4), offsetY+RandomFloat(10,35), RandomFloat(-4,4)}
-			local scale = RandomFloat(0.4,1.4)
+			local scale = RandomFloat(0.8,1.5)
 			MakeBall(pos,scale)
 		end
 	end
@@ -65,11 +68,11 @@ function Fishtank.Tick(deltaTime)
 		local t = World.AddComponent_Tags(nukeEntity)
 		t:AddTag(Tag.new("Nuke!"))
 		local transform = World.AddComponent_Transform(nukeEntity)
-		transform:SetPosition(RandomFloat(-15,15),46,RandomFloat(-15,15))
+		transform:SetPosition(RandomFloat(-15,15),45,RandomFloat(-15,15))
 		local physics = World.AddComponent_Physics(nukeEntity)
 		physics:SetStatic(false)
 		physics:SetKinematic(true)
-		physics:AddSphereCollider(vec3.new(0,-4,0), RandomFloat(15,22))
+		physics:AddSphereCollider(vec3.new(0,-4,0), RandomFloat(15,25))
 		physics:Rebuild()
 		local light = World.AddComponent_Light(nukeEntity)
 		light:SetPointLight();
@@ -84,7 +87,7 @@ function Fishtank.Tick(deltaTime)
 		light:SetShadowBias(0.5)
 		
 		-- blow the bloody walls off
-		if(math.random(0,100) < 10) then 
+		if(math.random(0,100) < 5) then 
 			for i=1,#TankWalls do
 				local physics = World.GetComponent_Physics(TankWalls[i])
 				if(physics ~= nil) then
@@ -102,7 +105,7 @@ function Fishtank.Tick(deltaTime)
 		local l = World.GetComponent_Light(nukeEntity)
 		if(l ~= nil and t ~= nil) then 
 			local p = t:GetPosition()
-			p.y = p.y + deltaTime * 48.0
+			p.y = p.y + deltaTime * 80.0
 			t:SetPosition(p.x,p.y,p.z)
 			nukeBrightness = nukeBrightness - deltaTime * 32.0
 			if(nukeBrightness > 0) then 
@@ -119,6 +122,23 @@ function Fishtank.Tick(deltaTime)
 	DebugGui.Text("\t'C' - Spawn cubes\n\t'B' - Spawn bunnies\n\t'SPACE' - Spawn spheres")
 	DebugGui.Text("\t'N' - Set off the bomb!")
 	DebugGui.Text("\t'R' - Reload Scripts")
+	DebugGui.EndWindow()
+	
+	DebugGui.BeginWindow(true, "\"Brush\" Controls")
+	local t = World.GetComponent_Transform(Brush)
+	local phys = World.GetComponent_Physics(Brush)
+	if(t ~= nil) then 
+		local p = DebugGui.DragVec3("Position", t:GetPosition(),0.15,-200,200)
+		t:SetPosition(p.x,p.y,p.z)
+		local r = DebugGui.DragVec3("Rotation", t:GetRotationDegrees(),0.25,-720.0,720.0)
+		t:SetRotation(r.x,r.y,r.z)
+		local kinematic = phys:IsKinematic()
+		local nk = DebugGui.Checkbox("Kinematic?", kinematic)
+		if nk ~= kinematic then 
+			phys:SetKinematic(nk)
+			phys:Rebuild()
+		end
+	end
 	DebugGui.EndWindow()
 end
 
@@ -180,6 +200,37 @@ function MakeBunny(p, scale)
 	physics:AddSphereCollider(vec3.new(0.0*scale,0.55*scale,0.12*scale),0.46*scale)
 	physics:AddSphereCollider(vec3.new(0.65*scale,0.29*scale,0.19*scale),0.16*scale)
 	physics:Rebuild()
+end
+
+function MakeBrush()	
+	local pos = {0,8,45}
+	local dims = {32,24,4}
+
+	e = World.AddEntity()
+	local newTags = World.AddComponent_Tags(e)
+	newTags:AddTag(Tag.new("Brush"))
+	
+	local m = World.AddComponent_Material(e)
+	m:SetFloat("MeshShininess", 2)
+	m:SetVec4("MeshSpecular", vec4.new(2,2,2,1))
+	m:SetVec4("MeshDiffuseOpacity", vec4.new(0.0,2.0,1.0,1.0))
+	
+	local transform = World.AddComponent_Transform(e)
+	transform:SetPosition(pos[1],pos[2],pos[3])
+	transform:SetScale(dims[1],dims[2],dims[3])
+	
+	local newModel = World.AddComponent_Model(e)
+	newModel:SetModel(CubeModel)
+	newModel:SetShader(ModelDiffuseShader)
+	newModel:SetMaterialEntity(e)
+	
+	local physics = World.AddComponent_Physics(e)
+	physics:SetStatic(false)
+	physics:SetKinematic(true)
+	physics:AddBoxCollider(vec3.new(0.0,0.0,0.0),vec3.new(dims[1],dims[2],dims[3]))
+	physics:Rebuild()
+	
+	Brush = e
 end
 
 function MakeBox(pos, dims)	
@@ -320,9 +371,13 @@ function MakeLampEntity(pos,scale)
 	transform:SetPosition(pos[1],pos[2],pos[3])
 	transform:SetScale(scale,scale,scale)
 	
+	local m = World.AddComponent_Material(e)
+	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))
+	
 	local newModel = World.AddComponent_Model(newEntity)
 	newModel:SetModel(LampModel)
 	newModel:SetShader(ModelDiffuseShader)
+	newModel:SetMaterialEntity(e)
 	
 	local physics = World.AddComponent_Physics(newEntity)
 	physics:SetStatic(true)
@@ -353,7 +408,7 @@ function MakeLampEntity(pos,scale)
 	light:SetDistance(82)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
-	light:SetShadowBias(0.00001)
+	light:SetShadowBias(0.00002)
 	light:SetShadowOrthoScale(142)
 	
 	local lampLightPoint = World.AddEntity()
@@ -381,7 +436,7 @@ function MakeSunEntity()
 	transform:SetRotation(16.3,0.302,32.4)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetSpotLight();
-	light:SetSpotAngles(0.78,0.9);
+	light:SetSpotAngles(0.57,0.78);
 	light:SetColour(1,1,1)
 	light:SetAmbient(0.08)
 	light:SetBrightness(0.3)

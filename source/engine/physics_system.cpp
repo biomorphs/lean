@@ -351,11 +351,11 @@ namespace Engine
 			p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(nullptr));
 		});
 		m_materialCache.clear();
-
 		m_scene = nullptr;
 		m_physics = nullptr;
 		m_pvd = nullptr;
 		m_cudaManager = nullptr;
+		m_cooker = nullptr;
 		m_foundation = nullptr;
 	}
 }
