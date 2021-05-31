@@ -46,7 +46,7 @@ function Fishtank.Tick(deltaTime)
 	if(Input.IsKeyPressed("KEY_b")) then
 		for b=0,5 do 
 			local pos = {RandomFloat(-4,4), offsetY+RandomFloat(10,35), RandomFloat(-4,4)}
-			local scale = RandomFloat(1.5,2.5)
+			local scale = RandomFloat(2,4)
 			MakeBunny(pos,scale)
 		end
 	end
@@ -54,8 +54,7 @@ function Fishtank.Tick(deltaTime)
 	if(Input.IsKeyPressed("KEY_c")) then
 		for b=0,5 do 
 			local pos = {RandomFloat(-4,4), offsetY+RandomFloat(10,35), RandomFloat(-4,4)}
-			local scale = RandomFloat(1.5,2.5)
-			MakeBox(pos,{RandomFloat(1.5,2.5),RandomFloat(1.5,2.5),RandomFloat(1.5,2.5)})
+			MakeBox(pos,{RandomFloat(1.5,3),RandomFloat(1.5,3),RandomFloat(1.5,3)})
 		end
 	end
 	

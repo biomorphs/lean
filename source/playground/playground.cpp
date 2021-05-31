@@ -69,6 +69,12 @@ void Playground::ReloadScripts()
 	std::string scriptErrors;
 	m_loadedSceneScripts.clear();
 	m_entitySystem->NewWorld();
+
+	auto scripts = m_scriptSystem->Globals()["Playground"].get_or_create<sol::table>();
+	scripts["ReloadScripts"] = [this]() {
+		m_reloadScripts = true;
+	};
+
 	for (auto it : m_scene.Scripts())
 	{
 		sol::table scriptTable;
@@ -182,11 +188,6 @@ bool Playground::PostInit()
 	{
 		LoadScene(g_playgroundConfig.m_lastLoadedScene);
 	}
-
-	auto scripts = m_scriptSystem->Globals()["Playground"].get_or_create<sol::table>();
-	scripts["ReloadScripts"] = [this]() {
-		m_reloadScripts = true;
-	};
 
 	return true;
 }
