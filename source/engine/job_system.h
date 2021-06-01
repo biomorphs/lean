@@ -17,6 +17,7 @@ namespace Engine
 		bool PostInit();
 		void Shutdown();
 
+		void ForEachAsync(int start, int end, int step, int stepsPerJob, std::function<void(int32_t)> fn);
 		void ProcessJobThisThread();
 		void PushSlowJob(Job::JobThreadFunction threadFn);
 		void PushJob(Job::JobThreadFunction threadFn);

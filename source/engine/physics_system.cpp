@@ -35,24 +35,50 @@ namespace Engine
 				m_physicsSystem->m_scene->fetchResults(true);	
 			}
 
-			// Apply new transforms to all non-kinematic dynamic bodies
-			// we should not be doing this by looping through all components!
+			static bool s_useActiveActors = true;
+
+			if (s_useActiveActors)
 			{
-				SDE_PROF_EVENT("ApplyTransforms");
-				auto transforms = entities->GetWorld()->GetAllComponents<Transform>();
-				entities->GetWorld()->ForEachComponentAsync<Physics>([this, &transforms](Physics& p, EntityHandle e)
+				SDE_PROF_EVENT("ApplyTransforms_ActiveActors");
+				// Apply new transforms to all non-kinematic dynamic bodies
+				auto theWorld = m_physicsSystem->m_entitySystem->GetWorld();
+				auto transforms = theWorld->GetAllComponents<Transform>();
+				auto physicscomps = theWorld->GetAllComponents<Physics>();
+				physx::PxU32 nbActiveActors = 0;
+				physx::PxActor** activeActors = m_physicsSystem->m_scene->getActiveActors(nbActiveActors);
+				m_physicsSystem->m_jobSystem->ForEachAsync(0, nbActiveActors, 1, 400, [this, &activeActors, &transforms, &physicscomps](int32_t i) 
 				{
-					if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
+					auto entityId = reinterpret_cast<uintptr_t>(activeActors[i]->userData);
+					auto p = physicscomps->Find(entityId);
+					auto t = transforms->Find(entityId);
+					if (p && t && !p->IsStatic() && !p->IsKinematic() && p->GetActor().Get() != nullptr)
 					{
-						auto transform = transforms->Find(e);
-						if (transform)
-						{
-							const auto& pose = p.GetActor()->getGlobalPose();
-							transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
-							transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
-						}
+						const auto& pose = p->GetActor()->getGlobalPose();
+						t->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
+						t->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
 					}
-				}, *m_physicsSystem->m_jobSystem, 400);
+				});
+			}
+			else
+			{
+				// we should not be doing this by looping through all components!
+				{
+					SDE_PROF_EVENT("ApplyTransforms_AllComponents");
+					auto transforms = entities->GetWorld()->GetAllComponents<Transform>();
+					entities->GetWorld()->ForEachComponentAsync<Physics>([this, &transforms](Physics& p, EntityHandle e)
+						{
+							if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
+							{
+								auto transform = transforms->Find(e);
+								if (transform)
+								{
+									const auto& pose = p.GetActor()->getGlobalPose();
+									transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
+									transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
+								}
+							}
+						}, *m_physicsSystem->m_jobSystem, 400);
+				}
 			}
 			m_physicsSystem->m_hasTicked = false;
 		}
@@ -171,6 +197,8 @@ namespace Engine
 		physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(0.0f, -20, 0.0f);
 		sceneDesc.cpuDispatcher = &g_dispatcher;
+		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;					// generate active actor list
+		sceneDesc.flags |= physx::PxSceneFlag::eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS;	// ... but don't include kinematics
 		if (c_useCUDA)
 		{
 			sceneDesc.cudaContextManager = m_cudaManager.Get();
@@ -320,6 +348,7 @@ namespace Engine
 			body = m_physics->createRigidDynamic(trans);
 			static_cast<physx::PxRigidDynamic*>(body)->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, p.IsKinematic());
 		}
+		body->userData = reinterpret_cast<void*>((uintptr_t)e.GetID());	// keep a reference to the entity, not the component 
 	
 		auto material = GetOrCreateMaterial(p);
 		for (const auto& collider : p.GetPlaneColliders())

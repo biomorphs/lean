@@ -1,5 +1,6 @@
 #include "job_system.h"
 #include "core/profiler.h"
+#include "core/thread.h"
 #include "SDL_cpuinfo.h"
 #include <cassert>
 
@@ -20,6 +21,37 @@ namespace Engine
 
 	JobSystem::~JobSystem()
 	{
+	}
+
+	void JobSystem::ForEachAsync(int start, int end, int step, int stepsPerJob, std::function<void(int32_t)> fn)
+	{
+		SDE_PROF_EVENT();
+
+		std::atomic<int> jobsRemaining = 0;
+		for (int32_t i = start; i < end; i += stepsPerJob)
+		{
+			const int startIndex = i;
+			const int endIndex = std::min(i + stepsPerJob, end);
+			auto runJob = [startIndex, endIndex, &jobsRemaining, &fn](void*) {
+				for (int32_t c = startIndex; c < endIndex; ++c)
+				{
+					fn(c);
+				}
+				jobsRemaining--;
+			};
+			jobsRemaining++;
+			PushJob(runJob);
+		}
+
+		// wait for the results
+		{
+			SDE_PROF_STALL("WaitForResults");
+			while (jobsRemaining > 0)
+			{
+				ProcessJobThisThread();
+				Core::Thread::Sleep(0);
+			}
+		}
 	}
 
 	void JobSystem::SetThreadInitFn(std::function<void(uint32_t)> fn)
