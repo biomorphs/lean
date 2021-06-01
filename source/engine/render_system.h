@@ -37,6 +37,16 @@ namespace Engine
 		bool Tick(float timeDelta);			// All passes are drawn here
 		void PostShutdown();	// Device + window shutdown here
 
+		class DevicePresenter : public System
+		{
+		public:
+			DevicePresenter(RenderSystem* r);
+			bool Tick(float timeDelta);
+		private:
+			RenderSystem* m_renderSystem = nullptr;
+		};
+		DevicePresenter* MakePresenter();
+
 	private:
 		struct Config
 		{

@@ -9,12 +9,34 @@
 
 namespace Engine
 {
+	RenderSystem::DevicePresenter::DevicePresenter(RenderSystem* r)
+		: m_renderSystem(r)
+	{
+	}
+
+	bool RenderSystem::DevicePresenter::Tick(float timeDelta)
+	{
+		SDE_PROF_EVENT();
+
+		if (m_renderSystem->m_device != nullptr)
+		{
+			m_renderSystem->m_device->Present();
+		}
+
+		return true;
+	}
+
 	RenderSystem::RenderSystem()
 	{
 	}
 
 	RenderSystem::~RenderSystem()
 	{
+	}
+
+	RenderSystem::DevicePresenter* RenderSystem::MakePresenter()
+	{
+		return new DevicePresenter(this);
 	}
 
 	bool RenderSystem::PreInit(SystemManager& manager)
@@ -85,8 +107,6 @@ namespace Engine
 			renderPass.m_pass->RenderAll(*m_device);
 			renderPass.m_pass->Reset();
 		}
-
-		m_device->Present();
 
 		return true;
 	}

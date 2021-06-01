@@ -24,6 +24,7 @@ class GraphicsSystem;
 namespace Engine
 {
 	class JobSystem;
+
 	class PhysicsSystem : public System
 	{
 	public:
@@ -34,6 +35,16 @@ namespace Engine
 		bool Initialise();
 		bool Tick(float timeDelta);
 		void Shutdown();
+		
+		class UpdateEntities : public System
+		{
+		public:
+			UpdateEntities(PhysicsSystem* p);
+			bool Tick(float timeDelta);
+		private:
+			PhysicsSystem* m_physicsSystem = nullptr;
+		};
+		UpdateEntities* MakeUpdater();
 
 	private:
 		void RebuildActor(Physics& p, EntityHandle& e);
@@ -45,6 +56,7 @@ namespace Engine
 		GraphicsSystem* m_graphicsSystem = nullptr;
 		float m_timeAccumulator = 0.0f;
 		float m_timeStep = 1.0f / 60.0f;	// fixed time step for now
+		bool m_hasTicked = false;
 
 		// Since physx has a 64k material limit, we will cache materials with the same values
 		// later on we probably want some kind of proper physics material exposed

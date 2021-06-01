@@ -17,6 +17,74 @@
 
 namespace Engine
 {
+	PhysicsSystem::UpdateEntities::UpdateEntities(PhysicsSystem* physics)
+		: m_physicsSystem(physics)
+	{
+	}
+
+	bool PhysicsSystem::UpdateEntities::Tick(float timeDelta)
+	{
+		SDE_PROF_EVENT();
+
+		auto entities = m_physicsSystem->m_entitySystem;
+		if(m_physicsSystem->m_hasTicked)
+		{ 
+			// wait for sim to end
+			{
+				SDE_PROF_EVENT("FetchResults");
+				m_physicsSystem->m_scene->fetchResults(true);	
+			}
+
+			// Apply new transforms to all non-kinematic dynamic bodies
+			// we should not be doing this by looping through all components!
+			{
+				SDE_PROF_EVENT("ApplyTransforms");
+				auto transforms = entities->GetWorld()->GetAllComponents<Transform>();
+				entities->GetWorld()->ForEachComponentAsync<Physics>([this, &transforms](Physics& p, EntityHandle e)
+				{
+					if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
+					{
+						auto transform = transforms->Find(e);
+						if (transform)
+						{
+							const auto& pose = p.GetActor()->getGlobalPose();
+							transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
+							transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
+						}
+					}
+				}, *m_physicsSystem->m_jobSystem, 400);
+			}
+			m_physicsSystem->m_hasTicked = false;
+		}
+		
+		// Rebuild actors if needed
+		// we should not be doing this by looping through all components!
+		{
+			SDE_PROF_EVENT("RebuildPending");
+			entities->GetWorld()->ForEachComponent<Physics>([this,entities](Physics& p, EntityHandle e)
+			{
+				if (p.NeedsRebuild())
+				{
+					m_physicsSystem->RebuildActor(p, e);
+				}
+				// update kinematic target transforms
+				if (!p.IsStatic() && p.IsKinematic() && p.GetActor().Get() != nullptr)
+				{
+					auto transformComponent = entities->GetWorld()->GetComponent<Transform>(e);
+					if (transformComponent)
+					{
+						const auto pos = transformComponent->GetPosition();
+						const auto orient = transformComponent->GetOrientation();
+						physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
+						static_cast<physx::PxRigidDynamic*>(p.GetActor().Get())->setKinematicTarget(trans);
+					}
+				}
+			});
+		}
+
+		return true;
+	}
+
 	class AllocatorCallback : public physx::PxAllocatorCallback
 	{
 	public:
@@ -66,6 +134,11 @@ namespace Engine
 
 	PhysicsSystem::~PhysicsSystem()
 	{
+	}
+
+	PhysicsSystem::UpdateEntities* PhysicsSystem::MakeUpdater()
+	{
+		return new UpdateEntities(this);
 	}
 
 	bool PhysicsSystem::PreInit(SystemManager& manager)
@@ -287,56 +360,13 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		// Rebuild actors if needed
-		{
-			SDE_PROF_EVENT("RebuildPending");
-			m_entitySystem->GetWorld()->ForEachComponent<Physics>([this](Physics& p, EntityHandle e)
-			{
-				if (p.NeedsRebuild())
-				{
-					RebuildActor(p, e);
-				}
-				// update kinematic target transforms
-				if (!p.IsStatic() && p.IsKinematic() && p.GetActor().Get() != nullptr)
-				{
-					auto transformComponent = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
-					if (transformComponent)
-					{
-						const auto pos = transformComponent->GetPosition();
-						const auto orient = transformComponent->GetOrientation();
-						physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
-						static_cast<physx::PxRigidDynamic*>(p.GetActor().Get())->setKinematicTarget(trans);
-					}
-				}
-			});
-		}
-
 		m_timeAccumulator += timeDelta;
-		while (m_timeAccumulator >= m_timeStep)
+		if (m_timeAccumulator >= m_timeStep)
 		{
 			SDE_PROF_EVENT("Simulate");
 			m_timeAccumulator -= m_timeStep;
-			m_scene->simulate(m_timeStep);	// Do not write to any physics objects during this!
-			m_scene->fetchResults(true);
-
-			// Apply new transforms to all non-kinematic dynamic bodies
-			{
-				SDE_PROF_EVENT("ApplyTransforms");
-				auto transforms = m_entitySystem->GetWorld()->GetAllComponents<Transform>();
-				m_entitySystem->GetWorld()->ForEachComponentAsync<Physics>([this, &transforms](Physics& p, EntityHandle e)
-				{
-					if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
-					{
-						auto transform = transforms->Find(e);
-						if (transform)
-						{
-							const auto& pose = p.GetActor()->getGlobalPose();
-							transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
-							transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
-						}
-					}
-				} , * m_jobSystem, 400);
-			}
+			m_scene->simulate(m_timeStep);	// Do not write to any physics objects until UpdateEntities has ticked!
+			m_hasTicked = true;
 		}
 
 		return true;
@@ -346,10 +376,6 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		m_entitySystem->GetWorld()->ForEachComponent<Physics>([this](Physics& p, EntityHandle e)
-		{
-			p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(nullptr));
-		});
 		m_materialCache.clear();
 		m_scene = nullptr;
 		m_physics = nullptr;

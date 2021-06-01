@@ -42,20 +42,25 @@ namespace Engine
 		// Init random number generator
 		Core::Random::ResetGlobalSeed();
 
+		auto physics = new PhysicsSystem;
+		auto render = new RenderSystem;
+
 		SystemManager sysManager;
 		sysManager.RegisterSystem("Events", new EventSystem);
 		sysManager.RegisterSystem("Jobs", new JobSystem);
 		sysManager.RegisterSystem("Input", new InputSystem);
 		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
-		sysManager.RegisterSystem("Physics", new PhysicsSystem);
+		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
 		
 		EngineSystemRegister registerSystems(sysManager);
 		systemCreation(registerSystems);
 
 		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("Graphics", new GraphicsSystem);
-		sysManager.RegisterSystem("Render", new RenderSystem);
+		sysManager.RegisterSystem("Physics", physics);
+		sysManager.RegisterSystem("Render", render);
+		sysManager.RegisterSystem("RenderPresent", render->MakePresenter());
 
 		// Run the engine
 		SDE_LOGC(Engine, "Initialising systems...");

@@ -52,7 +52,7 @@ function Fishtank.Tick(deltaTime)
 	end
 	
 	if(Input.IsKeyPressed("KEY_c")) then
-		for b=0,5 do 
+		for b=0,10 do 
 			local pos = {RandomFloat(-4,4), offsetY+RandomFloat(10,35), RandomFloat(-4,4)}
 			MakeBox(pos,{RandomFloat(1.5,3),RandomFloat(1.5,3),RandomFloat(1.5,3)})
 		end
