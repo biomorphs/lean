@@ -163,6 +163,7 @@ bool Playground::PreInit(Engine::SystemManager& manager)
 	m_sceneEditor.Init(&m_scene, m_debugGui);
 
 	auto& fileMenu = g_menuBar.AddSubmenu(ICON_FK_FILE_O " File");
+	fileMenu.AddItem("Toggle Profiler", [this]() { m_showProfiler = !m_showProfiler; });
 	fileMenu.AddItem("Exit", []() { g_keepRunning = false; });
 
 	auto& scriptMenu = g_menuBar.AddSubmenu(ICON_FK_GLOBE " Scene");
@@ -214,7 +215,10 @@ bool Playground::Tick(float timeDelta)
 	SDE_PROF_EVENT();
 
 	m_debugGui->MainMenuBar(g_menuBar);
-	ShowSystemProfiler();
+	if (m_showProfiler)
+	{
+		ShowSystemProfiler();
+	}
 
 	if (m_sceneEditor.Tick() || m_reloadScripts)
 	{

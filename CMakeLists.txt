@@ -203,6 +203,8 @@ set(ENGINE_SOURCES
 	Source/engine/sdf.cpp
 	Source/engine/graphics_system.h
 	Source/engine/graphics_system.cpp
+	Source/engine/components/component_camera.h
+	Source/engine/components/component_camera.cpp
 	Source/engine/components/component_sdf_model.h
 	Source/engine/components/component_sdf_model.cpp
 	Source/engine/components/component_model.h

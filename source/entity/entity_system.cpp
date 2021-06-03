@@ -21,6 +21,26 @@ void EntitySystem::NewWorld()
 	m_world->RemoveAllEntities();
 }
 
+std::string EntitySystem::GetEntityNameWithTags(EntityHandle e) const
+{
+	char text[1024] = "";
+	sprintf_s(text, "Entity %d", e.GetID());
+	auto tags = m_world->GetComponent<Tags>(e);
+	if (tags && tags->AllTags().size() > 0)
+	{
+		char tagtext[1024] = "";
+		strcat_s(text, " (");
+		for (const auto& tag : tags->AllTags())
+		{
+			int index = &tag - tags->AllTags().data();
+			sprintf_s(tagtext, "%s%s", tag.c_str(), index < tags->AllTags().size() - 1 ? "," : "");
+			strcat_s(text, tagtext);
+		}
+		strcat_s(text, ")");
+	}
+	return text;
+}
+
 void EntitySystem::ShowDebugGui()
 {
 	SDE_PROF_EVENT();
@@ -55,19 +75,7 @@ void EntitySystem::ShowDebugGui()
 				}
 
 				char text[1024] = "";
-				sprintf_s(text, "Entity %d", entityID);
-				if (tags && tags->AllTags().size() > 0)
-				{
-					char tagtext[1024] = "";
-					strcat_s(text, " (");
-					for (const auto& tag : tags->AllTags())
-					{
-						int index = &tag - tags->AllTags().data();
-						sprintf_s(tagtext, "%s%s", tag.c_str(), index < tags->AllTags().size()-1 ? "," : "");
-						strcat_s(text, tagtext);
-					}
-					strcat_s(text, ")");
-				}
+				sprintf_s(text, "%s", GetEntityNameWithTags(entityID).c_str());
 				if (m_debugGui->TreeNode(text))
 				{
 					std::vector<ComponentType> owned = m_world->GetOwnedComponentTypes(entityID);

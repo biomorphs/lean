@@ -20,6 +20,8 @@ public:
 	Physics& operator=(const Physics&) = delete;
 	COMPONENT(Physics);
 
+	void AddForce(glm::vec3 force);
+
 	bool IsStatic() { return m_isStatic; }
 	void SetStatic(bool s) { m_isStatic = s; }
 

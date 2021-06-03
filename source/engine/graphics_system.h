@@ -12,7 +12,6 @@ namespace Engine
 	class ScriptSystem;
 	class RenderSystem;
 	class DebugCamera;
-	class ArcballCamera;
 	class JobSystem;
 	class DebugGuiSystem;
 	class TextureManager;
@@ -45,13 +44,13 @@ private:
 	void ProcessCamera(float timeDelta);
 	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform);
 	bool m_showBounds = false;
+	bool m_showStats = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
 	std::unique_ptr<Engine::TextureManager> m_textures;
 	std::unique_ptr<Engine::ModelManager> m_models;
 	std::unique_ptr<Engine::ShaderManager> m_shaders;
 	std::unique_ptr<Engine::DebugCamera> m_debugCamera;
-	std::unique_ptr<Engine::ArcballCamera> m_arcballCamera;
 	std::unique_ptr<Render::Camera> m_mainRenderCamera;
 	glm::ivec2 m_windowSize = { 0,0 };
 	Engine::DebugGuiSystem* m_debugGui = nullptr;

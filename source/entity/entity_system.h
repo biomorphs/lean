@@ -30,6 +30,8 @@ public:
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();
 
+	std::string GetEntityNameWithTags(EntityHandle e) const;
+
 private:
 	void ShowDebugGui();
 	std::map<ComponentType, UiRenderFn> m_componentUiRenderers;

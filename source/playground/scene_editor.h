@@ -18,6 +18,6 @@ private:
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Scene* m_scene = nullptr;
 
-	bool m_mainWindowActive = true;
+	bool m_mainWindowActive = false;
 	std::string m_newScriptName;
 };

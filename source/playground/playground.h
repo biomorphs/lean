@@ -32,6 +32,7 @@ private:
 	void ReloadScripts();
 	void ShowSystemProfiler();
 
+	bool m_showProfiler = false;
 	bool m_reloadScripts = false;
 	Scene m_scene;
 	SceneEditor m_sceneEditor;

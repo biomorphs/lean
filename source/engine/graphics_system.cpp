@@ -8,7 +8,6 @@
 #include "engine/job_system.h"
 #include "engine/input_system.h"
 #include "engine/debug_camera.h"
-#include "engine/arcball_camera.h"
 #include "engine/texture_manager.h"
 #include "engine/model_manager.h"
 #include "engine/shader_manager.h"
@@ -21,7 +20,6 @@
 #include "render/camera.h"
 #include "core/profiler.h"
 #include "core/timer.h"
-#include "engine/arcball_camera.h"
 #include "entity/entity_system.h"
 #include "engine/components/component_light.h"
 #include "engine/components/component_transform.h"
@@ -29,11 +27,12 @@
 #include "engine/components/component_sdf_model.h"
 #include "engine/components/component_tags.h"
 #include "engine/components/component_material.h"
+#include "engine/components/component_camera.h"
 
 Engine::MenuBar g_graphicsMenu;
+EntityHandle g_selectedCamera;
 bool g_showTextureGui = false;
 bool g_showModelGui = false;
-bool g_useArcballCam = false;
 bool g_showCameraInfo = false;
 bool g_enableShadowUpdate = true;
 
@@ -118,6 +117,14 @@ bool GraphicsSystem::Initialise()
 
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
+
+	m_entitySystem->RegisterComponentType<Camera>();
+	m_entitySystem->RegisterComponentUi<Camera>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
+		auto& c = *static_cast<Camera::StorageType&>(cs).Find(e);
+		c.SetNearPlane(dbg.DragFloat("Near Plane", c.GetNearPlane(), 0.01f, 0.0f, c.GetFarPlane()));
+		c.SetFarPlane(dbg.DragFloat("Far Plane", c.GetFarPlane(), 0.01f, c.GetNearPlane(), 100000000.0f));
+		c.SetFOV(dbg.DragFloat("FOV", c.GetFOV(), 0.1f, 0.0f, 180.0f));
+	});
 
 	m_entitySystem->RegisterComponentType<Material>();
 	m_entitySystem->RegisterComponentUi<Material>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
@@ -342,6 +349,9 @@ bool GraphicsSystem::Initialise()
 
 	//// expose Graphics script functions
 	auto graphics = m_scriptSystem->Globals()["Graphics"].get_or_create<sol::table>();
+	graphics["SetActiveCamera"] = [this](EntityHandle c) {
+		g_selectedCamera = c;
+	};
 	graphics["SetClearColour"] = [this](float r, float g, float b) {
 		m_renderer->SetClearColour(glm::vec4(r, g, b, 1.0f));
 	};
@@ -389,12 +399,6 @@ bool GraphicsSystem::Initialise()
 	m_debugCamera->SetPosition({60.65f,101.791f,82.469f});
 	m_debugCamera->SetPitch(-0.438);
 	m_debugCamera->SetYaw(0.524f);
-
-	m_arcballCamera = std::make_unique<Engine::ArcballCamera>();
-	m_arcballCamera->SetWindowSize(m_renderSystem->GetWindow()->GetSize());
-	m_arcballCamera->SetPosition({ 7.1f,8.0f,15.0f });
-	m_arcballCamera->SetTarget({ 0.0f,5.0f,0.0f });
-	m_arcballCamera->SetUp({ 0.0f,1.0f,0.0f });
 	
 	float aspect = (float)windowSize.x / (float)windowSize.y;
 	m_mainRenderCamera->SetProjection(70.0f, aspect, 0.1f, 5000.0f);
@@ -405,18 +409,12 @@ bool GraphicsSystem::Initialise()
 	gMenu.AddItem("Reload Models", [this]() { m_renderer->Reset(); m_models->ReloadAll(); });
 	gMenu.AddItem("TextureManager", [this]() { g_showTextureGui = true; });
 	gMenu.AddItem("ModelManager", [this]() { g_showModelGui = true; });
-	auto& camMenu = g_graphicsMenu.AddSubmenu(ICON_FK_CAMERA " Camera (Flycam)");
-	camMenu.AddItem("Toggle Camera Mode", [this,&camMenu]() {
-		g_useArcballCam = !g_useArcballCam; 
-		if (g_useArcballCam)
-		{
-			camMenu.m_label = ICON_FK_CAMERA " Camera (Arcball)";
-		}
-		else
-		{
-			camMenu.m_label = ICON_FK_CAMERA " Camera (Flycam)";
-		}
+	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
+	auto& camMenu = g_graphicsMenu.AddSubmenu(ICON_FK_CAMERA " Camera");
+	camMenu.AddItem("Flycam", [this,&camMenu]() {
+		g_selectedCamera = -1;
 	});
+	camMenu.AddSubmenu("Entities");
 	camMenu.AddItem("Show Camera Info", [this]() {g_showCameraInfo = true; });
 
 	return true;
@@ -617,41 +615,46 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		g_showModelGui = m_models->ShowGui(*m_debugGui);
 	}
 
-	const auto& fs = m_renderer->GetStats();
-	char statText[1024] = { '\0' };
-	bool forceOpen = true;
-	m_debugGui->BeginWindow(forceOpen, "Render Stats");
-	sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
-	sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
-	sprintf_s(statText, "\tTransparents: %zu (%zu visible)", fs.m_totalTransparentInstances, fs.m_renderedTransparentInstances);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Shadowmaps updated: %zu", fs.m_shadowMapUpdates);	m_debugGui->Text(statText);
-	sprintf_s(statText, "\tCasters: %zu (%zu visible)", fs.m_totalShadowInstances, fs.m_renderedShadowInstances);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Active Lights: %zu (%zu visible)", fs.m_activeLights, fs.m_visibleLights);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
-	sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Batches Drawn: %zu", fs.m_batchesDrawn);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Draw calls: %zu", fs.m_drawCalls);	m_debugGui->Text(statText);
-	sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
-	sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
-	m_showBounds = m_debugGui->Checkbox("Draw Bounds", m_showBounds);
-	m_renderer->SetExposure(m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f));
-	m_renderer->SetBloomThreshold(m_debugGui->DragFloat("Bloom Threshold", m_renderer->GetBloomThreshold(), 0.01f, 0.0f, 0.0f));
-	m_renderer->SetBloomMultiplier(m_debugGui->DragFloat("Bloom Multiplier", m_renderer->GetBloomMultiplier(), 0.01f, 0.0f, 0.0f));
-	m_renderer->SetCullingEnabled(m_debugGui->Checkbox("Culling Enabled", m_renderer->IsCullingEnabled()));
-	m_debugGui->EndWindow();
+	if (m_showStats)
+	{
+		const auto& fs = m_renderer->GetStats();
+		char statText[1024] = { '\0' };
+		bool forceOpen = true;
+		m_debugGui->BeginWindow(forceOpen, "Render Stats");
+		sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
+		sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
+		sprintf_s(statText, "\tTransparents: %zu (%zu visible)", fs.m_totalTransparentInstances, fs.m_renderedTransparentInstances);	m_debugGui->Text(statText);
+		sprintf_s(statText, "Shadowmaps updated: %zu", fs.m_shadowMapUpdates);	m_debugGui->Text(statText);
+		sprintf_s(statText, "\tCasters: %zu (%zu visible)", fs.m_totalShadowInstances, fs.m_renderedShadowInstances);	m_debugGui->Text(statText);
+		sprintf_s(statText, "Active Lights: %zu (%zu visible)", fs.m_activeLights, fs.m_visibleLights);	m_debugGui->Text(statText);
+		sprintf_s(statText, "Shader Binds: %zu", fs.m_shaderBinds);	m_debugGui->Text(statText);
+		sprintf_s(statText, "VA Binds: %zu", fs.m_vertexArrayBinds);	m_debugGui->Text(statText);
+		sprintf_s(statText, "Batches Drawn: %zu", fs.m_batchesDrawn);	m_debugGui->Text(statText);
+		sprintf_s(statText, "Draw calls: %zu", fs.m_drawCalls);	m_debugGui->Text(statText);
+		sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
+		sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
+		m_showBounds = m_debugGui->Checkbox("Draw Bounds", m_showBounds);
+		m_renderer->SetExposure(m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f));
+		m_renderer->SetBloomThreshold(m_debugGui->DragFloat("Bloom Threshold", m_renderer->GetBloomThreshold(), 0.01f, 0.0f, 0.0f));
+		m_renderer->SetBloomMultiplier(m_debugGui->DragFloat("Bloom Multiplier", m_renderer->GetBloomMultiplier(), 0.01f, 0.0f, 0.0f));
+		m_renderer->SetCullingEnabled(m_debugGui->Checkbox("Culling Enabled", m_renderer->IsCullingEnabled()));
+		m_debugGui->EndWindow();
+	}
 }
 
 void GraphicsSystem::ProcessCamera(float timeDelta)
 {
-	if (g_useArcballCam)
-	{
-		if (!m_debugGui->IsCapturingMouse())
-		{
-			m_arcballCamera->Update(m_inputSystem->GetMouseState(), timeDelta);
-		}
-		m_mainRenderCamera->LookAt(m_arcballCamera->GetPosition(), m_arcballCamera->GetTarget(), m_arcballCamera->GetUp());
-	}
-	else
+	auto cameraMenu = g_graphicsMenu.GetSubmenu(ICON_FK_CAMERA " Camera")->GetSubmenu("Entities");
+	cameraMenu->RemoveItems();
+
+	m_entitySystem->GetWorld()->ForEachComponent<Camera>([this, cameraMenu](Camera& c, EntityHandle e) {
+		char text[1024];
+		cameraMenu->AddItem(m_entitySystem->GetEntityNameWithTags(e), [e]() {
+			g_selectedCamera = e;
+		});
+	});
+
+	if(!g_selectedCamera.IsValid())
 	{
 		m_debugCamera->Update(m_inputSystem->ControllerState(0), timeDelta);
 		if (!m_debugGui->IsCapturingMouse())
@@ -663,6 +666,22 @@ void GraphicsSystem::ProcessCamera(float timeDelta)
 			m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
 		}
 		m_debugCamera->ApplyToCamera(*m_mainRenderCamera);
+	}
+	else
+	{
+		auto camComp = m_entitySystem->GetWorld()->GetComponent<Camera>(g_selectedCamera);
+		auto transform = m_entitySystem->GetWorld()->GetComponent<Transform>(g_selectedCamera);
+		if (camComp && transform)
+		{
+			// apply component values to main render camera
+			auto windowSize = m_renderSystem->GetWindow()->GetSize();
+			m_mainRenderCamera->SetFOVAndAspectRatio(camComp->GetFOV(), (float)windowSize.x / (float)windowSize.y);
+			m_mainRenderCamera->SetClipPlanes(camComp->GetNearPlane(), camComp->GetFarPlane());
+
+			glm::vec3 lookDirection = glm::vec3(0.0f,0.0f,1.0f) * transform->GetOrientation();
+			glm::vec3 lookUp = glm::vec3(0.0f, 1.0f, 0.0f) * transform->GetOrientation();
+			m_mainRenderCamera->LookAt(transform->GetPosition(), transform->GetPosition() + lookDirection, lookUp);
+		}
 	}
 	m_renderer->SetCamera(*m_mainRenderCamera);
 }

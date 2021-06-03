@@ -15,7 +15,7 @@ namespace Engine
 		virtual ~JobSystem();
 
 		bool PostInit();
-		void Shutdown();
+		void PostShutdown();
 
 		void ForEachAsync(int start, int end, int step, int stepsPerJob, std::function<void(int32_t)> fn);
 		void ProcessJobThisThread();

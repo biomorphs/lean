@@ -27,6 +27,8 @@ namespace Engine
 		~SubMenu() = default;
 		void AddItem(std::string name, std::function<void()> onSelected, std::string shortcut="");
 		SubMenu& AddSubmenu(std::string label);
+		SubMenu* GetSubmenu(std::string label);
+		void RemoveItems();
 
 		std::string m_label;
 		bool m_enabled = true;
@@ -40,6 +42,8 @@ namespace Engine
 		MenuBar() = default;
 		~MenuBar() = default;
 		SubMenu& AddSubmenu(std::string label);
+		SubMenu* GetSubmenu(std::string label);
+		void RemoveItems();
 
 		std::vector<SubMenu> m_subMenus;
 	};

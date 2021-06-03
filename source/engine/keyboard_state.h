@@ -45,6 +45,10 @@ namespace Engine
 		KEY_LSHIFT,
 		KEY_RSHIFT,
 		KEY_SPACE,
+		KEY_LEFT,
+		KEY_RIGHT,
+		KEY_UP,
+		KEY_DOWN,
 		KEY_MAX
 	};
 	

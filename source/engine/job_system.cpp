@@ -110,7 +110,7 @@ namespace Engine
 		return true;
 	}
 
-	void JobSystem::Shutdown()
+	void JobSystem::PostShutdown()
 	{
 		SDE_PROF_EVENT();
 
