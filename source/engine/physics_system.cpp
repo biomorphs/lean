@@ -174,6 +174,7 @@ namespace Engine
 		m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
 		m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
 		m_graphicsSystem = (GraphicsSystem*)manager.GetSystem("Graphics");
+		m_debugGuiSystem = (DebugGuiSystem*)manager.GetSystem("DebugGui");
 
 		m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_physxAllocator, g_physxErrors);
 
@@ -217,92 +218,9 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		m_entitySystem->RegisterComponentType<Physics>();
-		m_entitySystem->RegisterComponentUi<Physics>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-			auto& p = *static_cast<Physics::StorageType&>(cs).Find(e);
-			p.SetStatic(dbg.Checkbox("Static", p.IsStatic()));
-			if (!p.IsStatic())
-			{
-				p.SetKinematic(dbg.Checkbox("Kinematic", p.IsKinematic()));
-			}
-			p.SetDensity(dbg.DragFloat("Density", p.GetDensity(), 0.01f, 0.0f, 100000.0f));
-			p.SetStaticFriction(dbg.DragFloat("Friction (Static)", p.GetStaticFriction(), 0.01f, 0.0f, 10.0f));
-			p.SetDynamicFriction(dbg.DragFloat("Friction (Dynamic)", p.GetDynamicFriction(), 0.01f, 0.0f, 10.0f));
-			p.SetRestitution(dbg.DragFloat("Restitution", p.GetRestitution(), 0.01f, 0.0f, 10.0f));
-			if (dbg.TreeNode("Colliders", true))
-			{
-				char text[256] = "";
-				for (auto& it : p.GetPlaneColliders())
-				{
-					sprintf(text, "Plane %d", (int)(&it - p.GetPlaneColliders().data()));
-					if (dbg.TreeNode(text))
-					{
-						std::get<0>(it) = dbg.DragVector("Normal", std::get<0>(it), 0.01f, -1.0f, 1.0f);
-						std::get<1>(it) = dbg.DragVector("Origin", std::get<1>(it), 0.01f, -1.0f, 1.0f);
-						dbg.TreePop();
-						m_graphicsSystem->DebugRenderer().DrawLine(std::get<1>(it), std::get<1>(it) + std::get<0>(it), { 0.0f,1.0f,1.0f });
-					}
-				}
-				for (auto& it : p.GetSphereColliders())
-				{
-					sprintf(text, "Sphere %d", (int)(&it - p.GetSphereColliders().data()));
-					if (dbg.TreeNode(text))
-					{
-						std::get<0>(it) = dbg.DragVector("Offset", std::get<0>(it), 0.01f);
-						std::get<1>(it) = dbg.DragFloat("Radius", std::get<1>(it), 0.01f, 0.0f, 100000.0f);
-						dbg.TreePop();
-						auto transform = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
-						if (transform)
-						{
-							auto bMin = std::get<0>(it) - std::get<1>(it);
-							auto bMax = std::get<0>(it) + std::get<1>(it);
-							// ignore scale since we dont pass it to physx
-							glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
-							matrix = matrix * glm::toMat4(transform->GetOrientation());
-							m_graphicsSystem->DebugRenderer().DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, matrix);
-						}
-					}
-				}
-				for (auto& it : p.GetBoxColliders())
-				{
-					sprintf(text, "Box %d", (int)(&it - p.GetBoxColliders().data()));
-					if (dbg.TreeNode(text))
-					{
-						std::get<0>(it) = dbg.DragVector("Offset", std::get<0>(it), 0.01f);
-						std::get<1>(it) = dbg.DragVector("Dimensions", std::get<1>(it), 0.01f, 0.0f, 100000.0f);
-						dbg.TreePop();
-						auto transform = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
-						if (transform && transform->GetScale().length() != 0.0f)
-						{
-							auto bMin = std::get<0>(it) - std::get<1>(it) * 0.5f;
-							auto bMax = std::get<0>(it) + std::get<1>(it) * 0.5f;
-							// ignore scale since we dont pass it to physx
-							glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
-							matrix = matrix * glm::toMat4(transform->GetOrientation());
-							m_graphicsSystem->DebugRenderer().DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, matrix);
-						}
-					}
-				}
-				if (dbg.Button("+ Plane"))
-				{
-					p.AddPlaneCollider({ 0,1,0 }, { 0,0,0 });
-				}
-				dbg.SameLine();
-				if (dbg.Button("+ Sphere"))
-				{
-					p.AddSphereCollider({ 0,0,0 }, 1.0f);
-				}
-				dbg.SameLine();
-				if (dbg.Button("+ Box"))
-				{
-					p.AddBoxCollider({ 0,0,0 }, { 1,1,1 });
-				}
-				dbg.TreePop();
-				if (dbg.Button("Rebuild"))
-				{
-					p.Rebuild();
-				}
-			}
-		});
+		auto& dbgRender = m_graphicsSystem->DebugRenderer();
+		auto& world = *m_entitySystem->GetWorld();
+		m_entitySystem->RegisterInspector<Physics>(Physics::MakeInspector(*m_debugGuiSystem, dbgRender, world));
 
 		return true;
 	}

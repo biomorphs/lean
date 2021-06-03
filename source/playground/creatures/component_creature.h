@@ -11,6 +11,7 @@ class Creature
 {
 public:
 	COMPONENT(Creature);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& dbg);
 
 	// Parameters
 	void SetMaxVisibleEntities(uint32_t m) { m_maxVisibleEntities = m; }

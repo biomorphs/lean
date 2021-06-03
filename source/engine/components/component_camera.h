@@ -7,6 +7,7 @@ class Camera
 {
 public:
 	COMPONENT(Camera);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui);
 
 	inline void SetNearPlane(float p) { m_nearPlane = p; }
 	inline float GetNearPlane() const { return m_nearPlane; }

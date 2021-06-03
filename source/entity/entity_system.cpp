@@ -74,20 +74,17 @@ void EntitySystem::ShowDebugGui()
 					}
 				}
 
-				char text[1024] = "";
-				sprintf_s(text, "%s", GetEntityNameWithTags(entityID).c_str());
-				if (m_debugGui->TreeNode(text))
+				if (m_debugGui->TreeNode(GetEntityNameWithTags(entityID).c_str()))
 				{
 					std::vector<ComponentType> owned = m_world->GetOwnedComponentTypes(entityID);
 					for (const auto& cmp : owned)
 					{
 						if (m_debugGui->TreeNode(cmp.c_str()))
 						{
-							auto uiRenderer = m_componentUiRenderers.find(cmp);
-							if (uiRenderer != m_componentUiRenderers.end())
+							auto inspector = m_componentInspectors.find(cmp);
+							if (inspector != m_componentInspectors.end())
 							{
-								auto fn = uiRenderer->second;
-								fn(*m_world->GetStorage(cmp), entityID, *m_debugGui);
+								inspector->second(*m_world->GetStorage(cmp), entityID);
 							}
 							m_debugGui->TreePop();
 						}

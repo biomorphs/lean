@@ -10,6 +10,7 @@ class Tags
 {
 public:
 	COMPONENT(Tags);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui);
 
 	void AddTag(const Engine::Tag& t);
 	void RemoveTag(const Engine::Tag& t);

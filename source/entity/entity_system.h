@@ -23,9 +23,9 @@ public:
 	template<class T>
 	void RegisterComponentType();
 
-	using UiRenderFn = std::function<void(ComponentStorage&, EntityHandle, Engine::DebugGuiSystem&)>;
-	template<class ComponentType>
-	void RegisterComponentUi(UiRenderFn fn);
+	using InspectorFn = std::function<void(ComponentStorage&, EntityHandle)>;
+	template<class ComponentType> 
+	void RegisterInspector(InspectorFn fn);
 
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();
@@ -34,16 +34,16 @@ public:
 
 private:
 	void ShowDebugGui();
-	std::map<ComponentType, UiRenderFn> m_componentUiRenderers;
+	std::map<ComponentType, InspectorFn> m_componentInspectors;
 	std::unique_ptr<World> m_world;
 	Engine::ScriptSystem* m_scriptSystem;
 	Engine::DebugGuiSystem* m_debugGui;
 };
 
 template<class ComponentType>
-void EntitySystem::RegisterComponentUi(UiRenderFn fn)
+void EntitySystem::RegisterInspector(InspectorFn fn)
 {
-	m_componentUiRenderers[ComponentType::GetType()] = fn;
+	m_componentInspectors[ComponentType::GetType()] = fn;
 }
 
 template<class T>

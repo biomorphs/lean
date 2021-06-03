@@ -9,6 +9,12 @@ namespace physx
 	class PxRigidActor;
 }
 
+namespace Engine
+{
+	class DebugGuiSystem;
+	class DebugRender;
+}
+
 class Physics
 {
 public:
@@ -18,7 +24,9 @@ public:
 	Physics& operator=(Physics&&) = default;
 	Physics(const Physics&) = delete;
 	Physics& operator=(const Physics&) = delete;
+	
 	COMPONENT(Physics);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::DebugRender& render, class World& w);
 
 	void AddForce(glm::vec3 force);
 

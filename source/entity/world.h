@@ -56,7 +56,7 @@ private:
 	uint32_t m_entityIDCounter;
 	std::vector<uint32_t> m_activeEntities;	// all active entity IDs
 	std::vector<uint32_t> m_pendingDelete;	// all entities to be deleted
-	robin_hood::unordered_map<ComponentType, std::unique_ptr<ComponentStorage>> m_components;	// all component data
+	robin_hood::unordered_map<ComponentType, std::unique_ptr<ComponentStorage>> m_components;	// all active component data
 };
 
 template<class ComponentType>

@@ -118,216 +118,28 @@ bool GraphicsSystem::Initialise()
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
+	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
+
 	m_entitySystem->RegisterComponentType<Camera>();
-	m_entitySystem->RegisterComponentUi<Camera>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-		auto& c = *static_cast<Camera::StorageType&>(cs).Find(e);
-		c.SetNearPlane(dbg.DragFloat("Near Plane", c.GetNearPlane(), 0.01f, 0.0f, c.GetFarPlane()));
-		c.SetFarPlane(dbg.DragFloat("Far Plane", c.GetFarPlane(), 0.01f, c.GetNearPlane(), 100000000.0f));
-		c.SetFOV(dbg.DragFloat("FOV", c.GetFOV(), 0.1f, 0.0f, 180.0f));
-	});
+	m_entitySystem->RegisterInspector<Camera>(Camera::MakeInspector(*m_debugGui));
 
 	m_entitySystem->RegisterComponentType<Material>();
-	m_entitySystem->RegisterComponentUi<Material>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-		auto& m = *static_cast<Material::StorageType&>(cs).Find(e);
-		auto& rmat = m.GetRenderMaterial();
-		auto& uniforms = rmat.GetUniforms();
-		auto& samplers = rmat.GetSamplers();
-		char text[1024] = { '\0' };
-		m.SetIsTransparent(dbg.Checkbox("Transparent", m.GetRenderMaterial().GetIsTransparent()));
-		m.SetCastShadows(dbg.Checkbox("Cast Shadows", m.GetRenderMaterial().GetCastsShadows()));
-		for (auto& v : uniforms.FloatValues())
-		{
-			sprintf_s(text, "%s", v.second.m_name.c_str());
-			v.second.m_value = dbg.DragFloat(text, v.second.m_value,0.05f);
-		}
-		for (auto& v : uniforms.Vec4Values())
-		{
-			sprintf_s(text, "%s", v.second.m_name.c_str());
-			v.second.m_value = dbg.DragVector(text, v.second.m_value, 0.05f);
-		}
-		for (auto& v : uniforms.IntValues())
-		{
-			sprintf_s(text, "%s", v.second.m_name.c_str());
-			v.second.m_value = dbg.DragInt(text, v.second.m_value);
-		}
-		for (auto& t : samplers)
-		{
-			sprintf_s(text, "%s", t.second.m_name.c_str());
-			if (t.second.m_handle != 0 && dbg.TreeNode(text))
-			{
-				auto texture = m_textures->GetTexture({ t.second.m_handle });
-				auto path = m_textures->GetTexturePath({ t.second.m_handle });
-				if (texture)
-				{
-					dbg.Image(*texture, { 256,256 });
-				}
-				sprintf_s(text, "%s", t.second.m_name.c_str());
-				if (dbg.Button(text))
-				{
-					std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
-					if (newFile != "")
-					{
-						auto loadedTexture = m_textures->LoadTexture(newFile.c_str());
-						t.second.m_handle = loadedTexture.m_index;
-					}
-				}
-			}
-		}
-	});
+	m_entitySystem->RegisterInspector<Material>(Material::MakeInspector(*m_debugGui, *m_textures));
 
 	m_entitySystem->RegisterComponentType<Tags>();
-	m_entitySystem->RegisterComponentUi<Tags>([](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-		auto& t = *static_cast<Tags::StorageType&>(cs).Find(e);
-		for (const auto it : t.AllTags())
-		{
-			dbg.Text(it.c_str());
-		}
-		static std::string newTagStr;
-		dbg.TextInput("New Tag", newTagStr);
-		dbg.SameLine();
-		if (dbg.Button("Add") && newTagStr.size() > 0)
-		{
-			t.AddTag(newTagStr.c_str());
-			newTagStr = "";
-		}
-	});
+	m_entitySystem->RegisterInspector<Tags>(Tags::MakeInspector(*m_debugGui));
 
 	m_entitySystem->RegisterComponentType<Transform>();
-	m_entitySystem->RegisterComponentUi<Transform>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-		auto& t = *static_cast<Transform::StorageType&>(cs).Find(e);
-		t.SetPosition(dbg.DragVector("Position", t.GetPosition(), 0.25f, -100000.0f, 100000.0f));
-		t.SetRotationDegrees(dbg.DragVector("Rotation", t.GetRotationDegrees(), 0.1f));
-		t.SetScale(dbg.DragVector("Scale", t.GetScale(), 0.05f, 0.0f));
-		glm::vec4 p0 = glm::vec4(t.GetPosition(),1.0f);
-		glm::mat4 mat = t.GetMatrix();
-		glm::vec4 lines[] = {
-			p0, mat * glm::vec4(1.0f,0.0f,0.0f,1.0f),
-			p0, mat * glm::vec4(0.0f,1.0f,0.0f,1.0f),
-			p0, mat * glm::vec4(0.0f,0.0f,1.0f,1.0f),
-		};
-		glm::vec4 colours[] = {
-			{1.0f,0.0f,0.0f,1.0f},{1.0f,0.0f,0.0f,1.0f},
-			{0.0f,1.0f,0.0f,1.0f},{0.0f,1.0f,0.0f,1.0f},
-			{0.0f,0.0f,1.0f,1.0f},{0.0f,0.0f,1.0f,1.0f},
-		};
-		m_debugRender->AddLines(lines, colours, 3);
-	});
+	m_entitySystem->RegisterInspector<Transform>(Transform::MakeInspector(*m_debugGui, *m_debugRender));
 
 	m_entitySystem->RegisterComponentType<Light>();
-	m_entitySystem->RegisterComponentUi<Light>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-		auto& l = *static_cast<Light::StorageType&>(cs).Find(e);
-		int typeIndex = static_cast<int>(l.GetLightType());
-		const char* types[] = { "Directional", "Point", "Spot" };
-		if (dbg.ComboBox("Type", types, 3, typeIndex))
-		{
-			l.SetType(static_cast<Light::Type>(typeIndex));
-		}
-		l.SetColour(glm::vec3(dbg.ColourEdit("Colour", glm::vec4(l.GetColour(), 1.0f), false)));
-		l.SetBrightness(dbg.DragFloat("Brightness", l.GetBrightness(), 0.001f, 0.0f, 10000.0f));
-		l.SetAmbient(dbg.DragFloat("Ambient", l.GetAmbient(), 0.001f, 0.0f, 1.0f));
-		l.SetDistance(dbg.DragFloat("Distance", l.GetDistance(), 0.1f, 0.0f, 3250.0f));
-		if (l.GetLightType() != Light::Type::Directional)
-		{
-			l.SetAttenuation(dbg.DragFloat("Attenuation", l.GetAttenuation(), 0.1f, 0.0001f, 1000.0f));
-		}
-		if (l.GetLightType() == Light::Type::Spot)
-		{
-			auto angles = l.GetSpotAngles();
-			angles.y = dbg.DragFloat("Outer Angle", angles.y, 0.01f, angles.x, 1.0f);
-			angles.x = dbg.DragFloat("Inner Angle", angles.x, 0.01f, 0.0f, angles.y);
-			l.SetSpotAngles(angles.x, angles.y);
-		}
-		l.SetCastsShadows(dbg.Checkbox("Cast Shadows", l.CastsShadows()));
-		if (l.CastsShadows())
-		{
-			if (l.GetLightType() == Light::Type::Directional)
-			{
-				l.SetShadowOrthoScale(dbg.DragFloat("Ortho Scale", l.GetShadowOrthoScale(), 0.1f, 0.1f, 10000000.0f));
-			}
-			l.SetShadowBias(dbg.DragFloat("Shadow Bias", l.GetShadowBias(), 0.001f, 0.0f, 10.0f));
-			if (!l.IsPointLight() && l.GetShadowMap() != nullptr && !l.GetShadowMap()->IsCubemap())
-			{
-				dbg.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));
-			}
-		}
-		if (!l.IsPointLight())
-		{
-			Engine::Frustum f(l.GetShadowMatrix());
-			m_debugRender->DrawFrustum(f, glm::vec4(l.GetColour(), 1.0f));
-		}
-	});
+	m_entitySystem->RegisterInspector<Light>(Light::MakeInspector(*m_debugGui, *m_debugRender));
 
 	m_entitySystem->RegisterComponentType<Model>();
-	m_entitySystem->RegisterComponentUi<Model>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-		auto& m = *static_cast<Model::StorageType&>(cs).Find(e);
-		std::string modelPath = m_models->GetModelPath(m.GetModel());
-		if (dbg.Button(modelPath.c_str()))
-		{
-			std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
-			if (newFile != "")
-			{
-				auto loadedModel = m_models->LoadModel(newFile.c_str());
-				m.SetModel(loadedModel);
-			}
-		}
-		auto allShaders = m_shaders->AllShaders();
-		std::vector<std::string> shaders;
-		std::string vs, fs;
-		for (auto it : allShaders)
-		{
-			if (m_shaders->GetShaderPaths(it, vs, fs))
-			{
-				char shaderPathText[1024];
-				sprintf(shaderPathText, "%s, %s", vs.c_str(), fs.c_str());
-				shaders.push_back(shaderPathText);
-			}
-		}
-		shaders.push_back("None");
-		int shaderIndex = m.GetShader().m_index != (uint32_t)-1 ? m.GetShader().m_index : shaders.size() - 1;
-		if (m_debugGui->ComboBox("Shader", shaders, shaderIndex))
-		{
-			m.SetShader({ (uint32_t)(shaderIndex == (shaders.size() - 1) ? (uint32_t)-1 : shaderIndex) });
-		}
-	});
+	m_entitySystem->RegisterInspector<Model>(Model::MakeInspector(*m_debugGui, *m_models, *m_shaders));
 
 	m_entitySystem->RegisterComponentType<SDFModel>();
-	m_entitySystem->RegisterComponentUi<SDFModel>([this](ComponentStorage& cs, EntityHandle e, Engine::DebugGuiSystem& dbg) {
-		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
-		int typeIndex = static_cast<int>(m.GetMeshMode());
-		const char* types[] = { "Blocky", "Surface Net", "Dual Contour" };
-		if (dbg.ComboBox("Mesh Type", types, 3, typeIndex))
-		{
-			m.SetMeshMode(static_cast<Engine::SDFMeshBuilder::MeshMode>(typeIndex));
-			m.Remesh();
-		}
-		auto bMin = m.GetBoundsMin();
-		auto bMax = m.GetBoundsMax();
-		bMin = dbg.DragVector("BoundsMin", bMin, 0.1f);
-		bMax = dbg.DragVector("BoundsMax", bMax, 0.1f);
-		m.SetBounds(bMin, bMax);
-		auto r = m.GetResolution();
-		r.x = dbg.DragInt("ResX", r.x, 1, 1);
-		r.y = dbg.DragInt("ResY", r.y, 1, 1);
-		r.z = dbg.DragInt("ResZ", r.z, 1, 1);
-		m.SetResolution(r.x, r.y, r.z);
-		m.SetNormalSmoothness(dbg.DragFloat("Normal Smooth", m.GetNormalSmoothness(), 0.01f, 0.0f));
-		std::string texturePath = m_textures->GetTexturePath(m.GetDiffuseTexture());
-		texturePath = "Diffuse: " + texturePath;
-		if (dbg.Button(texturePath.c_str()))
-		{
-			std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
-			if (newFile != "")
-			{
-				auto loadedTexture = m_textures->LoadTexture(newFile);
-				m.SetDiffuseTexture(loadedTexture);
-			}
-		}
-		if (dbg.Button("Remesh Now"))
-		{
-			m.Remesh();
-		}
-		m.SetDebugEnabled(dbg.Checkbox("Debug Render", m.GetDebugEnabled()));
-	});
+	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui, *m_textures));
 	
 	//// add our renderer to the global passes
 	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
@@ -392,7 +204,6 @@ bool GraphicsSystem::Initialise()
 		};
 		m_debugRender->AddLines(positions, colours, 1);
 	};
-	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
 
 	auto windowSize = m_renderSystem->GetWindow()->GetSize();
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();

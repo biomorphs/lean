@@ -1,5 +1,7 @@
 #include "component_sdf_model.h"
 #include "engine/job_system.h"
+#include "engine/debug_gui_system.h"
+#include "engine/file_picker_dialog.h"
 #include "render/mesh.h"
 #include "render/mesh_builder.h"
 #include "core/log.h"
@@ -95,4 +97,47 @@ void SDFModel::SetSampleScriptFunction(sol::protected_function fn)
 	};
 	m_useMulticoreMeshing = false;	//	no lua in jobs!
 	m_sampleFunction = std::move(wrappedFn);
+}
+
+COMPONENT_INSPECTOR_IMPL(SDFModel, Engine::DebugGuiSystem& gui, Engine::TextureManager& textures)
+{
+	auto fn = [&gui, &textures](ComponentStorage& cs, const EntityHandle& e)
+	{
+		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
+		int typeIndex = static_cast<int>(m.GetMeshMode());
+		const char* types[] = { "Blocky", "Surface Net", "Dual Contour" };
+		if (gui.ComboBox("Mesh Type", types, 3, typeIndex))
+		{
+			m.SetMeshMode(static_cast<Engine::SDFMeshBuilder::MeshMode>(typeIndex));
+			m.Remesh();
+		}
+		auto bMin = m.GetBoundsMin();
+		auto bMax = m.GetBoundsMax();
+		bMin = gui.DragVector("BoundsMin", bMin, 0.1f);
+		bMax = gui.DragVector("BoundsMax", bMax, 0.1f);
+		m.SetBounds(bMin, bMax);
+		auto r = m.GetResolution();
+		r.x = gui.DragInt("ResX", r.x, 1, 1);
+		r.y = gui.DragInt("ResY", r.y, 1, 1);
+		r.z = gui.DragInt("ResZ", r.z, 1, 1);
+		m.SetResolution(r.x, r.y, r.z);
+		m.SetNormalSmoothness(gui.DragFloat("Normal Smooth", m.GetNormalSmoothness(), 0.01f, 0.0f));
+		std::string texturePath = textures.GetTexturePath(m.GetDiffuseTexture());
+		texturePath = "Diffuse: " + texturePath;
+		if (gui.Button(texturePath.c_str()))
+		{
+			std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
+			if (newFile != "")
+			{
+				auto loadedTexture = textures.LoadTexture(newFile);
+				m.SetDiffuseTexture(loadedTexture);
+			}
+		}
+		if (gui.Button("Remesh Now"))
+		{
+			m.Remesh();
+		}
+		m.SetDebugEnabled(gui.Checkbox("Debug Render", m.GetDebugEnabled()));
+	};
+	return fn;
 }

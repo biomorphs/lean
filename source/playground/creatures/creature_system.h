@@ -14,6 +14,7 @@ class Tags;
 namespace Engine
 {
 	class JobSystem;
+	class DebugGuiSystem;
 }
 
 class CreatureSystem : public Engine::System
@@ -38,6 +39,7 @@ private:
 	GraphicsSystem* m_graphicsSystem = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
 	Engine::JobSystem* m_jobSystem = nullptr;
+	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	using StateBehaviours = robin_hood::unordered_map<Engine::Tag, Creature::Behaviour>;
 	StateBehaviours m_behaviours;
 };

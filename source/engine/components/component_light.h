@@ -8,10 +8,17 @@ namespace Render
 	class FrameBuffer;
 }
 
+namespace Engine
+{
+	class DebugGuiSystem;
+	class DebugRender;
+}
+
 class Light
 {
 public:
 	COMPONENT(Light);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::DebugRender& render);
 
 	enum class Type
 	{

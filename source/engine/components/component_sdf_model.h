@@ -15,6 +15,8 @@ namespace Render
 namespace Engine
 {
 	class JobSystem;
+	class DebugGuiSystem;
+	class TextureManager;
 }
 
 class SDFModel
@@ -22,6 +24,7 @@ class SDFModel
 public:
 	SDFModel() = default;
 	COMPONENT(SDFModel);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::TextureManager& textures);
 
 	void UpdateMesh(Engine::JobSystem* js, Engine::SDFMeshBuilder::Debug& dbg = Engine::SDFMeshBuilder::Debug());
 	Render::Mesh* GetMesh() const { return m_mesh.get(); }

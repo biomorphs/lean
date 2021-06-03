@@ -13,6 +13,12 @@ using ComponentType = std::string;
 	static void RegisterScripts(sol::state& s);	\
 	SERIALISED_CLASS();
 
+#define COMPONENT_INSPECTOR(...)	\
+	static std::function<void(ComponentStorage& cs, const EntityHandle& e)> MakeInspector(__VA_ARGS__);
+
+#define COMPONENT_INSPECTOR_IMPL(className,...)	\
+	std::function<void(ComponentStorage& cs, const EntityHandle& e)> className::MakeInspector(__VA_ARGS__)
+
 // Pass script bindings in COMPONENT_SCRIPTS
 // (Very thin wrapper around sol, check the sol docs for details)
 // Finally declare serialised properties with SERIALISE_BEGIN/END
@@ -24,3 +30,9 @@ using ComponentType = std::string;
 			__VA_ARGS__	\
 			);	\
 	}
+
+namespace Engine
+{
+	class DebugGuiSystem;
+}
+class EntityHandle;

@@ -3,10 +3,17 @@
 #include "entity/component.h"
 #include "core/glm_headers.h"
 
+namespace Engine
+{
+	class DebugGuiSystem;
+	class DebugRender;
+}
+
 class Transform
 {
 public:
 	COMPONENT(Transform);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::DebugRender& render);
 
 	void SetOrientation(glm::quat q) { m_orientation = glm::normalize(q); RebuildMatrix(); }
 	void SetRotationDegrees3(float x, float y, float z) { SetOrientation(glm::quat(glm::radians(glm::vec3(x, y, z)))); };

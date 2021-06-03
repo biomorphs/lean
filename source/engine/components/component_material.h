@@ -11,6 +11,8 @@ namespace Render
 namespace Engine
 {
 	class TextureHandle;
+	class TextureManager;
+	class DebugGuiSystem;
 }
 
 // A material component can (and should!) be shared across entities for better batching
@@ -19,6 +21,7 @@ class Material
 public:
 	Material();
 	COMPONENT(Material);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::TextureManager& textures);
 
 	const Render::Material& GetRenderMaterial() const { return *m_material; }
 	Render::Material& GetRenderMaterial() { return *m_material; }
