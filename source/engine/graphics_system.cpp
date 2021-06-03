@@ -92,6 +92,93 @@ GraphicsSystem::~GraphicsSystem()
 {
 }
 
+void GraphicsSystem::RegisterComponents()
+{
+	m_entitySystem->RegisterComponentType<Camera>();
+	m_entitySystem->RegisterInspector<Camera>(Camera::MakeInspector(*m_debugGui));
+
+	m_entitySystem->RegisterComponentType<Material>();
+	m_entitySystem->RegisterInspector<Material>(Material::MakeInspector(*m_debugGui, *m_textures));
+
+	m_entitySystem->RegisterComponentType<Tags>();
+	m_entitySystem->RegisterInspector<Tags>(Tags::MakeInspector(*m_debugGui));
+
+	m_entitySystem->RegisterComponentType<Transform>();
+	m_entitySystem->RegisterInspector<Transform>(Transform::MakeInspector(*m_debugGui, *m_debugRender));
+
+	m_entitySystem->RegisterComponentType<Light>();
+	m_entitySystem->RegisterInspector<Light>(Light::MakeInspector(*m_debugGui, *m_debugRender));
+
+	m_entitySystem->RegisterComponentType<Model>();
+	m_entitySystem->RegisterInspector<Model>(Model::MakeInspector(*m_debugGui, *m_models, *m_shaders));
+
+	m_entitySystem->RegisterComponentType<SDFModel>();
+	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui, *m_textures));
+}
+
+void GraphicsSystem::RegisterScripts()
+{
+	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(),
+		"x", &glm::vec3::x,
+		"y", &glm::vec3::y,
+		"z", &glm::vec3::z);
+	m_scriptSystem->Globals().new_usertype<glm::vec4>("vec4", sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>(),
+		"x", &glm::vec4::x,
+		"y", &glm::vec4::y,
+		"z", &glm::vec4::z,
+		"w", &glm::vec4::z);
+
+	m_scriptSystem->Globals().new_usertype<Engine::TextureHandle>("TextureHandle", sol::constructors<Engine::TextureHandle()>());
+	m_scriptSystem->Globals().new_usertype<Engine::ModelHandle>("ModelHandle", sol::constructors<Engine::ModelHandle()>());
+	m_scriptSystem->Globals().new_usertype<Engine::ShaderHandle>("ShaderHandle", sol::constructors<Engine::ShaderHandle()>());
+	
+	//// expose Graphics script functions
+	auto graphics = m_scriptSystem->Globals()["Graphics"].get_or_create<sol::table>();
+	graphics["SetActiveCamera"] = [this](EntityHandle c) {
+		g_selectedCamera = c;
+	};
+	graphics["SetClearColour"] = [this](float r, float g, float b) {
+		m_renderer->SetClearColour(glm::vec4(r, g, b, 1.0f));
+	};
+	graphics["LoadTexture"] = [this](const char* path) -> Engine::TextureHandle {
+		return m_textures->LoadTexture(path);
+	};
+	graphics["LoadModel"] = [this](const char* path) -> Engine::ModelHandle {
+		return m_models->LoadModel(path);
+	};
+	graphics["LoadShader"] = [this](const char* name, const char* vsPath, const char* fsPath) -> Engine::ShaderHandle {
+		return m_shaders->LoadShader(name, vsPath, fsPath);
+	};
+	graphics["SetShadowShader"] = [this](Engine::ShaderHandle lightingShander, Engine::ShaderHandle shadowShader) {
+		m_shaders->SetShadowsShader(lightingShander, shadowShader);
+	};
+	graphics["DrawModel"] = [this](float px, float py, float pz, float scale, Engine::ModelHandle h, Engine::ShaderHandle sh) {
+		auto transform = glm::scale(glm::translate(glm::identity<glm::mat4>(), glm::vec3(px, py, pz)), glm::vec3(scale));
+		m_renderer->SubmitInstance(transform, h, sh);
+	};
+	graphics["PointLight"] = [this](float px, float py, float pz, float r, float g, float b, float ambient, float distance, float atten) {
+		m_renderer->SetLight(glm::vec4(px, py, pz, 1.0f), glm::vec3(0.0f), glm::vec3(r, g, b), ambient, distance, atten);
+	};
+	graphics["DirectionalLight"] = [this](float dx, float dy, float dz, float r, float g, float b, float ambient) {
+		m_renderer->SetLight(glm::vec4(0.0f), { dx,dy,dz }, glm::vec3(r, g, b), ambient, 0.0f, 0.0f);
+	};
+	graphics["DebugDrawAxis"] = [this](float px, float py, float pz, float size) {
+		m_debugRender->AddAxisAtPoint({ px,py,pz,1.0f }, size);
+	};
+	graphics["DebugDrawBox"] = [this](float px, float py, float pz, float size, float r, float g, float b, float a) {
+		m_debugRender->AddBox({ px,py,pz }, { size,size,size }, { r, g, b, a });
+	};
+	graphics["DebugDrawLine"] = [this](float p0x, float p0y, float p0z, float p1x, float p1y, float p1z, float p0r, float p0g, float p0b, float p0a, float p1r, float p1g, float p1b, float p1a) {
+		glm::vec4 positions[] = {
+			{p0x,p0y,p0z,0.0f}, {p1x,p1y,p1z,0.0f}
+		};
+		glm::vec4 colours[] = {
+			{p0r,p0g,p0b,p0a},{p1r,p1g,p1b,p1a}
+		};
+		m_debugRender->AddLines(positions, colours, 1);
+	};
+}
+
 bool GraphicsSystem::PreInit(Engine::SystemManager& manager)
 {
 	SDE_PROF_EVENT();
@@ -118,101 +205,19 @@ bool GraphicsSystem::Initialise()
 	const auto& windowProps = m_renderSystem->GetWindow()->GetProperties();
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
-	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
-
-	m_entitySystem->RegisterComponentType<Camera>();
-	m_entitySystem->RegisterInspector<Camera>(Camera::MakeInspector(*m_debugGui));
-
-	m_entitySystem->RegisterComponentType<Material>();
-	m_entitySystem->RegisterInspector<Material>(Material::MakeInspector(*m_debugGui, *m_textures));
-
-	m_entitySystem->RegisterComponentType<Tags>();
-	m_entitySystem->RegisterInspector<Tags>(Tags::MakeInspector(*m_debugGui));
-
-	m_entitySystem->RegisterComponentType<Transform>();
-	m_entitySystem->RegisterInspector<Transform>(Transform::MakeInspector(*m_debugGui, *m_debugRender));
-
-	m_entitySystem->RegisterComponentType<Light>();
-	m_entitySystem->RegisterInspector<Light>(Light::MakeInspector(*m_debugGui, *m_debugRender));
-
-	m_entitySystem->RegisterComponentType<Model>();
-	m_entitySystem->RegisterInspector<Model>(Model::MakeInspector(*m_debugGui, *m_models, *m_shaders));
-
-	m_entitySystem->RegisterComponentType<SDFModel>();
-	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui, *m_textures));
-	
 	//// add our renderer to the global passes
 	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
 
-	// expose types to lua
-	m_scriptSystem->Globals().new_usertype<Engine::TextureHandle>("TextureHandle",sol::constructors<Engine::TextureHandle()>());
-	m_scriptSystem->Globals().new_usertype<Engine::ModelHandle>("ModelHandle",sol::constructors<Engine::ModelHandle()>());
-	m_scriptSystem->Globals().new_usertype<Engine::ShaderHandle>("ShaderHandle", sol::constructors<Engine::ShaderHandle()>());
-	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float,float,float)>(),
-		"x", &glm::vec3::x,
-		"y", &glm::vec3::y,
-		"z", &glm::vec3::z);
-	m_scriptSystem->Globals().new_usertype<glm::vec4>("vec4", sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>(),
-		"x", &glm::vec4::x,
-		"y", &glm::vec4::y,
-		"z", &glm::vec4::z,
-		"w", &glm::vec4::z);
+	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
 
-	//// expose Graphics script functions
-	auto graphics = m_scriptSystem->Globals()["Graphics"].get_or_create<sol::table>();
-	graphics["SetActiveCamera"] = [this](EntityHandle c) {
-		g_selectedCamera = c;
-	};
-	graphics["SetClearColour"] = [this](float r, float g, float b) {
-		m_renderer->SetClearColour(glm::vec4(r, g, b, 1.0f));
-	};
-	graphics["LoadTexture"] = [this](const char* path) -> Engine::TextureHandle {
-		return m_textures->LoadTexture(path);
-	};
-	graphics["LoadModel"] = [this](const char* path) -> Engine::ModelHandle {
-		return m_models->LoadModel(path);
-	};
-	graphics["LoadShader"] = [this](const char* name, const char* vsPath, const char* fsPath) -> Engine::ShaderHandle {
-		return m_shaders->LoadShader(name, vsPath, fsPath);
-	};
-	graphics["SetShadowShader"] = [this](Engine::ShaderHandle lightingShander, Engine::ShaderHandle shadowShader) {
-		m_shaders->SetShadowsShader(lightingShander, shadowShader);
-	};
-	graphics["DrawModel"] = [this](float px, float py, float pz, float scale, Engine::ModelHandle h, Engine::ShaderHandle sh) {
-		auto transform = glm::scale(glm::translate(glm::identity<glm::mat4>(), glm::vec3(px, py, pz)), glm::vec3(scale));
-		m_renderer->SubmitInstance(transform, h, sh);
-	};
-	graphics["PointLight"] = [this](float px, float py, float pz, float r, float g, float b, float ambient, float distance, float atten) {
-		m_renderer->SetLight(glm::vec4(px, py, pz,1.0f), glm::vec3(0.0f), glm::vec3(r, g, b), ambient, distance, atten);
-	};
-	graphics["DirectionalLight"] = [this](float dx, float dy, float dz, float r, float g, float b, float ambient) {
-		m_renderer->SetLight(glm::vec4(0.0f), { dx,dy,dz }, glm::vec3(r, g, b), ambient, 0.0f, 0.0f);
-	};
-	graphics["DebugDrawAxis"] = [this](float px, float py, float pz, float size) {
-		m_debugRender->AddAxisAtPoint({ px,py,pz,1.0f }, size);
-	};
-	graphics["DebugDrawBox"] = [this](float px, float py, float pz, float size, float r, float g, float b, float a) {
-		m_debugRender->AddBox({ px,py,pz }, { size,size,size }, { r, g, b, a });
-	};
-	graphics["DebugDrawLine"] = [this](float p0x, float p0y, float p0z, float p1x, float p1y, float p1z, float p0r, float p0g, float p0b, float p0a, float p1r, float p1g, float p1b, float p1a) {
-		glm::vec4 positions[] = {
-			{p0x,p0y,p0z,0.0f}, {p1x,p1y,p1z,0.0f}
-		};
-		glm::vec4 colours[] = {
-			{p0r,p0g,p0b,p0a},{p1r,p1g,p1b,p1a}
-		};
-		m_debugRender->AddLines(positions, colours, 1);
-	};
-
-	auto windowSize = m_renderSystem->GetWindow()->GetSize();
 	m_debugCamera = std::make_unique<Engine::DebugCamera>();
-	m_debugCamera->SetPosition({60.65f,101.791f,82.469f});
+	m_debugCamera->SetPosition({ 60.65f,101.791f,82.469f });
 	m_debugCamera->SetPitch(-0.438);
 	m_debugCamera->SetYaw(0.524f);
-	
-	float aspect = (float)windowSize.x / (float)windowSize.y;
-	m_mainRenderCamera->SetProjection(70.0f, aspect, 0.1f, 5000.0f);
+
+	RegisterComponents();
+	RegisterScripts();
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
 	gMenu.AddItem("Reload Shaders", [this]() { m_renderer->Reset(); m_shaders->ReloadAll(); });
@@ -465,6 +470,8 @@ void GraphicsSystem::ProcessCamera(float timeDelta)
 		});
 	});
 
+	auto windowSize = m_renderSystem->GetWindow()->GetSize();
+	auto aspectRatio = (float)windowSize.x / (float)windowSize.y;
 	if(!g_selectedCamera.IsValid())
 	{
 		m_debugCamera->Update(m_inputSystem->ControllerState(0), timeDelta);
@@ -477,6 +484,7 @@ void GraphicsSystem::ProcessCamera(float timeDelta)
 			m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
 		}
 		m_debugCamera->ApplyToCamera(*m_mainRenderCamera);
+		m_mainRenderCamera->SetProjection(70.0f, aspectRatio, 0.1f, 5000.0f);
 	}
 	else
 	{
@@ -485,8 +493,7 @@ void GraphicsSystem::ProcessCamera(float timeDelta)
 		if (camComp && transform)
 		{
 			// apply component values to main render camera
-			auto windowSize = m_renderSystem->GetWindow()->GetSize();
-			m_mainRenderCamera->SetFOVAndAspectRatio(camComp->GetFOV(), (float)windowSize.x / (float)windowSize.y);
+			m_mainRenderCamera->SetFOVAndAspectRatio(camComp->GetFOV(), aspectRatio);
 			m_mainRenderCamera->SetClipPlanes(camComp->GetNearPlane(), camComp->GetFarPlane());
 
 			glm::vec3 lookDirection = glm::vec3(0.0f,0.0f,1.0f) * transform->GetOrientation();

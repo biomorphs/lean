@@ -38,6 +38,8 @@ public:
 	virtual void Shutdown();
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
 private:
+	void RegisterScripts();
+	void RegisterComponents();
 	void ShowGui(int fps);
 	void ProcessLight(class Light& l, const class Transform* transform);
 	void ProcessEntities();
