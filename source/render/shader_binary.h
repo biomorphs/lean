@@ -8,7 +8,8 @@ namespace Render
 	enum class ShaderType : uint32_t
 	{
 		VertexShader,
-		FragmentShader
+		FragmentShader,
+		ComputeShader
 	};
 
 	// This represents a single compiled shader. It can be vertex, fragment, hull, whatever

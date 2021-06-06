@@ -17,6 +17,7 @@ namespace Render
 			RGB8,
 			RGBA8,
 			RGBAF16,
+			RGBAF32,
 			Depth24Stencil8,
 			Depth32,
 			Unsupported

@@ -15,10 +15,10 @@ namespace Render
 		ShaderProgram();
 		~ShaderProgram();
 
+		bool Create(const ShaderBinary& computeShader, std::string& result);
 		bool Create(const ShaderBinary& vertexShader, const ShaderBinary& fragmentShader, std::string& result);
 		void Destroy();
 
-		void AddUniform(const char* uniformName);
 		uint32_t GetUniformHandle(const char* uniformName, uint32_t nameHash);	// lazily updates cache
 		uint32_t GetUniformHandle(const char* uniformName);
 		uint32_t GetUniformBufferBlockIndex(const char* bufferName) const;

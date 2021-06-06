@@ -36,6 +36,8 @@ namespace Render
 			return 1;
 		case TextureSource::Format::RGBAF16:
 			return 4;
+		case TextureSource::Format::RGBAF32:
+			return 4;
 		case TextureSource::Format::Depth24Stencil8:
 			return 1;
 		case TextureSource::Format::Depth32:
@@ -63,6 +65,8 @@ namespace Render
 			return GL_R8;
 		case TextureSource::Format::RGBAF16:
 			return GL_RGBA16F;
+		case TextureSource::Format::RGBAF32:
+			return GL_RGBA32F;
 		case TextureSource::Format::Depth24Stencil8:
 			return GL_DEPTH24_STENCIL8;
 		case TextureSource::Format::Depth32:

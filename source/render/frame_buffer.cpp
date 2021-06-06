@@ -51,6 +51,9 @@ namespace Render
 		case RGBA_F16:
 			textureFormat = Render::TextureSource::Format::RGBAF16;
 			break;
+		case RGBA_F32:
+			textureFormat = Render::TextureSource::Format::RGBAF32;
+			break;
 		default:
 			assert(false);	// Unsupported
 		}

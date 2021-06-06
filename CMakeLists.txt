@@ -274,6 +274,8 @@ set(PLAYGROUND_SOURCES
 	Source/playground/scene.cpp
 	Source/playground/scene_editor.h
 	Source/playground/scene_editor.cpp
+	Source/playground/compute_test.h
+	Source/playground/compute_test.cpp
 )
 	
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})

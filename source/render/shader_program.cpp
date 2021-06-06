@@ -17,6 +17,36 @@ namespace Render
 		Destroy();
 	}
 
+	bool ShaderProgram::Create(const ShaderBinary& computeShader, std::string& result)
+	{
+		SDE_PROF_EVENT();
+
+		SDE_RENDER_ASSERT(computeShader.GetType() == ShaderType::ComputeShader);
+		SDE_RENDER_ASSERT(computeShader.GetHandle() != 0);
+
+		m_handle = glCreateProgram();
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateProgram");
+
+		glAttachShader(m_handle, computeShader.GetHandle());
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glAttachShader");
+
+		glLinkProgram(m_handle);
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glLinkProgram");
+
+		// check the results
+		int32_t linkResult = 0, logLength = 0;
+		glGetProgramiv(m_handle, GL_LINK_STATUS, &linkResult);
+		glGetProgramiv(m_handle, GL_INFO_LOG_LENGTH, &logLength);
+		if (logLength > 0)
+		{
+			std::unique_ptr<char[]> logResult(new char[logLength]);
+			glGetProgramInfoLog(m_handle, logLength, NULL, logResult.get());
+			result = logResult.get();
+		}
+
+		return linkResult == GL_TRUE;
+	}
+
 	bool ShaderProgram::Create(const ShaderBinary& vertexShader, const ShaderBinary& fragmentShader, std::string& result)
 	{
 		SDE_PROF_EVENT();
@@ -50,18 +80,6 @@ namespace Render
 		}
 		
 		return linkResult == GL_TRUE;
-	}
-
-	void ShaderProgram::AddUniform(const char* uniformName)
-	{
-		SDE_RENDER_ASSERT(m_handle != 0);
-		const uint32_t uniformHash = Core::StringHashing::GetHash(uniformName);
-#ifdef SDE_DEBUG
-		SDE_ASSERT(m_uniformHandles.find(uniformHash) == m_uniformHandles.end());
-#endif
-		uint32_t result = glGetUniformLocation(m_handle, uniformName);
-		SDE_RENDER_PROCESS_GL_ERRORS("glGetUniformLocation");
-		m_uniformHandles[uniformHash] = result;
 	}
 
 	uint32_t ShaderProgram::GetUniformHandle(const char* uniformName)

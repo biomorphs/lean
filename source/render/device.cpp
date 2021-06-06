@@ -24,8 +24,6 @@ namespace Render
 		m_context = SDL_GL_CreateContext(windowHandle);
 		SDE_RENDER_ASSERT(m_context);
 
-		
-
 		// glew initialises GL function pointers
 		glewExperimental = true;		// must be set for core profile and above
 		auto glewError = glewInit();
@@ -49,6 +47,21 @@ namespace Render
 	{
 		SDL_GL_DeleteContext(m_context);
 		m_context = nullptr;
+	}
+
+	void Device::MemoryBarrier(BarrierType m)
+	{
+		uint32_t barrierMode = 0;
+		switch (m)
+		{
+		case BarrierType::Image:
+			barrierMode = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+			break;
+		default:
+			assert(!"Whut");
+		}
+		glMemoryBarrier(barrierMode);
+		SDE_RENDER_PROCESS_GL_ERRORS("glMemoryBarrier");
 	}
 
 	void Device::SetViewport(glm::ivec2 pos, glm::ivec2 size)
@@ -290,6 +303,42 @@ namespace Render
 		assert(uniformHandle != -1);
 		glUniform1i(uniformHandle, val);
 		SDE_RENDER_PROCESS_GL_ERRORS("glUniform1i");
+	}
+
+	void Device::DispatchCompute(uint32_t groupsX, uint32_t groupsY = 0, uint32_t groupsZ = 0)
+	{
+		glDispatchCompute(groupsX, groupsY, groupsZ);
+		SDE_RENDER_PROCESS_GL_ERRORS("glDispatchCompute");
+	}
+
+	void Device::BindComputeImage(uint32_t bindIndex, uint32_t textureHandle, ComputeImageFormat f, ComputeImageAccess access, bool is3dOrArray)
+	{
+		uint32_t accessMode = 0;
+		uint32_t format = 0;
+		switch (f)
+		{
+		case ComputeImageFormat::RGBAF32:
+			format = GL_RGBA32F;
+			break;
+		default:
+			assert(!"Whut");
+		}
+		switch (access)
+		{
+		case ComputeImageAccess::ReadOnly:
+			accessMode = GL_READ_ONLY;
+			break;
+		case ComputeImageAccess::WriteOnly:
+			accessMode = GL_WRITE_ONLY;
+			break;
+		case ComputeImageAccess::ReadWrite:
+			accessMode = GL_READ_WRITE;
+			break;
+		default:
+			assert(!"Whut");
+		}
+		glBindImageTexture(bindIndex, textureHandle, 0, is3dOrArray ? GL_TRUE : GL_FALSE, 0, accessMode, format);
+		SDE_RENDER_PROCESS_GL_ERRORS("glBindImageTexture");
 	}
 
 	void Device::BindShaderProgram(const ShaderProgram& program)

@@ -19,6 +19,23 @@ namespace Render
 		PointSprites
 	};
 
+	enum class ComputeImageFormat
+	{
+		RGBAF32
+	};
+
+	enum class ComputeImageAccess
+	{
+		ReadOnly,
+		WriteOnly,
+		ReadWrite
+	};
+
+	enum class BarrierType
+	{
+		Image,
+	};
+
 	// This represents the GL context for a window
 	class Device
 	{
@@ -46,8 +63,11 @@ namespace Render
 		void SetUniformValue(uint32_t uniformHandle, const glm::vec4& val);
 		void SetUniformValue(uint32_t uniformHandle, float val);
 		void SetUniformValue(uint32_t uniformHandle, int32_t val);
+		void MemoryBarrier(BarrierType m);
 		void SetSampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit);
 		void SetArraySampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit);
+		void BindComputeImage(uint32_t bindIndex, uint32_t textureHandle, ComputeImageFormat f, ComputeImageAccess access, bool is3dOrArray=false);
+		void DispatchCompute(uint32_t groupsX, uint32_t groupsY, uint32_t groupsZ);
 		void BindShaderProgram(const ShaderProgram& program);
 		void BindVertexArray(const VertexArray& srcArray);
 		void BindInstanceBuffer(const VertexArray& srcArray, const RenderBuffer& buffer, int vertexLayoutSlot, int components, size_t offset = 0, size_t vectorCount=1);

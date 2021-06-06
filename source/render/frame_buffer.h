@@ -15,7 +15,8 @@ namespace Render
 		enum ColourAttachmentFormat
 		{
 			RGBA_U8,
-			RGBA_F16
+			RGBA_F16,
+			RGBA_F32
 		};
 
 		int GetMSAASamples() const { return m_msaaSamples; }
