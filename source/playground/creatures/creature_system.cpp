@@ -63,24 +63,12 @@ bool CreatureSystem::Initialise()
 {
 	SDE_PROF_EVENT();
 
-	// Register the default behaviours
-	// These can be attached to any state of any creature
-	// Anything generic enough should be implemented in c++
-
-	// The built-in states are:
-	// 'idle' - should be obvious, used as default state
-	// 'dying' - transition state used as a trigger so behaviours can do stuff on death
-	//		(nothing will die by default, you must handle the state transition yourself!)
-
-	AddBehaviour("move_to_target", BehaviourLibrary::MoveToTarget(*m_entitySystem, *m_graphicsSystem, "idle"));
-	AddBehaviour("photosynthesize", BehaviourLibrary::Photosynthesize());
-	AddBehaviour("die_at_max_age", BehaviourLibrary::DieAtMaxAge());
-	AddBehaviour("die_at_zero_energy", BehaviourLibrary::DieAtZeroEnergy());
-	AddBehaviour("flee_enemy", BehaviourLibrary::Flee(*m_entitySystem, *m_graphicsSystem));
-
 	auto scripts = m_scriptSystem->Globals()["Creatures"].get_or_create<sol::table>();
 	scripts["AddBehaviour"] = [this](Engine::Tag tag, sol::protected_function fn) {
 		AddScriptBehaviour(tag, fn);
+	};
+	scripts["Reset"] = [this]() {
+		Reset();
 	};
 
 	m_scriptSystem->Globals().new_usertype<Blackboard>("Blackboard", sol::constructors<Blackboard()>(),
@@ -111,6 +99,21 @@ bool CreatureSystem::Initialise()
 void CreatureSystem::Reset()
 {
 	m_behaviours = {};
+
+	// Register the default behaviours
+	// These can be attached to any state of any creature
+	// Anything generic enough should be implemented in c++
+
+	// The built-in states are:
+	// 'idle' - should be obvious, used as default state
+	// 'dying' - transition state used as a trigger so behaviours can do stuff on death
+	//		(nothing will die by default, you must handle the state transition yourself!)
+
+	AddBehaviour("move_to_target", BehaviourLibrary::MoveToTarget(*m_entitySystem, *m_graphicsSystem, "idle"));
+	AddBehaviour("photosynthesize", BehaviourLibrary::Photosynthesize());
+	AddBehaviour("die_at_max_age", BehaviourLibrary::DieAtMaxAge());
+	AddBehaviour("die_at_zero_energy", BehaviourLibrary::DieAtZeroEnergy());
+	AddBehaviour("flee_enemy", BehaviourLibrary::Flee(*m_entitySystem, *m_graphicsSystem));
 }
 
 uint64_t VisHash(const glm::vec3& p)
@@ -397,9 +400,9 @@ bool CreatureSystem::Tick(float timeDelta)
 					auto registeredFn = m_behaviours.find(b);
 					if (registeredFn != m_behaviours.end())
 					{
-						char debugName[1024] = { '\0' };
-						sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
-						SDE_PROF_EVENT_DYN(debugName);
+						//char debugName[1024] = { '\0' };
+						//sprintf_s(debugName, "RunBehaviour %s_%s", state.c_str(), b.c_str());
+						//SDE_PROF_EVENT_DYN(debugName);
 						if (!registeredFn->second(owner, c, timeDelta))
 						{
 							break;	// we're done dealing with this state

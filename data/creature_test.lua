@@ -555,6 +555,7 @@ function CreatureTest.Init()
 	--Creatures.AddBehaviour("flee_enemy", FleeEnemy)
 	-- Creatures.AddBehaviour("photosynthesize", Photosynthesize)
 	
+	Creatures.Reset()
 	Creatures.AddBehaviour(MakeTag("random_wander"), RandomWander)
 	Creatures.AddBehaviour(MakeTag("find_food"), FindFood)
 	Creatures.AddBehaviour(MakeTag("eat_target_food"), EatFood)

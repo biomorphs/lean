@@ -11,7 +11,6 @@
 #include "engine/file_picker_dialog.h"
 #include "engine/serialisation.h"
 #include "entity/entity_system.h"
-#include "creatures/creature_system.h"
 #include <cassert>
 
 std::string g_configFile = "playground_config.json";
@@ -57,7 +56,6 @@ void Playground::NewScene()
 {
 	SDE_PROF_EVENT();
 	m_scene = {};
-	m_creatures->Reset();
 	m_entitySystem->NewWorld();
 	g_playgroundConfig.m_lastLoadedScene = "";
 	SaveConfig();
@@ -158,7 +156,6 @@ bool Playground::PreInit(Engine::SystemManager& manager)
 	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
 	m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
 	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
-	m_creatures = (CreatureSystem*)manager.GetSystem("Creatures");
 
 	m_sceneEditor.Init(&m_scene, m_debugGui);
 

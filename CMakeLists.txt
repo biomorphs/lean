@@ -249,6 +249,23 @@ target_include_directories(Entity PRIVATE ${CommonIncludePaths})
 target_include_directories(Entity PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Entity PRIVATE ${JSONIncludePaths})
 
+add_library(Creatures STATIC)
+set(CREATURES_SOURCES
+	Source/playground/creatures/creature_system.h
+	Source/playground/creatures/creature_system.cpp
+	Source/playground/creatures/component_creature.h
+	Source/playground/creatures/component_creature.cpp
+	Source/playground/creatures/behaviour_library.h
+	Source/playground/creatures/behaviour_library.cpp
+	Source/playground/creatures/blackboard.h
+	Source/playground/creatures/blackboard.cpp
+)
+target_sources(Creatures PRIVATE ${CREATURES_SOURCES})
+target_include_directories(Creatures PRIVATE ${CommonIncludePaths})
+target_include_directories(Creatures PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Creatures PRIVATE ${JSONIncludePaths})
+target_compile_options(Creatures PRIVATE ${CommonCompilerOptions})
+
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
 	Source/playground/playground.h
@@ -257,14 +274,8 @@ set(PLAYGROUND_SOURCES
 	Source/playground/scene.cpp
 	Source/playground/scene_editor.h
 	Source/playground/scene_editor.cpp
-	Source/playground/creatures/creature_system.h
-	Source/playground/creatures/creature_system.cpp
-	Source/playground/creatures/component_creature.h
-	Source/playground/creatures/component_creature.cpp
-	Source/playground/creatures/behaviour_library.h
-	Source/playground/creatures/behaviour_library.cpp
-	Source/playground/creatures/blackboard.h
-	Source/playground/creatures/blackboard.cpp)
+)
+	
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})
@@ -280,6 +291,7 @@ target_link_libraries(Lean PRIVATE Core)
 target_link_libraries(Lean PRIVATE Engine)
 target_link_libraries(Lean PRIVATE Entity)
 target_link_libraries(Lean PRIVATE Playground)
+target_link_libraries(Lean PRIVATE Creatures)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysX_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCommon_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCooking_64.lib)
