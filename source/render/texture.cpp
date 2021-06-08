@@ -155,7 +155,59 @@ namespace Render
 		SDE_RENDER_PROCESS_GL_ERRORS("glTextureParameterfv");
 	}
 
-	bool Texture::CreateSimpleUncompressedTexture(const TextureSource& src)
+	bool Texture::CreateSimpleUncompressedTexture3D(const TextureSource& src)
+	{
+		SDE_PROF_EVENT();
+		SDE_RENDER_ASSERT(src.GetAA() == TextureSource::Antialiasing::None);
+		SDE_RENDER_ASSERT(src.Depth() > 0);
+
+		glCreateTextures(GL_TEXTURE_3D, 1, &m_handle);
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateTextures");
+
+		m_componentCount = SourceFormatToComponentCount(src.SourceFormat());
+		const bool shouldGenerateMips = src.MipCount() <= 1 && src.ShouldGenerateMips();
+		const uint32_t mipCount = shouldGenerateMips ? GetGeneratedMipCount(src) : src.MipCount();
+
+		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, WrapModeToGlType(src.GetWrapModeS()));
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_T, WrapModeToGlType(src.GetWrapModeT()));
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+		glTextureParameteri(m_handle, GL_TEXTURE_WRAP_R, WrapModeToGlType(src.GetWrapModeR()));
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+
+		auto filterMode = src.UseNearestFiltering() ? GL_NEAREST : GL_LINEAR;
+		glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, filterMode);
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+		if (mipCount > 1)
+		{
+			filterMode = src.UseNearestFiltering() ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR;
+			glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, filterMode);
+		}
+		else
+		{
+			glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, filterMode);
+		}
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureParameteri");
+
+		uint32_t glStorageFormat = SourceFormatToGLStorageFormat(src.SourceFormat());
+		SDE_RENDER_ASSERT(glStorageFormat != -1);
+		{
+			SDE_PROF_EVENT("AllocateStorage");
+			// This preallocates the entire mip-chain
+			glTextureStorage3D(m_handle, std::max(mipCount, 1u), glStorageFormat, src.Width(), src.Height(), src.Depth());
+			SDE_RENDER_PROCESS_GL_ERRORS_RET("glTextureStorage2D");
+		}
+
+		if (shouldGenerateMips)
+		{
+			SDE_PROF_EVENT("GenerateMips");
+			glGenerateTextureMipmap(m_handle);
+			SDE_RENDER_PROCESS_GL_ERRORS_RET("glGenerateTextureMipmap");
+		}
+		return m_handle != 0;
+	}
+
+	bool Texture::CreateSimpleUncompressedTexture2D(const TextureSource& src)
 	{
 		SDE_PROF_EVENT();
 
@@ -243,7 +295,7 @@ namespace Render
 		return m_handle != 0;
 	}
 
-	bool Texture::CreateSimpleCompressedTexture(const TextureSource& src)
+	bool Texture::CreateSimpleCompressedTexture2D(const TextureSource& src)
 	{
 		SDE_PROF_EVENT();
 
@@ -276,7 +328,7 @@ namespace Render
 		return true;
 	}
 
-	bool Texture::CreateArrayCompressedTexture(const std::vector<TextureSource>& src)
+	bool Texture::CreateArrayCompressedTexture2D(const std::vector<TextureSource>& src)
 	{
 		SDE_PROF_EVENT();
 
@@ -340,8 +392,10 @@ namespace Render
 		uint32_t width = src[0].Width();
 		uint32_t height = src[0].Height();
 		TextureSource::Format format = src[0].SourceFormat();
+		bool has3d = false;
 		for (auto& it : src)
 		{
+			has3d |= it.Is3D();
 			if (mipCount != it.MipCount())
 			{
 				return false;
@@ -358,6 +412,11 @@ namespace Render
 			{
 				return false;
 			}
+		}
+
+		if (has3d)	// dont support 3d texture arrays
+		{
+			return false;
 		}
 
 		return true;
@@ -477,13 +536,21 @@ namespace Render
 		SDE_RENDER_ASSERT(m_handle == -1);
 		m_isArray = false;
 
-		if (ShouldCreateCompressed(src.SourceFormat()))
+		if (src.Is3D())
 		{
-			return CreateSimpleCompressedTexture(src);
+			assert(!ShouldCreateCompressed(src.SourceFormat()));
+			return CreateSimpleUncompressedTexture3D(src);
 		}
 		else
 		{
-			return CreateSimpleUncompressedTexture(src);
+			if (ShouldCreateCompressed(src.SourceFormat()))
+			{
+				return CreateSimpleCompressedTexture2D(src);
+			}
+			else
+			{
+				return CreateSimpleUncompressedTexture2D(src);
+			}
 		}
 
 		return false;
@@ -505,12 +572,12 @@ namespace Render
 			if (src.size() == 1)
 			{
 				m_isArray = false;
-				return CreateSimpleCompressedTexture(src[0]);
+				return CreateSimpleCompressedTexture2D(src[0]);
 			}
 			else
 			{
 				m_isArray = true;
-				return CreateArrayCompressedTexture(src);
+				return CreateArrayCompressedTexture2D(src);
 			}
 		}
 		else
@@ -518,9 +585,10 @@ namespace Render
 			if (src.size() == 1)
 			{
 				m_isArray = false;
-				return CreateSimpleUncompressedTexture(src[0]);
+				return CreateSimpleUncompressedTexture2D(src[0]);
 			}
 		}
+
 		return false;
 	}
 

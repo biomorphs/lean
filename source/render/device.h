@@ -21,6 +21,7 @@ namespace Render
 
 	enum class ComputeImageFormat
 	{
+		R8,
 		RGBAF32
 	};
 
@@ -55,6 +56,7 @@ namespace Render
 		void SetDepthState(bool enabled, bool writeEnabled);
 		void ClearColourDepthTarget(const glm::vec4& colour, float depth);
 		void ClearFramebufferColourDepth(const FrameBuffer& fb, const glm::vec4& colour, float depth);
+		void ClearFramebufferColour(const FrameBuffer& fb, const glm::vec4& colour);
 		void ClearFramebufferDepth(const FrameBuffer& fb, float depth);
 		void DrawToFramebuffer(const FrameBuffer& fb);
 		void DrawToFramebuffer(const FrameBuffer& fb, uint32_t cubeFace);

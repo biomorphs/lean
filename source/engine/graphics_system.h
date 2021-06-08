@@ -37,6 +37,7 @@ public:
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
+	Engine::ShaderManager& Shaders() { return *m_shaders; }
 private:
 	void RegisterScripts();
 	void RegisterComponents();

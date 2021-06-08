@@ -32,9 +32,10 @@ namespace Render
 		void SetClampToBorder(glm::vec4 borderColour);
 
 	private:
-		bool CreateSimpleUncompressedTexture(const TextureSource& src);
-		bool CreateSimpleCompressedTexture(const TextureSource& src);
-		bool CreateArrayCompressedTexture(const std::vector<TextureSource>& src);
+		bool CreateSimpleUncompressedTexture3D(const TextureSource& src);
+		bool CreateSimpleUncompressedTexture2D(const TextureSource& src);
+		bool CreateSimpleCompressedTexture2D(const TextureSource& src);
+		bool CreateArrayCompressedTexture2D(const std::vector<TextureSource>& src);
 		bool ValidateSource(const std::vector<TextureSource>& src);
 
 		bool m_isArray;

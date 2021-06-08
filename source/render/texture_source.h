@@ -42,6 +42,7 @@ namespace Render
 		};
 
 		TextureSource();
+		TextureSource(uint32_t w, uint32_t h, uint32_t d, Format f);	// empty 3d texture with no mips
 		TextureSource(uint32_t w, uint32_t h, Format f);	// empty texture with no mips
 		TextureSource(uint32_t w, uint32_t h, Format f, std::vector<MipDesc>& mips, std::vector<uint8_t>& data);
 		TextureSource(uint32_t w, uint32_t h, Format f, std::vector<MipDesc>& mips, std::vector<uint32_t>& data);
@@ -49,13 +50,17 @@ namespace Render
 		TextureSource(const TextureSource&) = delete;
 		TextureSource(TextureSource&&) = default;
 
+		inline bool Is3D() const { return m_is3d; }
 		inline Antialiasing GetAA() const { return m_antiAliasing; }
 		void SetAA(Antialiasing m) { m_antiAliasing = m; }
 		inline WrapMode GetWrapModeS() const { return m_wrapModeS; }
 		inline WrapMode GetWrapModeT() const { return m_wrapModeT; }
+		inline WrapMode GetWrapModeR() const { return m_wrapModeR; }
 		void SetWrapMode(WrapMode s, WrapMode t) { m_wrapModeS = s; m_wrapModeT = t; }
+		void SetWrapMode(WrapMode s, WrapMode t, WrapMode r) { m_wrapModeS = s; m_wrapModeT = t; m_wrapModeR = r; }
 		inline uint32_t Width() const { return m_width; }
 		inline uint32_t Height() const { return m_height; }
+		inline uint32_t Depth() const { return m_depth; }
 		inline uint32_t MipCount() const { return static_cast<uint32_t>(m_mipDescriptors.size()); }
 		inline Format SourceFormat() const { return m_format; }
 		const uint8_t* MipLevel(uint32_t mip, uint32_t& w, uint32_t& h, size_t& size) const;
@@ -66,12 +71,15 @@ namespace Render
 		inline const bool& UseNearestFiltering() const { return m_useNearestFiltering; }
 
 	private:
+		bool m_is3d = false;
 		Antialiasing m_antiAliasing = Antialiasing::None;
 		WrapMode m_wrapModeS = WrapMode::Repeat;
 		WrapMode m_wrapModeT = WrapMode::Repeat;
+		WrapMode m_wrapModeR = WrapMode::Repeat;
 		Format m_format;
 		uint32_t m_width;
 		uint32_t m_height;
+		uint32_t m_depth = 0;		// for 3d textures only
 		std::vector<MipDesc> m_mipDescriptors;
 		std::vector<uint8_t> m_rawBuffer;
 		bool m_generateMips = false;

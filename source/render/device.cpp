@@ -79,6 +79,16 @@ namespace Render
 		}
 	}
 
+	void Device::ClearFramebufferColour(const FrameBuffer& fb, const glm::vec4& colour)
+	{
+		int colourAttachments = fb.GetColourAttachmentCount();
+		for (int i = 0; i < colourAttachments; ++i)
+		{
+			glClearNamedFramebufferfv(fb.GetHandle(), GL_COLOR, i, glm::value_ptr(colour));
+			SDE_RENDER_PROCESS_GL_ERRORS("glClearNamedFramebufferfv");
+		}
+	}
+
 	void Device::ClearFramebufferColourDepth(const FrameBuffer& fb, const glm::vec4& colour, float depth)
 	{
 		int colourAttachments= fb.GetColourAttachmentCount();
@@ -319,6 +329,9 @@ namespace Render
 		{
 		case ComputeImageFormat::RGBAF32:
 			format = GL_RGBA32F;
+			break;
+		case ComputeImageFormat::R8:
+			format = GL_R8;
 			break;
 		default:
 			assert(!"Whut");
