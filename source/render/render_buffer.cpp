@@ -11,28 +11,12 @@ namespace Render
 		: m_bufferSize(0)
 		, m_handle(0)
 		, m_persistentMappedBuffer(nullptr)
-		, m_type(RenderBufferType::VertexData)
 	{
 	}
 
 	RenderBuffer::~RenderBuffer()
 	{
 		Destroy();
-	}
-
-	inline uint32_t RenderBuffer::TranslateBufferType(RenderBufferType type) const
-	{
-		switch (type)
-		{
-		case RenderBufferType::VertexData:
-			return GL_ARRAY_BUFFER;
-		case RenderBufferType::IndexData:
-			return GL_ELEMENT_ARRAY_BUFFER;
-		case RenderBufferType::UniformData:
-			return GL_UNIFORM_BUFFER;
-		default:
-			return -1;
-		}
 	}
 
 	uint32_t RenderBuffer::TranslateModificationType(RenderBufferModification type) const
@@ -61,15 +45,13 @@ namespace Render
 		}
 	}
 
-	bool RenderBuffer::Create(void* sourceData, size_t bufferSize, RenderBufferType type, RenderBufferModification modification, bool usePersistentMapping)
+	bool RenderBuffer::Create(void* sourceData, size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping)
 	{
 		SDE_PROF_EVENT();
 		SDE_RENDER_ASSERT(bufferSize > 0, "Buffer size must be >0");
 
 		if (bufferSize > 0)
 		{
-			auto bufferType = TranslateBufferType(type);
-
 			{
 				SDE_PROF_EVENT("glCreateBuffers");
 				glCreateBuffers(1, &m_handle);
@@ -97,15 +79,14 @@ namespace Render
 			}
 
 			m_bufferSize = bufferSize;
-			m_type = type;
 		}
 
 		return true;
 	}
 
-	bool RenderBuffer::Create(size_t bufferSize, RenderBufferType type, RenderBufferModification modification, bool usePersistentMapping)
+	bool RenderBuffer::Create(size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping)
 	{
-		return Create(nullptr, bufferSize, type, modification, usePersistentMapping);
+		return Create(nullptr, bufferSize, modification, usePersistentMapping);
 	}
 
 	void RenderBuffer::SetData(size_t offset, size_t size, void* srcData)
@@ -125,7 +106,6 @@ namespace Render
 		else
 		{
 			SDE_PROF_EVENT("glNamedBufferSubData");
-			auto bufferType = TranslateBufferType(m_type);
 			glNamedBufferSubData(m_handle, offset, size, srcData);
 			SDE_RENDER_PROCESS_GL_ERRORS("glNamedBufferSubData");
 		}

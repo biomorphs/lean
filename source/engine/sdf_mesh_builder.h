@@ -31,7 +31,7 @@ namespace Engine
 		glm::ivec3 m_resolution;
 		glm::vec3 m_origin;
 		glm::vec3 m_cellSize;
-		bool m_generateAO = true;	// very slow
+		bool m_generateAO = false;	// very slow
 		float m_normalSmoothness = 1.0f;
 		MeshMode m_mode = Blocky;
 		Debug* m_debug = nullptr;

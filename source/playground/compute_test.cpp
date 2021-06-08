@@ -9,6 +9,18 @@
 #include "render/shader_program.h"
 #include "render/device.h"
 
+// TODO
+
+// MAKE 3D TEXTURE
+// WRITE TO IT VIA COMPUTE SHADER
+// Show the result (SLICE VIEWER/RAYMARCHER)
+// MAKE VB + VArray
+// OUTPUT QUADS TO VB AS TEST (AS TRIANGLES!!!)
+//	use atomic counter to output triangles
+// draw quads using VB with slice shader
+// ...
+// implement sdf meshing
+
 ComputeTest::ComputeTest()
 {
 }
@@ -61,6 +73,8 @@ bool ComputeTest::PostInit()
 
 bool ComputeTest::Tick(float timeDelta)
 {
+	static float s_time = 0.0f;
+	s_time += timeDelta;
 	if (m_texture && m_shader)
 	{
 		auto device = m_renderSys->GetDevice();
@@ -69,6 +83,8 @@ bool ComputeTest::Tick(float timeDelta)
 		// uniforms should work?
 		auto handle = m_shader->GetUniformHandle("Colour");
 		device->SetUniformValue(handle, glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
+		auto t = m_shader->GetUniformHandle("Time");
+		device->SetUniformValue(t, s_time);
 
 		device->BindComputeImage(0, m_texture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly);
 		device->DispatchCompute(m_dims.x, m_dims.y, 1); 

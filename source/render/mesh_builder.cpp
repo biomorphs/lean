@@ -168,11 +168,11 @@ namespace Render
 				auto streamBuffer = (void*)streamIt.m_streamData.data();
 				if (createDynamicMesh)
 				{
-					theBuffer.Create(streamBuffer, streamSize, RenderBufferType::VertexData, RenderBufferModification::Dynamic);
+					theBuffer.Create(streamBuffer, streamSize, RenderBufferModification::Dynamic);
 				}
 				else
 				{
-					theBuffer.Create(streamBuffer, streamSize, RenderBufferType::VertexData, RenderBufferModification::Static);
+					theBuffer.Create(streamBuffer, streamSize, RenderBufferModification::Static);
 				}
 			}
 			++streamIndex;

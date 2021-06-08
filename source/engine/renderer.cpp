@@ -70,8 +70,8 @@ namespace Engine
 		m_tonemapShader = m_shaders->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
-			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferType::VertexData, Render::RenderBufferModification::Dynamic, true);
-			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferType::UniformData, Render::RenderBufferModification::Dynamic, true);
+			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferModification::Dynamic, true);
+			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferModification::Dynamic, true);
 			m_opaqueInstances.m_instances.reserve(c_maxInstances);
 			m_transparentInstances.m_instances.reserve(c_maxInstances);
 			m_allShadowCasterInstances.m_instances.reserve(c_maxInstances);

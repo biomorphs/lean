@@ -47,9 +47,9 @@ namespace Engine
 	void SDFMeshBuilder::GenerateAO(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, std::vector<float>& ao)
 	{
 		SDE_PROF_EVENT();
-		const int c_raysToFire = 32;
-		static float s_mainRayLength = 32.0f;
-		static float s_step = s_mainRayLength;
+		const int c_raysToFire = 48;
+		static float s_mainRayLength = 16.0f;
+		static float s_step = s_mainRayLength / 8.0f;
 		for (int v=0;v<vertices.size();++v)
 		{
 			glm::vec3 v0 = vertices[v];
@@ -61,13 +61,13 @@ namespace Engine
 			float t = -1.0f;
 			int mat = 0;
 			std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
-			if (s0.distance <= 0.0f)	// initial point is inside the object
+			if (s0.distance <= 0.00001f)	// initial point is inside the object
 			{
 				if (SDF::Raycast(v0, v0 + n0 * glm::compMax(m_cellSize), glm::compMax(m_cellSize), m_fn, t, mat))
 				{
 					v0 = v0 + n0 * t * 1.01f;		// munge factor needed?
 					std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
-					if (s0.distance <= 0.0f)	// if we still hit something solid, give up write 0
+					if (s0.distance <= 0.00001f)	// if we still hit something solid, give up write 0
 					{
 						ao[v] = 0.5f;	// ??
 						continue;
