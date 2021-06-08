@@ -21,7 +21,9 @@ namespace Render
 
 	enum class ComputeImageFormat
 	{
-		R8,
+		R8,		// unsigned
+		R8I,	// signed
+		RF16,
 		RGBAF32
 	};
 
@@ -77,6 +79,7 @@ namespace Render
 		void DrawPrimitivesInstanced(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance=0);
 		void BindUniformBufferIndex(ShaderProgram& p, const char* bufferName, uint32_t bindingIndex);
 		void SetUniforms(ShaderProgram& p, const RenderBuffer& ubo, uint32_t uboBindingIndex);
+		void SetStorageBuffer(ShaderProgram& p, const RenderBuffer& ssbo, uint32_t ssboBindingIndex);	// like uniforms, but writeable
 	private:
 		uint32_t TranslatePrimitiveType(PrimitiveType type) const;
 

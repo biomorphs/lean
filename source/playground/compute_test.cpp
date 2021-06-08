@@ -15,14 +15,6 @@
 
 // TODO
 
-// MAKE 3D TEXTURE - done
-// WRITE TO IT VIA COMPUTE SHADER - done
-// Show the result (SLICE VIEWER/RAYMARCHER) - done
-// MAKE VB + VArray
-// OUTPUT QUADS TO VB AS TEST (AS TRIANGLES!!!)
-//	use atomic counter to output triangles
-// draw quads using VB with slice shader
-// ...
 // implement sdf meshing
 
 ComputeTest::ComputeTest()
@@ -35,6 +27,8 @@ ComputeTest::~ComputeTest()
 
 bool ComputeTest::PreInit(Engine::SystemManager & manager)
 {
+	SDE_PROF_EVENT();
+
 	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
 	m_renderSys = (Engine::RenderSystem*)manager.GetSystem("Render");
 	m_graphics = (GraphicsSystem*)manager.GetSystem("Graphics");
@@ -43,6 +37,8 @@ bool ComputeTest::PreInit(Engine::SystemManager & manager)
 
 bool ComputeTest::RecompileShader()
 {
+	SDE_PROF_EVENT();
+
 	auto shader = std::make_unique<Render::ShaderProgram>();
 
 	auto shaderBinary = Render::ShaderBinary();
@@ -65,11 +61,20 @@ bool ComputeTest::RecompileShader()
 
 bool ComputeTest::PostInit()
 {
+	SDE_PROF_EVENT();
+
+	// The distance field is written to this volume texture
 	m_volumeTexture = std::make_unique<Render::Texture>();
-	auto volumedesc = Render::TextureSource(128, 128, 128, Render::TextureSource::Format::R8);
+	auto volumedesc = Render::TextureSource(m_dims.x, m_dims.y, m_dims.z, Render::TextureSource::Format::RF16);
 	auto clamp = Render::TextureSource::WrapMode::ClampToEdge;
 	volumedesc.SetWrapMode(clamp, clamp, clamp);
 	m_volumeTexture->Create(volumedesc);
+
+	// Per-cell vertex positions are written here
+	m_volumeTexture2 = std::make_unique<Render::Texture>();
+	auto volumedesc2 = Render::TextureSource(m_dims.x, m_dims.y, m_dims.z, Render::TextureSource::Format::RGBAF32);
+	volumedesc2.SetWrapMode(clamp, clamp, clamp);
+	m_volumeTexture2->Create(volumedesc2);
 
 	m_debugFrameBuffer = std::make_unique<Render::FrameBuffer>(glm::ivec2(m_dims));
 	m_debugFrameBuffer->AddColourAttachment(Render::FrameBuffer::RGBA_U8);
@@ -80,6 +85,7 @@ bool ComputeTest::PostInit()
 
 	m_blitter = std::make_unique<Render::RenderTargetBlitter>();
 	m_blitShader = m_graphics->Shaders().LoadShader("3d texture slice blit", "basic_blit.vs", "basic_blit_3dslice.fs");
+	m_findCellVerticesShader = m_graphics->Shaders().LoadComputeShader("FindSDFVertices", "compute_test_find_vertices.cs");
 
 	RecompileShader();
 
@@ -88,6 +94,8 @@ bool ComputeTest::PostInit()
 
 bool ComputeTest::Tick(float timeDelta)
 {
+	SDE_PROF_EVENT();
+
 	static float s_time = 0.0f;
 	s_time += timeDelta;
 
@@ -104,9 +112,33 @@ bool ComputeTest::Tick(float timeDelta)
 		{
 			device->SetUniformValue(t, s_time);
 		}
-
-		device->BindComputeImage(0, m_volumeTexture->GetHandle(), Render::ComputeImageFormat::R8, Render::ComputeImageAccess::WriteOnly, true);
+		device->BindComputeImage(0, m_volumeTexture->GetHandle(), Render::ComputeImageFormat::RF16, Render::ComputeImageAccess::WriteOnly, true);
 		device->DispatchCompute(m_dims.x, m_dims.y, m_dims.z); 
+	}
+
+	auto findCellShader = m_graphics->Shaders().GetShader(m_findCellVerticesShader);
+	if (findCellShader != nullptr)
+	{
+		// wait for image operations to finish
+		device->MemoryBarrier(Render::BarrierType::Image);
+
+		device->BindShaderProgram(*findCellShader);
+		
+		// pass the volume texture through a sampler (so we get 'free' filtering)
+		auto sampler = findCellShader->GetUniformHandle("InputVolume");
+		if (sampler != -1)
+		{
+			device->SetSampler(sampler, m_volumeTexture->GetHandle(), 0);
+		}
+		device->BindComputeImage(0, m_volumeTexture2->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
+		device->DispatchCompute(m_dims.x-1, m_dims.y-1, m_dims.z-1);
+	}
+
+	bool keepOpen = true;
+	m_debugGui->BeginWindow(keepOpen, "Compute Test");
+	if (m_debugGui->Button("Reload"))
+	{
+		RecompileShader();
 	}
 
 	// debug draw a slice of the texture
@@ -120,14 +152,9 @@ bool ComputeTest::Tick(float timeDelta)
 		// draw a slice of the texture to our frame buffer
 		Render::UniformBuffer uniforms;
 		uniforms.SetValue("Slice", slice);
-		m_blitter->TextureToTarget(*device, *m_volumeTexture, *m_debugFrameBuffer, *blitShader, &uniforms);
-	}
-
-	bool keepOpen = true;
-	m_debugGui->BeginWindow(keepOpen, "Compute Test");
-	if (m_debugGui->Button("Reload"))
-	{
-		RecompileShader();
+		device->DrawToFramebuffer(*m_debugFrameBuffer);
+		device->ClearFramebufferColour(*m_debugFrameBuffer, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+		m_blitter->TextureToTarget(*device, *m_volumeTexture2, *m_debugFrameBuffer, *blitShader, &uniforms);
 	}
 	slice = m_debugGui->DragFloat("Slice", slice, 0.01f, 0.0f, 1.0f);
 	m_debugGui->Image(m_debugFrameBuffer->GetColourAttachment(0), {512,512});
@@ -139,6 +166,7 @@ void ComputeTest::Shutdown()
 {
 	m_blitter = nullptr;
 	m_volumeTexture = nullptr;
+	m_volumeTexture2 = nullptr;
 	m_shader = nullptr;
 	m_debugFrameBuffer = nullptr;
 }

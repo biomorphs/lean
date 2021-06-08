@@ -196,7 +196,7 @@ namespace Engine
 		const bool c_useCUDA = true;
 		g_dispatcher.m_jobs = m_jobSystem;
 		physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
-		sceneDesc.gravity = physx::PxVec3(0.0f, -20.0f, 0.0f);
+		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 		sceneDesc.cpuDispatcher = &g_dispatcher;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;					// generate active actor list
 		sceneDesc.flags |= physx::PxSceneFlag::eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS;	// ... but don't include kinematics

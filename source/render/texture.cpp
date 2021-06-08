@@ -33,6 +33,8 @@ namespace Render
 		case TextureSource::Format::RGB8:
 			return 3;
 		case TextureSource::Format::R8:
+		case TextureSource::Format::R8I:
+		case TextureSource::Format::RF16:
 			return 1;
 		case TextureSource::Format::RGBAF16:
 			return 4;
@@ -63,6 +65,10 @@ namespace Render
 			return GL_RGB8;
 		case TextureSource::Format::R8:
 			return GL_R8;
+		case TextureSource::Format::R8I:
+			return GL_R8I;
+		case TextureSource::Format::RF16:
+			return GL_R16F;
 		case TextureSource::Format::RGBAF16:
 			return GL_RGBA16F;
 		case TextureSource::Format::RGBAF32:
@@ -80,10 +86,14 @@ namespace Render
 	{
 		switch (f)
 		{
+		case TextureSource::Format::R8I:
+			return GL_BYTE;
 		case TextureSource::Format::R8:
 		case TextureSource::Format::RGB8:
 		case TextureSource::Format::RGBA8:
 			return GL_UNSIGNED_BYTE;
+		case TextureSource::Format::RF16:
+			return GL_HALF_FLOAT;
 		default:
 			return -1;
 		}

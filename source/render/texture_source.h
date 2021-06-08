@@ -14,6 +14,8 @@ namespace Render
 			DXT3,
 			DXT5,
 			R8,
+			R8I,
+			RF16,
 			RGB8,
 			RGBA8,
 			RGBAF16,

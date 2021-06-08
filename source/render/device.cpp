@@ -333,6 +333,12 @@ namespace Render
 		case ComputeImageFormat::R8:
 			format = GL_R8;
 			break;
+		case ComputeImageFormat::R8I:
+			format = GL_R8I;
+			break;
+		case ComputeImageFormat::RF16:
+			format = GL_R16F;
+			break;
 		default:
 			assert(!"Whut");
 		}
@@ -411,6 +417,12 @@ namespace Render
 
 		glDrawArrays(primitiveType, vertexStart, vertexCount);
 		SDE_RENDER_PROCESS_GL_ERRORS("glDrawArrays");
+	}
+
+	void Device::SetStorageBuffer(ShaderProgram& p, const RenderBuffer& ssbo, uint32_t ssboBindingIndex)
+	{
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssboBindingIndex, ssbo.GetHandle());
+		SDE_RENDER_PROCESS_GL_ERRORS("glBindBufferBase");
 	}
 
 	void Device::SetUniforms(ShaderProgram& p, const RenderBuffer& ubo, uint32_t uboBindingIndex)

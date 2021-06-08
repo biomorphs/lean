@@ -41,12 +41,50 @@ namespace Engine
 		auto currentShaders = std::move(m_shaders);
 		for (auto &s : currentShaders)
 		{
-			auto newHandle = LoadShader(s.m_name.c_str(), s.m_vsPath.c_str(), s.m_fsPath.c_str());
+			ShaderHandle newHandle;
+			if (s.m_fsPath.size() > 0)
+			{
+				newHandle = LoadShader(s.m_name.c_str(), s.m_vsPath.c_str(), s.m_fsPath.c_str());
+			}
+			else
+			{
+				newHandle = LoadComputeShader(s.m_name.c_str(), s.m_vsPath.c_str());
+			}
 			if (newHandle.m_index == ShaderHandle::Invalid().m_index)	// if compilation failed use the old shader
 			{
 				m_shaders.emplace_back(std::move(s));
 			}
 		}
+	}
+
+	ShaderHandle ShaderManager::LoadComputeShader(const char* name, const char* path)
+	{
+		SDE_PROF_EVENT();
+		for (uint64_t i = 0; i < m_shaders.size(); ++i)
+		{
+			if (m_shaders[i].m_name == name)
+			{
+				return { static_cast<uint32_t>(i) };
+			}
+		}
+
+		auto shader = std::make_unique<Render::ShaderProgram>();
+		auto computeShader = std::make_unique<Render::ShaderBinary>();
+		std::string errorText;
+		if (!computeShader->CompileFromFile(Render::ShaderType::ComputeShader, path, errorText))
+		{
+			SDE_LOG("Compute shader compilation failed - %s\n%s", path, errorText.c_str());
+			return ShaderHandle::Invalid();
+		}
+
+		if (!shader->Create(*computeShader, errorText))
+		{
+			SDE_LOG("Shader linkage failed - %s", errorText.c_str());
+			return ShaderHandle::Invalid();
+		}
+
+		m_shaders.push_back({ std::move(shader), name, path, "" });
+		return ShaderHandle{ static_cast<uint32_t>(m_shaders.size() - 1) };
 	}
 
 	ShaderHandle ShaderManager::LoadShader(const char* name, const char* vsPath, const char* fsPath)

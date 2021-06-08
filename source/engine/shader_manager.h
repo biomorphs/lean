@@ -23,6 +23,7 @@ namespace Engine
 		ShaderManager(ShaderManager&&) = delete;
 
 		std::vector<ShaderHandle> AllShaders() const;
+		ShaderHandle LoadComputeShader(const char* name, const char* path);
 		ShaderHandle LoadShader(const char* name, const char* vsPath, const char* fsPath);
 		Render::ShaderProgram* GetShader(const ShaderHandle& h);
 		bool GetShaderPaths(const ShaderHandle& h, std::string& vs, std::string& fs);
@@ -35,7 +36,7 @@ namespace Engine
 		struct ShaderDesc {
 			std::unique_ptr<Render::ShaderProgram> m_shader;
 			std::string m_name;
-			std::string m_vsPath;
+			std::string m_vsPath;	// may also be compute shader path
 			std::string m_fsPath;
 		};
 		std::vector<ShaderDesc> m_shaders;
