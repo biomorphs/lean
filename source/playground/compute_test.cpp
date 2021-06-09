@@ -54,24 +54,28 @@ bool ComputeTest::PostInit()
 	SDE_PROF_EVENT();
 
 	// The distance field is written to this volume texture
-	m_volumeTexture = std::make_unique<Render::Texture>();
+	m_volumeDataTexture = std::make_unique<Render::Texture>();
 	auto volumedesc = Render::TextureSource(m_dims.x, m_dims.y, m_dims.z, Render::TextureSource::Format::RF16);
 	auto clamp = Render::TextureSource::WrapMode::ClampToEdge;
 	volumedesc.SetWrapMode(clamp, clamp, clamp);
-	m_volumeTexture->Create(volumedesc);
+	m_volumeDataTexture->Create(volumedesc);
 
 	// Per-cell vertex positions are written here
-	m_volumeTexture2 = std::make_unique<Render::Texture>();
+	m_vertexPositionTexture = std::make_unique<Render::Texture>();
 	auto volumedesc2 = Render::TextureSource(m_dims.x, m_dims.y, m_dims.z, Render::TextureSource::Format::RGBAF32);
 	volumedesc2.SetWrapMode(clamp, clamp, clamp);
-	m_volumeTexture2->Create(volumedesc2);
+	m_vertexPositionTexture->Create(volumedesc2);
+
+	// Per-cell normals are written here as rgba32f
+	m_vertexNormalTexture = std::make_unique<Render::Texture>();
+	m_vertexNormalTexture->Create(volumedesc2);
 
 	// Create the mesh we will eventually populate from compute
 	m_mesh = std::make_unique<Render::Mesh>();
 	
 	// Make sure to include an extra uint32_t*4 for the size to readback
 	// max 3 triangles/cell
-	const auto c_workingDataSize = sizeof(uint32_t) * 4 + (m_dims.x * m_dims.y * m_dims.z * sizeof(glm::vec4) * 3 * 3);
+	const auto c_workingDataSize = sizeof(uint32_t) * 4 + (m_dims.x * m_dims.y * m_dims.z * sizeof(glm::vec4) * 2 * 3 * 3);
 	m_workingVertexBuffer = std::make_unique<Render::RenderBuffer>();
 	m_workingVertexBuffer->Create(c_workingDataSize, Render::RenderBufferModification::Dynamic, true, true);
 
@@ -117,10 +121,10 @@ bool ComputeTest::Tick(float timeDelta)
 			// however, for current hacks readback the entire thing and copy from cpu
 			// ideally we should be using some kind of gpu buffer->buffer copy
 			uint32_t vertexCount = 0;
-			void* ptr = m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, (sizeof(uint32_t) * 4) + sizeof(float) * 4 * vertexCount);
+			void* ptr = m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, (sizeof(uint32_t) * 4) + sizeof(float) * 4 * 2 * m_dims.x * m_dims.y * m_dims.z);
 			if (ptr)
 			{
-				vertexCount = *(uint32_t*)ptr;
+				vertexCount = *(uint32_t*)ptr / 2;
 				if (vertexCount > 0)
 				{
 					float* vbase = reinterpret_cast<float*>(((uint32_t*)ptr) + 4);
@@ -130,8 +134,9 @@ bool ComputeTest::Tick(float timeDelta)
 					m_mesh = std::make_unique<Render::Mesh>();
 					m_mesh->GetStreams().push_back({});
 					auto& vb = m_mesh->GetStreams()[0];
-					vb.Create(vbase, sizeof(float) * 4 * vertexCount, Render::RenderBufferModification::Static);
-					m_mesh->GetVertexArray().AddBuffer(0, &vb, Render::VertexDataType::Float, 4);
+					vb.Create(vbase, sizeof(float) * 4 * 2 * vertexCount, Render::RenderBufferModification::Static);
+					m_mesh->GetVertexArray().AddBuffer(0, &vb, Render::VertexDataType::Float, 4, 0, sizeof(float) * 4 * 2);
+					m_mesh->GetVertexArray().AddBuffer(1, &vb, Render::VertexDataType::Float, 4, sizeof(float) * 4, sizeof(float) * 4 * 2);
 					m_mesh->GetVertexArray().Create();
 					m_mesh->GetChunks().push_back(Render::MeshChunk(0, vertexCount, Render::PrimitiveType::Triangles));
 				}
@@ -143,7 +148,7 @@ bool ComputeTest::Tick(float timeDelta)
 	{
 		// fill in volume data via compute
 		auto fillVolumeShader = m_graphics->Shaders().GetShader(m_fillVolumeShader);
-		if (m_volumeTexture && fillVolumeShader != nullptr)
+		if (m_volumeDataTexture && fillVolumeShader != nullptr)
 		{
 			device->BindShaderProgram(*fillVolumeShader);
 			auto t = fillVolumeShader->GetUniformHandle("Time");
@@ -151,11 +156,11 @@ bool ComputeTest::Tick(float timeDelta)
 			{
 				device->SetUniformValue(t, s_time);
 			}
-			device->BindComputeImage(0, m_volumeTexture->GetHandle(), Render::ComputeImageFormat::RF16, Render::ComputeImageAccess::WriteOnly, true);
+			device->BindComputeImage(0, m_volumeDataTexture->GetHandle(), Render::ComputeImageFormat::RF16, Render::ComputeImageAccess::WriteOnly, true);
 			device->DispatchCompute(m_dims.x, m_dims.y, m_dims.z);
 		}
 
-		// find vertex positions for each cell containing an edge with a zero point
+		// find vertex positions + normals for each cell containing an edge with a zero point
 		auto findCellShader = m_graphics->Shaders().GetShader(m_findCellVerticesShader);
 		if (findCellShader != nullptr)
 		{
@@ -165,9 +170,10 @@ bool ComputeTest::Tick(float timeDelta)
 			auto sampler = findCellShader->GetUniformHandle("InputVolume");
 			if (sampler != -1)
 			{
-				device->SetSampler(sampler, m_volumeTexture->GetHandle(), 0);
+				device->SetSampler(sampler, m_volumeDataTexture->GetHandle(), 0);
 			}
-			device->BindComputeImage(0, m_volumeTexture2->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
+			device->BindComputeImage(0, m_vertexPositionTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
+			device->BindComputeImage(1, m_vertexNormalTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
 			device->DispatchCompute(m_dims.x - 1, m_dims.y - 1, m_dims.z - 1);
 		}
 
@@ -185,10 +191,11 @@ bool ComputeTest::Tick(float timeDelta)
 			auto sampler = makeTrianglesShader->GetUniformHandle("InputVolume");
 			if (sampler != -1)
 			{
-				device->SetSampler(sampler, m_volumeTexture->GetHandle(), 0);
+				device->SetSampler(sampler, m_volumeDataTexture->GetHandle(), 0);
 			}
-			device->BindComputeImage(0, m_volumeTexture2->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::ReadOnly, true);
-			device->BindStorageBuffer(1, *m_workingVertexBuffer);
+			device->BindComputeImage(0, m_vertexPositionTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::ReadOnly, true);
+			device->BindComputeImage(1, m_vertexNormalTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::ReadOnly, true);
+			device->BindStorageBuffer(0, *m_workingVertexBuffer);
 			device->DispatchCompute(m_dims.x - 1, m_dims.y - 1, m_dims.z - 1);
 			m_buildMeshFence = device->MakeFence();
 		}
@@ -220,7 +227,7 @@ bool ComputeTest::Tick(float timeDelta)
 		uniforms.SetValue("Slice", slice);
 		device->DrawToFramebuffer(*m_debugFrameBuffer);
 		device->ClearFramebufferColour(*m_debugFrameBuffer, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-		m_blitter->TextureToTarget(*device, *m_volumeTexture2, *m_debugFrameBuffer, *blitShader, &uniforms);
+		m_blitter->TextureToTarget(*device, *m_vertexNormalTexture, *m_debugFrameBuffer, *blitShader, &uniforms);
 	}
 	slice = m_debugGui->DragFloat("Slice", slice, 0.01f, 0.0f, 1.0f);
 	m_debugGui->Image(m_debugFrameBuffer->GetColourAttachment(0), {512,512});
@@ -233,7 +240,8 @@ void ComputeTest::Shutdown()
 	m_workingVertexBuffer = nullptr;
 	m_mesh = nullptr;
 	m_blitter = nullptr;
-	m_volumeTexture = nullptr;
-	m_volumeTexture2 = nullptr;
+	m_volumeDataTexture = nullptr;
+	m_vertexPositionTexture = nullptr;
+	m_vertexNormalTexture = nullptr;
 	m_debugFrameBuffer = nullptr;
 }

@@ -74,7 +74,7 @@ namespace Render
 			SDE_RENDER_ASSERT(glDataType != -1);
 
 			// set the array format
-			glVertexArrayAttribFormat(m_handle, it->m_attribIndex, it->m_componentCount, glDataType, false, (GLuint)it->m_offset);
+			glVertexArrayAttribFormat(m_handle, it->m_attribIndex, it->m_componentCount, glDataType, false, 0);
 			SDE_RENDER_PROCESS_GL_ERRORS_RET("glVertexArrayAttribFormat");
 
 			// enable the stream

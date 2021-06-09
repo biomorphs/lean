@@ -2,8 +2,27 @@
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image3D outVertices;
+layout(rgba32f, binding = 1) uniform image3D outNormals;
 
 uniform sampler3D InputVolume;
+
+vec3 SampleNormal(vec3 p, vec3 cellSize, float sampleDelta)
+{
+	float samples[6];
+	samples[0] = texture(InputVolume, cellSize * (p + vec3(sampleDelta,0,0))).r;
+	samples[1] = texture(InputVolume, cellSize * (p + vec3(-sampleDelta,0,0))).r;
+	samples[2] = texture(InputVolume, cellSize * (p + vec3(0,sampleDelta,0))).r;
+	samples[3] = texture(InputVolume, cellSize * (p + vec3(0,-sampleDelta,0))).r;
+	samples[4] = texture(InputVolume, cellSize * (p + vec3(0,0,sampleDelta))).r;
+	samples[5] = texture(InputVolume, cellSize * (p + vec3(0,0,-sampleDelta))).r;
+	vec3 normal;
+	normal.x = (samples[0] - samples[1]) / 2 / sampleDelta;
+	normal.y = (samples[2] - samples[3]) / 2 / sampleDelta;
+	normal.z = (samples[4] - samples[5]) / 2 / sampleDelta;
+	normal = normalize(normal);
+		
+	return normal;
+}
 
 void main() 
 {
@@ -73,6 +92,7 @@ void main()
 		outPosition = outPosition / intersectionCount;
 	}
 	
-	// write the position for this cell
+	// write the position + normal for this cell
+	imageStore(outNormals, p, vec4(SampleNormal(vec3(p),cellSize,1),1.0));		// todo
 	imageStore(outVertices, p, vec4(outPosition,1));
 }

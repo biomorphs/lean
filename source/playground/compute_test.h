@@ -43,10 +43,11 @@ private:
 	std::unique_ptr<Render::Mesh> m_mesh;
 	std::unique_ptr<Render::RenderBuffer> m_workingVertexBuffer;
 	std::unique_ptr<Render::FrameBuffer> m_debugFrameBuffer;
-	std::unique_ptr<Render::Texture> m_volumeTexture;
-	std::unique_ptr<Render::Texture> m_volumeTexture2;
+	std::unique_ptr<Render::Texture> m_volumeDataTexture;
+	std::unique_ptr<Render::Texture> m_vertexPositionTexture;
+	std::unique_ptr<Render::Texture> m_vertexNormalTexture;
 	std::unique_ptr<Render::RenderTargetBlitter> m_blitter;
-	glm::ivec3 m_dims = { 32,32,32 };
+	glm::ivec3 m_dims = { 64,64,64 };
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::RenderSystem* m_renderSys = nullptr;
 	GraphicsSystem* m_graphics = nullptr;
