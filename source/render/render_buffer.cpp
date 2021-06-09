@@ -45,7 +45,7 @@ namespace Render
 		}
 	}
 
-	bool RenderBuffer::Create(void* sourceData, size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping)
+	bool RenderBuffer::Create(void* sourceData, size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping, bool isReadable)
 	{
 		SDE_PROF_EVENT();
 		SDE_RENDER_ASSERT(bufferSize > 0, "Buffer size must be >0");
@@ -66,6 +66,10 @@ namespace Render
 				{
 					storageType |= GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 				}
+				if (isReadable)
+				{
+					storageType |= GL_MAP_READ_BIT;
+				}
 				glNamedBufferStorage(m_handle, bufferSize, sourceData, storageType);
 				SDE_RENDER_PROCESS_GL_ERRORS_RET("glNamedBufferStorage");
 			}
@@ -84,9 +88,43 @@ namespace Render
 		return true;
 	}
 
-	bool RenderBuffer::Create(size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping)
+	bool RenderBuffer::Create(size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping, bool isReadable)
 	{
-		return Create(nullptr, bufferSize, modification, usePersistentMapping);
+		return Create(nullptr, bufferSize, modification, usePersistentMapping, isReadable);
+	}
+
+	void* RenderBuffer::Map(uint32_t hint, size_t offset, size_t size)
+	{
+		SDE_PROF_EVENT();
+		if (m_persistentMappedBuffer)	// persistent buffers are always mapped
+		{
+			return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(m_persistentMappedBuffer) + offset);
+		}
+		else
+		{
+			GLuint mappingBits = 0;
+			if (hint & RenderBufferMapHint::Read)
+			{
+				mappingBits |= GL_MAP_READ_BIT;
+			}
+			if (hint & RenderBufferMapHint::Write)
+			{
+				mappingBits |= GL_MAP_WRITE_BIT;
+			}
+			void* buffer = glMapNamedBufferRange(m_handle, offset, size, mappingBits);
+			SDE_RENDER_PROCESS_GL_ERRORS_RET("glMapNamedBufferRange");
+			return buffer;
+		}
+	}
+
+	void RenderBuffer::Unmap()
+	{
+		assert(m_handle != 0);
+		if (!m_persistentMappedBuffer)
+		{
+			glUnmapNamedBuffer(m_handle);
+			SDE_RENDER_PROCESS_GL_ERRORS("glUnmapNamedBuffer");
+		}
 	}
 
 	void RenderBuffer::SetData(size_t offset, size_t size, void* srcData)

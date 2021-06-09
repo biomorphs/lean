@@ -38,6 +38,7 @@ public:
 	virtual void Shutdown();
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
 	Engine::ShaderManager& Shaders() { return *m_shaders; }
+	Engine::Renderer& Renderer() { return *m_renderer; }
 private:
 	void RegisterScripts();
 	void RegisterComponents();

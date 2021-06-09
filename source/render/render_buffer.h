@@ -10,6 +10,12 @@ namespace Render
 		Dynamic
 	};
 
+	enum RenderBufferMapHint : uint32_t
+	{
+		Write = 1,
+		Read = 2,
+	};
+
 	// This represents a single stream of rendering data
 	// It could be indices, vertices, whatever
 	class RenderBuffer
@@ -18,10 +24,12 @@ namespace Render
 		RenderBuffer();
 		~RenderBuffer();
 
-		bool Create(size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping=false);
-		bool Create(void* sourceData, size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping = false);
+		bool Create(size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping=false, bool isReadable=false);
+		bool Create(void* sourceData, size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping = false, bool isReadable = false);
 		bool Destroy();
 		void SetData(size_t offset, size_t size, void* srcData);
+		void* Map(uint32_t hint, size_t offset, size_t size);
+		void Unmap();
 
 		inline uint32_t GetHandle() const { return m_handle; }
 		inline size_t GetSize() const { return m_bufferSize; }

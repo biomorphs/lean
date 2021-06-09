@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/glm_headers.h"
+#include "render/fence.h"
 #include <stdint.h>
 
 namespace Render
@@ -37,6 +38,18 @@ namespace Render
 	enum class BarrierType
 	{
 		Image,
+		TextureFetch,
+		BufferData,
+		VertexData,
+		ShaderStorage,
+		All
+	};
+
+	enum class FenceResult
+	{
+		Signalled,
+		Timeout,
+		Error
 	};
 
 	// This represents the GL context for a window
@@ -45,6 +58,8 @@ namespace Render
 	public:
 		Device(Window& theWindow);
 		~Device();
+		Fence MakeFence();
+		FenceResult WaitOnFence(Fence& f, uint32_t timeoutNanoseconds);
 		void Present();
 		void* CreateSharedGLContext();
 		void* GetGLContext();
@@ -75,11 +90,12 @@ namespace Render
 		void BindShaderProgram(const ShaderProgram& program);
 		void BindVertexArray(const VertexArray& srcArray);
 		void BindInstanceBuffer(const VertexArray& srcArray, const RenderBuffer& buffer, int vertexLayoutSlot, int components, size_t offset = 0, size_t vectorCount=1);
+		void BindStorageBuffer(uint32_t ssboBindingIndex, const RenderBuffer& ssbo);	// like uniforms, but writeable!
 		void DrawPrimitives(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount);
 		void DrawPrimitivesInstanced(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance=0);
 		void BindUniformBufferIndex(ShaderProgram& p, const char* bufferName, uint32_t bindingIndex);
 		void SetUniforms(ShaderProgram& p, const RenderBuffer& ubo, uint32_t uboBindingIndex);
-		void SetStorageBuffer(ShaderProgram& p, const RenderBuffer& ssbo, uint32_t ssboBindingIndex);	// like uniforms, but writeable
+		
 	private:
 		uint32_t TranslatePrimitiveType(PrimitiveType type) const;
 

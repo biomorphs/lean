@@ -78,6 +78,7 @@ add_library(Render STATIC)
 set(RENDER_SOURCES
 	Source/render/camera.h
 	Source/render/camera.inl
+	Source/render/fence.h
 	Source/render/device.cpp
 	Source/render/device.h
 	Source/render/frame_buffer.cpp

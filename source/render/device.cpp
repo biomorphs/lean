@@ -49,6 +49,31 @@ namespace Render
 		m_context = nullptr;
 	}
 
+	FenceResult Device::WaitOnFence(Fence& f, uint32_t timeoutNanoseconds)
+	{
+		SDE_PROF_EVENT();
+
+		auto result = glClientWaitSync((GLsync)f.m_data, 0, timeoutNanoseconds);
+		SDE_RENDER_PROCESS_GL_ERRORS("glClientWaitSync");
+		switch (result)
+		{
+		case GL_CONDITION_SATISFIED:
+		case GL_ALREADY_SIGNALED:
+			return FenceResult::Signalled;
+		case GL_TIMEOUT_EXPIRED:
+			return FenceResult::Timeout;
+		default:
+			return FenceResult::Error;
+		}
+	}
+
+	Fence Device::MakeFence()
+	{
+		auto result = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		SDE_RENDER_PROCESS_GL_ERRORS("glFenceSync");
+		return Fence(result);
+	}
+
 	void Device::MemoryBarrier(BarrierType m)
 	{
 		uint32_t barrierMode = 0;
@@ -56,6 +81,21 @@ namespace Render
 		{
 		case BarrierType::Image:
 			barrierMode = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+			break;
+		case BarrierType::TextureFetch:
+			barrierMode = GL_TEXTURE_FETCH_BARRIER_BIT;
+			break;
+		case BarrierType::BufferData:
+			barrierMode = GL_BUFFER_UPDATE_BARRIER_BIT;
+			break;
+		case BarrierType::VertexData:
+			barrierMode = GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
+			break;
+		case BarrierType::ShaderStorage:
+			barrierMode = GL_SHADER_STORAGE_BARRIER_BIT;
+			break;
+		case BarrierType::All:
+			barrierMode = GL_ALL_BARRIER_BITS;
 			break;
 		default:
 			assert(!"Whut");
@@ -419,7 +459,7 @@ namespace Render
 		SDE_RENDER_PROCESS_GL_ERRORS("glDrawArrays");
 	}
 
-	void Device::SetStorageBuffer(ShaderProgram& p, const RenderBuffer& ssbo, uint32_t ssboBindingIndex)
+	void Device::BindStorageBuffer(uint32_t ssboBindingIndex, const RenderBuffer& ssbo)
 	{
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssboBindingIndex, ssbo.GetHandle());
 		SDE_RENDER_PROCESS_GL_ERRORS("glBindBufferBase");
