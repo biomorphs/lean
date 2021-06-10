@@ -1,5 +1,8 @@
 #version 430
 
+// TODO
+// INPUT OFFSET/SCALE FOR SAMPLING POSITION IN WORLD SPACE
+
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image3D outVertices;
 layout(rgba32f, binding = 1) uniform image3D outNormals;
@@ -93,6 +96,6 @@ void main()
 	}
 	
 	// write the position + normal for this cell
-	imageStore(outNormals, p, vec4(SampleNormal(vec3(p),cellSize,1),1.0));		// todo
+	imageStore(outNormals, p, vec4(SampleNormal(outPosition,cellSize,1),1));		// todo
 	imageStore(outVertices, p, vec4(outPosition,1));
 }

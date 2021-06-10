@@ -189,8 +189,8 @@ set(ENGINE_SOURCES
 	Source/engine/renderer.cpp
 	Source/engine/light.h
 	Source/engine/mesh_instance.h
-	Source/engine/material_helpers.cpp
 	Source/engine/material_helpers.h
+	Source/engine/material_helpers.cpp
 	Source/engine/debug_render.cpp
 	Source/engine/debug_render.h
 	Source/engine/serialisation.inl
@@ -202,10 +202,14 @@ set(ENGINE_SOURCES
 	Source/engine/sdf_mesh_builder.cpp
 	Source/engine/sdf.h
 	Source/engine/sdf.cpp
+	Source/engine/sdf_mesh_system.h
+	Source/engine/sdf_mesh_system.cpp
 	Source/engine/graphics_system.h
 	Source/engine/graphics_system.cpp
 	Source/engine/components/component_camera.h
 	Source/engine/components/component_camera.cpp
+	Source/engine/components/component_sdf_mesh.h
+	Source/engine/components/component_sdf_mesh.cpp
 	Source/engine/components/component_sdf_model.h
 	Source/engine/components/component_sdf_model.cpp
 	Source/engine/components/component_model.h

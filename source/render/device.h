@@ -59,7 +59,8 @@ namespace Render
 		Device(Window& theWindow);
 		~Device();
 		Fence MakeFence();
-		FenceResult WaitOnFence(Fence& f, uint32_t timeoutNanoseconds);
+		void DestroyFence(Fence& f);
+		FenceResult WaitOnFence(Fence& f, uint32_t timeoutNanoseconds);		// destroys the fence on completion
 		void Present();
 		void* CreateSharedGLContext();
 		void* GetGLContext();

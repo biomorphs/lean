@@ -149,6 +149,9 @@ void GraphicsSystem::RegisterScripts()
 	graphics["LoadShader"] = [this](const char* name, const char* vsPath, const char* fsPath) -> Engine::ShaderHandle {
 		return m_shaders->LoadShader(name, vsPath, fsPath);
 	};
+	graphics["LoadComputeShader"] = [this](const char* name, const char* csPath) -> Engine::ShaderHandle {
+		return m_shaders->LoadComputeShader(name, csPath);
+	};
 	graphics["SetShadowShader"] = [this](Engine::ShaderHandle lightingShander, Engine::ShaderHandle shadowShader) {
 		m_shaders->SetShadowsShader(lightingShander, shadowShader);
 	};

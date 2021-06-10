@@ -6,12 +6,12 @@
 
 namespace Engine
 {
-	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& material, TextureManager& tm, const DefaultTextures& defaults, uint32_t textureUnit)
+	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, TextureManager& tm, DefaultTextures* defaults, uint32_t textureUnit)
 	{
-		const auto& uniforms = material.GetUniforms();
+		const auto& uniforms = m.GetUniforms();
 		uniforms.Apply(d, shader);
 
-		const auto& samplers = material.GetSamplers();
+		const auto& samplers = m.GetSamplers();
 		for (const auto& s : samplers)
 		{
 			uint32_t uniformHandle = shader.GetUniformHandle(s.second.m_name.c_str());
@@ -23,11 +23,11 @@ namespace Engine
 				{
 					d.SetSampler(uniformHandle, theTexture->GetHandle(), textureUnit++);
 				}
-				else
+				else if(defaults)
 				{
 					// set default if one exists
-					auto foundDefault = defaults.find(s.second.m_name.c_str());
-					if (foundDefault != defaults.end())
+					auto foundDefault = defaults->find(s.second.m_name.c_str());
+					if (foundDefault != defaults->end())
 					{
 						const auto defaultTexture = tm.GetTexture({ foundDefault->second });
 						if (defaultTexture != nullptr)

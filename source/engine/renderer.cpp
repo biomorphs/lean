@@ -436,12 +436,12 @@ namespace Engine
 
 				// apply mesh material uniforms and samplers
 				uint32_t textureUnit = firstTextureUnit;
-				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, g_defaultTextures, textureUnit);
+				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, &g_defaultTextures, textureUnit);
 
 				// apply instance material uniforms and samplers (materials can be shared across instances!)
 				if (instanceMaterial != nullptr)
 				{
-					ApplyMaterial(d, *theShader, *instanceMaterial, *m_textures, g_defaultTextures, textureUnit);
+					ApplyMaterial(d, *theShader, *instanceMaterial, *m_textures, &g_defaultTextures, textureUnit);
 				}
 
 				// bind vertex array + instancing streams immediately after mesh vertex streams

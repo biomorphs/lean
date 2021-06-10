@@ -49,12 +49,30 @@ namespace Render
 		m_context = nullptr;
 	}
 
+	void Device::DestroyFence(Fence& f)
+	{
+		SDE_PROF_EVENT();
+
+		if (f.m_data)
+		{
+			glDeleteSync((GLsync)f.m_data);
+			SDE_RENDER_PROCESS_GL_ERRORS("glDeleteSync");
+			f.m_data = nullptr;
+		}
+	}
+
 	FenceResult Device::WaitOnFence(Fence& f, uint32_t timeoutNanoseconds)
 	{
 		SDE_PROF_EVENT();
 
 		auto result = glClientWaitSync((GLsync)f.m_data, 0, timeoutNanoseconds);
 		SDE_RENDER_PROCESS_GL_ERRORS("glClientWaitSync");
+
+		if (result != GL_TIMEOUT_EXPIRED)
+		{
+			DestroyFence(f);
+		}
+
 		switch (result)
 		{
 		case GL_CONDITION_SATISFIED:

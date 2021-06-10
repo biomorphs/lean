@@ -9,7 +9,7 @@ void CreateSystems(Engine::SystemRegister& r)
 {
 	r.Register("Playground", new Playground());
 	r.Register("Creatures", new CreatureSystem());
-	r.Register("ComputeTest", new ComputeTest());
+	//r.Register("ComputeTest", new ComputeTest());
 }
 
 int main(int argc, char** args)
