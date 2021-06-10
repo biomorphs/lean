@@ -35,10 +35,11 @@ public:
 
 private:
 	size_t GetWorkingDataSize() const;
-	void FindTriangles(Render::ShaderProgram& shader, glm::ivec3 dims);
-	void FindVertices(Render::ShaderProgram& shader, glm::ivec3 dims);
-	void PopulateSDF(Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat);
+	void FindTriangles(Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize);
+	void FindVertices(Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize);
+	void PopulateSDF(Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat, glm::vec3 offset, glm::vec3 cellSize);
 	void KickoffRemesh(class SDFMesh& mesh, EntityHandle handle);
+	void PushSharedUniforms(Render::ShaderProgram& shader, glm::vec3 offset, glm::vec3 cellSize);
 	void BuildMesh();
 	EntityHandle m_remeshEntity;
 	const uint32_t c_maxBlockDimensions = 128;

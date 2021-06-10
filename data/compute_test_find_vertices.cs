@@ -6,18 +6,21 @@
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image3D outVertices;
 layout(rgba32f, binding = 1) uniform image3D outNormals;
-
 uniform sampler3D InputVolume;
 
-vec3 SampleNormal(vec3 p, vec3 cellSize, float sampleDelta)
+uniform vec4 WorldOffset;
+uniform vec4 CellSize;
+
+vec3 SampleNormal(vec3 p, vec3 uvScale, float sampleDelta)
 {
 	float samples[6];
-	samples[0] = texture(InputVolume, cellSize * (p + vec3(sampleDelta,0,0))).r;
-	samples[1] = texture(InputVolume, cellSize * (p + vec3(-sampleDelta,0,0))).r;
-	samples[2] = texture(InputVolume, cellSize * (p + vec3(0,sampleDelta,0))).r;
-	samples[3] = texture(InputVolume, cellSize * (p + vec3(0,-sampleDelta,0))).r;
-	samples[4] = texture(InputVolume, cellSize * (p + vec3(0,0,sampleDelta))).r;
-	samples[5] = texture(InputVolume, cellSize * (p + vec3(0,0,-sampleDelta))).r;
+	p = (p - WorldOffset.xyz) / CellSize.xyz;
+	samples[0] = texture(InputVolume, uvScale * (p + vec3(sampleDelta,0,0))).r;
+	samples[1] = texture(InputVolume, uvScale * (p + vec3(-sampleDelta,0,0))).r;
+	samples[2] = texture(InputVolume, uvScale * (p + vec3(0,sampleDelta,0))).r;
+	samples[3] = texture(InputVolume, uvScale * (p + vec3(0,-sampleDelta,0))).r;
+	samples[4] = texture(InputVolume, uvScale * (p + vec3(0,0,sampleDelta))).r;
+	samples[5] = texture(InputVolume, uvScale * (p + vec3(0,0,-sampleDelta))).r;
 	vec3 normal;
 	normal.x = (samples[0] - samples[1]) / 2 / sampleDelta;
 	normal.y = (samples[2] - samples[3]) / 2 / sampleDelta;
@@ -33,21 +36,22 @@ void main()
 	ivec3 p = ivec3(gl_GlobalInvocationID.xyz);
 	
 	ivec3 volSize = textureSize(InputVolume, 0);
-	vec3 cellSize = vec3(1.0f,1.0f,1.0f) / vec3(volSize);
+	vec3 uvScale = vec3(1.0f,1.0f,1.0f) / vec3(volSize);
 
 	// sample all corners of the cell
 	float c[2][2][2];
-	c[0][0][0] = texture(InputVolume, cellSize * (p + ivec3(0,0,0))).r;
-	c[1][0][0] = texture(InputVolume, cellSize * (p + ivec3(1,0,0))).r;
-	c[0][1][0] = texture(InputVolume, cellSize * (p + ivec3(0,1,0))).r;
-	c[1][1][0] = texture(InputVolume, cellSize * (p + ivec3(1,1,0))).r;
-	c[0][0][1] = texture(InputVolume, cellSize * (p + ivec3(0,0,1))).r;
-	c[1][0][1] = texture(InputVolume, cellSize * (p + ivec3(1,0,1))).r;
-	c[0][1][1] = texture(InputVolume, cellSize * (p + ivec3(0,1,1))).r;
-	c[1][1][1] = texture(InputVolume, cellSize * (p + ivec3(1,1,1))).r;
+	c[0][0][0] = texture(InputVolume, uvScale * (p + ivec3(0,0,0))).r;
+	c[1][0][0] = texture(InputVolume, uvScale * (p + ivec3(1,0,0))).r;
+	c[0][1][0] = texture(InputVolume, uvScale * (p + ivec3(0,1,0))).r;
+	c[1][1][0] = texture(InputVolume, uvScale * (p + ivec3(1,1,0))).r;
+	c[0][0][1] = texture(InputVolume, uvScale * (p + ivec3(0,0,1))).r;
+	c[1][0][1] = texture(InputVolume, uvScale * (p + ivec3(1,0,1))).r;
+	c[0][1][1] = texture(InputVolume, uvScale * (p + ivec3(0,1,1))).r;
+	c[1][1][1] = texture(InputVolume, uvScale * (p + ivec3(1,1,1))).r;
 
 	// go through edges of the cell, if any contain sign changes on vertices, ...
 	// then we calculate a vertex on the zero point
+	vec3 worldPos = WorldOffset.xyz + CellSize.xyz * vec3(p);
 	vec3 intersections[16];
 	int intersectionCount = 0;
 	for (int crnX = 0; crnX < 2; ++crnX)
@@ -57,7 +61,9 @@ void main()
 			if ((c[crnX][crnY][0] > 0.0) != (c[crnX][crnY][1] > 0.0))
 			{
 				float zero = (0.0 - c[crnX][crnY][0]) / (c[crnX][crnY][1] - c[crnX][crnY][0]);
-				intersections[intersectionCount++] = vec3(p.x + crnX, p.y + crnY, p.z + zero);
+				intersections[intersectionCount++] = vec3(worldPos.x + crnX * CellSize.x, 
+														  worldPos.y + crnY * CellSize.y, 
+														  worldPos.z + zero * CellSize.z);
 			}
 		}
 	}
@@ -68,7 +74,9 @@ void main()
 			if ((c[crnX][0][crnZ] > 0.0f) != (c[crnX][1][crnZ] > 0.0f))
 			{
 				float zero = (0.0f - c[crnX][0][crnZ]) / (c[crnX][1][crnZ] - c[crnX][0][crnZ]);
-				intersections[intersectionCount++] = vec3( p.x + crnX, p.y + zero, p.z + crnZ );
+				intersections[intersectionCount++] = vec3( worldPos.x + crnX * CellSize.x, 
+															worldPos.y + zero * CellSize.y, 
+															worldPos.z + crnZ * CellSize.z);
 			}
 		}
 	}
@@ -79,7 +87,9 @@ void main()
 			if ((c[0][crnY][crnZ] > 0.0f) != (c[1][crnY][crnZ] > 0.0f))
 			{
 				float zero = (0.0f - c[0][crnY][crnZ]) / (c[1][crnY][crnZ] - c[0][crnY][crnZ]);
-				intersections[intersectionCount++] = vec3( p.x + zero, p.y + crnY, p.z + crnZ );
+				intersections[intersectionCount++] = vec3( worldPos.x + zero * CellSize.x, 
+															worldPos.y + crnY * CellSize.y, 
+															worldPos.z + crnZ * CellSize.z);
 			}
 		}
 	}
@@ -96,6 +106,6 @@ void main()
 	}
 	
 	// write the position + normal for this cell
-	imageStore(outNormals, p, vec4(SampleNormal(outPosition,cellSize,1),1));		// todo
+	imageStore(outNormals, p, vec4(SampleNormal(outPosition,uvScale,1),1));		// todo
 	imageStore(outVertices, p, vec4(outPosition,1));
 }

@@ -85,19 +85,33 @@ bool SDFMeshSystem::PostInit()
 	return true;
 }
 
-void SDFMeshSystem::PopulateSDF(Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat)
+void SDFMeshSystem::PushSharedUniforms(Render::ShaderProgram& shader, glm::vec3 offset, glm::vec3 cellSize)
+{
+	auto device = m_renderSys->GetDevice();
+	auto handle = shader.GetUniformHandle("WorldOffset");
+	if(handle != -1)
+	{
+		device->SetUniformValue(handle, glm::vec4(offset,0.0f));
+	}
+	handle = shader.GetUniformHandle("CellSize");
+	if (handle != -1)
+	{
+		device->SetUniformValue(handle, glm::vec4(cellSize, 0.0f));
+	}
+}
+
+void SDFMeshSystem::PopulateSDF(Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat, glm::vec3 offset, glm::vec3 cellSize)
 {
 	// fill in volume data via compute
 	auto device = m_renderSys->GetDevice();
 	device->BindShaderProgram(shader);
 	device->BindComputeImage(0, m_volumeDataTexture->GetHandle(), Render::ComputeImageFormat::RF16, Render::ComputeImageAccess::WriteOnly, true);
 
-	// if we have a custom material, send the params to the sdf compute
+	// if we have a custom material, send the params!
 	if (mat)
 	{
 		const auto& uniforms = mat->GetUniforms();
 		uniforms.Apply(*device, shader);
-
 		const auto& samplers = mat->GetSamplers();
 		int textureUnit = 0;
 		for (const auto& s : samplers)
@@ -113,13 +127,12 @@ void SDFMeshSystem::PopulateSDF(Render::ShaderProgram& shader, glm::ivec3 dims, 
 				}
 			}
 		}
-		Engine::ApplyMaterial(*device, shader, *mat, m_graphics->Textures(), nullptr, 0);
 	}
-
+	PushSharedUniforms(shader, offset, cellSize);	// set after so the material can't screw it up!
 	device->DispatchCompute(dims.x, dims.y, dims.z);
 }
 
-void SDFMeshSystem::FindVertices(Render::ShaderProgram& shader, glm::ivec3 dims)
+void SDFMeshSystem::FindVertices(Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize)
 {
 	// find vertex positions + normals for each cell containing an edge with a zero point
 
@@ -133,12 +146,13 @@ void SDFMeshSystem::FindVertices(Render::ShaderProgram& shader, glm::ivec3 dims)
 	{
 		device->SetSampler(sampler, m_volumeDataTexture->GetHandle(), 0);
 	}
+	PushSharedUniforms(shader, offset, cellSize);
 	device->BindComputeImage(0, m_vertexPositionTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
 	device->BindComputeImage(1, m_vertexNormalTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
 	device->DispatchCompute(dims.x - 1, dims.y - 1, dims.z - 1);
 }
 
-void SDFMeshSystem::FindTriangles(Render::ShaderProgram& shader, glm::ivec3 dims)
+void SDFMeshSystem::FindTriangles(Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize)
 {
 	// build triangles from the vertices we found earlier
 
@@ -156,6 +170,7 @@ void SDFMeshSystem::FindTriangles(Render::ShaderProgram& shader, glm::ivec3 dims
 	{
 		device->SetSampler(sampler, m_volumeDataTexture->GetHandle(), 0);
 	}
+	PushSharedUniforms(shader, offset, cellSize);
 	device->BindComputeImage(0, m_vertexPositionTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::ReadOnly, true);
 	device->BindComputeImage(1, m_vertexNormalTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::ReadOnly, true);
 	device->BindStorageBuffer(0, *m_workingVertexBuffer);
@@ -182,9 +197,11 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 			}
 		}
 
-		PopulateSDF(*sdfShader, mesh.GetResolution(), instanceMaterial);
-		FindVertices(*findVerticesShader, mesh.GetResolution());
-		FindTriangles(*makeTrianglesShader, mesh.GetResolution());
+		const glm::vec3 worldOffset = mesh.GetBoundsMin();
+		const glm::vec3 cellSize = (mesh.GetBoundsMax() - mesh.GetBoundsMin()) / glm::vec3(mesh.GetResolution());
+		PopulateSDF(*sdfShader, mesh.GetResolution(), instanceMaterial, worldOffset, cellSize);
+		FindVertices(*findVerticesShader, mesh.GetResolution(), worldOffset, cellSize);
+		FindTriangles(*makeTrianglesShader, mesh.GetResolution(), worldOffset, cellSize);
 		m_remeshEntity = handle;
 		mesh.SetRemesh(false);
 	}
