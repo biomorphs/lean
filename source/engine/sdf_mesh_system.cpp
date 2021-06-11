@@ -184,10 +184,10 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 			}
 		}
 
-		// since vertices on the edges will not touch the actual bounds most of the time,
+		// vertices at the edges will get sampling artifacts due to filtering
 		// we add extra samples to ensure meshes can have seamless edges
-		// +1 extra edge since we can't write tris for the max bounds
-		const uint32_t extraLayers = 1;
+		// +1 since we can only output triangles for dims-1
+		const uint32_t extraLayers = 2;
 		auto dims = mesh.GetResolution() + glm::ivec3(1 + extraLayers * 2);
 		const glm::vec3 cellSize = (mesh.GetBoundsMax() - mesh.GetBoundsMin()) / glm::vec3(mesh.GetResolution());
 		const glm::vec3 worldOffset = mesh.GetBoundsMin() -(cellSize * float(extraLayers));

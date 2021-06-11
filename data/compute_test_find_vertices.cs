@@ -96,6 +96,7 @@ void main()
 	}
 	
 	// Now we can get a vertex position by averaging all found intersection points
+	// Do the same for normals too!
 	vec3 outPosition = vec3(0,0,0);
 	vec3 outNormal = vec3(0,0,0);
 	for(int i=0;i<intersectionCount;++i)
@@ -108,9 +109,6 @@ void main()
 		outPosition = outPosition / intersectionCount;
 		outNormal = normalize(outNormal / intersectionCount);
 	}
-	
-	// todo?
-	//imageStore(outNormals, p, vec4(SampleNormal(outPosition,uvScale,NormalSampleBias),1));
 	
 	// write the position + normal for this cell
 	imageStore(outNormals, p, vec4(outNormal,1));	// average of surrounding vertices
