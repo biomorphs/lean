@@ -40,6 +40,7 @@ public:
 	Engine::ShaderManager& Shaders() { return *m_shaders; }
 	Engine::TextureManager& Textures() { return *m_textures; }
 	Engine::Renderer& Renderer() { return *m_renderer; }
+	bool ShouldDrawBounds() const { return m_showBounds; }
 private:
 	void RegisterScripts();
 	void RegisterComponents();

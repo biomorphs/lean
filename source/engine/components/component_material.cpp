@@ -69,12 +69,12 @@ COMPONENT_INSPECTOR_IMPL(Material, Engine::DebugGuiSystem& gui, Engine::TextureM
 		for (auto& v : uniforms.FloatValues())
 		{
 			sprintf_s(text, "%s", v.second.m_name.c_str());
-			v.second.m_value = gui.DragFloat(text, v.second.m_value, 0.05f);
+			v.second.m_value = gui.DragFloat(text, v.second.m_value, 0.01f);
 		}
 		for (auto& v : uniforms.Vec4Values())
 		{
 			sprintf_s(text, "%s", v.second.m_name.c_str());
-			v.second.m_value = gui.DragVector(text, v.second.m_value, 0.05f);
+			v.second.m_value = gui.DragVector(text, v.second.m_value, 0.01f);
 		}
 		for (auto& v : uniforms.IntValues())
 		{

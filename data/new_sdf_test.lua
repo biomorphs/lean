@@ -9,13 +9,14 @@ local SDFShader = Graphics.LoadComputeShader("SDF Volume Test",  "compute_test_w
 local sdfEntities = {}
 local blockSize = {64,64,64}	-- dimensions in meters
 local res = {32,32,32}		-- grid resolution
-local blockCounts = {4,1,4}	-- blocks in the scene
+local blockCounts = {2,1,2}	-- blocks in the scene
 local sharedMaterial = {}
 
 function MakeSDFMaterial()
 	local e = World.AddEntity()
 	local m = World.AddComponent_Material(e)
 	m:SetFloat("Time",0)
+	m:SetFloat("NormalSampleBias",1.5)
 	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("sand.jpg"))
 	sharedMaterial = e
 end
@@ -36,11 +37,10 @@ function MakeSunEntity()
 	light:SetShadowBias(2)
 end
 
-function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)
+function MakeSDFEntity(pos,bmin,bmax,res)
 	sdf_entity = World.AddEntity()
 	local transform = World.AddComponent_Transform(sdf_entity)
 	transform:SetPosition(pos[1],pos[2],pos[3])
-	transform:SetScale(scale[1],scale[2],scale[3])
 	local sdfModel = World.AddComponent_SDFMesh(sdf_entity)
 	sdfModel:SetBoundsMin(bmin[1],bmin[2],bmin[3])
 	sdfModel:SetBoundsMax(bmax[1],bmax[2],bmax[3])
@@ -57,17 +57,15 @@ function SDFTest.Init()
 	MakeSunEntity()
 	MakeSDFMaterial()
 	
-	local cellDims = {blockSize[1] / res[1],blockSize[2] / res[2],blockSize[3] / res[3]}
-	local overlap = {cellDims[1]*2.5,cellDims[2]*2.5,cellDims[3]*2.5}
-	local offset = {-blockCounts[1]*(blockSize[1]-cellDims[1]*2)*0.5,-1,-blockCounts[3]*(blockSize[3]-cellDims[3]*2)*0.5}
-	for x=0, blockCounts[1]-1 do 
-		for z=0, blockCounts[3]-1 do 
-	 		for y=0, blockCounts[2]-1 do 
-				local p = {(x*blockSize[1]) - (x*overlap[1]) + offset[1],y*blockSize[2] - (y*overlap[2]) + offset[2],z*blockSize[3] - (z*overlap[3]) + offset[3]}
-				MakeSDFEntity({0,0,0},{1,1,1},p,{p[1]+blockSize[1],p[2]+blockSize[2],p[3]+blockSize[3]},res,TestSampleFn)
+	for x=0, blockCounts[1] do
+		for y=0, blockCounts[2] do
+			for z=0, blockCounts[3] do
+				local p = {x * blockSize[1],y * blockSize[2],z * blockSize[3]}
+				MakeSDFEntity({0,0,0},p,{p[1]+blockSize[1],p[2]+blockSize[2],p[3]+blockSize[3]},res)
 			end
 		end
 	end
+	
 end
 
 local lastRemeshed = 1
@@ -82,7 +80,7 @@ function SDFTest.Tick(deltaTime)
 		end
 		
 		local model = World.GetComponent_SDFMesh(sdfEntities[lastRemeshed])
-		model:Remesh()
+		--model:Remesh()
 		
 		lastRemeshed = lastRemeshed + 1
 	end

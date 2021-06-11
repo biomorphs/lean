@@ -4,6 +4,7 @@
 #include "engine/components/component_transform.h"
 #include "engine/components/component_material.h"
 #include "engine/system_manager.h"
+#include "engine/debug_render.h"
 #include "entity/entity_system.h"
 #include "engine/debug_gui_system.h"
 #include "engine/render_system.h"
@@ -16,6 +17,12 @@
 #include "render/device.h"
 #include "render/render_buffer.h"
 #include "render/mesh.h"
+
+struct VertexOutputHeader
+{
+	uint32_t m_dimensions[3] = { 0 };
+	uint32_t m_vertexCount = 0;
+};
 
 SDFMeshSystem::SDFMeshSystem()
 {
@@ -104,27 +111,9 @@ void SDFMeshSystem::PopulateSDF(Render::ShaderProgram& shader, glm::ivec3 dims, 
 	auto device = m_renderSys->GetDevice();
 	device->BindShaderProgram(shader);
 	device->BindComputeImage(0, m_volumeDataTexture->GetHandle(), Render::ComputeImageFormat::RF16, Render::ComputeImageAccess::WriteOnly, true);
-
-	// if we have a custom material, send the params!
-	if (mat)
+	if (mat)	// if we have a custom material, send the params!
 	{
-		const auto& uniforms = mat->GetUniforms();
-		uniforms.Apply(*device, shader);
-		const auto& samplers = mat->GetSamplers();
-		int textureUnit = 0;
-		for (const auto& s : samplers)
-		{
-			uint32_t uniformHandle = shader.GetUniformHandle(s.second.m_name.c_str());
-			if (uniformHandle != -1)
-			{
-				Engine::TextureHandle texHandle = { s.second.m_handle };
-				const auto theTexture = m_graphics->Textures().GetTexture({ texHandle });
-				if (theTexture)
-				{
-					device->SetSampler(uniformHandle, theTexture->GetHandle(), textureUnit++);
-				}
-			}
-		}
+		Engine::ApplyMaterial(*device, shader, *mat, m_graphics->Textures());
 	}
 	PushSharedUniforms(shader, offset, cellSize);	// set after so the material can't screw it up!
 	device->DispatchCompute(dims.x, dims.y, dims.z);
@@ -155,8 +144,8 @@ void SDFMeshSystem::FindTriangles(Render::ShaderProgram& shader, glm::ivec3 dims
 	// build triangles from the vertices we found earlier
 
 	// clear out the old header data
-	uint32_t newCount = 0;
-	m_workingVertexBuffer->SetData(0, sizeof(uint32_t), &newCount);
+	VertexOutputHeader newHeader = { {(uint32_t)dims.x,(uint32_t)dims.y,(uint32_t)dims.z}, 0 };
+	m_workingVertexBuffer->SetData(0, sizeof(newHeader), &newHeader);
 
 	// ensure data is visible before image loads
 	auto device = m_renderSys->GetDevice();
@@ -195,11 +184,17 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 			}
 		}
 
-		const glm::vec3 worldOffset = mesh.GetBoundsMin();
+		// since vertices on the edges will not touch the actual bounds most of the time,
+		// we add extra samples to ensure meshes can have seamless edges
+		// +1 extra edge since we can't write tris for the max bounds
+		const uint32_t extraLayers = 1;
+		auto dims = mesh.GetResolution() + glm::ivec3(1 + extraLayers * 2);
 		const glm::vec3 cellSize = (mesh.GetBoundsMax() - mesh.GetBoundsMin()) / glm::vec3(mesh.GetResolution());
-		PopulateSDF(*sdfShader, mesh.GetResolution(), instanceMaterial, worldOffset, cellSize);
-		FindVertices(*findVerticesShader, mesh.GetResolution(), worldOffset, cellSize);
-		FindTriangles(*makeTrianglesShader, mesh.GetResolution(), worldOffset, cellSize);
+		const glm::vec3 worldOffset = mesh.GetBoundsMin() -(cellSize * float(extraLayers));
+
+		PopulateSDF(*sdfShader, dims, instanceMaterial, worldOffset, cellSize);
+		FindVertices(*findVerticesShader, dims, worldOffset, cellSize);
+		FindTriangles(*makeTrianglesShader, dims, worldOffset, cellSize);
 		m_remeshEntity = handle;
 		mesh.SetRemesh(false);
 	}
@@ -218,11 +213,11 @@ void SDFMeshSystem::BuildMesh()
 
 		// for now copy the data to the new mesh via cpu
 		// eventually we should use probably buffersubdata() and only read the headers
-		uint32_t vertexCount = 0;
 		void* ptr = m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, GetWorkingDataSize());
 		if (ptr)
 		{
-			vertexCount = *(uint32_t*)ptr / 2;
+			VertexOutputHeader* header = (VertexOutputHeader*)ptr;
+			auto vertexCount = header->m_vertexCount / 2;	// todo
 			if (vertexCount > 0)
 			{
 				float* vbase = reinterpret_cast<float*>(((uint32_t*)ptr) + 4);
@@ -282,6 +277,12 @@ bool SDFMeshSystem::Tick(float timeDelta)
 				}
 			}
 			m_graphics->Renderer().SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetRenderShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
+
+			if (m_graphics->ShouldDrawBounds())
+			{
+				auto colour = glm::vec4(1, 1, 1, 1);
+				m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
+			}
 		}
 	});
 

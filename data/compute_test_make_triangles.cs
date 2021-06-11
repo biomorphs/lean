@@ -6,8 +6,8 @@ layout(rgba32f, binding = 0) uniform image3D InputVertices;
 layout(rgba32f, binding = 1) uniform image3D InputNormals;
 layout(std430, binding = 0) buffer OutputVertices
 {
+	uint m_dimensions[3];
 	uint m_count;
-	uint m_padding[3];
 	vec4 m_vertices[];		// pos, normal
 };
 
@@ -29,12 +29,13 @@ void main()
 {
 	// get index in global work group i.e x,y position
 	ivec3 p = ivec3(gl_GlobalInvocationID.xyz);
+	if(p.x < 1 || p.y < 1 || p.z < 1)
+	{
+	//	return;
+	}
 	
 	ivec3 volSize = textureSize(InputVolume, 0);
 	vec3 cellSize = vec3(1.0f,1.0f,1.0f) / vec3(volSize);
-	
-	if(p.x == 0 || p.y == 0 || p.z == 0)
-		return;
 	
 	// for any edge that has a sign change, find vertices from the surrounding cells and connect them as a quad
 	if (p.x > 0 && p.y > 0)
