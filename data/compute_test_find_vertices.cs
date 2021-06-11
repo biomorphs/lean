@@ -10,6 +10,7 @@ uniform sampler3D InputVolume;
 
 uniform vec4 WorldOffset;
 uniform vec4 CellSize;
+uniform float NormalSampleBias = 1.0;
 
 vec3 SampleNormal(vec3 p, vec3 uvScale, float sampleDelta)
 {
@@ -96,16 +97,22 @@ void main()
 	
 	// Now we can get a vertex position by averaging all found intersection points
 	vec3 outPosition = vec3(0,0,0);
+	vec3 outNormal = vec3(0,0,0);
 	for(int i=0;i<intersectionCount;++i)
 	{
 		outPosition = outPosition + intersections[i];
+		outNormal = outNormal + SampleNormal(intersections[i],uvScale,NormalSampleBias);
 	}
 	if(intersectionCount > 0)
 	{
 		outPosition = outPosition / intersectionCount;
+		outNormal = normalize(outNormal / intersectionCount);
 	}
 	
+	// todo?
+	//imageStore(outNormals, p, vec4(SampleNormal(outPosition,uvScale,NormalSampleBias),1));
+	
 	// write the position + normal for this cell
-	imageStore(outNormals, p, vec4(SampleNormal(outPosition,uvScale,1),1));		// todo
+	imageStore(outNormals, p, vec4(outNormal,1));	// average of surrounding vertices
 	imageStore(outVertices, p, vec4(outPosition,1));
 }

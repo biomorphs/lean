@@ -8,32 +8,32 @@ local SDFShader = Graphics.LoadComputeShader("SDF Volume Test",  "compute_test_w
 
 local sdfEntities = {}
 local blockSize = {64,64,64}	-- dimensions in meters
-local res = {64,64,64}		-- grid resolution
-local blockCounts = {32,1,32}	-- blocks in the scene
+local res = {32,32,32}		-- grid resolution
+local blockCounts = {4,1,4}	-- blocks in the scene
 local sharedMaterial = {}
 
 function MakeSDFMaterial()
 	local e = World.AddEntity()
 	local m = World.AddComponent_Material(e)
 	m:SetFloat("Time",0)
-	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("white.bmp"))
+	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("sand.jpg"))
 	sharedMaterial = e
 end
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(-40.75,125.5,60)
+	transform:SetPosition(-40.75,160.5,60)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetPointLight();
 	light:SetColour(0.917,0.788,0.607)
 	light:SetAmbient(0.3)
 	light:SetAttenuation(3)
 	light:SetBrightness(0.85)
-	light:SetDistance(500)
+	light:SetDistance(900)
 	light:SetCastsShadows(true)
 	light:SetShadowmapSize(2048,2048)
-	light:SetShadowBias(0.5)
+	light:SetShadowBias(2)
 end
 
 function MakeSDFEntity(pos,scale,bmin,bmax,res,fn)

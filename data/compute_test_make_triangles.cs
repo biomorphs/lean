@@ -6,14 +6,15 @@ layout(rgba32f, binding = 0) uniform image3D InputVertices;
 layout(rgba32f, binding = 1) uniform image3D InputNormals;
 layout(std430, binding = 0) buffer OutputVertices
 {
-	uint m_countAndPadding[4];
+	uint m_count;
+	uint m_padding[3];
 	vec4 m_vertices[];		// pos, normal
 };
 
 
 void OutputQuad(vec3 v0,vec3 v1,vec3 v2,vec3 v3,vec3 n0,vec3 n1,vec3 n2,vec3 n3)
 {
-	uint startIndex = atomicAdd(m_countAndPadding[0],12);
+	uint startIndex = atomicAdd(m_count,12);
 	
 	m_vertices[startIndex] =   vec4(v0, 1.0);	m_vertices[startIndex+1] = vec4(n0, 1.0);
 	m_vertices[startIndex+2] = vec4(v1, 1.0);	m_vertices[startIndex+3] = vec4(n1, 1.0);
@@ -31,6 +32,9 @@ void main()
 	
 	ivec3 volSize = textureSize(InputVolume, 0);
 	vec3 cellSize = vec3(1.0f,1.0f,1.0f) / vec3(volSize);
+	
+	if(p.x == 0 || p.y == 0 || p.z == 0)
+		return;
 	
 	// for any edge that has a sign change, find vertices from the surrounding cells and connect them as a quad
 	if (p.x > 0 && p.y > 0)

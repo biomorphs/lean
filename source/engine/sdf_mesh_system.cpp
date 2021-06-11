@@ -50,7 +50,7 @@ size_t SDFMeshSystem::GetWorkingDataSize() const
 {
 	const auto c_dimsCubed = c_maxBlockDimensions * c_maxBlockDimensions * c_maxBlockDimensions;
 	const auto c_vertexSize = sizeof(float) * 4 * 2;
-	return c_dimsCubed * c_vertexSize * 3;
+	return c_dimsCubed * c_vertexSize;
 }
 
 bool SDFMeshSystem::PostInit()
@@ -72,11 +72,9 @@ bool SDFMeshSystem::PostInit()
 	m_vertexNormalTexture = std::make_unique<Render::Texture>();
 	m_vertexNormalTexture->Create(volumeDesc);
 
-	// Working vertex buffer + header (stores per mesh data)
+	// Working vertex buffer
 	m_workingVertexBuffer = std::make_unique<Render::RenderBuffer>();
 	m_workingVertexBuffer->Create(GetWorkingDataSize(), Render::RenderBufferModification::Dynamic, true, true);
-	m_workingHeaderBuffer = std::make_unique<Render::RenderBuffer>();
-	m_workingHeaderBuffer->Create(sizeof(uint32_t) * 4, Render::RenderBufferModification::Dynamic, true, true);
 
 	// Compute shaders
 	m_findCellVerticesShader = m_graphics->Shaders().LoadComputeShader("FindSDFVertices", "compute_test_find_vertices.cs");
@@ -219,7 +217,7 @@ void SDFMeshSystem::BuildMesh()
 		device->MemoryBarrier(Render::BarrierType::All);
 
 		// for now copy the data to the new mesh via cpu
-		// eventually we should use buffersubdata() and only read the headers
+		// eventually we should use probably buffersubdata() and only read the headers
 		uint32_t vertexCount = 0;
 		void* ptr = m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, GetWorkingDataSize());
 		if (ptr)
@@ -293,7 +291,6 @@ bool SDFMeshSystem::Tick(float timeDelta)
 void SDFMeshSystem::Shutdown()
 {
 	m_volumeDataTexture = nullptr;
-	m_workingHeaderBuffer = nullptr;
 	m_workingVertexBuffer = nullptr;
 	m_vertexPositionTexture = nullptr;
 	m_vertexNormalTexture = nullptr;

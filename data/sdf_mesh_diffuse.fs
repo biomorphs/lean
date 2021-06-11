@@ -151,7 +151,6 @@ void main()
 	
 	// blend the results of the 3 planar projections.
 	vec4 diffuseTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
-	
 	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
 	
 	for(int i=0;i<LightCount;++i)
@@ -189,7 +188,8 @@ void main()
 			finalColour += attenuation * (ambient + diffuseSpec);
 		}
 	}
-	
+
 	// apply exposure here, assuming next pass is postfx
 	fs_out_colour = vec4(finalColour.rgb * HDRExposure,1.0);
+	//fs_out_colour = vec4(max(vec3(0),finalNormal.rgb) * HDRExposure,1.0);
 }
