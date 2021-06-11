@@ -30,7 +30,7 @@ void main() {
   noises = noises + snoise(vec2(Time + worldPos.x * 0.08,worldPos.z * 0.08)) * 0.03125;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.16,worldPos.z * 0.16)) * 0.015625;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.32,worldPos.z * 0.32)) * 0.0078125;
-  d = opSmoothUnion(d,worldPos.y - 15 - noises * 50,2);
+  d = opSmoothUnion(d,worldPos.y - 20 - noises * 50,2);
   
   // output to a specific pixel in the image
   imageStore(theTexture, pixel_coords, vec4(clamp(d,-1,1),0,0,0));
