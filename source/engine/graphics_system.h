@@ -36,6 +36,7 @@ public:
 	virtual bool Initialise();
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
+	const Render::Camera& MainCamera() const { return *m_mainRenderCamera; }
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
 	Engine::ShaderManager& Shaders() { return *m_shaders; }
 	Engine::TextureManager& Textures() { return *m_textures; }

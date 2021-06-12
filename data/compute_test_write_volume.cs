@@ -14,11 +14,48 @@ float opSmoothUnion( float d1, float d2, float k ) {
     return mix( d2, d1, h ) - k*h*(1.0-h); 
 }
 
+float RidgeNoise(vec2 p) 
+{
+	return 0;
+	//return 2.0 * (0.5 - abs(0.5 - snoise(vec3(p.x,0,p.y))));
+};
+
+float Plane(vec3 p, vec3 n, float h)
+{
+	return dot(p, n) + h;
+};
+
+float Union(float p0, float p1)
+{
+	return min(p0, p1);
+};
+
+float Subtract(float d1, float d2)
+{
+	return max(-d1, d2);
+};
+
+float SDFTestFromCpp(float x, float y, float z)
+{
+	float terrainNoise = RidgeNoise(vec2(12.3f + x * 0.01f, Time + 51.2f + z * 0.01f)) * 1.0f +
+						 RidgeNoise(vec2(40.1f + x * 0.02f, Time + 27.2f + z * 0.02f)) * 0.5f + 
+						 RidgeNoise(vec2(97.4f + x * 0.04f, Time + 64.2f + z * 0.04f)) * 0.25f + 
+						 RidgeNoise(vec2(13.1f + x * 0.08f, Time + 89.2f + z * 0.08f)) * 0.125f + 
+						 RidgeNoise(vec2(76.3f + x * 0.16f, Time + 12.2f + z * 0.16f)) * 0.0625f;
+	terrainNoise = terrainNoise / (1.0f + 0.5f +	0.25f +	0.125f + 0.0625f);
+	float d = y - 16 - terrainNoise * 128;
+	//d = Subtract(snoise(vec3(x * 0.008f,y * 0.008f, z * 0.008f) * 4.0f), d);
+	//d = Union(d,Plane(vec3( x,y,z ), vec3(0.0f,1.0f,0.0f), 0.0f));
+	return d;
+}
+
 void main() {
   
   // get index in global work group i.e x,y position
   ivec3 pixel_coords = ivec3(gl_GlobalInvocationID.xyz);
   vec3 worldPos = WorldOffset.xyz + CellSize.xyz * vec3(pixel_coords);
+  
+ // float d = SDFTestFromCpp(worldPos.x, worldPos.y, worldPos.z);
   
   float d = length(worldPos - vec3(10,32,-32)) - 6 - (16 * (1.0 + sin(Time * 0.5)));
   d = opSmoothUnion(d,worldPos.y - 4 - sin(worldPos.x * 0.13 + Time) * 2 - cos(worldPos.z * 0.05 + Time),1.0);
@@ -30,7 +67,7 @@ void main() {
   noises = noises + snoise(vec2(Time + worldPos.x * 0.08,worldPos.z * 0.08)) * 0.03125;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.16,worldPos.z * 0.16)) * 0.015625;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.32,worldPos.z * 0.32)) * 0.0078125;
-  d = opSmoothUnion(d,worldPos.y - 20 - noises * 50,2);
+  d = opSmoothUnion(d,worldPos.y - noises * 80,2);
   
   // output to a specific pixel in the image
   imageStore(theTexture, pixel_coords, vec4(clamp(d,-1,1),0,0,0));

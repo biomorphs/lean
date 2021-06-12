@@ -7,8 +7,8 @@ Graphics.SetShadowShader(DrawShaderFancy, ShadowShader)
 local SDFShader = Graphics.LoadComputeShader("SDF Volume Test",  "compute_test_write_volume.cs")
 
 local sdfEntities = {}
-local blockSize = {64,64,64}	-- dimensions in meters
-local res = {32,32,32}		-- grid resolution
+local blockSize = {64,128,64}	-- dimensions in meters
+local res = {12,32,12}		-- grid resolution
 local blockCounts = {32,1,32}	-- blocks in the scene
 local sharedMaterial = {}
 
@@ -17,14 +17,14 @@ function MakeSDFMaterial()
 	local m = World.AddComponent_Material(e)
 	m:SetFloat("Time",0)
 	m:SetFloat("NormalSampleBias",1.5)
-	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("sand.jpg"))
+	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("Rock_028_SD/Rock_028_COLOR.jpg"))
 	sharedMaterial = e
 end
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
 	local transform = World.AddComponent_Transform(newEntity)
-	transform:SetPosition(917.5,497.5,908.5)
+	transform:SetPosition(2445,1752,2356)
 	transform:SetRotation(46.5,42.3,-5.4)
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
@@ -32,10 +32,10 @@ function MakeSunEntity()
 	light:SetAmbient(0.3)
 	light:SetAttenuation(3)
 	light:SetBrightness(0.85)
-	light:SetDistance(1164)
+	light:SetDistance(4000)
 	light:SetCastsShadows(true)
-	light:SetShadowmapSize(2048,2048)
-	light:SetShadowOrthoScale(803)
+	light:SetShadowmapSize(4096,4096)
+	light:SetShadowOrthoScale(1541)
 	light:SetShadowBias(0.001)
 end
 
@@ -59,10 +59,10 @@ function SDFTest.Init()
 	MakeSunEntity()
 	MakeSDFMaterial()
 	
-	for x=0, blockCounts[1] do
-		for y=0, blockCounts[2] do
-			for z=0, blockCounts[3] do
-				local p = {x * blockSize[1],y * blockSize[2],z * blockSize[3]}
+	for x=0, blockCounts[1]-1 do
+		for y=0, blockCounts[2]-1 do
+			for z=0, blockCounts[3]-1 do
+				local p = {x * blockSize[1],-1 +  y * blockSize[2],z * blockSize[3]}
 				MakeSDFEntity({0,0,0},p,{p[1]+blockSize[1],p[2]+blockSize[2],p[3]+blockSize[3]},res)
 			end
 		end
@@ -82,7 +82,7 @@ function SDFTest.Tick(deltaTime)
 		end
 		
 		local model = World.GetComponent_SDFMesh(sdfEntities[lastRemeshed])
-		--model:Remesh()
+		model:Remesh()
 		
 		lastRemeshed = lastRemeshed + 1
 	end

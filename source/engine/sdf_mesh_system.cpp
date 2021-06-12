@@ -40,7 +40,8 @@ bool SDFMeshSystem::PreInit(Engine::SystemManager& manager)
 	m_renderSys = (Engine::RenderSystem*)manager.GetSystem("Render");
 	m_graphics = (GraphicsSystem*)manager.GetSystem("Graphics");
 	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
-
+	m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
+	
 	return true;
 }
 
@@ -85,6 +86,8 @@ uint32_t nextPowerTwo(uint32_t v)
 
 std::unique_ptr<SDFMeshSystem::WorkingSet> SDFMeshSystem::MakeWorkingSet(glm::ivec3 dimsRequired, EntityHandle h)
 {
+	SDE_PROF_EVENT();
+
 	for (auto it = m_workingSetCache.begin(); it != m_workingSetCache.end(); ++it)
 	{
 		if (glm::all(glm::greaterThanEqual((*it)->m_dimensions, dimsRequired)))
@@ -143,6 +146,8 @@ void SDFMeshSystem::PushSharedUniforms(Render::ShaderProgram& shader, glm::vec3 
 
 void SDFMeshSystem::PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat, glm::vec3 offset, glm::vec3 cellSize)
 {
+	SDE_PROF_EVENT();
+
 	// fill in volume data via compute
 	auto device = m_renderSys->GetDevice();
 	device->BindShaderProgram(shader);
@@ -157,6 +162,7 @@ void SDFMeshSystem::PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, gl
 
 void SDFMeshSystem::FindVertices(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize)
 {
+	SDE_PROF_EVENT();
 	// find vertex positions + normals for each cell containing an edge with a zero point
 
 	// ensure the image writes are visible before we try to fetch them via a sampler
@@ -177,6 +183,7 @@ void SDFMeshSystem::FindVertices(WorkingSet& w, Render::ShaderProgram& shader, g
 
 void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize)
 {
+	SDE_PROF_EVENT();
 	// build triangles from the vertices we found earlier
 
 	// clear out the old header data
@@ -203,7 +210,7 @@ void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, 
 
 void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 {
-	assert(glm::all(glm::lessThan(mesh.GetResolution(), glm::ivec3(c_maxBlockDimensions))));
+	SDE_PROF_EVENT();
 
 	auto sdfShader = m_graphics->Shaders().GetShader(mesh.GetSDFShader());
 	auto findVerticesShader = m_graphics->Shaders().GetShader(m_findCellVerticesShader);
@@ -233,46 +240,113 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 		FindVertices(*w, *findVerticesShader, dims, worldOffset, cellSize);
 		FindTriangles(*w, *makeTrianglesShader, dims, worldOffset, cellSize);
 		mesh.SetRemesh(false);
-		m_meshesBuilding.emplace_back(std::move(w));
+		m_meshesComputing.emplace_back(std::move(w));
+		++m_meshesPending;
 	}
 }
 
-void SDFMeshSystem::BuildMesh(WorkingSet& w)
+void SDFMeshSystem::FinaliseMesh(WorkingSet& w)
 {
-	auto device = m_renderSys->GetDevice();
-	auto world = m_entitySystem->GetWorld();
-	auto meshComponent = world->GetComponent<SDFMesh>(w.m_remeshEntity);
-	if (meshComponent)
+	SDE_PROF_EVENT();
+	if (w.m_finalMesh != nullptr)
 	{
-		// ensure writes finish before we map the buffer data for reading
-		// todo, check barrier flags
-		device->MemoryBarrier(Render::BarrierType::All);
-
-		// for now copy the data to the new mesh via cpu
-		// eventually we should use probably buffersubdata() and only read the headers
-		void* ptr = w.m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, w.m_workingVertexBuffer->GetSize());
-		if (ptr)
+		auto world = m_entitySystem->GetWorld();
+		auto meshComponent = world->GetComponent<SDFMesh>(w.m_remeshEntity);
+		if (meshComponent)
 		{
-			VertexOutputHeader* header = (VertexOutputHeader*)ptr;
-			auto vertexCount = header->m_vertexCount / 2;	// todo
-			if (vertexCount > 0)
-			{
-				float* vbase = reinterpret_cast<float*>(((uint32_t*)ptr) + 4);
-
-				// hacks, rebuild the entire mesh
-				// we dont try and change the old one since the gpu could be using it
-				auto newMesh = std::make_unique<Render::Mesh>();
-				newMesh->GetStreams().push_back({});
-				auto& vb = newMesh->GetStreams()[0];
-				vb.Create(vbase, sizeof(float) * 4 * 2 * vertexCount, Render::RenderBufferModification::Static);
-				newMesh->GetVertexArray().AddBuffer(0, &vb, Render::VertexDataType::Float, 4, 0, sizeof(float) * 4 * 2);
-				newMesh->GetVertexArray().AddBuffer(1, &vb, Render::VertexDataType::Float, 4, sizeof(float) * 4, sizeof(float) * 4 * 2);
-				newMesh->GetVertexArray().Create();
-				newMesh->GetChunks().push_back(Render::MeshChunk(0, vertexCount, Render::PrimitiveType::Triangles));
-				meshComponent->SetMesh(std::move(newMesh));
-			}
+			w.m_finalMesh->GetVertexArray().Create();		// this is the only thing we can't do in jobs
+			meshComponent->SetMesh(std::move(w.m_finalMesh));
 		}
-		w.m_workingVertexBuffer->Unmap();
+	}
+	--m_meshesPending;
+}
+
+void SDFMeshSystem::BuildMeshJob(WorkingSet& w)
+{
+	SDE_PROF_EVENT();
+	// for now copy the data to the new mesh via cpu
+	// eventually we should use probably buffersubdata() and only read the headers if possible
+	// it may even be worth caching + reusing entire meshes
+	void* ptr = w.m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, w.m_workingVertexBuffer->GetSize());
+	if (ptr)
+	{
+		VertexOutputHeader* header = (VertexOutputHeader*)ptr;
+		auto vertexCount = header->m_vertexCount / 2;	// todo
+		if (vertexCount > 0)
+		{
+			float* vbase = reinterpret_cast<float*>(((uint32_t*)ptr) + 4);
+
+			// hacks, rebuild the entire mesh
+			// we dont try and change the old one since the gpu could be using it
+			auto newMesh = std::make_unique<Render::Mesh>();
+			newMesh->GetStreams().push_back({});
+			auto& vb = newMesh->GetStreams()[0];
+			vb.Create(vbase, sizeof(float) * 4 * 2 * vertexCount, Render::RenderBufferModification::Static);
+			newMesh->GetVertexArray().AddBuffer(0, &vb, Render::VertexDataType::Float, 4, 0, sizeof(float) * 4 * 2);
+			newMesh->GetVertexArray().AddBuffer(1, &vb, Render::VertexDataType::Float, 4, sizeof(float) * 4, sizeof(float) * 4 * 2);
+			newMesh->GetChunks().push_back(Render::MeshChunk(0, vertexCount, Render::PrimitiveType::Triangles));
+			w.m_finalMesh = std::move(newMesh);
+		}
+	}
+	else
+	{
+		SDE_LOG("Oh crap");
+	}
+	w.m_workingVertexBuffer->Unmap();
+
+	// Ensure any writes are shared with all contexts
+	Render::Device::FlushContext();
+}
+
+void SDFMeshSystem::HandleFinishedComputeShaders()
+{
+	SDE_PROF_EVENT();
+	auto device = m_renderSys->GetDevice();
+
+	// Wait for all the fences in one go
+	// Otherwise we fight the driver when jobs start to allocate buffers
+	std::vector<uint32_t> readyForJobs;
+	for (auto w = m_meshesComputing.begin(); w != m_meshesComputing.end(); ++w)
+	{
+		if (device->WaitOnFence((*w)->m_buildMeshFence, 10) == Render::FenceResult::Signalled)
+		{
+			readyForJobs.push_back(std::distance(m_meshesComputing.begin(), w));
+		}
+	}
+
+	for (int i = readyForJobs.size() - 1; i >= 0; --i)
+	{
+		// take ownership of the working set ptr since we can't capture unique_ptr
+		auto* theWorkingSet = m_meshesComputing[readyForJobs[i]].release();
+
+		m_jobSystem->PushSlowJob([this, theWorkingSet](void*) {
+			BuildMeshJob(*theWorkingSet);
+			{
+				Core::ScopedMutex lock(m_finaliseMeshLock);
+				m_meshesToFinalise.emplace_back(std::unique_ptr<WorkingSet>(theWorkingSet));
+			}
+		});
+		m_meshesComputing.erase(m_meshesComputing.begin() + readyForJobs[i]);
+	}
+}
+
+void SDFMeshSystem::FinaliseMeshes()
+{
+	SDE_PROF_EVENT();
+
+	// Finalise meshes built on jobs
+	std::vector<std::unique_ptr<WorkingSet>> finaliseMeshes;
+	{
+		Core::ScopedMutex lock(m_finaliseMeshLock);
+		finaliseMeshes = std::move(m_meshesToFinalise);
+	}
+	for (auto& it : finaliseMeshes)
+	{
+		FinaliseMesh(*it);
+		if (m_workingSetCache.size() < m_maxCachedSets)
+		{
+			m_workingSetCache.emplace_back(std::move(it));
+		}
 	}
 }
 
@@ -284,35 +358,40 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	auto transforms = world->GetAllComponents<Transform>();
 	auto materials = world->GetAllComponents<Material>();
 	auto device = m_renderSys->GetDevice();
+	const auto& camera = m_graphics->MainCamera();
 
-	std::vector<uint32_t> toErase;
-	for (auto w = m_meshesBuilding.begin(); w != m_meshesBuilding.end(); ++w)
-	{
-		if (device->WaitOnFence((*w)->m_buildMeshFence, 10) == Render::FenceResult::Signalled)
-		{
-			BuildMesh(*(*w));
-			toErase.push_back(std::distance(m_meshesBuilding.begin(), w));
-		}
-	}
-	for (int i = toErase.size() - 1; i >= 0; --i)
-	{
-		if (m_workingSetCache.size() < m_maxCachedSets)
-		{
-			m_workingSetCache.emplace_back(std::move(m_meshesBuilding[toErase[i]]));
-		}
-		m_meshesBuilding.erase(m_meshesBuilding.begin() + toErase[i]);
-	}
+	// Finalise vertex arrays on main thread
+	FinaliseMeshes();
 
-	world->ForEachComponent<SDFMesh>([this, &world, &transforms, &materials](SDFMesh& m, EntityHandle owner) {
-		if (m.NeedsRemesh() && m_meshesBuilding.size() < m_maxMeshesPerFrame)
+	// Find meshes closest to the camera that need to be rebuilt. also submit all built meshes to the renderer
+	using ClosestMesh = std::tuple<float, SDFMesh*, EntityHandle>;
+	std::vector<ClosestMesh> closestMeshes;
+	closestMeshes.reserve(m_maxComputePerFrame);
+	float furthestFromCamera = FLT_MAX;
+	world->ForEachComponent<SDFMesh>([this, &transforms, &materials, &camera, &furthestFromCamera, &closestMeshes](SDFMesh& m, EntityHandle owner) {
+		const Transform* transform = transforms->Find(owner);
+		if (!transform)
+			return;
+		if (m.NeedsRemesh())
 		{
-			KickoffRemesh(m, owner);
+			// use the midpoint of the transformed sdf bounds
+			glm::vec4 midPoint = glm::vec4(m.GetBoundsMin() + (m.GetBoundsMax() - m.GetBoundsMin()) / 2.0f, 1.0f) * transform->GetMatrix();
+			float distanceFromCamera = glm::distance(glm::vec3(midPoint), camera.Position());
+			if (distanceFromCamera < furthestFromCamera || closestMeshes.size() < m_maxComputePerFrame)
+			{
+				closestMeshes.push_back({ distanceFromCamera, &m, owner });
+				std::sort(closestMeshes.begin(), closestMeshes.end(), [](const ClosestMesh& c0, const ClosestMesh& c1) {
+					return std::get<0>(c0) < std::get<0>(c1);
+				});
+				if (closestMeshes.size() > m_maxComputePerFrame)
+				{
+					closestMeshes.resize(m_maxComputePerFrame);
+				}
+				furthestFromCamera = std::get<0>(closestMeshes[closestMeshes.size() - 1]);
+			}
 		}
 		if (m.GetMesh() && m.GetRenderShader().m_index != -1)
 		{
-			const Transform* transform = transforms->Find(owner);
-			if (!transform)
-				return;
 			Render::Material* instanceMaterial = nullptr;
 			if (m.GetMaterialEntity().GetID() != -1)
 			{
@@ -323,7 +402,6 @@ bool SDFMeshSystem::Tick(float timeDelta)
 				}
 			}
 			m_graphics->Renderer().SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetRenderShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
-
 			if (m_graphics->ShouldDrawBounds())
 			{
 				auto colour = glm::vec4(1, 1, 1, 1);
@@ -332,11 +410,22 @@ bool SDFMeshSystem::Tick(float timeDelta)
 		}
 	});
 
+	for (auto& it : closestMeshes)
+	{
+		KickoffRemesh(*std::get<1>(it), std::get<2>(it));
+	}
+
+	// Handle finished compute shaders
+	HandleFinishedComputeShaders();
+
 	return true;
 }
 
 void SDFMeshSystem::Shutdown()
 {
-	m_meshesBuilding.clear();
+	SDE_PROF_EVENT();
+
+	m_meshesToFinalise.clear();
+	m_meshesComputing.clear();
 	m_workingSetCache.clear();
 }
