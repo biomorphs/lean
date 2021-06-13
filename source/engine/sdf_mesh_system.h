@@ -65,9 +65,9 @@ private:
 		std::unique_ptr<Render::Texture> m_vertexPositionTexture;
 		std::unique_ptr<Render::Texture> m_vertexNormalTexture;
 	};
-	int m_maxMeshesPerFrame = 8;
-	int m_maxComputePerFrame = 2;
-	int m_maxCachedSets = 16;
+	int m_maxMeshesPerFrame = 32;
+	int m_maxComputePerFrame = 8;
+	int m_maxCachedSets = 64;
 	int m_meshesPending = 0;
 	Core::Mutex m_finaliseMeshLock;
 	std::vector<std::unique_ptr<WorkingSet>> m_meshesToFinalise;

@@ -19,6 +19,12 @@ namespace Engine
 	class ImguiSdlGL3RenderPass;
 	class GraphDataBuffer;
 	class MenuBar;
+	enum GuiWindowFlags
+	{
+		NoMove = 1,
+		NoTitlebar = 2,
+		NoResize = 4
+	};
 	class DebugGuiSystem : public System
 	{
 	public:
@@ -32,7 +38,9 @@ namespace Engine
 		virtual void Shutdown() override;
 		bool IsCapturingMouse();	// if true the gui is interacting with mouse
 		bool IsCapturingKeyboard();	// if true the gui is interacting with keyboard
-		bool BeginWindow(bool& windowOpen, const char* windowName, glm::vec2 size=glm::vec2(-1.f));
+		bool BeginWindow(bool& windowOpen, const char* windowName, uint32_t flags=0);
+		void SetWindowPosition(glm::vec2 p);
+		void SetWindowSize(glm::vec2 s);
 		void EndWindow();
 		void ItemWidth(float w);
 		void SameLine(float xOffset = 0.0f, float spacing = -1.0f);

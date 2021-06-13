@@ -7,8 +7,8 @@ Graphics.SetShadowShader(DrawShaderFancy, ShadowShader)
 local SDFShader = Graphics.LoadComputeShader("SDF Volume Test",  "compute_test_write_volume.cs")
 
 local sdfEntities = {}
-local blockSize = {64,128,64}	-- dimensions in meters
-local res = {12,32,12}		-- grid resolution
+local blockSize = {128,128,128}	-- dimensions in meters
+local res = {24,24,24}		-- grid resolution
 local blockCounts = {32,1,32}	-- blocks in the scene
 local sharedMaterial = {}
 

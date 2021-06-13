@@ -174,14 +174,34 @@ namespace Engine
 		ImGui::SameLine(xOffset, spacing);
 	}
 
-	bool DebugGuiSystem::BeginWindow(bool& windowOpen, const char* windowName, glm::vec2 size)
+	bool DebugGuiSystem::BeginWindow(bool& windowOpen, const char* windowName, uint32_t flags)
 	{
-		bool ret = ImGui::Begin(windowName, &windowOpen, 0);
-		if (size.x > 0 && size.y > 0)
+		uint32_t windowFlags = 0;
+		if (flags & NoMove)
 		{
-			ImGui::SetWindowSize(ImVec2(size.x, size.y));
+			windowFlags |= ImGuiWindowFlags_NoMove;
 		}
+		if (flags & NoTitlebar)
+		{
+			windowFlags |= ImGuiWindowFlags_NoTitleBar;
+		}
+		if (flags & NoResize)
+		{
+			windowFlags |= ImGuiWindowFlags_NoResize;
+		}
+
+		bool ret = ImGui::Begin(windowName, &windowOpen, windowFlags);
 		return ret;
+	}
+
+	void DebugGuiSystem::SetWindowPosition(glm::vec2 p)
+	{
+		ImGui::SetWindowPos({ p.x,p.y });
+	}
+
+	void DebugGuiSystem::SetWindowSize(glm::vec2 s)
+	{
+		ImGui::SetWindowSize({ s.x,s.y });
 	}
 
 	void DebugGuiSystem::EndWindow()
