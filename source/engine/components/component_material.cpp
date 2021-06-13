@@ -102,6 +102,7 @@ COMPONENT_INSPECTOR_IMPL(Material, Engine::DebugGuiSystem& gui, Engine::TextureM
 						t.second.m_handle = loadedTexture.m_index;
 					}
 				}
+				gui.TreePop();
 			}
 		}
 	};

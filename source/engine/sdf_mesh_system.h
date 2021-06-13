@@ -69,6 +69,7 @@ private:
 	int m_maxComputePerFrame = 8;
 	int m_maxCachedSets = 64;
 	int m_meshesPending = 0;
+	uint64_t m_meshGeneration = 0;	// used to control how often meshes are rebuilt when a lot exist
 	Core::Mutex m_finaliseMeshLock;
 	std::vector<std::unique_ptr<WorkingSet>> m_meshesToFinalise;
 	std::vector<std::unique_ptr<WorkingSet>> m_workingSetCache;

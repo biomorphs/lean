@@ -366,28 +366,46 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	// Find meshes closest to the camera that need to be rebuilt. also submit all built meshes to the renderer
 	using ClosestMesh = std::tuple<float, SDFMesh*, EntityHandle>;
 	std::vector<ClosestMesh> closestMeshes;
+	static robin_hood::unordered_flat_map<uint32_t, uint64_t> entityToGeneration;
 	closestMeshes.reserve(m_maxComputePerFrame);
 	float furthestFromCamera = FLT_MAX;
-	world->ForEachComponent<SDFMesh>([this, &transforms, &materials, &camera, &furthestFromCamera, &closestMeshes](SDFMesh& m, EntityHandle owner) {
+	uint32_t totalNeedBuild = 0, totalSkipped = 0;
+	world->ForEachComponent<SDFMesh>([&](SDFMesh& m, EntityHandle owner) {
 		const Transform* transform = transforms->Find(owner);
 		if (!transform)
 			return;
 		if (m.NeedsRemesh())
 		{
-			// use the midpoint of the transformed sdf bounds
-			glm::vec4 midPoint = glm::vec4(m.GetBoundsMin() + (m.GetBoundsMax() - m.GetBoundsMin()) / 2.0f, 1.0f) * transform->GetMatrix();
-			float distanceFromCamera = glm::distance(glm::vec3(midPoint), camera.Position());
-			if (distanceFromCamera < furthestFromCamera || closestMeshes.size() < m_maxComputePerFrame)
+			bool isTooNew = false;
+			++totalNeedBuild;
+			// has it already been remeshed this generation?
+			auto remeshedRecently = entityToGeneration.find(owner.GetID());
+			if (remeshedRecently != entityToGeneration.end())
 			{
-				closestMeshes.push_back({ distanceFromCamera, &m, owner });
-				std::sort(closestMeshes.begin(), closestMeshes.end(), [](const ClosestMesh& c0, const ClosestMesh& c1) {
-					return std::get<0>(c0) < std::get<0>(c1);
-				});
-				if (closestMeshes.size() > m_maxComputePerFrame)
+				if (remeshedRecently->second == m_meshGeneration)
 				{
-					closestMeshes.resize(m_maxComputePerFrame);
+					totalSkipped++;
+					isTooNew = true;
 				}
-				furthestFromCamera = std::get<0>(closestMeshes[closestMeshes.size() - 1]);
+			}
+
+			if (!isTooNew)
+			{
+				// use the midpoint of the transformed sdf bounds
+				glm::vec4 midPoint = glm::vec4(m.GetBoundsMin() + (m.GetBoundsMax() - m.GetBoundsMin()) / 2.0f, 1.0f) * transform->GetMatrix();
+				float distanceFromCamera = glm::distance(glm::vec3(midPoint), camera.Position());
+				if (distanceFromCamera < furthestFromCamera || closestMeshes.size() < m_maxComputePerFrame)
+				{
+					closestMeshes.push_back({ distanceFromCamera, &m, owner });
+					std::sort(closestMeshes.begin(), closestMeshes.end(), [](const ClosestMesh& c0, const ClosestMesh& c1) {
+						return std::get<0>(c0) < std::get<0>(c1);
+						});
+					if (closestMeshes.size() > m_maxComputePerFrame)
+					{
+						closestMeshes.resize(m_maxComputePerFrame);
+					}
+					furthestFromCamera = std::get<0>(closestMeshes[closestMeshes.size() - 1]);
+				}
 			}
 		}
 		if (m.GetMesh() && m.GetRenderShader().m_index != -1)
@@ -410,9 +428,16 @@ bool SDFMeshSystem::Tick(float timeDelta)
 		}
 	});
 
+	if (totalNeedBuild > 0 && totalSkipped == totalNeedBuild)
+	{
+		entityToGeneration.clear();
+		m_meshGeneration++;
+	}
+
 	for (auto& it : closestMeshes)
 	{
 		KickoffRemesh(*std::get<1>(it), std::get<2>(it));
+		entityToGeneration.insert({std::get<2>(it).GetID(), m_meshGeneration});
 	}
 
 	// Handle finished compute shaders

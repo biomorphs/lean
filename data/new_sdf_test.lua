@@ -7,15 +7,15 @@ Graphics.SetShadowShader(DrawShaderFancy, ShadowShader)
 local SDFShader = Graphics.LoadComputeShader("SDF Volume Test",  "compute_test_write_volume.cs")
 
 local sdfEntities = {}
-local blockSize = {128,128,128}	-- dimensions in meters
-local res = {24,24,24}		-- grid resolution
+local blockSize = {128,256,128}	-- dimensions in meters
+local res = {24,32,24}		-- grid resolution
 local blockCounts = {32,1,32}	-- blocks in the scene
 local sharedMaterial = {}
 
 function MakeSDFMaterial()
 	local e = World.AddEntity()
 	local m = World.AddComponent_Material(e)
-	m:SetFloat("Time",0)
+	m:SetFloat("Time",164)
 	m:SetFloat("NormalSampleBias",1.5)
 	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("Rock_028_SD/Rock_028_COLOR.jpg"))
 	sharedMaterial = e
@@ -81,8 +81,11 @@ function SDFTest.Tick(deltaTime)
 			lastRemeshed = 1
 		end
 		
-		local model = World.GetComponent_SDFMesh(sdfEntities[lastRemeshed])
-		model:Remesh()
+		local maxindex = math.min(lastRemeshed + 2,#sdfEntities)
+		for i=lastRemeshed,maxindex do
+			local model = World.GetComponent_SDFMesh(sdfEntities[i])
+			model:Remesh()
+		end
 		
 		lastRemeshed = lastRemeshed + 1
 	end
