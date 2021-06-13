@@ -90,9 +90,11 @@ namespace Render
 		void DispatchCompute(uint32_t groupsX, uint32_t groupsY, uint32_t groupsZ);
 		void BindShaderProgram(const ShaderProgram& program);
 		void BindVertexArray(const VertexArray& srcArray);
+		void BindIndexBuffer(const RenderBuffer& buffer);
 		void BindInstanceBuffer(const VertexArray& srcArray, const RenderBuffer& buffer, int vertexLayoutSlot, int components, size_t offset = 0, size_t vectorCount=1);
 		void BindStorageBuffer(uint32_t ssboBindingIndex, const RenderBuffer& ssbo);	// like uniforms, but writeable!
 		void DrawPrimitives(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount);
+		void DrawPrimitivesInstancedIndexed(PrimitiveType primitive, uint32_t indexStart, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance = 0);
 		void DrawPrimitivesInstanced(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance=0);
 		void BindUniformBufferIndex(ShaderProgram& p, const char* bufferName, uint32_t bindingIndex);
 		void SetUniforms(ShaderProgram& p, const RenderBuffer& ubo, uint32_t uboBindingIndex);

@@ -10,6 +10,7 @@ namespace Render
 {
 	class Material;
 
+	// Note that for indexed meshes, firstVertex/vertexCount apply to indices
 	struct MeshChunk
 	{
 		MeshChunk() 
@@ -29,18 +30,21 @@ namespace Render
 
 		void Destroy();
 
-		inline const Material& GetMaterial() const					{ return m_material; }
-		inline const std::vector<RenderBuffer>& GetStreams() const	{ return m_vertexStreams; }
-		inline const VertexArray& GetVertexArray() const			{ return m_vertices; }
-		inline const std::vector<MeshChunk>& GetChunks() const		{ return m_chunks; }
-		inline Material& GetMaterial() { return m_material; }
-		inline std::vector<RenderBuffer>& GetStreams()				{ return m_vertexStreams; }
-		inline VertexArray& GetVertexArray()						{ return m_vertices; }		
-		inline std::vector<MeshChunk>& GetChunks()					{ return m_chunks; }
+		inline const std::unique_ptr<RenderBuffer>& GetIndexBuffer() const	{ return m_indexBuffer; }
+		inline const Material& GetMaterial() const							{ return m_material; }
+		inline const std::vector<RenderBuffer>& GetStreams() const			{ return m_vertexStreams; }
+		inline const VertexArray& GetVertexArray() const					{ return m_vertices; }
+		inline const std::vector<MeshChunk>& GetChunks() const				{ return m_chunks; }
+		inline std::unique_ptr<RenderBuffer>& GetIndexBuffer()				{ return m_indexBuffer; }
+		inline Material& GetMaterial()										{ return m_material; }
+		inline std::vector<RenderBuffer>& GetStreams()						{ return m_vertexStreams; }
+		inline VertexArray& GetVertexArray()								{ return m_vertices; }		
+		inline std::vector<MeshChunk>& GetChunks()							{ return m_chunks; }
 
 	private:
 		VertexArray m_vertices;
 		Material m_material;
+		std::unique_ptr<RenderBuffer> m_indexBuffer;
 		std::vector<RenderBuffer> m_vertexStreams;
 		std::vector<MeshChunk> m_chunks;
 	};

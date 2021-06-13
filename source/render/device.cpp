@@ -450,11 +450,29 @@ namespace Render
 		SDE_RENDER_PROCESS_GL_ERRORS("glBindBuffer");
 	}
 
+	void Device::BindIndexBuffer(const RenderBuffer& buffer)
+	{
+		assert(buffer.GetHandle() != 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.GetHandle());
+		SDE_RENDER_PROCESS_GL_ERRORS("glBindBuffer");
+	}
+
 	void Device::BindVertexArray(const VertexArray& srcArray)
 	{
 		assert(srcArray.GetHandle() != 0);
 		glBindVertexArray(srcArray.GetHandle());
 		SDE_RENDER_PROCESS_GL_ERRORS("glBindVertexArray");
+	}
+
+	void Device::DrawPrimitivesInstancedIndexed(PrimitiveType primitive, uint32_t indexStart, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance)
+	{
+		SDE_PROF_EVENT();
+
+		auto primitiveType = TranslatePrimitiveType(primitive);
+		assert(primitiveType != -1);
+
+		glDrawElementsInstancedBaseVertexBaseInstance(primitiveType, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount, indexStart, firstInstance);
+		SDE_RENDER_PROCESS_GL_ERRORS("glDrawElementsInstancedBaseVertexBaseInstance");
 	}
 
 	void Device::DrawPrimitivesInstanced(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance)

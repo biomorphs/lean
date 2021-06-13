@@ -458,12 +458,26 @@ namespace Engine
 				}
 
 				// draw the chunks
-				for (const auto& chunk : theMesh->GetChunks())
+				if (theMesh->GetIndexBuffer() != nullptr)
 				{
-					uint32_t firstIndex = (uint32_t)(firstInstance - list.m_instances.begin());
-					d.DrawPrimitivesInstanced(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount, instanceCount, firstIndex + baseIndex);
-					m_frameStats.m_drawCalls++;
-					m_frameStats.m_totalVertices += (uint64_t)chunk.m_vertexCount * instanceCount;
+					d.BindIndexBuffer(*theMesh->GetIndexBuffer());
+					for (const auto& chunk : theMesh->GetChunks())
+					{
+						uint32_t firstIndex = (uint32_t)(firstInstance - list.m_instances.begin());
+						d.DrawPrimitivesInstancedIndexed(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount, instanceCount, firstIndex + baseIndex);
+						m_frameStats.m_drawCalls++;
+						m_frameStats.m_totalVertices += (uint64_t)chunk.m_vertexCount * instanceCount;
+					}
+				}
+				else
+				{
+					for (const auto& chunk : theMesh->GetChunks())
+					{
+						uint32_t firstIndex = (uint32_t)(firstInstance - list.m_instances.begin());
+						d.DrawPrimitivesInstanced(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount, instanceCount, firstIndex + baseIndex);
+						m_frameStats.m_drawCalls++;
+						m_frameStats.m_totalVertices += (uint64_t)chunk.m_vertexCount * instanceCount;
+					}
 				}
 			}
 			firstInstance = lastMeshInstance;

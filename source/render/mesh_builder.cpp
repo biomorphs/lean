@@ -202,6 +202,16 @@ namespace Render
 			}
 		}
 
+		// Create a simple, sequential index buffer
+		std::vector<uint32_t> indices(m_currentVertexIndex);
+		for (uint32_t i = 0; i < m_currentVertexIndex; ++i)
+		{
+			indices[i] = i;
+		}
+		auto indexBuffer = std::make_unique<Render::RenderBuffer>();
+		indexBuffer->Create(indices.data(), sizeof(uint32_t) * m_currentVertexIndex, Render::RenderBufferModification::Static);
+		target.GetIndexBuffer() = std::move(indexBuffer);
+
 		// Populate chunks. We always rebuild this data
 		chunks.clear();
 		chunks.reserve(m_chunks.size());
