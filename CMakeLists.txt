@@ -204,6 +204,8 @@ set(ENGINE_SOURCES
 	Source/engine/sdf.cpp
 	Source/engine/sdf_mesh_system.h
 	Source/engine/sdf_mesh_system.cpp
+	Source/engine/camera_system.h
+	Source/engine/camera_system.cpp
 	Source/engine/graphics_system.h
 	Source/engine/graphics_system.cpp
 	Source/engine/components/component_camera.h

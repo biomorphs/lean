@@ -9,6 +9,7 @@
 #include "debug_gui_system.h"
 #include "physics_system.h"
 #include "sdf_mesh_system.h"
+#include "camera_system.h"
 #include "entity/entity_system.h"
 #include "platform.h"
 #include "core/log.h"
@@ -61,6 +62,7 @@ namespace Engine
 		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("Graphics", new GraphicsSystem);
 		sysManager.RegisterSystem("Physics", physics);
+		sysManager.RegisterSystem("Cameras", new CameraSystem);
 		sysManager.RegisterSystem("Render", render);
 		sysManager.RegisterSystem("RenderPresent", render->MakePresenter());
 

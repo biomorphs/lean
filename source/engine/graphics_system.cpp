@@ -7,7 +7,6 @@
 #include "engine/render_system.h"
 #include "engine/job_system.h"
 #include "engine/input_system.h"
-#include "engine/debug_camera.h"
 #include "engine/texture_manager.h"
 #include "engine/model_manager.h"
 #include "engine/shader_manager.h"
@@ -17,7 +16,6 @@
 #include "render/render_pass.h"
 #include "engine/file_picker_dialog.h"
 #include "render/window.h"
-#include "render/camera.h"
 #include "core/profiler.h"
 #include "core/timer.h"
 #include "entity/entity_system.h"
@@ -27,13 +25,10 @@
 #include "engine/components/component_sdf_model.h"
 #include "engine/components/component_tags.h"
 #include "engine/components/component_material.h"
-#include "engine/components/component_camera.h"
 
 Engine::MenuBar g_graphicsMenu;
-EntityHandle g_selectedCamera;
 bool g_showTextureGui = false;
 bool g_showModelGui = false;
-bool g_showCameraInfo = false;
 bool g_enableShadowUpdate = true;
 
 struct SDFDebugDraw : public Engine::SDFMeshBuilder::Debug
@@ -94,9 +89,6 @@ GraphicsSystem::~GraphicsSystem()
 
 void GraphicsSystem::RegisterComponents()
 {
-	m_entitySystem->RegisterComponentType<Camera>();
-	m_entitySystem->RegisterInspector<Camera>(Camera::MakeInspector(*m_debugGui));
-
 	m_entitySystem->RegisterComponentType<Material>();
 	m_entitySystem->RegisterInspector<Material>(Material::MakeInspector(*m_debugGui, *m_textures));
 
@@ -134,9 +126,6 @@ void GraphicsSystem::RegisterScripts()
 	
 	//// expose Graphics script functions
 	auto graphics = m_scriptSystem->Globals()["Graphics"].get_or_create<sol::table>();
-	graphics["SetActiveCamera"] = [this](EntityHandle c) {
-		g_selectedCamera = c;
-	};
 	graphics["SetClearColour"] = [this](float r, float g, float b) {
 		m_renderer->SetClearColour(glm::vec4(r, g, b, 1.0f));
 	};
@@ -196,7 +185,6 @@ bool GraphicsSystem::PreInit(Engine::SystemManager& manager)
 	m_shaders = std::make_unique<Engine::ShaderManager>();
 	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);
 	m_models = std::make_unique<Engine::ModelManager>(m_textures.get(), m_jobSystem);
-	m_mainRenderCamera = std::make_unique<Render::Camera>();
 
 	return true;
 }
@@ -211,13 +199,7 @@ bool GraphicsSystem::Initialise()
 	//// add our renderer to the global passes
 	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
-
 	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
-
-	m_debugCamera = std::make_unique<Engine::DebugCamera>();
-	m_debugCamera->SetPosition({ 60.65f,101.791f,82.469f });
-	m_debugCamera->SetPitch(-0.438);
-	m_debugCamera->SetYaw(0.524f);
 
 	RegisterComponents();
 	RegisterScripts();
@@ -229,12 +211,6 @@ bool GraphicsSystem::Initialise()
 	gMenu.AddItem("TextureManager", [this]() { g_showTextureGui = true; });
 	gMenu.AddItem("ModelManager", [this]() { g_showModelGui = true; });
 	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
-	auto& camMenu = g_graphicsMenu.AddSubmenu(ICON_FK_CAMERA " Camera");
-	camMenu.AddItem("Flycam", [this,&camMenu]() {
-		g_selectedCamera = -1;
-	});
-	camMenu.AddSubmenu("Entities");
-	camMenu.AddItem("Show Camera Info", [this]() {g_showCameraInfo = true; });
 
 	return true;
 }
@@ -369,8 +345,7 @@ void GraphicsSystem::ProcessEntities()
 	// SDF Models
 	{
 		SDE_PROF_EVENT("ProcessSDFModels");
-		Engine::Frustum viewFrustum(m_mainRenderCamera->ProjectionMatrix() * m_mainRenderCamera->ViewMatrix());
-		world->ForEachComponent<SDFModel>([this, &world, &transforms, &materials, &viewFrustum](SDFModel& m, EntityHandle owner) {
+		world->ForEachComponent<SDFModel>([this, &world, &transforms, &materials](SDFModel& m, EntityHandle owner) {
 			const Transform* transform = transforms->Find(owner);
 			if (!transform)
 				return;
@@ -415,14 +390,6 @@ void GraphicsSystem::ProcessEntities()
 void GraphicsSystem::ShowGui(int framesPerSecond)
 {
 	m_debugGui->MainMenuBar(g_graphicsMenu);
-
-	if (g_showCameraInfo)
-	{
-		m_debugGui->BeginWindow(g_showCameraInfo, "Camera");
-		glm::vec3 posVec = m_mainRenderCamera->Position();
-		m_debugGui->DragVector("Position", posVec);
-		m_debugGui->EndWindow();
-	}
 	
 	if (g_showTextureGui)
 	{
@@ -461,52 +428,6 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 	}
 }
 
-void GraphicsSystem::ProcessCamera(float timeDelta)
-{
-	auto cameraMenu = g_graphicsMenu.GetSubmenu(ICON_FK_CAMERA " Camera")->GetSubmenu("Entities");
-	cameraMenu->RemoveItems();
-
-	m_entitySystem->GetWorld()->ForEachComponent<Camera>([this, cameraMenu](Camera& c, EntityHandle e) {
-		char text[1024];
-		cameraMenu->AddItem(m_entitySystem->GetEntityNameWithTags(e), [e]() {
-			g_selectedCamera = e;
-		});
-	});
-
-	auto windowSize = m_renderSystem->GetWindow()->GetSize();
-	auto aspectRatio = (float)windowSize.x / (float)windowSize.y;
-	if(!g_selectedCamera.IsValid())
-	{
-		m_debugCamera->Update(m_inputSystem->ControllerState(0), timeDelta);
-		if (!m_debugGui->IsCapturingMouse())
-		{
-			m_debugCamera->Update(m_inputSystem->GetMouseState(), timeDelta);
-		}
-		if (!m_debugGui->IsCapturingKeyboard())
-		{
-			m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
-		}
-		m_debugCamera->ApplyToCamera(*m_mainRenderCamera);
-		m_mainRenderCamera->SetProjection(70.0f, aspectRatio, 0.1f, 5000.0f);
-	}
-	else
-	{
-		auto camComp = m_entitySystem->GetWorld()->GetComponent<Camera>(g_selectedCamera);
-		auto transform = m_entitySystem->GetWorld()->GetComponent<Transform>(g_selectedCamera);
-		if (camComp && transform)
-		{
-			// apply component values to main render camera
-			m_mainRenderCamera->SetFOVAndAspectRatio(camComp->GetFOV(), aspectRatio);
-			m_mainRenderCamera->SetClipPlanes(camComp->GetNearPlane(), camComp->GetFarPlane());
-
-			glm::vec3 lookDirection = glm::vec3(0.0f,0.0f,1.0f) * transform->GetOrientation();
-			glm::vec3 lookUp = glm::vec3(0.0f, 1.0f, 0.0f) * transform->GetOrientation();
-			m_mainRenderCamera->LookAt(transform->GetPosition(), transform->GetPosition() + lookDirection, lookUp);
-		}
-	}
-	m_renderer->SetCamera(*m_mainRenderCamera);
-}
-
 bool GraphicsSystem::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
@@ -525,7 +446,6 @@ bool GraphicsSystem::Tick(float timeDelta)
 		startTime = currentTime;
 	}
 
-	ProcessCamera(timeDelta);
 	ProcessEntities();
 	ShowGui(framesPerSecond);
 

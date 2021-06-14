@@ -3,6 +3,7 @@
 #include "engine/components/component_sdf_mesh.h"
 #include "engine/components/component_transform.h"
 #include "engine/components/component_material.h"
+#include "engine/camera_system.h"
 #include "engine/system_manager.h"
 #include "engine/debug_render.h"
 #include "entity/entity_system.h"
@@ -41,6 +42,7 @@ bool SDFMeshSystem::PreInit(Engine::SystemManager& manager)
 	m_graphics = (GraphicsSystem*)manager.GetSystem("Graphics");
 	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
 	m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
+	m_cameras = (Engine::CameraSystem*)manager.GetSystem("Cameras");
 	
 	return true;
 }
@@ -297,10 +299,6 @@ void SDFMeshSystem::BuildMeshJob(WorkingSet& w)
 			w.m_finalMesh = std::move(newMesh);
 		}
 	}
-	else
-	{
-		SDE_LOG("Oh crap");
-	}
 	w.m_workingVertexBuffer->Unmap();
 	w.m_workingIndexBuffer->Unmap();
 
@@ -368,7 +366,7 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	auto transforms = world->GetAllComponents<Transform>();
 	auto materials = world->GetAllComponents<Material>();
 	auto device = m_renderSys->GetDevice();
-	const auto& camera = m_graphics->MainCamera();
+	const auto& camera = m_cameras->MainCamera();
 
 	// Finalise vertex arrays on main thread
 	FinaliseMeshes();

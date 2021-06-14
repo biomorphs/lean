@@ -21,6 +21,7 @@ namespace Engine
 	class DebugGuiSystem;
 	class RenderSystem;
 	class JobSystem;
+	class CameraSystem;
 }
 class GraphicsSystem;
 class EntitySystem;
@@ -79,6 +80,7 @@ private:
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::RenderSystem* m_renderSys = nullptr;
 	Engine::JobSystem* m_jobSystem = nullptr;
+	Engine::CameraSystem* m_cameras = nullptr;
 	GraphicsSystem* m_graphics = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
 };
