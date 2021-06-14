@@ -200,7 +200,7 @@ void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, 
 	}
 	device->BindStorageBuffer(0, *w.m_workingIndexBuffer);
 	device->BindComputeImage(0, w.m_cellLookupTexture->GetHandle(), Render::ComputeImageFormat::R32UI, Render::ComputeImageAccess::ReadOnly, true);
-	device->DispatchCompute(dims.x - 1, dims.y - 1, dims.z - 1);
+	device->DispatchCompute(dims.x - 5, dims.y - 5, dims.z - 5);	// -5 to account for extra layers where we dont want tris
 	w.m_buildMeshFence = device->MakeFence();
 }
 
@@ -226,7 +226,7 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 		// vertices at the edges will get sampling artifacts due to filtering
 		// we add extra samples to ensure meshes can have seamless edges
 		// +1 since we can only output triangles for dims-1
-		const uint32_t extraLayers = 1;
+		const uint32_t extraLayers = 2;
 		auto dims = mesh.GetResolution() + glm::ivec3(1 + extraLayers * 2);
 		const glm::vec3 cellSize = (mesh.GetBoundsMax() - mesh.GetBoundsMin()) / glm::vec3(mesh.GetResolution());
 		const glm::vec3 worldOffset = mesh.GetBoundsMin() -(cellSize * float(extraLayers));

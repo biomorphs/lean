@@ -71,23 +71,23 @@ namespace Engine
 		float speedMul = 1.0f;
 		if (kbState.m_keyPressed[Engine::KEY_LSHIFT] || kbState.m_keyPressed[Engine::KEY_RSHIFT])
 		{ 
-			speedMul = 10.0f;
+			speedMul = 30.0f;
 		}
 		if (kbState.m_keyPressed[Engine::KEY_w])
 		{
-			forwardAmount = 1.0f;
+			forwardAmount = 15.0f;
 		}
 		if (kbState.m_keyPressed[Engine::KEY_s])
 		{
-			forwardAmount = -1.0f;
+			forwardAmount = -15.0f;
 		}
 		if (kbState.m_keyPressed[Engine::KEY_d])
 		{
-			strafeAmount = 1.0f;
+			strafeAmount = 15.0f;
 		}
 		if (kbState.m_keyPressed[Engine::KEY_a])
 		{
-			strafeAmount = -1.0f;
+			strafeAmount = -15.0f;
 		}
 
 		// move forward

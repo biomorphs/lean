@@ -26,10 +26,11 @@ void OutputQuad(uint v0,uint v1,uint v2,uint v3)
 void main() 
 {
 	// get index in global work group i.e x,y position
-	ivec3 p = ivec3(gl_GlobalInvocationID.xyz);
+	const uint skipLayers = 2;
+	ivec3 p = ivec3(gl_GlobalInvocationID.xyz) + ivec3(skipLayers);
 	
 	// we need to skip 2 outer 'layers' of the samples to ensure no sampling artifacts due to filtering
-	const uint skipLayers = 2;
+	
 	ivec3 maxSample = ivec3(m_dimensions[0]-skipLayers,m_dimensions[1]-skipLayers,m_dimensions[2]-skipLayers);
 	if(p.x < skipLayers || p.y < skipLayers || p.z < skipLayers)
 	{
