@@ -18,10 +18,10 @@
 #include "render/render_buffer.h"
 #include "render/mesh.h"
 
-struct VertexOutputHeader
+struct OutputBufferHeader
 {
-	uint32_t m_dimensions[3] = { 0 };
 	uint32_t m_vertexCount = 0;
+	uint32_t m_dimensions[3] = { 0 };
 };
 
 SDFMeshSystem::SDFMeshSystem()
@@ -52,13 +52,6 @@ bool SDFMeshSystem::Initialise()
 	m_entitySystem->RegisterInspector<SDFMesh>(SDFMesh::MakeInspector(*m_debugGui, m_graphics->Textures()));
 
 	return true;
-}
-
-size_t SDFMeshSystem::GetWorkingDataSize(glm::ivec3 dims) const
-{
-	const auto c_dimsCubed = dims.x * dims.y * dims.z;
-	const auto c_vertexSize = sizeof(float) * 4 * 2;
-	return c_dimsCubed * c_vertexSize;
 }
 
 bool SDFMeshSystem::PostInit()
@@ -112,17 +105,25 @@ std::unique_ptr<SDFMeshSystem::WorkingSet> SDFMeshSystem::MakeWorkingSet(glm::iv
 	w->m_volumeDataTexture = std::make_unique<Render::Texture>();
 	w->m_volumeDataTexture->Create(volumedatadesc);
 
-	// Per-cell vertex data written as rgba32f
-	auto volumeDesc = Render::TextureSource(actualDims.x, actualDims.y, actualDims.z, Render::TextureSource::Format::RGBAF32);
+	// Per-cell index data written as r32ui
+	auto volumeDesc = Render::TextureSource(actualDims.x, actualDims.y, actualDims.z, Render::TextureSource::Format::R32UI);
 	volumeDesc.SetWrapMode(clamp, clamp, clamp);
-	w->m_vertexPositionTexture = std::make_unique<Render::Texture>();
-	w->m_vertexPositionTexture->Create(volumeDesc);
-	w->m_vertexNormalTexture = std::make_unique<Render::Texture>();
-	w->m_vertexNormalTexture->Create(volumeDesc);
+	w->m_cellLookupTexture = std::make_unique<Render::Texture>();
+	w->m_cellLookupTexture->Create(volumeDesc);
 
-	// Working vertex buffer
+	// Working vertex + index buffer
+	const auto c_dimsCubed = actualDims.x * actualDims.y * actualDims.z;
+	const auto c_vertexSize = sizeof(float) * 4 * 2;
 	w->m_workingVertexBuffer = std::make_unique<Render::RenderBuffer>();
-	w->m_workingVertexBuffer->Create(GetWorkingDataSize(actualDims), Render::RenderBufferModification::Dynamic, true, true);
+	w->m_workingVertexBuffer->Create(c_dimsCubed * c_vertexSize, Render::RenderBufferModification::Dynamic, true, true);
+
+	w->m_workingIndexBuffer = std::make_unique<Render::RenderBuffer>();
+	w->m_workingIndexBuffer->Create(c_dimsCubed * sizeof(uint32_t) * 3, Render::RenderBufferModification::Dynamic, true, true);	// This may not be big enough for massive meshes
+
+	// clear out header data early
+	OutputBufferHeader newHeader = { 0, {(uint32_t)actualDims.x,(uint32_t)actualDims.y,(uint32_t)actualDims.z} };
+	w->m_workingVertexBuffer->SetData(0, sizeof(newHeader), &newHeader);
+	w->m_workingIndexBuffer->SetData(0, sizeof(newHeader), &newHeader);
 
 	w->m_remeshEntity = h;
 
@@ -144,11 +145,11 @@ void SDFMeshSystem::PushSharedUniforms(Render::ShaderProgram& shader, glm::vec3 
 	}
 }
 
+// fill in volume data via compute
 void SDFMeshSystem::PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat, glm::vec3 offset, glm::vec3 cellSize)
 {
 	SDE_PROF_EVENT();
 
-	// fill in volume data via compute
 	auto device = m_renderSys->GetDevice();
 	device->BindShaderProgram(shader);
 	device->BindComputeImage(0, w.m_volumeDataTexture->GetHandle(), Render::ComputeImageFormat::RF16, Render::ComputeImageAccess::WriteOnly, true);
@@ -160,50 +161,45 @@ void SDFMeshSystem::PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, gl
 	device->DispatchCompute(dims.x, dims.y, dims.z);
 }
 
+// find vertex positions + normals and indices for each cell containing an edge with a zero point
 void SDFMeshSystem::FindVertices(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize)
 {
 	SDE_PROF_EVENT();
-	// find vertex positions + normals for each cell containing an edge with a zero point
 
 	// ensure the image writes are visible before we try to fetch them via a sampler
 	auto device = m_renderSys->GetDevice();
 	device->MemoryBarrier(Render::BarrierType::TextureFetch);
 
 	device->BindShaderProgram(shader);
+	PushSharedUniforms(shader, offset, cellSize);
 	auto sampler = shader.GetUniformHandle("InputVolume");
 	if (sampler != -1)
 	{
 		device->SetSampler(sampler, w.m_volumeDataTexture->GetHandle(), 0);
 	}
-	PushSharedUniforms(shader, offset, cellSize);
-	device->BindComputeImage(0, w.m_vertexPositionTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
-	device->BindComputeImage(1, w.m_vertexNormalTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::WriteOnly, true);
+	device->BindStorageBuffer(0, *w.m_workingVertexBuffer);
+	device->BindComputeImage(0, w.m_cellLookupTexture->GetHandle(), Render::ComputeImageFormat::R32UI, Render::ComputeImageAccess::WriteOnly, true);
 	device->DispatchCompute(dims.x - 1, dims.y - 1, dims.z - 1);
 }
 
+// build triangles from the vertices and indices we found earlier
 void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize)
 {
 	SDE_PROF_EVENT();
-	// build triangles from the vertices we found earlier
-
-	// clear out the old header data
-	VertexOutputHeader newHeader = { {(uint32_t)dims.x,(uint32_t)dims.y,(uint32_t)dims.z}, 0 };
-	w.m_workingVertexBuffer->SetData(0, sizeof(newHeader), &newHeader);
-
+	
 	// ensure data is visible before image loads
 	auto device = m_renderSys->GetDevice();
 	device->MemoryBarrier(Render::BarrierType::Image);
 
 	device->BindShaderProgram(shader);
+	PushSharedUniforms(shader, offset, cellSize);
 	auto sampler = shader.GetUniformHandle("InputVolume");
 	if (sampler != -1)
 	{
 		device->SetSampler(sampler, w.m_volumeDataTexture->GetHandle(), 0);
 	}
-	PushSharedUniforms(shader, offset, cellSize);
-	device->BindComputeImage(0, w.m_vertexPositionTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::ReadOnly, true);
-	device->BindComputeImage(1, w.m_vertexNormalTexture->GetHandle(), Render::ComputeImageFormat::RGBAF32, Render::ComputeImageAccess::ReadOnly, true);
-	device->BindStorageBuffer(0, *w.m_workingVertexBuffer);
+	device->BindStorageBuffer(0, *w.m_workingIndexBuffer);
+	device->BindComputeImage(0, w.m_cellLookupTexture->GetHandle(), Render::ComputeImageFormat::R32UI, Render::ComputeImageAccess::ReadOnly, true);
 	device->DispatchCompute(dims.x - 1, dims.y - 1, dims.z - 1);
 	w.m_buildMeshFence = device->MakeFence();
 }
@@ -236,6 +232,10 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 		const glm::vec3 worldOffset = mesh.GetBoundsMin() -(cellSize * float(extraLayers));
 
 		auto w = MakeWorkingSet(dims, handle);
+		OutputBufferHeader newHeader = { 0, {(uint32_t)dims.x,(uint32_t)dims.y,(uint32_t)dims.z} };
+		w->m_workingVertexBuffer->SetData(0, sizeof(newHeader), &newHeader);
+		w->m_workingIndexBuffer->SetData(0, sizeof(newHeader), &newHeader);
+
 		PopulateSDF(*w, *sdfShader, dims, instanceMaterial, worldOffset, cellSize);
 		FindVertices(*w, *findVerticesShader, dims, worldOffset, cellSize);
 		FindTriangles(*w, *makeTrianglesShader, dims, worldOffset, cellSize);
@@ -267,14 +267,19 @@ void SDFMeshSystem::BuildMeshJob(WorkingSet& w)
 	// for now copy the data to the new mesh via cpu
 	// eventually we should use probably buffersubdata() and only read the headers if possible
 	// it may even be worth caching + reusing entire meshes
-	void* ptr = w.m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, w.m_workingVertexBuffer->GetSize());
-	if (ptr)
+	void* vptr = w.m_workingVertexBuffer->Map(Render::RenderBufferMapHint::Read, 0, w.m_workingVertexBuffer->GetSize());
+	void* iptr = w.m_workingIndexBuffer->Map(Render::RenderBufferMapHint::Read, 0, w.m_workingIndexBuffer->GetSize());
+	if (vptr && iptr)
 	{
-		VertexOutputHeader* header = (VertexOutputHeader*)ptr;
-		auto vertexCount = header->m_vertexCount / 2;	// todo
-		if (vertexCount > 0)
+		OutputBufferHeader* vheader = (OutputBufferHeader*)vptr;
+		auto vertexCount = vheader->m_vertexCount / 2;	// todo
+		OutputBufferHeader* iheader = (OutputBufferHeader*)iptr;
+		auto indexCount = iheader->m_vertexCount;	// todo
+
+		if (vertexCount > 0 && indexCount > 0)
 		{
-			float* vbase = reinterpret_cast<float*>(((uint32_t*)ptr) + 4);
+			float* vbase = reinterpret_cast<float*>(vheader + 1);
+			uint32_t* ibase = reinterpret_cast<uint32_t*>(iheader + 1);
 
 			// hacks, rebuild the entire mesh
 			// we dont try and change the old one since the gpu could be using it
@@ -284,7 +289,11 @@ void SDFMeshSystem::BuildMeshJob(WorkingSet& w)
 			vb.Create(vbase, sizeof(float) * 4 * 2 * vertexCount, Render::RenderBufferModification::Static);
 			newMesh->GetVertexArray().AddBuffer(0, &vb, Render::VertexDataType::Float, 4, 0, sizeof(float) * 4 * 2);
 			newMesh->GetVertexArray().AddBuffer(1, &vb, Render::VertexDataType::Float, 4, sizeof(float) * 4, sizeof(float) * 4 * 2);
-			newMesh->GetChunks().push_back(Render::MeshChunk(0, vertexCount, Render::PrimitiveType::Triangles));
+			auto ib = std::make_unique<Render::RenderBuffer>();
+			ib->Create(ibase, sizeof(uint32_t) * indexCount, Render::RenderBufferModification::Static);
+			newMesh->GetIndexBuffer() = std::move(ib);
+
+			newMesh->GetChunks().push_back(Render::MeshChunk(0, indexCount, Render::PrimitiveType::Triangles));
 			w.m_finalMesh = std::move(newMesh);
 		}
 	}
@@ -293,6 +302,7 @@ void SDFMeshSystem::BuildMeshJob(WorkingSet& w)
 		SDE_LOG("Oh crap");
 	}
 	w.m_workingVertexBuffer->Unmap();
+	w.m_workingIndexBuffer->Unmap();
 
 	// Ensure any writes are shared with all contexts
 	Render::Device::FlushContext();

@@ -82,7 +82,7 @@ function SDFTest.Tick(deltaTime)
 		end
 		
 		local maxindex = math.min(lastRemeshed + 2,#sdfEntities)
-		for i=lastRemeshed,maxindex do
+		for i=lastRemeshed,#sdfEntities do
 			local model = World.GetComponent_SDFMesh(sdfEntities[i])
 			model:Remesh()
 		end

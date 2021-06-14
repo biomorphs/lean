@@ -1,11 +1,13 @@
 #version 430
 
-// TODO
-// INPUT OFFSET/SCALE FOR SAMPLING POSITION IN WORLD SPACE
-
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout(rgba32f, binding = 0) uniform image3D outVertices;
-layout(rgba32f, binding = 1) uniform image3D outNormals;
+layout(std430, binding = 0) buffer OutputVertices
+{
+	uint m_count;
+	uint m_dimensions[3];
+	vec4 m_vertices[];		// pos, normal
+};
+layout(binding = 0, r32ui) uniform uimage3D OutputIndices;
 uniform sampler3D InputVolume;
 
 uniform vec4 WorldOffset;
@@ -108,9 +110,17 @@ void main()
 	{
 		outPosition = outPosition / intersectionCount;
 		outNormal = normalize(outNormal / intersectionCount);
+		
+		// Write the vertex to the buffer
+		uint startIndex = atomicAdd(m_count,2);
+		m_vertices[startIndex] = vec4(outPosition,1.0);
+		m_vertices[startIndex+1] = vec4(outNormal,1.0);
+		
+		// Write the index to the lookup image
+		imageStore(OutputIndices, p, ivec4(startIndex/2,0,0,0));
 	}
-	
-	// write the position + normal for this cell
-	imageStore(outNormals, p, vec4(outNormal,1));	// average of surrounding vertices
-	imageStore(outVertices, p, vec4(outPosition,1));
+	else
+	{
+		imageStore(OutputIndices, p, ivec4(0,0,0,0));
+	}
 }

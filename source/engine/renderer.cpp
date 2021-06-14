@@ -20,7 +20,7 @@
 
 namespace Engine
 {
-	const uint64_t c_maxInstances = 1024 * 512;		// this needs to include all passes/shadowmap updates
+	const uint64_t c_maxInstances = 1024 * 256;		// this needs to include all passes/shadowmap updates
 	const uint64_t c_maxLights = 256;
 	const uint32_t c_maxShadowMaps = 16;
 	const int32_t c_bloomBufferSizeDivider = 2;	// windowsize/divider

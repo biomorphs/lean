@@ -1,28 +1,26 @@
 #version 430
 
-uniform sampler3D InputVolume;
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout(rgba32f, binding = 0) uniform image3D InputVertices;
-layout(rgba32f, binding = 1) uniform image3D InputNormals;
-layout(std430, binding = 0) buffer OutputVertices
+layout(binding = 0, std430) buffer OutputIndices
 {
-	uint m_dimensions[3];
 	uint m_count;
-	vec4 m_vertices[];		// pos, normal
+	uint m_dimensions[3];
+	uint m_indices[];
 };
+layout(binding = 0, r32ui) uniform uimage3D InputIndices;	// index per cell in 3d texture
+uniform sampler3D InputVolume;
 
-
-void OutputQuad(vec3 v0,vec3 v1,vec3 v2,vec3 v3,vec3 n0,vec3 n1,vec3 n2,vec3 n3)
+void OutputQuad(uint v0,uint v1,uint v2,uint v3)
 {
-	uint startIndex = atomicAdd(m_count,12);
+	uint startIndex = atomicAdd(m_count,6);
 	
-	m_vertices[startIndex] =   vec4(v0, 1.0);	m_vertices[startIndex+1] = vec4(n0, 1.0);
-	m_vertices[startIndex+2] = vec4(v1, 1.0);	m_vertices[startIndex+3] = vec4(n1, 1.0);
-	m_vertices[startIndex+4] = vec4(v2, 1.0);	m_vertices[startIndex+5] = vec4(n2, 1.0);
+	m_indices[startIndex] =   v0;
+	m_indices[startIndex+1] = v1;
+	m_indices[startIndex+2] = v2;
 							   
-	m_vertices[startIndex+6] = vec4(v2, 1.0);	m_vertices[startIndex+7] = vec4(n2, 1.0);
-	m_vertices[startIndex+8] = vec4(v3, 1.0);	m_vertices[startIndex+9] = vec4(n3, 1.0);
-	m_vertices[startIndex+10] = vec4(v0, 1.0);	m_vertices[startIndex+11] = vec4(n0, 1.0);
+	m_indices[startIndex+3] = v2;
+	m_indices[startIndex+4] = v3;
+	m_indices[startIndex+5] = v0;
 }
 
 void main() 
@@ -48,17 +46,17 @@ void main()
 		float s1 = texture(InputVolume, cellSize * (p + ivec3(0,0,1))).r;
 		if ((s0 > 0.0) != (s1 > 0.0))
 		{			
-			vec3 v0 = imageLoad(InputVertices, p + ivec3(-1,-1,0)).xyz;		vec3 n0 = imageLoad(InputNormals, p + ivec3(-1,-1,0)).xyz;
-			vec3 v1 = imageLoad(InputVertices, p + ivec3(0,-1,0)).xyz;		vec3 n1 = imageLoad(InputNormals, p + ivec3(0,-1,0)).xyz;
-			vec3 v2 = imageLoad(InputVertices, p + ivec3(0,0,0)).xyz;       vec3 n2 = imageLoad(InputNormals, p + ivec3(0,0,0)).xyz;
-			vec3 v3 = imageLoad(InputVertices, p + ivec3(-1,0,0)).xyz;      vec3 n3 = imageLoad(InputNormals, p + ivec3(-1,0,0)).xyz;
+			uint i0 = imageLoad(InputIndices, p + ivec3(-1,-1,0)).x;
+			uint i1 = imageLoad(InputIndices, p + ivec3(0,-1,0)).x;
+			uint i2 = imageLoad(InputIndices, p + ivec3(0,0,0)).x;
+			uint i3 = imageLoad(InputIndices, p + ivec3(-1,0,0)).x;
 			if (s1 > 0.0f)
 			{
-				OutputQuad(v0,v1,v2,v3,n0,n1,n2,n3);
+				OutputQuad(i0,i1,i2,i3);
 			}
 			else
 			{
-				OutputQuad(v3,v2,v1,v0,n3,n2,n1,n0);
+				OutputQuad(i3,i2,i1,i0);
 			}
 		}
 	}
@@ -68,17 +66,17 @@ void main()
 		float s1 = texture(InputVolume, cellSize * (p + ivec3(0,1,0))).r;
 		if ((s0 > 0.0) != (s1 > 0.0))
 		{
-			vec3 v0 = imageLoad(InputVertices, p + ivec3(-1,0,-1)).xyz;		vec3 n0 = imageLoad(InputNormals, p + ivec3(-1,0,-1)).xyz;
-			vec3 v1 = imageLoad(InputVertices, p + ivec3(0,0,-1)).xyz;      vec3 n1 = imageLoad(InputNormals, p + ivec3(0,0,-1)).xyz;
-			vec3 v2 = imageLoad(InputVertices, p + ivec3(0,0,0)).xyz;       vec3 n2 = imageLoad(InputNormals, p + ivec3(0,0,0)).xyz;
-			vec3 v3 = imageLoad(InputVertices, p + ivec3(-1,0,0)).xyz;      vec3 n3 = imageLoad(InputNormals, p + ivec3(-1,0,0)).xyz;
+			uint i0 = imageLoad(InputIndices, p + ivec3(-1,0,-1)).x;
+			uint i1 = imageLoad(InputIndices, p + ivec3(0,0,-1)).x; 
+			uint i2 = imageLoad(InputIndices, p + ivec3(0,0,0)).x;  
+			uint i3 = imageLoad(InputIndices, p + ivec3(-1,0,0)).x; 
 			if (s0 > 0.0f)
 			{
-				OutputQuad(v0,v1,v2,v3,n0,n1,n2,n3);
+				OutputQuad(i0,i1,i2,i3);
 			}
 			else
 			{
-				OutputQuad(v3,v2,v1,v0,n3,n2,n1,n0);
+				OutputQuad(i3,i2,i1,i0);
 			}
 		}
 	}
@@ -88,17 +86,17 @@ void main()
 		float s1 = texture(InputVolume, cellSize * (p + ivec3(1,0,0))).r;
 		if ((s0 > 0.0) != (s1 > 0.0))
 		{
-			vec3 v0 = imageLoad(InputVertices, p + ivec3(0,-1,-1)).xyz;		vec3 n0 = imageLoad(InputNormals, p + ivec3(0,-1,-1)).xyz;
-			vec3 v1 = imageLoad(InputVertices, p + ivec3(0,0,-1)).xyz;      vec3 n1 = imageLoad(InputNormals, p + ivec3(0,0,-1)).xyz;
-			vec3 v2 = imageLoad(InputVertices, p + ivec3(0,0,0)).xyz;       vec3 n2 = imageLoad(InputNormals, p + ivec3(0,0,0)).xyz;
-			vec3 v3 = imageLoad(InputVertices, p + ivec3(0,-1,0)).xyz;      vec3 n3 = imageLoad(InputNormals, p + ivec3(0,-1,0)).xyz;
+			uint i0 = imageLoad(InputIndices, p + ivec3(0,-1,-1)).x;
+			uint i1 = imageLoad(InputIndices, p + ivec3(0,0,-1)).x; 
+			uint i2 = imageLoad(InputIndices, p + ivec3(0,0,0)).x;  
+			uint i3 = imageLoad(InputIndices, p + ivec3(0,-1,0)).x; 
 			if (s1 > 0.0f)
 			{
-				OutputQuad(v0,v1,v2,v3,n0,n1,n2,n3);
+				OutputQuad(i0,i1,i2,i3);
 			}
 			else
 			{
-				OutputQuad(v3,v2,v1,v0,n3,n2,n1,n0);
+				OutputQuad(i3,i2,i1,i0);
 			}
 		}
 	}

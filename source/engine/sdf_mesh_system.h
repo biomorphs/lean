@@ -62,11 +62,11 @@ private:
 		glm::ivec3 m_dimensions;
 		std::unique_ptr<Render::Texture> m_volumeDataTexture;
 		std::unique_ptr<Render::RenderBuffer> m_workingVertexBuffer;
-		std::unique_ptr<Render::Texture> m_vertexPositionTexture;
-		std::unique_ptr<Render::Texture> m_vertexNormalTexture;
+		std::unique_ptr<Render::RenderBuffer> m_workingIndexBuffer;
+		std::unique_ptr<Render::Texture> m_cellLookupTexture;	// pos -> vertex index
 	};
 	int m_maxMeshesPerFrame = 32;
-	int m_maxComputePerFrame = 8;
+	int m_maxComputePerFrame = 4;
 	int m_maxCachedSets = 64;
 	int m_meshesPending = 0;
 	uint64_t m_meshGeneration = 0;	// used to control how often meshes are rebuilt when a lot exist

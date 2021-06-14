@@ -35,6 +35,7 @@ namespace Render
 		case TextureSource::Format::R8:
 		case TextureSource::Format::R8I:
 		case TextureSource::Format::RF16:
+		case TextureSource::Format::R32UI:
 			return 1;
 		case TextureSource::Format::RGBAF16:
 			return 4;
@@ -67,6 +68,8 @@ namespace Render
 			return GL_R8;
 		case TextureSource::Format::R8I:
 			return GL_R8I;
+		case TextureSource::Format::R32UI:
+			return GL_R32UI;
 		case TextureSource::Format::RF16:
 			return GL_R16F;
 		case TextureSource::Format::RGBAF16:
