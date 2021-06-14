@@ -67,21 +67,22 @@ namespace Engine
 			MeshVertex newVertex;
 			for (uint32_t v = 0; v < mesh->mNumVertices; ++v)
 			{
-				newVertex.m_position = glm::vec3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+				auto pos = glm::vec3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+				memcpy(newVertex.m_position, glm::value_ptr(pos), sizeof(float) * 3);
 				if (mesh->mNormals != nullptr)
 				{
-					newVertex.m_normal = glm::vec3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
-				}
-				if (mesh->mTextureCoords[0] != nullptr)
-				{
-					newVertex.m_texCoord0 = glm::vec2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y);
+					memcpy(newVertex.m_normal, &mesh->mNormals[v].x, sizeof(float) * 3);
 				}
 				if (mesh->mTangents != nullptr)
 				{
-					newVertex.m_tangent = glm::vec3(mesh->mBitangents[0].x, mesh->mBitangents[0].y, mesh->mBitangents[0].z);
+					memcpy(newVertex.m_tangent, &mesh->mBitangents[v].x, sizeof(float) * 3);
 				}
-				boundsMin = glm::min(boundsMin, newVertex.m_position);
-				boundsMax = glm::max(boundsMax, newVertex.m_position);
+				if (mesh->mTextureCoords[0] != nullptr)
+				{
+					memcpy(newVertex.m_texCoord0, &mesh->mTextureCoords[0][v].x, sizeof(float) * 2);
+				}
+				boundsMin = glm::min(boundsMin, pos);
+				boundsMax = glm::max(boundsMax, pos);
 				vertices.push_back(newVertex);
 			}
 			boundsMin = glm::vec3(transform * glm::vec4(boundsMin, 1.0f));

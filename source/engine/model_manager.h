@@ -1,8 +1,8 @@
 #pragma once
 #include "model.h"
 #include "model_asset.h"
-#include "render/mesh_builder.h"
 #include "core/mutex.h"
+#include "render/mesh_builder.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -23,7 +23,7 @@ namespace Engine
 	{
 	public:
 		ModelManager(TextureManager* tm, JobSystem* js);
-		~ModelManager() = default;
+		~ModelManager();
 		ModelManager(const ModelManager&) = delete;
 		ModelManager(ModelManager&&) = delete;
 
@@ -44,12 +44,11 @@ namespace Engine
 		{
 			std::unique_ptr<Assets::Model> m_model;
 			std::unique_ptr<Model> m_renderModel;
-			std::vector<std::unique_ptr<Render::MeshBuilder>> m_meshBuilders;
 			ModelHandle m_destinationHandle;
 		};
-		std::unique_ptr<Render::MeshBuilder> CreateBuilderForPart(const Assets::ModelMesh&);
-		std::unique_ptr<Model> CreateModel(Assets::Model& model, const std::vector<std::unique_ptr<Render::MeshBuilder>>& meshBuilders);
-		void FinaliseModel(Assets::Model& model, Model& renderModel, const std::vector<std::unique_ptr<Render::MeshBuilder>>& meshBuilders);
+		std::unique_ptr<Render::Mesh> CreateMeshPart(const Assets::ModelMesh&);
+		std::unique_ptr<Model> CreateModel(Assets::Model& model, std::vector<std::unique_ptr<Render::Mesh>>& meshes);
+		void FinaliseModel(Assets::Model& model, Model& renderModel);
 
 		std::vector<ModelDesc> m_models;
 	

@@ -24,10 +24,10 @@ namespace Engine
 		class MeshVertex
 		{
 		public:
-			glm::vec3 m_position;
-			glm::vec3 m_normal;
-			glm::vec3 m_tangent;
-			glm::vec2 m_texCoord0;
+			float m_position[3];
+			float m_normal[3];
+			float m_tangent[3];
+			float m_texCoord0[2];
 		};
 
 		class MeshMaterial
