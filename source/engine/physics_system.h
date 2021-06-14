@@ -25,6 +25,7 @@ namespace Engine
 {
 	class JobSystem;
 	class DebugGuiSystem;
+	class ScriptSystem;
 
 	class PhysicsSystem : public System
 	{
@@ -56,10 +57,11 @@ namespace Engine
 		EntitySystem* m_entitySystem = nullptr;
 		GraphicsSystem* m_graphicsSystem = nullptr;
 		DebugGuiSystem* m_debugGuiSystem = nullptr;
+		Engine::ScriptSystem* m_scriptSystem = nullptr;
+
 		float m_timeAccumulator = 0.0f;
 		float m_timeStep = 1.0f / 60.0f;	// fixed time step for now
 		bool m_hasTicked = false;
-
 		// Since physx has a 64k material limit, we will cache materials with the same values
 		// later on we probably want some kind of proper physics material exposed
 		struct PhysicsMaterial 

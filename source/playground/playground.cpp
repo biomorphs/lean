@@ -11,6 +11,7 @@
 #include "engine/file_picker_dialog.h"
 #include "engine/serialisation.h"
 #include "entity/entity_system.h"
+#include "engine/graph_data_buffer.h"
 #include <cassert>
 
 std::string g_configFile = "playground_config.json";
@@ -192,14 +193,31 @@ bool Playground::PostInit()
 
 void Playground::ShowSystemProfiler()
 {
+	static std::map<std::string, std::tuple<Engine::GraphDataBuffer, double>> s_graphDatas;
+
 	bool open = true;
 	m_debugGui->BeginWindow(open, "System Profiler");
 	char text[256] = "";
 	double totalTime = 0.0;
 	for (const auto& it : m_systemManager->GetLastUpdateTimes())
 	{
-		totalTime += std::get<1>(it);
-		sprintf_s(text, "%s: %3.3fms", std::get<0>(it).c_str(), (float)std::get<1>(it) * 1000.0f);
+		const auto& name = std::get<0>(it);
+		const auto& timeSeconds = std::get<1>(it);
+		Engine::GraphDataBuffer* graphData = nullptr;
+		auto foundData = s_graphDatas.find(name);
+		if (foundData == s_graphDatas.end())
+		{
+			s_graphDatas.insert({ name,std::make_tuple(Engine::GraphDataBuffer(512), 0.0f) });
+			foundData = s_graphDatas.find(name);
+		}
+		graphData = &std::get<0>((*foundData).second);
+		auto& maxValue = std::get<1>((*foundData).second);
+		maxValue = glm::max(maxValue, timeSeconds);
+		totalTime += (float)timeSeconds;
+		graphData->PushValue(timeSeconds * 1000.0);
+		m_debugGui->GraphLines(name.c_str(), { 512, 32 }, *graphData);
+		m_debugGui->SameLine();
+		sprintf_s(text, "%3.3fms (%3.3fms Max)", (float)timeSeconds * 1000.0f, (float)maxValue* 1000.0f);
 		m_debugGui->Text(text);
 	}
 	sprintf_s(text, "Total: %3.3fms", (float)totalTime * 1000.0f);

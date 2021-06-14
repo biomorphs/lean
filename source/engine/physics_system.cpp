@@ -175,6 +175,7 @@ namespace Engine
 		m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
 		m_graphicsSystem = (GraphicsSystem*)manager.GetSystem("Graphics");
 		m_debugGuiSystem = (DebugGuiSystem*)manager.GetSystem("DebugGui");
+		m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
 
 		m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_physxAllocator, g_physxErrors);
 
@@ -221,6 +222,12 @@ namespace Engine
 		auto& dbgRender = m_graphicsSystem->DebugRenderer();
 		auto& world = *m_entitySystem->GetWorld();
 		m_entitySystem->RegisterInspector<Physics>(Physics::MakeInspector(*m_debugGuiSystem, dbgRender, world));
+
+		//// expose Physics script functions
+		auto graphics = m_scriptSystem->Globals()["Physics"].get_or_create<sol::table>();
+		graphics["SetGravity"] = [this](float x, float y, float z) {
+			m_scene->setGravity({ x,y,z });
+		};
 
 		return true;
 	}

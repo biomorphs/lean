@@ -12,6 +12,7 @@ local ShowEndScreen = false
 
 function Marbles.Init()
 	Graphics.SetClearColour(0.3,0.55,0.8)
+	Physics.SetGravity(0,-30,0)
 	MakeSunEntity()
 	
 	MainCamera = MakeCamera("Main Camera")
@@ -37,32 +38,32 @@ function Marbles.Tick(deltaTime)
 	local p = World.GetComponent_Physics(AllMarbles[1])
 	if(p ~= nil) then 
 		if(Input.IsKeyPressed("KEY_UP")) then 
-			p:AddForce(vec3.new(0,0,-32))
+			p:AddForce(vec3.new(0,0,-50))
 		end
 		if(Input.IsKeyPressed("KEY_DOWN")) then 
-			p:AddForce(vec3.new(0,0,32))
+			p:AddForce(vec3.new(0,0,50))
 		end
 		if(Input.IsKeyPressed("KEY_LEFT")) then 
-			p:AddForce(vec3.new(-40,0,0))
+			p:AddForce(vec3.new(-50,0,0))
 		end
 		if(Input.IsKeyPressed("KEY_RIGHT")) then 
-			p:AddForce(vec3.new(40,0,0))
+			p:AddForce(vec3.new(50,0,0))
 		end
 	end
 	
 	local p = World.GetComponent_Physics(AllMarbles[2])
 	if(p ~= nil) then 
 		if(Input.IsKeyPressed("KEY_w")) then 
-			p:AddForce(vec3.new(0,0,-32))
+			p:AddForce(vec3.new(0,0,-50))
 		end
 		if(Input.IsKeyPressed("KEY_s")) then 
-			p:AddForce(vec3.new(0,0,32))
+			p:AddForce(vec3.new(0,0,50))
 		end
 		if(Input.IsKeyPressed("KEY_a")) then 
-			p:AddForce(vec3.new(-40,0,0))
+			p:AddForce(vec3.new(-50,0,0))
 		end
 		if(Input.IsKeyPressed("KEY_d")) then 
-			p:AddForce(vec3.new(40,0,0))
+			p:AddForce(vec3.new(50,0,0))
 		end
 	end
 	

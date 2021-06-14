@@ -8,6 +8,8 @@ local Brush = {}
 
 function Fishtank.Init()
 	Graphics.SetClearColour(0.3,0.55,0.8)
+	Physics.SetGravity(0,-40,0)
+	
 	MakeSunEntity()
 	MakeFloorEntity()
 	

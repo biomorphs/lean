@@ -838,7 +838,7 @@ namespace Engine
 				return false;
 			});
 		}
-		list.m_instances = std::move(allVisibleInstances.m_instances);
+		list.m_instances = allVisibleInstances.m_instances;
 		return PopulateInstanceBuffers(list);
 	}
 
