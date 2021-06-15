@@ -12,7 +12,7 @@ uniform sampler3D InputVolume;
 
 uniform vec4 WorldOffset;
 uniform vec4 CellSize;
-uniform float NormalSampleBias = 1.0;
+uniform float NormalSampleBias = 0.9;	
 
 vec3 SampleNormal(vec3 p, vec3 uvScale, float sampleDelta)
 {
@@ -109,7 +109,14 @@ void main()
 	if(intersectionCount > 0)
 	{
 		outPosition = outPosition / intersectionCount;
+		
+		//outNormal = outNormal + SampleNormal(outPosition,uvScale,NormalSampleBias);
+		//outNormal = normalize(outNormal / (intersectionCount + 1));
+		
 		outNormal = normalize(outNormal / intersectionCount);
+		
+		//outNormal = normalize((outNormal + SampleNormal(outPosition,uvScale,NormalSampleBias)) / 2);
+		
 		
 		// Write the vertex to the buffer
 		uint startIndex = atomicAdd(m_count,2);

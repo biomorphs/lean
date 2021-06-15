@@ -10,6 +10,7 @@ uniform sampler2D DiffuseTexture;
 uniform sampler2D ShadowMaps[16];
 uniform samplerCube ShadowCubeMaps[16];
 
+uniform vec4 MeshUVOffsetScale = vec4(0.0,0.0,1.0,1.0);	// xy=offset, zw=scale
 uniform vec4 MeshDiffuseOpacity = vec4(1.0,1.0,1.0,1.0);
 uniform vec4 MeshSpecular = vec4(1.0,1.0,1.0,0.0);	//r,g,b,strength
 uniform float MeshShininess = 1.0;
@@ -145,9 +146,9 @@ void main()
 	float b = (blending.x + blending.y + blending.z);
 	blending /= vec3(b, b, b);
 	
-	vec4 xaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.yz * 0.05f) );
-	vec4 yaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xz * 0.05f) );
-	vec4 zaxis = srgbToLinear( texture2D( DiffuseTexture, vs_out_position.xy * 0.05f) );
+	vec4 xaxis = srgbToLinear( texture2D( DiffuseTexture, MeshUVOffsetScale.xy + vs_out_position.yz * MeshUVOffsetScale.zw * 0.05f) );
+	vec4 yaxis = srgbToLinear( texture2D( DiffuseTexture, MeshUVOffsetScale.xy + vs_out_position.xz * MeshUVOffsetScale.zw * 0.05f) );
+	vec4 zaxis = srgbToLinear( texture2D( DiffuseTexture, MeshUVOffsetScale.xy + vs_out_position.xy * MeshUVOffsetScale.zw * 0.05f) );
 	
 	// blend the results of the 3 planar projections.
 	vec4 diffuseTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;

@@ -58,7 +58,6 @@ void main() {
  // float d = SDFTestFromCpp(worldPos.x, worldPos.y, worldPos.z);
   
   float d = length(worldPos - vec3(10,32,-32)) - 6 - (16 * (1.0 + sin(Time * 0.5)));
-  d = opSmoothUnion(d,worldPos.y - 4 - sin(worldPos.x * 0.13 + Time) * 2 - cos(worldPos.z * 0.05 + Time),1.0);
   
   float noises = snoise(vec2(Time + worldPos.x * 0.00025,worldPos.z * 0.00025)) * 1;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.005,worldPos.z * 0.005)) * 0.5;
@@ -67,7 +66,8 @@ void main() {
   noises = noises + snoise(vec2(Time + worldPos.x * 0.04,worldPos.z * 0.04)) * 0.03125;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.8,worldPos.z * 0.8)) * 0.015625;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.16,worldPos.z * 0.16)) * 0.0078125;
-  d = opSmoothUnion(d,worldPos.y - 40 - noises * 120,2);
+  d = min(d,worldPos.y - 40 - noises * 120);
+  d = opSmoothUnion(d,worldPos.y - 4 - sin(worldPos.x * 0.13 + Time) * 2 - cos(worldPos.z * 0.05 + Time),1.0);
   
   // output to a specific pixel in the image
   imageStore(theTexture, pixel_coords, vec4(clamp(d,-1,1),0,0,0));

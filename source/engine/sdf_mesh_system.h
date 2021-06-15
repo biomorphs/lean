@@ -67,7 +67,7 @@ private:
 		std::unique_ptr<Render::Texture> m_cellLookupTexture;	// pos -> vertex index
 	};
 	int m_maxMeshesPerFrame = 8;
-	int m_maxComputePerFrame = 3;
+	int m_maxComputePerFrame = 4;
 	int m_maxCachedSets = 12;
 	int m_meshesPending = 0;
 	uint64_t m_meshGeneration = 0;	// used to control how often meshes are rebuilt when a lot exist

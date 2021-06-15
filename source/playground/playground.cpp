@@ -207,7 +207,7 @@ void Playground::ShowSystemProfiler()
 		auto foundData = s_graphDatas.find(name);
 		if (foundData == s_graphDatas.end())
 		{
-			s_graphDatas.insert({ name,std::make_tuple(Engine::GraphDataBuffer(512), 0.0f) });
+			s_graphDatas.insert({ name,std::make_tuple(Engine::GraphDataBuffer(256), 0.0f) });
 			foundData = s_graphDatas.find(name);
 		}
 		graphData = &std::get<0>((*foundData).second);
@@ -215,13 +215,18 @@ void Playground::ShowSystemProfiler()
 		maxValue = glm::max(maxValue, timeSeconds);
 		totalTime += (float)timeSeconds;
 		graphData->PushValue(timeSeconds * 1000.0);
-		m_debugGui->GraphLines(name.c_str(), { 512, 32 }, *graphData);
+		m_debugGui->GraphLines(name.c_str(), { 256, 32 }, *graphData);
 		m_debugGui->SameLine();
 		sprintf_s(text, "%3.3fms (%3.3fms Max)", (float)timeSeconds * 1000.0f, (float)maxValue* 1000.0f);
 		m_debugGui->Text(text);
 	}
 	sprintf_s(text, "Total: %3.3fms", (float)totalTime * 1000.0f);
 	m_debugGui->Text(text);
+	m_debugGui->SameLine();
+	if (m_debugGui->Button("Reset"))
+	{
+		s_graphDatas.clear();
+	}
 	m_debugGui->EndWindow();
 }
 
