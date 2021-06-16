@@ -1,4 +1,4 @@
-#version 430
+#version 460
 #pragma sde include "shared.vs"
 
 uniform mat4 ShadowLightSpaceMatrix;
@@ -7,7 +7,8 @@ out vec2 vs_out_uv;
 
 void main()
 {
-	vec4 worldPos = vs_in_instance_modelmat * vec4(vs_in_position,1);
+	mat4 instanceTransform = instance_transforms[gl_BaseInstance + gl_InstanceID];
+	vec4 worldPos = instanceTransform * vec4(vs_in_position,1);
 	vs_out_position = worldPos.xyz;
 	vs_out_uv = vs_in_uv;
 	gl_Position = ShadowLightSpaceMatrix * worldPos; 

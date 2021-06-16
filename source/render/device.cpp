@@ -428,12 +428,10 @@ namespace Render
 	}
 
 	// vectorcount used to pass matrices (4x4 mat = 4 components, 4 vectorcount)
-	void Device::BindInstanceBuffer(const VertexArray& srcArray, const RenderBuffer& buffer, int vertexLayoutSlot, int components, size_t offset, size_t vectorCount)
+	void Device::BindInstanceBuffer(const RenderBuffer& buffer, int vertexLayoutSlot, int components, size_t offset, size_t vectorCount)
 	{
 		assert(buffer.GetHandle() != 0);
 		assert(components <= 4);
-
-		BindVertexArray(srcArray);
 
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.GetHandle());		// bind the vbo
 		SDE_RENDER_PROCESS_GL_ERRORS("glBindBuffer");

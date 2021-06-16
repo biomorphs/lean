@@ -1,4 +1,4 @@
-#version 430
+#version 460
 #pragma sde include "global_uniforms.h"
 
 layout(location = 0) in vec2 vs_in_position;

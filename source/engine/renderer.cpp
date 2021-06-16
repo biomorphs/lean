@@ -397,6 +397,7 @@ namespace Engine
 		auto firstInstance = list.m_instances.begin();
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
 		const Render::Mesh* lastMeshUsed = nullptr;				// avoid binding the same vertex arrays
+		const Render::Material* lastInstanceMaterial = nullptr;	// avoid setting instance materials for the same mesh/shaders
 		uint32_t firstTextureUnit = 0;							// so we can bind shadows per shader instead of per mesh
 		while (firstInstance != list.m_instances.end())
 		{
@@ -418,6 +419,7 @@ namespace Engine
 					m_frameStats.m_shaderBinds++;
 					d.BindShaderProgram(*theShader);
 					d.BindUniformBufferIndex(*theShader, "Globals", 0);
+					d.BindStorageBuffer(0, m_transforms);		// bind instancing data once per shader
 					d.SetUniforms(*theShader, m_globalsUniformBuffer, 0);
 					if (uniforms != nullptr)
 					{
@@ -439,9 +441,10 @@ namespace Engine
 				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, &g_defaultTextures, textureUnit);
 
 				// apply instance material uniforms and samplers (materials can be shared across instances!)
-				if (instanceMaterial != nullptr)
+				if (instanceMaterial != nullptr && instanceMaterial != lastInstanceMaterial)
 				{
 					ApplyMaterial(d, *theShader, *instanceMaterial, *m_textures, &g_defaultTextures, textureUnit);
+					lastInstanceMaterial = instanceMaterial;
 				}
 
 				// bind vertex array + instancing streams immediately after mesh vertex streams
@@ -450,10 +453,6 @@ namespace Engine
 					m_frameStats.m_vertexArrayBinds++;
 					int instancingSlotIndex = theMesh->GetVertexArray().GetStreamCount();
 					d.BindVertexArray(theMesh->GetVertexArray());
-					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, 0, 4);
-					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 4, 4);
-					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 8, 4);
-					d.BindInstanceBuffer(theMesh->GetVertexArray(), m_transforms, instancingSlotIndex++, 4, sizeof(float) * 12, 4);
 					lastMeshUsed = theMesh;
 				}
 
