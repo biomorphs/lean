@@ -48,7 +48,7 @@ namespace Engine
 		void Render(Node& n, uint32_t depth, glm::vec3 boundsMin, glm::vec3 boundsMax, ShouldDrawFn shouldDraw, DrawFn draw);
 		glm::vec3 m_minBounds;
 		glm::vec3 m_maxBounds;
-		uint32_t m_maxDepth = 6;		// depth 0 = root
+		uint32_t m_maxDepth = 5;		// depth 0 = root
 		uint32_t m_currentGeneration = 0;
 		NodeIndex m_nextNodeIndex = 0;
 		std::unique_ptr<Node> m_root;

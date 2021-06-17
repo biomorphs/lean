@@ -6,7 +6,8 @@ in vec3 vs_out_position;
 
 out vec4 fs_out_colour;
 
-uniform sampler2D DiffuseTexture;
+uniform sampler2D RockTexture;
+uniform sampler2D GrassTexture;
 uniform sampler2D ShadowMaps[16];
 uniform samplerCube ShadowCubeMaps[16];
 
@@ -14,6 +15,9 @@ uniform vec4 MeshUVOffsetScale = vec4(0.0,0.0,1.0,1.0);	// xy=offset, zw=scale
 uniform vec4 MeshDiffuseOpacity = vec4(1.0,1.0,1.0,1.0);
 uniform vec4 MeshSpecular = vec4(1.0,1.0,1.0,0.0);	//r,g,b,strength
 uniform float MeshShininess = 1.0;
+
+uniform vec4 PlanetCenter;
+uniform float PlanetRadius;
 
 float CalculateShadows(vec3 normal, vec3 position, float shadowIndex, mat4 lightSpaceTransform, float bias)
 {
@@ -146,14 +150,26 @@ void main()
 	float b = (blending.x + blending.y + blending.z);
 	blending /= vec3(b, b, b);
 	
-	vec4 xaxis = srgbToLinear( texture2D( DiffuseTexture, MeshUVOffsetScale.xy + vs_out_position.yz * MeshUVOffsetScale.zw * 0.05f) );
-	vec4 yaxis = srgbToLinear( texture2D( DiffuseTexture, MeshUVOffsetScale.xy + vs_out_position.xz * MeshUVOffsetScale.zw * 0.05f) );
-	vec4 zaxis = srgbToLinear( texture2D( DiffuseTexture, MeshUVOffsetScale.xy + vs_out_position.xy * MeshUVOffsetScale.zw * 0.05f) );
+	vec2 xAxisUV = MeshUVOffsetScale.xy + vs_out_position.yz * MeshUVOffsetScale.zw * 0.05f;
+	vec2 yAxisUV = MeshUVOffsetScale.xy + vs_out_position.xz * MeshUVOffsetScale.zw * 0.05f;
+	vec2 zAxisUV = MeshUVOffsetScale.xy + vs_out_position.xy * MeshUVOffsetScale.zw * 0.05f;
+	vec4 xaxis = srgbToLinear( texture2D( GrassTexture, xAxisUV) );
+	vec4 yaxis = srgbToLinear( texture2D( GrassTexture, yAxisUV) );
+	vec4 zaxis = srgbToLinear( texture2D( GrassTexture, zAxisUV) );
+	vec4 grassTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 	
-	// blend the results of the 3 planar projections.
-	vec4 diffuseTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
-	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
+	xaxis = srgbToLinear( texture2D( RockTexture, xAxisUV) );
+	yaxis = srgbToLinear( texture2D( RockTexture, yAxisUV) );
+	zaxis = srgbToLinear( texture2D( RockTexture, zAxisUV) );
+	vec4 rockTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 	
+	
+	vec3 viewDir = normalize(vs_out_position - CameraPosition.xyz);
+	
+	vec3 worldToCenter = vs_out_position - PlanetCenter.xyz;
+	float grassAmount = clamp((dot(normalize(worldToCenter), finalNormal) - 0.95) * 40,0,1);
+	
+	vec3 diffuseColour = grassAmount * grassTex.rgb + (1-grassAmount) * rockTex.rgb;
 	for(int i=0;i<LightCount;++i)
 	{
 		vec3 lightDir = CalculateDirection(i);
@@ -166,7 +182,7 @@ void main()
 				shadow = CalculateShadow(i, finalNormal);
 			}
 			
-			vec3 matColour = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb;
+			vec3 matColour = diffuseColour * Lights[i].ColourAndAmbient.rgb;
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
@@ -191,6 +207,9 @@ void main()
 	}
 
 	// apply exposure here, assuming next pass is postfx
-	fs_out_colour = vec4(finalColour.rgb * HDRExposure,MeshDiffuseOpacity.a);
+	fs_out_colour = vec4(finalColour.rgb * HDRExposure,1.0);
+	//fs_out_colour = vec4(clamp(normalize(worldToCenter).rgb,0,1),1.0);
+	//fs_out_colour = vec4(vec3(grassAmount) * HDRExposure,1.0);
+	//fs_out_colour = vec4(vec3(grassAmount),1.0);
 	//fs_out_colour = vec4(max(vec3(0),finalNormal.rgb) * HDRExposure,1.0);
 }

@@ -9,7 +9,8 @@ COMPONENT_SCRIPTS(SDFMesh,
 	"SetRenderShader", &SDFMesh::SetRenderShader,
 	"SetSDFShader", &SDFMesh::SetSDFShader,
 	"Remesh", &SDFMesh::Remesh,
-	"SetMaterialEntity", &SDFMesh::SetMaterialEntity
+	"SetMaterialEntity", &SDFMesh::SetMaterialEntity,
+	"SetOctreeDepth", &SDFMesh::SetOctreeDepth
 )
 
 COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureManager& textures)
@@ -56,5 +57,13 @@ void SDFMesh::SetBounds(glm::vec3 minB, glm::vec3 maxB)
 void SDFMesh::SetResolution(int x, int y, int z)
 { 
 	m_meshResolution = { x,y,z }; 
+	m_octree->Invalidate();
+}
+
+void SDFMesh::SetOctreeDepth(uint32_t d)
+{
+	assert(d < 9);
+	m_octreeDepth = d;
+	m_octree->SetMaxDepth(d);
 	m_octree->Invalidate();
 }

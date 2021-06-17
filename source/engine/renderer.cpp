@@ -146,7 +146,7 @@ namespace Engine
 
 		if (instanceMat != nullptr)
 		{
-			castShadow |= instanceMat->GetCastsShadows();
+			castShadow &= instanceMat->GetCastsShadows();
 			isTransparent |= instanceMat->GetIsTransparent();
 		}
 

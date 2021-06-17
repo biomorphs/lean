@@ -461,8 +461,11 @@ bool SDFMeshSystem::Tick(float timeDelta)
 				m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour, transform->GetMatrix());
 			}
 		};
-		auto colour = glm::vec4(1, 1, 1, 1);
-		m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
+		if (m_graphics->ShouldDrawBounds())
+		{
+			auto colour = glm::vec4(1, 1, 1, 1);
+			m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
+		}
 		m.GetOctree().Update(requestUpdate, shouldDrawNode, drawFn);
 	});
 

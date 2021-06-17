@@ -32,7 +32,6 @@ public:
 
 	Engine::SDFMeshOctree& GetOctree() { return *m_octree; }
 
-	// params
 	// note that uniforms from materials will be sent to the SDF shader!
 	void SetMaterialEntity(EntityHandle e) { m_materialEntity = e; }
 	EntityHandle GetMaterialEntity() { return m_materialEntity; }
@@ -45,6 +44,8 @@ public:
 	glm::vec3 GetBoundsMin() const { return m_boundsMin; }
 	glm::vec3 GetBoundsMax() const { return m_boundsMax; }
 	glm::ivec3 GetResolution() const { return m_meshResolution; }
+	uint32_t GetOctreeDepth() { return m_octreeDepth; }
+	void SetOctreeDepth(uint32_t d);
 
 private:
 	std::unique_ptr<Engine::SDFMeshOctree> m_octree;
@@ -53,6 +54,7 @@ private:
 	Engine::ShaderHandle m_sdfShader;
 	Engine::ShaderHandle m_renderShader;
 	std::unique_ptr<Render::Mesh> m_mesh;
+	uint32_t m_octreeDepth = 4;
 	glm::vec3 m_boundsMin = { -1.0f,-1.0f,-1.0f };
 	glm::vec3 m_boundsMax = { 1.0f,1.0f,1.0f };
 	glm::ivec3 m_meshResolution = { 32,32,32 };

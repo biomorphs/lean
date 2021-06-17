@@ -1,0 +1,7 @@
+{
+  "ClassName": "Scene",
+  "Name": "Planet",
+  "Scripts": [
+    "planet.lua"
+  ]
+}
