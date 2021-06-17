@@ -1,4 +1,5 @@
 #include "component_sdf_mesh.h"
+#include "engine/sdf_mesh_octree.h"
 #include "engine/debug_gui_system.h"
 #include "render/mesh.h"
 
@@ -7,8 +8,6 @@ COMPONENT_SCRIPTS(SDFMesh,
 	"SetResolution", &SDFMesh::SetResolution,
 	"SetRenderShader", &SDFMesh::SetRenderShader,
 	"SetSDFShader", &SDFMesh::SetSDFShader,
-	"SetBoundsMin", &SDFMesh::SetBoundsMin,
-	"SetBoundsMax", &SDFMesh::SetBoundsMax,
 	"Remesh", &SDFMesh::Remesh,
 	"SetMaterialEntity", &SDFMesh::SetMaterialEntity
 )
@@ -34,4 +33,28 @@ COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureMa
 		}
 	};
 	return fn;
+}
+
+SDFMesh::SDFMesh()
+{
+	m_octree = std::make_unique<Engine::SDFMeshOctree>();
+}
+
+void SDFMesh::SetBounds(glm::vec3 minB, glm::vec3 maxB)
+{ 
+	m_boundsMin = minB; 
+	m_boundsMax = maxB; 
+
+	// we don't actually want an octree that matches the bounds exactly unless they are cubic
+	auto dims = glm::abs(m_boundsMin - m_boundsMax);
+	auto maxAxis = glm::compMax(dims);
+
+	m_octree->SetBounds(minB, minB + glm::vec3(maxAxis, maxAxis, maxAxis));
+	m_octree->Invalidate();
+}
+
+void SDFMesh::SetResolution(int x, int y, int z)
+{ 
+	m_meshResolution = { x,y,z }; 
+	m_octree->Invalidate();
 }

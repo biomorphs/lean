@@ -66,7 +66,7 @@ void main() {
   noises = noises + snoise(vec2(Time + worldPos.x * 0.04,worldPos.z * 0.04)) * 0.03125;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.8,worldPos.z * 0.8)) * 0.015625;
   noises = noises + snoise(vec2(Time + worldPos.x * 0.16,worldPos.z * 0.16)) * 0.0078125;
-  d = min(d,worldPos.y - 40 - noises * 120);
+  d = min(d,worldPos.y - 40 - noises * 400);
   d = opSmoothUnion(d,worldPos.y - 4 - sin(worldPos.x * 0.13 + Time) * 2 - cos(worldPos.z * 0.05 + Time),1.0);
   
   // output to a specific pixel in the image

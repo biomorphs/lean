@@ -14,11 +14,13 @@ namespace Render
 namespace Engine
 {
 	class TextureManager;
+	class SDFMeshOctree;
 }
 
 class SDFMesh
 {
 public:
+	SDFMesh();
 	COMPONENT(SDFMesh);
 	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::TextureManager& textures);
 
@@ -28,6 +30,8 @@ public:
 	const Render::Mesh* GetMesh() const { return m_mesh.get(); }
 	void SetMesh(std::unique_ptr<Render::Mesh>&& m) { m_mesh = std::move(m); }
 
+	Engine::SDFMeshOctree& GetOctree() { return *m_octree; }
+
 	// params
 	// note that uniforms from materials will be sent to the SDF shader!
 	void SetMaterialEntity(EntityHandle e) { m_materialEntity = e; }
@@ -36,15 +40,14 @@ public:
 	Engine::ShaderHandle GetSDFShader() const { return m_sdfShader; }
 	void SetRenderShader(Engine::ShaderHandle s) { m_renderShader = s; }
 	Engine::ShaderHandle GetRenderShader() const { return m_renderShader; }
-	void SetBounds(glm::vec3 minB, glm::vec3 maxB) { m_boundsMin = minB; m_boundsMax = maxB; }
-	void SetBoundsMin(float x, float y, float z) { m_boundsMin = { x,y,z }; }
-	void SetBoundsMax(float x, float y, float z) { m_boundsMax = { x,y,z }; }
-	void SetResolution(int x, int y, int z) { m_meshResolution = { x,y,z }; }
+	void SetBounds(glm::vec3 minB, glm::vec3 maxB);
+	void SetResolution(int x, int y, int z);
 	glm::vec3 GetBoundsMin() const { return m_boundsMin; }
 	glm::vec3 GetBoundsMax() const { return m_boundsMax; }
 	glm::ivec3 GetResolution() const { return m_meshResolution; }
 
 private:
+	std::unique_ptr<Engine::SDFMeshOctree> m_octree;
 	EntityHandle m_materialEntity;
 	bool m_remesh = false;
 	Engine::ShaderHandle m_sdfShader;

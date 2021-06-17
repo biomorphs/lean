@@ -1,0 +1,7 @@
+{
+  "ClassName": "Scene",
+  "Name": "Octree test",
+  "Scripts": [
+    "new_sdf_test_octrees.lua"
+  ]
+}

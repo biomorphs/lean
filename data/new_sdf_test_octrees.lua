@@ -7,9 +7,9 @@ Graphics.SetShadowShader(DrawShaderFancy, ShadowShader)
 local SDFShader = Graphics.LoadComputeShader("SDF Volume Test",  "compute_test_write_volume.cs")
 
 local sdfEntities = {}
-local blockSize = {128,256,128}	-- dimensions in meters
-local res = {32,48,32}		-- grid resolution
-local blockCounts = {32,1,32}	-- blocks in the scene
+local blockSize = {4096,512,4096}	-- dimensions in meters
+local res = {32,32,32}				-- grid resolution
+local blockCounts = {1,1,1}			-- blocks in the scene
 local sharedMaterial = {}
 
 function MakeSDFMaterial()
@@ -59,15 +59,8 @@ function SDFTest.Init()
 	MakeSunEntity()
 	MakeSDFMaterial()
 	
-	for x=0, blockCounts[1]-1 do
-		for y=0, blockCounts[2]-1 do
-			for z=0, blockCounts[3]-1 do
-				local p = {x * blockSize[1],-1 +  y * blockSize[2],z * blockSize[3]}
-				MakeSDFEntity({0,0,0},p,{p[1]+blockSize[1],p[2]+blockSize[2],p[3]+blockSize[3]},res)
-			end
-		end
-	end
-	
+	local p = {0,0,0}
+	MakeSDFEntity({0,0,0},p,{p[1]+blockSize[1],p[2]+blockSize[2],p[3]+blockSize[3]},res)
 end
 
 local lastRemeshed = 1

@@ -44,12 +44,12 @@ private:
 	void FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize);
 	void FindVertices(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize);
 	void PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat, glm::vec3 offset, glm::vec3 cellSize);
-	void KickoffRemesh(class SDFMesh& mesh, EntityHandle handle);
+	void KickoffRemesh(class SDFMesh& mesh, EntityHandle handle, glm::vec3 boundsMin, glm::vec3 boundsMax, uint64_t nodeIndex);
 	void PushSharedUniforms(Render::ShaderProgram& shader, glm::vec3 offset, glm::vec3 cellSize);
 	void BuildMeshJob(WorkingSet& w);
 	void FinaliseMesh(WorkingSet& w);
 	size_t GetWorkingDataSize(glm::ivec3 dims) const;
-	std::unique_ptr<WorkingSet> MakeWorkingSet(glm::ivec3 dimsRequired, EntityHandle h);
+	std::unique_ptr<WorkingSet> MakeWorkingSet(glm::ivec3 dimsRequired, EntityHandle h, uint64_t nodeIndex);
 
 	const uint32_t c_maxBlockDimensions = 128;
 	struct WorkingSet
@@ -58,6 +58,7 @@ private:
 		WorkingSet(WorkingSet&&) = default;
 		WorkingSet(const WorkingSet&) = delete;
 		EntityHandle m_remeshEntity;
+		uint64_t m_nodeIndex = -1;
 		Render::Fence m_buildMeshFence;
 		std::unique_ptr<Render::Mesh> m_finalMesh;
 		glm::ivec3 m_dimensions;
@@ -66,9 +67,9 @@ private:
 		std::unique_ptr<Render::RenderBuffer> m_workingIndexBuffer;
 		std::unique_ptr<Render::Texture> m_cellLookupTexture;	// pos -> vertex index
 	};
-	int m_maxMeshesPerFrame = 8;
-	int m_maxComputePerFrame = 4;
-	int m_maxCachedSets = 12;
+	int m_maxMeshesPerFrame = 16;
+	int m_maxComputePerFrame = 2;
+	int m_maxCachedSets = 16;
 	int m_meshesPending = 0;
 	uint64_t m_meshGeneration = 0;	// used to control how often meshes are rebuilt when a lot exist
 	Core::Mutex m_finaliseMeshLock;

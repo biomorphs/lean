@@ -1,9 +1,11 @@
 #include "sdf_mesh_system.h"
 #include "core/log.h"
+#include "engine/sdf_mesh_octree.h"
 #include "engine/components/component_sdf_mesh.h"
 #include "engine/components/component_transform.h"
 #include "engine/components/component_material.h"
 #include "engine/camera_system.h"
+#include "engine/frustum.h"
 #include "engine/system_manager.h"
 #include "engine/debug_render.h"
 #include "entity/entity_system.h"
@@ -79,7 +81,7 @@ uint32_t nextPowerTwo(uint32_t v)
 	return v;
 }
 
-std::unique_ptr<SDFMeshSystem::WorkingSet> SDFMeshSystem::MakeWorkingSet(glm::ivec3 dimsRequired, EntityHandle h)
+std::unique_ptr<SDFMeshSystem::WorkingSet> SDFMeshSystem::MakeWorkingSet(glm::ivec3 dimsRequired, EntityHandle h, uint64_t nodeIndex)
 {
 	SDE_PROF_EVENT();
 
@@ -89,6 +91,7 @@ std::unique_ptr<SDFMeshSystem::WorkingSet> SDFMeshSystem::MakeWorkingSet(glm::iv
 		{
 			auto w = std::move(*it);
 			w->m_remeshEntity = h;
+			w->m_nodeIndex = nodeIndex;
 			m_workingSetCache.erase(it);
 			return std::move(w);
 		}
@@ -128,6 +131,7 @@ std::unique_ptr<SDFMeshSystem::WorkingSet> SDFMeshSystem::MakeWorkingSet(glm::iv
 	w->m_workingIndexBuffer->SetData(0, sizeof(newHeader), &newHeader);
 
 	w->m_remeshEntity = h;
+	w->m_nodeIndex = nodeIndex;
 
 	return std::move(w);
 }
@@ -206,7 +210,7 @@ void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, 
 	w.m_buildMeshFence = device->MakeFence();
 }
 
-void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
+void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 boundsMin, glm::vec3 boundsMax, uint64_t nodeIndex)
 {
 	SDE_PROF_EVENT();
 
@@ -230,10 +234,10 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 		// +1 since we can only output triangles for dims-1
 		const uint32_t extraLayers = 2;
 		auto dims = mesh.GetResolution() + glm::ivec3(1 + extraLayers * 2);
-		const glm::vec3 cellSize = (mesh.GetBoundsMax() - mesh.GetBoundsMin()) / glm::vec3(mesh.GetResolution());
-		const glm::vec3 worldOffset = mesh.GetBoundsMin() -(cellSize * float(extraLayers));
+		const glm::vec3 cellSize = (boundsMax - boundsMin) / glm::vec3(mesh.GetResolution());
+		const glm::vec3 worldOffset = boundsMin -(cellSize * float(extraLayers));
 
-		auto w = MakeWorkingSet(dims, handle);
+		auto w = MakeWorkingSet(dims, handle, nodeIndex);
 		OutputBufferHeader newHeader = { 0, {(uint32_t)dims.x,(uint32_t)dims.y,(uint32_t)dims.z} };
 		w->m_workingVertexBuffer->SetData(0, sizeof(newHeader), &newHeader);
 		w->m_workingIndexBuffer->SetData(0, sizeof(newHeader), &newHeader);
@@ -250,15 +254,16 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle)
 void SDFMeshSystem::FinaliseMesh(WorkingSet& w)
 {
 	SDE_PROF_EVENT();
-	if (w.m_finalMesh != nullptr)
+
+	auto world = m_entitySystem->GetWorld();
+	auto meshComponent = world->GetComponent<SDFMesh>(w.m_remeshEntity);
+	if (meshComponent)
 	{
-		auto world = m_entitySystem->GetWorld();
-		auto meshComponent = world->GetComponent<SDFMesh>(w.m_remeshEntity);
-		if (meshComponent)
+		if (w.m_finalMesh != nullptr)
 		{
 			w.m_finalMesh->GetVertexArray().Create();		// this is the only thing we can't do in jobs
-			meshComponent->SetMesh(std::move(w.m_finalMesh));
 		}
+		meshComponent->GetOctree().SetNodeData(w.m_nodeIndex, std::move(w.m_finalMesh));
 	}
 	--m_meshesPending;
 }
@@ -358,6 +363,42 @@ void SDFMeshSystem::FinaliseMeshes()
 	}
 }
 
+bool BoundsIntersect(glm::vec3 aMin, glm::vec3 aMax, glm::vec3 bMin, glm::vec3 bMax)
+{
+	return (aMin.x <= bMax.x && aMax.x >= bMin.x) &&
+		(aMin.y <= bMax.y && aMax.y >= bMin.y) &&
+		(aMin.z <= bMax.z && aMax.z >= bMin.z);
+}
+
+float ScreenSpaceArea(glm::vec3 aMin, glm::vec3 aMax, glm::mat4 worldTransform, glm::mat4 viewProj)
+{
+	auto dims = aMax - aMin;
+	glm::vec3 points[] = { 
+		{aMin.x, aMin.y, aMin.z},
+		{aMin.x+dims.x, aMin.y, aMin.z},
+		{aMin.x, aMin.y, aMin.z+dims.z},
+		{aMin.x + dims.x, aMin.y, aMin.z+dims.z},
+		{aMin.x, aMin.y+dims.y, aMin.z},
+		{aMin.x + dims.x + dims.y, aMin.y, aMin.z},
+		{aMin.x, aMin.y + dims.y, aMin.z + dims.z},
+		{aMin.x + dims.x + dims.y, aMin.y, aMin.z + dims.z},
+	};
+	auto minP = glm::vec4(FLT_MAX), maxP = glm::vec4 (-FLT_MAX);
+	for (auto &it : points)
+	{
+		auto p = worldTransform * glm::vec4(it, 1.0f);
+		p = p * viewProj;
+		if (p.w != 0)
+		{
+			p = p / p.w;
+		}
+		minP = glm::min(p, minP);
+		maxP = glm::max(p, maxP);
+	}
+	auto screendims = maxP - minP;
+	return screendims.x * screendims.y;
+}
+
 bool SDFMeshSystem::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
@@ -371,85 +412,95 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	// Finalise vertex arrays on main thread
 	FinaliseMeshes();
 
-	// Find meshes closest to the camera that need to be rebuilt. also submit all built meshes to the renderer
-	using ClosestMesh = std::tuple<float, SDFMesh*, EntityHandle>;
-	std::vector<ClosestMesh> closestMeshes;
-	static robin_hood::unordered_flat_map<uint32_t, uint64_t> entityToGeneration;
-	closestMeshes.reserve(m_maxComputePerFrame);
-	float furthestFromCamera = FLT_MAX;
-	uint32_t totalNeedBuild = 0, totalSkipped = 0;
+	const auto viewProjMat = camera.ProjectionMatrix() * camera.ViewMatrix();
+	const Engine::Frustum viewFrustum(viewProjMat);
+	
+	using NodeToUpdate = std::tuple<float, float, SDFMesh*, EntityHandle, glm::vec3, glm::vec3, uint64_t >;
+	std::vector<NodeToUpdate> nodesToUpdate;
+	nodesToUpdate.reserve(64 * 1024);
+	uint64_t remeshThisFrame = 0;
 	world->ForEachComponent<SDFMesh>([&](SDFMesh& m, EntityHandle owner) {
 		const Transform* transform = transforms->Find(owner);
 		if (!transform)
 			return;
-		if (m.NeedsRemesh())
+		Render::Material* instanceMaterial = nullptr;
+		if (m.GetMaterialEntity().GetID() != -1)
 		{
-			bool isTooNew = false;
-			++totalNeedBuild;
-			// has it already been remeshed this generation?
-			auto remeshedRecently = entityToGeneration.find(owner.GetID());
-			if (remeshedRecently != entityToGeneration.end())
+			auto matComponent = materials->Find(m.GetMaterialEntity());
+			if (matComponent != nullptr)
 			{
-				if (remeshedRecently->second == m_meshGeneration)
-				{
-					totalSkipped++;
-					isTooNew = true;
-				}
-			}
-
-			if (!isTooNew)
-			{
-				// use the midpoint of the transformed sdf bounds
-				glm::vec4 midPoint = glm::vec4(m.GetBoundsMin() + (m.GetBoundsMax() - m.GetBoundsMin()) / 2.0f, 1.0f) * transform->GetMatrix();
-				float distanceFromCamera = glm::distance(glm::vec3(midPoint), camera.Position());
-				if (distanceFromCamera < furthestFromCamera || closestMeshes.size() < m_maxComputePerFrame)
-				{
-					closestMeshes.push_back({ distanceFromCamera, &m, owner });
-					std::sort(closestMeshes.begin(), closestMeshes.end(), [](const ClosestMesh& c0, const ClosestMesh& c1) {
-						return std::get<0>(c0) < std::get<0>(c1);
-						});
-					if (closestMeshes.size() > m_maxComputePerFrame)
-					{
-						closestMeshes.resize(m_maxComputePerFrame);
-					}
-					furthestFromCamera = std::get<0>(closestMeshes[closestMeshes.size() - 1]);
-				}
+				instanceMaterial = &matComponent->GetRenderMaterial();
 			}
 		}
-		if (m.GetMesh() && m.GetRenderShader().m_index != -1)
+		auto requestUpdate = [&](glm::vec3 bmin, glm::vec3 bmax, uint64_t node)
 		{
-			Render::Material* instanceMaterial = nullptr;
-			if (m.GetMaterialEntity().GetID() != -1)
+			glm::vec4 midPoint = glm::vec4(bmin + (bmax - bmin) / 2.0f, 1.0f) * transform->GetMatrix();
+			float distanceFromCamera = glm::distance(glm::vec3(midPoint), camera.Position());
+			auto cellSize = glm::distance(bmax, bmin);
+			nodesToUpdate.push_back({ cellSize, distanceFromCamera, &m, owner, bmin, bmax, node });
+		};
+		auto shouldDrawNode = [&](glm::vec3 bmin, glm::vec3 bmax)
+		{
+			bool inBounds = BoundsIntersect(bmin, bmax, m.GetBoundsMin(), m.GetBoundsMax());
+			if (inBounds)
 			{
-				auto matComponent = materials->Find(m.GetMaterialEntity());
-				if (matComponent != nullptr)
+				bool inFrustum = viewFrustum.IsBoxVisible(bmin, bmax, transform->GetMatrix());
+				if (inFrustum)
 				{
-					instanceMaterial = &matComponent->GetRenderMaterial();
+					return true;
 				}
 			}
-			m_graphics->Renderer().SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetRenderShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
+			return false;
+		};
+		auto drawFn = [&](glm::vec3 bmin, glm::vec3 bmax, Render::Mesh& nodemesh)
+		{
+			m_graphics->Renderer().SubmitInstance(transform->GetMatrix(), nodemesh, m.GetRenderShader(), bmin, bmax, instanceMaterial);
 			if (m_graphics->ShouldDrawBounds())
 			{
-				auto colour = glm::vec4(1, 1, 1, 1);
-				m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
+				auto colour = glm::vec4(1, 0, 0, 1);
+				m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour, transform->GetMatrix());
 			}
-		}
+		};
+		auto colour = glm::vec4(1, 1, 1, 1);
+		m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
+		m.GetOctree().Update(requestUpdate, shouldDrawNode, drawFn);
 	});
 
-	if (totalNeedBuild > 0 && totalSkipped == totalNeedBuild)
+	std::sort(nodesToUpdate.begin(), nodesToUpdate.end(), [](const NodeToUpdate& c0, const NodeToUpdate& c1) {
+		if (std::get<0>(c0) > std::get<0>(c1))
+		{
+			return true;
+		}
+		else if (std::get<0>(c0) < std::get<0>(c1))
+		{
+			return false;
+		}
+		else
+		{
+			return std::get<1>(c0) < std::get<1>(c1);
+		}
+	});
+	if (nodesToUpdate.size() > m_maxComputePerFrame)
 	{
-		entityToGeneration.clear();
-		m_meshGeneration++;
+		nodesToUpdate.resize(m_maxComputePerFrame);
 	}
-
-	for (auto& it : closestMeshes)
+	for(const auto &it : nodesToUpdate)
 	{
-		KickoffRemesh(*std::get<1>(it), std::get<2>(it));
-		entityToGeneration.insert({std::get<2>(it).GetID(), m_meshGeneration});
+		auto [size, distance, mesh, owner, bmin, bmax, node] = it;
+		mesh->GetOctree().SignalNodeUpdating(node);
+		KickoffRemesh(*mesh, owner, bmin, bmax, node);
+
+		auto colour = glm::vec4(0, 0, 0, 1);
+		m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour);
 	}
 
 	// Handle finished compute shaders
 	HandleFinishedComputeShaders();
+
+	bool openWin = true;
+	m_debugGui->BeginWindow(openWin, "SDF Meshing");
+	m_maxComputePerFrame = m_debugGui->DragInt("Max Compute/Frame", m_maxComputePerFrame, 1, 0, 64);
+	m_debugGui->EndWindow();
 
 	return true;
 }
