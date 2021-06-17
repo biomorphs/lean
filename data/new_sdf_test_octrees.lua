@@ -50,7 +50,10 @@ function MakeSDFEntity(pos,bmin,bmax,res)
 	sdfModel:SetRenderShader(DrawShaderFancy)
 	sdfModel:SetSDFShader(SDFShader)
 	sdfModel:SetMaterialEntity(sharedMaterial)
-	sdfModel:Remesh()
+	sdfModel:SetOctreeDepth(6)
+	sdfModel:SetLOD(3,3000)
+	sdfModel:SetLOD(4,2000)
+	sdfModel:SetLOD(5,1000)
 	table.insert(sdfEntities,sdf_entity)
 end
 

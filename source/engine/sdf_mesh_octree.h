@@ -20,11 +20,14 @@ namespace Engine
 		~SDFMeshOctree();
 
 		using NodeIndex = uint64_t;													// identify a node in the tree
-		using ShouldDrawFn = std::function<bool(glm::vec3, glm::vec3)>;				// bounds min/max, return true if this node should be drawn
+		using ShouldDrawFn = std::function<bool(glm::vec3, glm::vec3, uint32_t)>;	// bounds min/max, depth, return true if this node should be drawn
 		using DrawFn = std::function<void(glm::vec3, glm::vec3, Render::Mesh&)>;	// bounds min/max, mesh, used to submit instances to render
-		using UpdateFn = std::function<void(glm::vec3, glm::vec3, uint64_t)>;		// bounds min/max, node id, used to request updates (updater calls SetNodeData), return true if updating the node
+		using ShouldUpdateFn = std::function<bool(glm::vec3, glm::vec3, uint32_t)>;	// bounds min/max, depth, return true if this node should be updated
+		// bounds, depth, node id-used to request updates
+		// (updater calls SignalNodeUpdating and then SetNodeData when finished)
+		using UpdateFn = std::function<void(glm::vec3, glm::vec3, uint32_t, uint64_t)>;	
 
-		void Update(UpdateFn update, ShouldDrawFn shouldDraw, DrawFn draw);
+		void Update(ShouldUpdateFn shouldUpdate, UpdateFn update, ShouldDrawFn shouldDraw, DrawFn draw);
 		void SignalNodeUpdating(uint64_t node);										// updater calls this when it begins building new data
 		void SetNodeData(uint64_t node, std::unique_ptr<Render::Mesh>&& m);			// pass null if no mesh was generated to stop the updates for this node
 		void SetBounds(glm::vec3 min, glm::vec3 max);
@@ -44,7 +47,7 @@ namespace Engine
 		std::unique_ptr<Node> MakeNode();
 		void GetNodeDimensions(glm::vec3 parentMin, glm::vec3 parentMax, uint32_t childIndex, glm::vec3& bMin, glm::vec3& bMax);
 		bool NodeIsStale(const Node& n);
-		void Update(Node& n, uint32_t depth, glm::vec3 boundsMin, glm::vec3 boundsMax, UpdateFn update, ShouldDrawFn shouldDraw);
+		void Update(Node& n, uint32_t depth, glm::vec3 boundsMin, glm::vec3 boundsMax, ShouldUpdateFn shouldUpdate, UpdateFn update);
 		void Render(Node& n, uint32_t depth, glm::vec3 boundsMin, glm::vec3 boundsMax, ShouldDrawFn shouldDraw, DrawFn draw);
 		glm::vec3 m_minBounds;
 		glm::vec3 m_maxBounds;

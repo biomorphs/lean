@@ -51,6 +51,7 @@ function MakeSDFEntity(pos,bmin,bmax,res)
 	sdfModel:SetSDFShader(SDFShader)
 	sdfModel:SetMaterialEntity(sharedMaterial)
 	sdfModel:Remesh()
+	sdfModel:SetOctreeDepth(1)
 	table.insert(sdfEntities,sdf_entity)
 end
 

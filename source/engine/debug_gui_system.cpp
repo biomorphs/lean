@@ -290,9 +290,14 @@ namespace Engine
 		return ImGui::Button(txt);
 	}
 
-	void DebugGuiSystem::Text(const char* txt)
+	void DebugGuiSystem::Text(const char* format, ...)
 	{
-		ImGui::Text(txt);
+		char buffer[1024];
+		va_list args;
+		va_start(args, format);
+		vsprintf(buffer, format, args);
+		va_end(args);
+		ImGui::Text(buffer);
 	}
 
 	void DebugGuiSystem::Separator()

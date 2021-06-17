@@ -24,12 +24,7 @@ public:
 	COMPONENT(SDFMesh);
 	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::TextureManager& textures);
 
-	void SetRemesh(bool m) { m_remesh = m; }
-	void Remesh() { m_remesh = true; }
-	bool NeedsRemesh() { return m_remesh; }
-	const Render::Mesh* GetMesh() const { return m_mesh.get(); }
-	void SetMesh(std::unique_ptr<Render::Mesh>&& m) { m_mesh = std::move(m); }
-
+	void Remesh();
 	Engine::SDFMeshOctree& GetOctree() { return *m_octree; }
 
 	// note that uniforms from materials will be sent to the SDF shader!
@@ -47,7 +42,12 @@ public:
 	uint32_t GetOctreeDepth() { return m_octreeDepth; }
 	void SetOctreeDepth(uint32_t d);
 
+	using LODData = std::tuple<uint32_t, float>;	// depth, max distance
+	std::vector<LODData>& GetLODs() { return m_lods; }
+	void SetLOD(uint32_t depth, float distance);
 private:
+	using LODData = std::tuple<uint32_t, float>;	// depth, max distance
+	std::vector<LODData> m_lods;
 	std::unique_ptr<Engine::SDFMeshOctree> m_octree;
 	EntityHandle m_materialEntity;
 	bool m_remesh = false;

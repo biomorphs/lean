@@ -44,7 +44,7 @@ namespace Engine
 		void EndWindow();
 		void ItemWidth(float w);
 		void SameLine(float xOffset = 0.0f, float spacing = -1.0f);
-		void Text(const char* txt);
+		void Text(const char* format, ...);
 		bool TextInput(const char* label, char* textBuffer, size_t bufferSize);
 		bool TextInput(const char* label, std::string& str);
 		bool Button(const char* txt);

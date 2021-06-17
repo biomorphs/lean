@@ -41,7 +41,7 @@ namespace Engine
 	void SDFMeshOctree::Render(Node& n, uint32_t depth, glm::vec3 boundsMin, glm::vec3 boundsMax, ShouldDrawFn shouldDraw, DrawFn draw)
 	{
 		SDE_PROF_EVENT();
-		if (!shouldDraw(boundsMin, boundsMax))
+		if (!shouldDraw(boundsMin, boundsMax, depth))
 		{
 			return;
 		}
@@ -56,11 +56,12 @@ namespace Engine
 			{
 				if (n.m_children[i])
 				{
-					glm::vec3 nodeMin, nodeMax;
-					GetNodeDimensions(boundsMin, boundsMax, i, nodeMin, nodeMax);
-					if (shouldDraw(nodeMin, nodeMax))
+					// the child is up to date + ready to draw
+					if (n.m_children[i]->m_mesh != nullptr || !NodeIsStale(*n.m_children[i]))
 					{
-						if (n.m_children[i]->m_mesh != nullptr || !NodeIsStale(*n.m_children[i]))
+						glm::vec3 nodeMin, nodeMax;
+						GetNodeDimensions(boundsMin, boundsMax, i, nodeMin, nodeMax);
+						if (shouldDraw(nodeMin, nodeMax, depth + 1))
 						{
 							childrenToDraw[childCount++] = std::make_tuple(n.m_children[i].get(), nodeMin, nodeMax);
 						}
@@ -70,14 +71,22 @@ namespace Engine
 							break;
 						}
 					}
+					else
+					{
+						allVisibleReady = false;
+						break;
+					}
 				}
 			}
 		}
 
 		// If there are no children loaded, or they dont all have meshes, draw this node only
- 		if((childCount == 0 || !allVisibleReady) && n.m_mesh != nullptr)
+ 		if((childCount == 0 || !allVisibleReady))
 		{
-			draw(boundsMin, boundsMax, *n.m_mesh);
+			if (n.m_mesh != nullptr)
+			{
+				draw(boundsMin, boundsMax, *n.m_mesh);
+			}
 		}
 		else
 		{
@@ -89,40 +98,40 @@ namespace Engine
 		}
 	}
 
-	void SDFMeshOctree::Update(Node& n, uint32_t depth, glm::vec3 boundsMin, glm::vec3 boundsMax, UpdateFn update, ShouldDrawFn shouldDraw)
+	void SDFMeshOctree::Update(Node& n, uint32_t depth, glm::vec3 boundsMin, glm::vec3 boundsMax, ShouldUpdateFn shouldUpdate, UpdateFn update)
 	{
-		if (!n.m_isBuilding && NodeIsStale(n) && shouldDraw(boundsMin, boundsMax))
+		if (!n.m_isBuilding && NodeIsStale(n))
 		{
-			update(boundsMin, boundsMax, n.m_index);
+			update(boundsMin, boundsMax, depth, n.m_index);
 		}
 
-		// go depth first through visible children
+		// go depth first through all children
 		if (depth + 1 < m_maxDepth)
 		{
 			for (uint32_t i = 0; i < 8; ++i)
 			{
 				glm::vec3 nodeMin, nodeMax;
 				GetNodeDimensions(boundsMin, boundsMax, i, nodeMin, nodeMax);
-				if (shouldDraw(nodeMin, nodeMax))
+				if (shouldUpdate(nodeMin, nodeMax, depth + 1))
 				{
 					if (n.m_children[i] == nullptr)
 					{
 						n.m_children[i] = MakeNode();
 					}
-					Update(*n.m_children[i], depth + 1, nodeMin, nodeMax, update, shouldDraw);
+					Update(*n.m_children[i], depth + 1, nodeMin, nodeMax, shouldUpdate, update);
 				}
 			}
 		}
 	}
 
-	void SDFMeshOctree::Update(UpdateFn update, ShouldDrawFn shouldDraw, DrawFn draw)
+	void SDFMeshOctree::Update(ShouldUpdateFn shouldUpdate, UpdateFn update, ShouldDrawFn shouldDraw, DrawFn draw)
 	{
 		SDE_PROF_EVENT();
 		if (m_root == nullptr)
 		{
 			m_root = MakeNode();
 		}
-		Update(*m_root, 0, m_minBounds, m_maxBounds, update, shouldDraw);
+		Update(*m_root, 0, m_minBounds, m_maxBounds, shouldUpdate, update);
 		Render(*m_root, 0, m_minBounds, m_maxBounds, shouldDraw, draw);
 	}
 

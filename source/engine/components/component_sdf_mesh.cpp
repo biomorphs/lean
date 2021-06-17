@@ -10,7 +10,8 @@ COMPONENT_SCRIPTS(SDFMesh,
 	"SetSDFShader", &SDFMesh::SetSDFShader,
 	"Remesh", &SDFMesh::Remesh,
 	"SetMaterialEntity", &SDFMesh::SetMaterialEntity,
-	"SetOctreeDepth", &SDFMesh::SetOctreeDepth
+	"SetOctreeDepth", &SDFMesh::SetOctreeDepth,
+	"SetLOD", &SDFMesh::SetLOD
 )
 
 COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureManager& textures)
@@ -22,12 +23,18 @@ COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureMa
 		auto bMax = m.GetBoundsMax();
 		bMin = gui.DragVector("BoundsMin", bMin, 0.1f);
 		bMax = gui.DragVector("BoundsMax", bMax, 0.1f);
-		m.SetBounds(bMin, bMax);
+		if (bMin != m.GetBoundsMin() || bMax != m.GetBoundsMax())
+		{
+			m.SetBounds(bMin, bMax);
+		}
 		auto r = m.GetResolution();
 		r.x = gui.DragInt("ResX", r.x, 1, 1);
 		r.y = gui.DragInt("ResY", r.y, 1, 1);
 		r.z = gui.DragInt("ResZ", r.z, 1, 1);
-		m.SetResolution(r.x, r.y, r.z);
+		if (r != m.GetResolution())
+		{
+			m.SetResolution(r.x, r.y, r.z);
+		}
 		if (gui.Button("Remesh Now"))
 		{
 			m.Remesh();
@@ -54,9 +61,29 @@ void SDFMesh::SetBounds(glm::vec3 minB, glm::vec3 maxB)
 	m_octree->Invalidate();
 }
 
+void SDFMesh::SetLOD(uint32_t depth, float distance)
+{
+	auto found = std::find_if(m_lods.begin(), m_lods.end(), [depth](const LODData& l) {
+		return std::get<0>(l) == depth;
+	});
+	if (found == m_lods.end())
+	{
+		m_lods.push_back({ depth, distance });
+	}
+	else
+	{
+		*found = { depth, distance };
+	}
+}
+
 void SDFMesh::SetResolution(int x, int y, int z)
 { 
 	m_meshResolution = { x,y,z }; 
+	m_octree->Invalidate();
+}
+
+void SDFMesh::Remesh()
+{
 	m_octree->Invalidate();
 }
 

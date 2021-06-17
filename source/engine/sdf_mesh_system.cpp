@@ -245,7 +245,6 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 
 		PopulateSDF(*w, *sdfShader, dims, instanceMaterial, worldOffset, cellSize);
 		FindVertices(*w, *findVerticesShader, dims, worldOffset, cellSize);
 		FindTriangles(*w, *makeTrianglesShader, dims, worldOffset, cellSize);
-		mesh.SetRemesh(false);
 		m_meshesComputing.emplace_back(std::move(w));
 		++m_meshesPending;
 	}
@@ -370,6 +369,12 @@ bool BoundsIntersect(glm::vec3 aMin, glm::vec3 aMax, glm::vec3 bMin, glm::vec3 b
 		(aMin.z <= bMax.z && aMax.z >= bMin.z);
 }
 
+float DistanceToAABB(glm::vec3 bmin, glm::vec3 bmax, glm::vec3 point)
+{
+	glm::vec3 c = glm::max(glm::min(point, bmax), bmin);
+	return glm::distance(point,c);
+}
+
 float ScreenSpaceArea(glm::vec3 aMin, glm::vec3 aMax, glm::mat4 worldTransform, glm::mat4 viewProj)
 {
 	auto dims = aMax - aMin;
@@ -411,14 +416,11 @@ bool SDFMeshSystem::Tick(float timeDelta)
 
 	// Finalise vertex arrays on main thread
 	FinaliseMeshes();
-
-	const auto viewProjMat = camera.ProjectionMatrix() * camera.ViewMatrix();
-	const Engine::Frustum viewFrustum(viewProjMat);
 	
-	using NodeToUpdate = std::tuple<float, float, SDFMesh*, EntityHandle, glm::vec3, glm::vec3, uint64_t >;
+	// depth/lod, distance to camera, mesh/entity, bounds, node index
+	using NodeToUpdate = std::tuple<uint32_t, float, SDFMesh*, EntityHandle, glm::vec3, glm::vec3, uint64_t >;
 	std::vector<NodeToUpdate> nodesToUpdate;
 	nodesToUpdate.reserve(64 * 1024);
-	uint64_t remeshThisFrame = 0;
 	world->ForEachComponent<SDFMesh>([&](SDFMesh& m, EntityHandle owner) {
 		const Transform* transform = transforms->Find(owner);
 		if (!transform)
@@ -432,25 +434,48 @@ bool SDFMeshSystem::Tick(float timeDelta)
 				instanceMaterial = &matComponent->GetRenderMaterial();
 			}
 		}
-		auto requestUpdate = [&](glm::vec3 bmin, glm::vec3 bmax, uint64_t node)
+		auto requestUpdate = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth, uint64_t node)
 		{
 			glm::vec4 midPoint = glm::vec4(bmin + (bmax - bmin) / 2.0f, 1.0f) * transform->GetMatrix();
 			float distanceFromCamera = glm::distance(glm::vec3(midPoint), camera.Position());
-			auto cellSize = glm::distance(bmax, bmin);
-			nodesToUpdate.push_back({ cellSize, distanceFromCamera, &m, owner, bmin, bmax, node });
+			nodesToUpdate.push_back({ depth, distanceFromCamera, &m, owner, bmin, bmax, node });
 		};
-		auto shouldDrawNode = [&](glm::vec3 bmin, glm::vec3 bmax)
+		auto shouldUpdateNode = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth)
 		{
-			bool inBounds = BoundsIntersect(bmin, bmax, m.GetBoundsMin(), m.GetBoundsMax());
-			if (inBounds)
+			if (glm::any(glm::greaterThan(bmin,m.GetBoundsMax())))
 			{
-				bool inFrustum = viewFrustum.IsBoxVisible(bmin, bmax, transform->GetMatrix());
-				if (inFrustum)
+				return false;
+			}
+			if (m.GetLODs().size() > 0)
+			{
+				float distanceToBounds = DistanceToAABB(bmin, bmax, camera.Position());
+				for (const auto& lod : m.GetLODs())
 				{
-					return true;
+					// test against depth+1 to always try and load the next lod
+					auto [loddepth, maxDistance] = lod;
+					if (depth >= (loddepth+1) && distanceToBounds > maxDistance)
+					{
+						return false;
+					}
 				}
 			}
-			return false;
+			return true;
+		};
+		auto shouldDrawNode = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth)
+		{
+			if (m.GetLODs().size() > 0)
+			{
+				float distanceToBounds = DistanceToAABB(bmin, bmax, camera.Position());
+				for (const auto& lod : m.GetLODs())
+				{
+					auto [loddepth, maxDistance] = lod;
+					if (depth >= loddepth && distanceToBounds > maxDistance)
+					{
+						return false;
+					}
+				}
+			}
+			return true;
 		};
 		auto drawFn = [&](glm::vec3 bmin, glm::vec3 bmax, Render::Mesh& nodemesh)
 		{
@@ -466,22 +491,22 @@ bool SDFMeshSystem::Tick(float timeDelta)
 			auto colour = glm::vec4(1, 1, 1, 1);
 			m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
 		}
-		m.GetOctree().Update(requestUpdate, shouldDrawNode, drawFn);
+		m.GetOctree().Update(shouldUpdateNode, requestUpdate, shouldDrawNode, drawFn);
 	});
 
-	std::sort(nodesToUpdate.begin(), nodesToUpdate.end(), [](const NodeToUpdate& c0, const NodeToUpdate& c1) {
-		if (std::get<0>(c0) > std::get<0>(c1))
+	std::sort(nodesToUpdate.begin(), nodesToUpdate.end(), [this](const NodeToUpdate& c0, const NodeToUpdate& c1) {
+		if (std::get<0>(c0) < m_maxLODUpdatePrecedence || std::get<0>(c1) < m_maxLODUpdatePrecedence)
 		{
-			return true;
+			if (std::get<0>(c0) < std::get<0>(c1))
+			{
+				return true;
+			}
+			else if (std::get<0>(c0) > std::get<0>(c1))
+			{
+				return false;
+			}
 		}
-		else if (std::get<0>(c0) < std::get<0>(c1))
-		{
-			return false;
-		}
-		else
-		{
-			return std::get<1>(c0) < std::get<1>(c1);
-		}
+		return std::get<1>(c0) < std::get<1>(c1);
 	});
 	if (nodesToUpdate.size() > m_maxComputePerFrame)
 	{
@@ -493,8 +518,8 @@ bool SDFMeshSystem::Tick(float timeDelta)
 		mesh->GetOctree().SignalNodeUpdating(node);
 		KickoffRemesh(*mesh, owner, bmin, bmax, node);
 
-		auto colour = glm::vec4(0, 0, 0, 1);
-		m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour);
+		auto colour = glm::vec4(1, 1, 1, 1);
+		//m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour);
 	}
 
 	// Handle finished compute shaders
@@ -503,6 +528,8 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	bool openWin = true;
 	m_debugGui->BeginWindow(openWin, "SDF Meshing");
 	m_maxComputePerFrame = m_debugGui->DragInt("Max Compute/Frame", m_maxComputePerFrame, 1, 0, 64);
+	m_debugGui->Text("Meshes Pending: %d", m_meshesPending);
+	m_debugGui->Text("Cached Working Sets: %d", m_workingSetCache.size());
 	m_debugGui->EndWindow();
 
 	return true;

@@ -167,7 +167,7 @@ void main()
 	vec3 viewDir = normalize(vs_out_position - CameraPosition.xyz);
 	
 	vec3 worldToCenter = vs_out_position - PlanetCenter.xyz;
-	float grassAmount = clamp((dot(normalize(worldToCenter), finalNormal) - 0.95) * 40,0,1);
+	float grassAmount = clamp((dot(normalize(worldToCenter), finalNormal) - 0.9) * 40,0,1);
 	
 	vec3 diffuseColour = grassAmount * grassTex.rgb + (1-grassAmount) * rockTex.rgb;
 	for(int i=0;i<LightCount;++i)

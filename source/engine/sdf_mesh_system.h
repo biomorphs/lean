@@ -67,9 +67,9 @@ private:
 		std::unique_ptr<Render::RenderBuffer> m_workingIndexBuffer;
 		std::unique_ptr<Render::Texture> m_cellLookupTexture;	// pos -> vertex index
 	};
-	int m_maxMeshesPerFrame = 16;
+	int m_maxLODUpdatePrecedence = 4;	// max lod that will force update order (i.e. after this many lods, LOD doesn't matter)
 	int m_maxComputePerFrame = 2;
-	int m_maxCachedSets = 16;
+	int m_maxCachedSets = 8;
 	int m_meshesPending = 0;
 	uint64_t m_meshGeneration = 0;	// used to control how often meshes are rebuilt when a lot exist
 	Core::Mutex m_finaliseMeshLock;
