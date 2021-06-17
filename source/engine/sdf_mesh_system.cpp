@@ -508,6 +508,7 @@ bool SDFMeshSystem::Tick(float timeDelta)
 		}
 		return std::get<1>(c0) < std::get<1>(c1);
 	});
+	uint32_t totalNodesToUpdate = nodesToUpdate.size();
 	if (nodesToUpdate.size() > m_maxComputePerFrame)
 	{
 		nodesToUpdate.resize(m_maxComputePerFrame);
@@ -528,8 +529,9 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	bool openWin = true;
 	m_debugGui->BeginWindow(openWin, "SDF Meshing");
 	m_maxComputePerFrame = m_debugGui->DragInt("Max Compute/Frame", m_maxComputePerFrame, 1, 0, 64);
-	m_debugGui->Text("Meshes Pending: %d", m_meshesPending);
+	m_debugGui->Text("Meshes Building: %d", m_meshesPending);
 	m_debugGui->Text("Cached Working Sets: %d", m_workingSetCache.size());
+	m_debugGui->Text("Pending Updates: %d", totalNodesToUpdate);
 	m_debugGui->EndWindow();
 
 	return true;
