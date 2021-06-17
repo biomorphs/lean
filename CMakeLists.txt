@@ -198,6 +198,8 @@ set(ENGINE_SOURCES
 	Source/engine/file_picker_dialog.cpp
 	Source/engine/file_picker_dialog.h
 	Source/engine/frustum.h
+	Source/engine/sdf_mesh_octree.h
+	Source/engine/sdf_mesh_octree.cpp
 	Source/engine/sdf_mesh_builder.h
 	Source/engine/sdf_mesh_builder.cpp
 	Source/engine/sdf.h

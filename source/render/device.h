@@ -26,6 +26,7 @@ namespace Render
 		R8I,	// signed
 		R32UI,
 		RF16,
+		RF32,
 		RGBAF32
 	};
 

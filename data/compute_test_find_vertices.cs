@@ -12,7 +12,7 @@ uniform sampler3D InputVolume;
 
 uniform vec4 WorldOffset;
 uniform vec4 CellSize;
-uniform float NormalSampleBias = 0.9;	
+uniform float NormalSampleBias = 1;
 
 vec3 SampleNormal(vec3 p, vec3 uvScale, float sampleDelta)
 {
@@ -29,7 +29,6 @@ vec3 SampleNormal(vec3 p, vec3 uvScale, float sampleDelta)
 	normal.y = (samples[2] - samples[3]) / 2 / sampleDelta;
 	normal.z = (samples[4] - samples[5]) / 2 / sampleDelta;
 	normal = normalize(normal);
-		
 	return normal;
 }
 
@@ -99,24 +98,16 @@ void main()
 	
 	// Now we can get a vertex position by averaging all found intersection points
 	// Do the same for normals too!
-	vec3 outPosition = vec3(0,0,0);
-	vec3 outNormal = vec3(0,0,0);
-	for(int i=0;i<intersectionCount;++i)
-	{
-		outPosition = outPosition + intersections[i];
-		outNormal = outNormal + SampleNormal(intersections[i],uvScale,NormalSampleBias);
-	}
 	if(intersectionCount > 0)
 	{
+		vec3 outPosition = vec3(0,0,0);
+		for(int i=0;i<intersectionCount;++i)
+		{
+			outPosition = outPosition + intersections[i];		
+		}
+	
 		outPosition = outPosition / intersectionCount;
-		
-		//outNormal = outNormal + SampleNormal(outPosition,uvScale,NormalSampleBias);
-		//outNormal = normalize(outNormal / (intersectionCount + 1));
-		
-		outNormal = normalize(outNormal / intersectionCount);
-		
-		//outNormal = normalize((outNormal + SampleNormal(outPosition,uvScale,NormalSampleBias)) / 2);
-		
+		vec3 outNormal = SampleNormal(outPosition,uvScale,NormalSampleBias);		
 		
 		// Write the vertex to the buffer
 		uint startIndex = atomicAdd(m_count,2);

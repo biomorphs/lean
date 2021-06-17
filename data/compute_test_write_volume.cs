@@ -35,6 +35,22 @@ float Subtract(float d1, float d2)
 	return max(-d1, d2);
 };
 
+float SDTest(vec3 worldPos)
+{
+	float d = length(worldPos - vec3(1500,200,1500)) - 180;
+
+	float noises = snoise(vec2(Time + worldPos.x * 0.00025,worldPos.z * 0.00025)) * 1;
+	noises = noises + snoise(vec2(Time + worldPos.x * 0.005,worldPos.z * 0.005)) * 0.5;
+	noises = noises + snoise(vec2(Time + worldPos.x * 0.01,worldPos.z * 0.01)) * 0.25;
+	noises = noises + snoise(vec2(Time + worldPos.x * 0.02,worldPos.z * 0.02)) * 0.125;
+	noises = noises + snoise(vec2(Time + worldPos.x * 0.04,worldPos.z * 0.04)) * 0.03125;
+	noises = noises + snoise(vec2(Time + worldPos.x * 0.8,worldPos.z * 0.8)) * 0.015625;
+	noises = noises + snoise(vec2(Time + worldPos.x * 0.16,worldPos.z * 0.16)) * 0.0078125;
+	d = min(d,worldPos.y - 40 - noises * 400);
+	d = opSmoothUnion(d,worldPos.y - 4 - sin(worldPos.x * 0.13 + Time) * 2 - cos(worldPos.z * 0.05 + Time),1.0);
+	return d;
+}
+
 float SDFTestFromCpp(float x, float y, float z)
 {
 	float terrainNoise = RidgeNoise(vec2(12.3f + x * 0.01f, Time + 51.2f + z * 0.01f)) * 1.0f +
@@ -55,20 +71,9 @@ void main() {
   ivec3 pixel_coords = ivec3(gl_GlobalInvocationID.xyz);
   vec3 worldPos = WorldOffset.xyz + CellSize.xyz * vec3(pixel_coords);
   
- // float d = SDFTestFromCpp(worldPos.x, worldPos.y, worldPos.z);
-  
-  float d = length(worldPos - vec3(10,32,-32)) - 6 - (16 * (1.0 + sin(Time * 0.5)));
-  
-  float noises = snoise(vec2(Time + worldPos.x * 0.00025,worldPos.z * 0.00025)) * 1;
-  noises = noises + snoise(vec2(Time + worldPos.x * 0.005,worldPos.z * 0.005)) * 0.5;
-  noises = noises + snoise(vec2(Time + worldPos.x * 0.01,worldPos.z * 0.01)) * 0.25;
-  noises = noises + snoise(vec2(Time + worldPos.x * 0.02,worldPos.z * 0.02)) * 0.125;
-  noises = noises + snoise(vec2(Time + worldPos.x * 0.04,worldPos.z * 0.04)) * 0.03125;
-  noises = noises + snoise(vec2(Time + worldPos.x * 0.8,worldPos.z * 0.8)) * 0.015625;
-  noises = noises + snoise(vec2(Time + worldPos.x * 0.16,worldPos.z * 0.16)) * 0.0078125;
-  d = min(d,worldPos.y - 40 - noises * 400);
-  d = opSmoothUnion(d,worldPos.y - 4 - sin(worldPos.x * 0.13 + Time) * 2 - cos(worldPos.z * 0.05 + Time),1.0);
+  float d = SDTest(worldPos);
   
   // output to a specific pixel in the image
-  imageStore(theTexture, pixel_coords, vec4(clamp(d,-1,1),0,0,0));
+  // WHY IS IT CLAMPED?!
+  imageStore(theTexture, pixel_coords, vec4(d,0,0,0));
 }	

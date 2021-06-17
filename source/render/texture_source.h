@@ -17,6 +17,7 @@ namespace Render
 			R8I,
 			R32UI,
 			RF16,
+			RF32,
 			RGB8,
 			RGBA8,
 			RGBAF16,

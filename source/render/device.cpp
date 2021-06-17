@@ -397,6 +397,9 @@ namespace Render
 		case ComputeImageFormat::RF16:
 			format = GL_R16F;
 			break;
+		case ComputeImageFormat::RF32:
+			format = GL_R32F;
+			break;
 		case ComputeImageFormat::R32UI:
 			format = GL_R32UI;
 			break;
