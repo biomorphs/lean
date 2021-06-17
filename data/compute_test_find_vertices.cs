@@ -12,7 +12,7 @@ uniform sampler3D InputVolume;
 
 uniform vec4 WorldOffset;
 uniform vec4 CellSize;
-uniform float NormalSampleBias = 1;
+uniform float NormalSampleBias = 0.5;
 
 vec3 SampleNormal(vec3 p, vec3 uvScale, float sampleDelta)
 {
