@@ -164,7 +164,8 @@ void SDFMeshSystem::PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, gl
 		Engine::ApplyMaterial(*device, shader, *mat, m_graphics->Textures());
 	}
 	PushSharedUniforms(shader, offset, cellSize);	// set after so the material can't screw it up!
-	device->DispatchCompute(dims.x, dims.y, dims.z);
+	dims = glm::vec3((dims.x + 3) & ~0x03, (dims.y + 3) & ~0x03, (dims.z + 3) & ~0x03);	// round up to next mul. 4
+	device->DispatchCompute(dims.x/4, dims.y/4, dims.z/4);		
 }
 
 // find vertex positions + normals and indices for each cell containing an edge with a zero point
@@ -185,7 +186,8 @@ void SDFMeshSystem::FindVertices(WorkingSet& w, Render::ShaderProgram& shader, g
 	}
 	device->BindStorageBuffer(0, *w.m_workingVertexBuffer);
 	device->BindComputeImage(0, w.m_cellLookupTexture->GetHandle(), Render::ComputeImageFormat::R32UI, Render::ComputeImageAccess::WriteOnly, true);
-	device->DispatchCompute(dims.x - 1, dims.y - 1, dims.z - 1);
+	dims = glm::vec3((dims.x + 3 - 1) & ~0x03, (dims.y + 3 - 1) & ~0x03, (dims.z + 3 - 1) & ~0x03);	// round up to next mul. 4
+	device->DispatchCompute(dims.x / 4, dims.y / 4, dims.z / 4);
 }
 
 // build triangles from the vertices and indices we found earlier
@@ -206,11 +208,12 @@ void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, 
 	}
 	device->BindStorageBuffer(0, *w.m_workingIndexBuffer);
 	device->BindComputeImage(0, w.m_cellLookupTexture->GetHandle(), Render::ComputeImageFormat::R32UI, Render::ComputeImageAccess::ReadOnly, true);
-	device->DispatchCompute(dims.x - 5, dims.y - 5, dims.z - 5);	// -5 to account for extra layers where we dont want tris
+	dims = glm::vec3((dims.x + 3 - 5) & ~0x03, (dims.y + 3 - 5) & ~0x03, (dims.z + 3 - 5) & ~0x03);	// round up to next mul. 4
+	device->DispatchCompute(dims.x / 4, dims.y / 4, dims.z / 4);
 	w.m_buildMeshFence = device->MakeFence();
 }
 
-void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 boundsMin, glm::vec3 boundsMax, uint64_t nodeIndex)
+void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 boundsMin, glm::vec3 boundsMax, uint32_t depth, uint64_t nodeIndex)
 {
 	SDE_PROF_EVENT();
 
@@ -230,9 +233,10 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 
 		}
 
 		// vertices at the edges will get sampling artifacts due to filtering
-		// we add extra samples to ensure meshes can have seamless edges
+		// we add extra samples to ensure meshes can have seamless edges for the same lod
+		// for multiple lods, we just brute force add extra edges for now
 		// +1 since we can only output triangles for dims-1
-		const uint32_t extraLayers = 2;
+		const uint32_t extraLayers = 4;
 		auto dims = mesh.GetResolution() + glm::ivec3(1 + extraLayers * 2);
 		const glm::vec3 cellSize = (boundsMax - boundsMin) / glm::vec3(mesh.GetResolution());
 		const glm::vec3 worldOffset = boundsMin -(cellSize * float(extraLayers));
@@ -320,7 +324,7 @@ void SDFMeshSystem::HandleFinishedComputeShaders()
 	std::vector<uint32_t> readyForJobs;
 	for (auto w = m_meshesComputing.begin(); w != m_meshesComputing.end(); ++w)
 	{
-		if (device->WaitOnFence((*w)->m_buildMeshFence, 10) == Render::FenceResult::Signalled)
+		if (device->WaitOnFence((*w)->m_buildMeshFence, 1) == Render::FenceResult::Signalled)
 		{
 			readyForJobs.push_back(std::distance(m_meshesComputing.begin(), w));
 		}
@@ -515,12 +519,15 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	}
 	for(const auto &it : nodesToUpdate)
 	{
-		auto [size, distance, mesh, owner, bmin, bmax, node] = it;
+		auto [depth, distance, mesh, owner, bmin, bmax, node] = it;
 		mesh->GetOctree().SignalNodeUpdating(node);
-		KickoffRemesh(*mesh, owner, bmin, bmax, node);
+		KickoffRemesh(*mesh, owner, bmin, bmax, depth, node);
 
-		auto colour = glm::vec4(1, 1, 1, 1);
-		//m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour);
+		if (m_graphics->ShouldDrawBounds())
+		{
+			auto colour = glm::vec4(1, 1, 1, 1);
+			m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour);
+		}
 	}
 
 	// Handle finished compute shaders

@@ -44,7 +44,7 @@ private:
 	void FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize);
 	void FindVertices(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, glm::vec3 offset, glm::vec3 cellSize);
 	void PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, glm::ivec3 dims, Render::Material* mat, glm::vec3 offset, glm::vec3 cellSize);
-	void KickoffRemesh(class SDFMesh& mesh, EntityHandle handle, glm::vec3 boundsMin, glm::vec3 boundsMax, uint64_t nodeIndex);
+	void KickoffRemesh(class SDFMesh& mesh, EntityHandle handle, glm::vec3 boundsMin, glm::vec3 boundsMax, uint32_t depth, uint64_t nodeIndex);
 	void PushSharedUniforms(Render::ShaderProgram& shader, glm::vec3 offset, glm::vec3 cellSize);
 	void BuildMeshJob(WorkingSet& w);
 	void FinaliseMesh(WorkingSet& w);
@@ -67,9 +67,9 @@ private:
 		std::unique_ptr<Render::RenderBuffer> m_workingIndexBuffer;
 		std::unique_ptr<Render::Texture> m_cellLookupTexture;	// pos -> vertex index
 	};
-	int m_maxLODUpdatePrecedence = 4;	// max lod that will force update order (i.e. after this many lods, LOD doesn't matter)
-	int m_maxComputePerFrame = 2;
-	int m_maxCachedSets = 8;
+	int m_maxLODUpdatePrecedence = 4;	// lowest lod that will force update order (i.e. after this many lods, we prefer higher lod)
+	int m_maxComputePerFrame = 16;
+	int m_maxCachedSets = 64;
 	int m_meshesPending = 0;
 	uint64_t m_meshGeneration = 0;	// used to control how often meshes are rebuilt when a lot exist
 	Core::Mutex m_finaliseMeshLock;

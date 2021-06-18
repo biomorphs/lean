@@ -18,17 +18,17 @@ namespace Engine
 	public:
 		SDFMeshOctree();
 		~SDFMeshOctree();
-
 		using NodeIndex = uint64_t;													// identify a node in the tree
+
 		using ShouldDrawFn = std::function<bool(glm::vec3, glm::vec3, uint32_t)>;	// bounds min/max, depth, return true if this node should be drawn
-		using DrawFn = std::function<void(glm::vec3, glm::vec3, Render::Mesh&)>;	// bounds min/max, mesh, used to submit instances to render
+		using DrawFn = std::function<void(glm::vec3, glm::vec3, Render::Mesh&)>;	// bounds min/max, mesh, draw whatever is passed to you (or not)
 		using ShouldUpdateFn = std::function<bool(glm::vec3, glm::vec3, uint32_t)>;	// bounds min/max, depth, return true if this node should be updated
 		// bounds, depth, node id-used to request updates
 		// (updater calls SignalNodeUpdating and then SetNodeData when finished)
 		using UpdateFn = std::function<void(glm::vec3, glm::vec3, uint32_t, uint64_t)>;	
 
 		void Update(ShouldUpdateFn shouldUpdate, UpdateFn update, ShouldDrawFn shouldDraw, DrawFn draw);
-		void SignalNodeUpdating(uint64_t node);										// updater calls this when it begins building new data
+		void SignalNodeUpdating(uint64_t node);										// user should call this once when building new data
 		void SetNodeData(uint64_t node, std::unique_ptr<Render::Mesh>&& m);			// pass null if no mesh was generated to stop the updates for this node
 		void SetBounds(glm::vec3 min, glm::vec3 max);
 		void SetMaxDepth(uint32_t maxDepth);

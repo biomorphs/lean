@@ -1,6 +1,6 @@
 #version 430
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer OutputVertices
 {
 	uint m_count;
@@ -36,6 +36,13 @@ void main()
 {
 	// get index in global work group i.e x,y position
 	ivec3 p = ivec3(gl_GlobalInvocationID.xyz);
+	
+	const uint skipLayers = 0;
+	ivec3 maxSample = ivec3(m_dimensions[0]-skipLayers,m_dimensions[1]-skipLayers,m_dimensions[2]-skipLayers);
+	if(p.x < skipLayers || p.y < skipLayers || p.z < skipLayers)
+	{
+		return;
+	}
 	
 	ivec3 volSize = textureSize(InputVolume, 0);
 	vec3 uvScale = vec3(1.0f,1.0f,1.0f) / vec3(volSize);

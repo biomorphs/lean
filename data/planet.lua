@@ -34,9 +34,13 @@ end
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
+	local t = World.AddComponent_Tags(newEntity)
+	t:AddTag(Tag.new("Sun"))
+	
 	local transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(1000,1050,1000)
 	transform:SetRotation(46.5,42.3,-5.4)
+	
 	local light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(1,1,1)
@@ -50,9 +54,11 @@ function MakeSunEntity()
 	light:SetShadowBias(0.001)
 	
 	newEntity = World.AddEntity()
+	local t = World.AddComponent_Tags(newEntity)
+	t:AddTag(Tag.new("Backlight"))
 	transform = World.AddComponent_Transform(newEntity)
 	transform:SetPosition(0,0,0)
-	transform:SetRotation(87.4,0,41.8)
+	transform:SetRotation(-86,-85,-171)
 	light = World.AddComponent_Light(newEntity)
 	light:SetDirectional();
 	light:SetColour(0.05,0.125,0.2)
@@ -62,6 +68,8 @@ end
 
 function MakePlanet()
 	e = World.AddEntity()
+	local t = World.AddComponent_Tags(e)
+	t:AddTag(Tag.new("Planet"))
 	local m = World.AddComponent_Material(e)
 	m:SetFloat("PlanetRadius", 450)
 	m:SetVec4("PlanetCenter", vec4.new(512,512,512,0))
@@ -80,12 +88,15 @@ function MakePlanet()
 	sdfModel:SetLOD(5,256)
 	sdfModel:SetLOD(4,512)
 	sdfModel:SetLOD(3,1024)
+	sdfModel:SetLOD(2,2048)
 end
 
 function MakeOcean()
 	e = World.AddEntity()
+	local t = World.AddComponent_Tags(e)
+	t:AddTag(Tag.new("Ocean"))
 	local m = World.AddComponent_Material(e)
-	m:SetFloat("OceanRadius", 455)
+	m:SetFloat("OceanRadius", 465)
 	m:SetVec4("PlanetCenter", vec4.new(512,512,512,0))
 	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))
 	m:SetIsTransparent(true)
@@ -98,17 +109,16 @@ function MakeOcean()
 	transform:SetPosition(0,0,0)
 	local sdfModel = World.AddComponent_SDFMesh(e)
 	sdfModel:SetBounds(vec3.new(0,0,0),vec3.new(blockSize[1],blockSize[2],blockSize[3]))
-	sdfModel:SetResolution(res[1],res[2],res[3])
+	sdfModel:SetResolution(48,48,48)
+	sdfModel:SetOctreeDepth(1)
 	sdfModel:SetRenderShader(DrawWaterShader)
 	sdfModel:SetSDFShader(SDFWaterShader)
 	sdfModel:SetMaterialEntity(e)
-	sdfModel:SetOctreeDepth(3)
 end
 
 function Planet.Init()
-	Graphics.SetClearColour(0.0,0.0,0.002)
+	Graphics.SetClearColour(0.3,0.55,0.8)
 	MakeSunEntity()
-	
 	MakePlanet()
 	MakeOcean()
 end
