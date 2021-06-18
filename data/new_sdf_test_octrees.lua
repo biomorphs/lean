@@ -17,8 +17,8 @@ function MakeSDFMaterial()
 	local m = World.AddComponent_Material(e)
 	m:SetFloat("Time",164)
 	m:SetFloat("NormalSampleBias",1.5)
-	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))
-	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("white.bmp"))
+	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,0.25,0.25))
+	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("Sea_Rock_001_SD/Sea_Rock_001_BaseColor.jpg"))
 	sharedMaterial = e
 end
 
@@ -50,10 +50,10 @@ function MakeSDFEntity(pos,bmin,bmax,res)
 	sdfModel:SetRenderShader(DrawShaderFancy)
 	sdfModel:SetSDFShader(SDFShader)
 	sdfModel:SetMaterialEntity(sharedMaterial)
-	sdfModel:SetOctreeDepth(7)
-	sdfModel:SetLOD(4,3000)
-	sdfModel:SetLOD(5,2000)
-	sdfModel:SetLOD(6,1000)
+	sdfModel:SetOctreeDepth(5)
+	sdfModel:SetLOD(2,3500)
+	sdfModel:SetLOD(3,2500)
+	sdfModel:SetLOD(4,1500)
 	table.insert(sdfEntities,sdf_entity)
 end
 

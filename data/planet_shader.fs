@@ -6,6 +6,7 @@ in vec3 vs_out_position;
 
 out vec4 fs_out_colour;
 
+uniform sampler2D SandTexture;
 uniform sampler2D RockTexture;
 uniform sampler2D GrassTexture;
 uniform sampler2D ShadowMaps[16];
@@ -18,6 +19,7 @@ uniform float MeshShininess = 1.0;
 
 uniform vec4 PlanetCenter;
 uniform float PlanetRadius;
+uniform float OceanRadius;
 
 float CalculateShadows(vec3 normal, vec3 position, float shadowIndex, mat4 lightSpaceTransform, float bias)
 {
@@ -163,13 +165,20 @@ void main()
 	zaxis = srgbToLinear( texture2D( RockTexture, zAxisUV) );
 	vec4 rockTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 	
+	xaxis = srgbToLinear( texture2D( SandTexture, xAxisUV) );
+	yaxis = srgbToLinear( texture2D( SandTexture, yAxisUV) );
+	zaxis = srgbToLinear( texture2D( SandTexture, zAxisUV) );
+	vec4 sandTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 	
 	vec3 viewDir = normalize(vs_out_position - CameraPosition.xyz);
 	
 	vec3 worldToCenter = vs_out_position - PlanetCenter.xyz;
-	float grassAmount = clamp((dot(normalize(worldToCenter), finalNormal) - 0.9) * 40,0,1);
+	float grassAmount = clamp((dot(normalize(worldToCenter), finalNormal) - 0.9) * 8,0,1);
+	float distanceToOcean = length(worldToCenter)-OceanRadius;
+	float sandAmount = clamp((distanceToOcean -8) * 0.25,0,1) - clamp((distanceToOcean - 25) * 0.1,0,1);;
 	
 	vec3 diffuseColour = grassAmount * grassTex.rgb + (1-grassAmount) * rockTex.rgb;
+	diffuseColour = sandAmount * sandTex.rgb + (1-sandAmount) * diffuseColour;
 	for(int i=0;i<LightCount;++i)
 	{
 		vec3 lightDir = CalculateDirection(i);
@@ -207,6 +216,7 @@ void main()
 	}
 
 	// apply exposure here, assuming next pass is postfx
+	//fs_out_colour = vec4(vec3(distanceToOcean) / 20 * HDRExposure,1.0);
 	fs_out_colour = vec4(finalColour.rgb * HDRExposure,1.0);
 	//fs_out_colour = vec4(clamp(normalize(worldToCenter).rgb,0,1),1.0);
 	//fs_out_colour = vec4(vec3(grassAmount) * HDRExposure,1.0);

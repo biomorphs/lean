@@ -577,6 +577,7 @@ namespace Engine
 
 		// lighting to main frame buffer
 		{
+			d.SetWireframeDrawing(m_showWireframe);
 			SDE_PROF_EVENT("RenderMainBuffer");
 			d.DrawToFramebuffer(m_mainFramebuffer);
 			d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
@@ -597,6 +598,10 @@ namespace Engine
 			d.SetBlending(true);
 			DrawInstances(d, m_transparentInstances, baseIndex, true);
 			m_frameStats.m_renderedTransparentInstances = m_transparentInstances.m_instances.size();
+			if (m_showWireframe)
+			{
+				d.SetWireframeDrawing(false);
+			}
 		}
 
 		Render::FrameBuffer* mainFb = &m_mainFramebuffer;

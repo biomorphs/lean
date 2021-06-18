@@ -67,6 +67,7 @@ namespace Render
 		void* CreateSharedGLContext();
 		void* GetGLContext();
 		static void FlushContext();
+		void SetWireframeDrawing(bool wireframe);
 		void SetGLContext(void* context);	// Sets context PER THREAD
 		void SetViewport(glm::ivec2 pos, glm::ivec2 size);
 		void SetScissorEnabled(bool enabled);

@@ -8,8 +8,9 @@ Graphics.SetShadowShader(DrawWaterShader, ShadowShader)
 local SDFPlanetShader = Graphics.LoadComputeShader("Planet volume",  "planet_write_volume.cs")
 local SDFWaterShader = Graphics.LoadComputeShader("Planet water",  "planet_write_water_volume.cs")
 
-local blockSize = {1024,1024,1024}	-- dimensions in meters
+local blockSize = {1500,1500,1500}	-- dimensions in meters
 local res = {32,32,32}				-- mesh resolution
+local oceanHeight = 455
 
 function MakePlanetMaterial()
 	local e = World.AddEntity()
@@ -20,7 +21,7 @@ end
 function MakeWaterMaterial()
 	local e = World.AddEntity()
 	local m = World.AddComponent_Material(e)
-	m:SetFloat("OceanRadius", 455)
+	m:SetFloat("OceanRadius", oceanHeight)
 	m:SetVec4("PlanetCenter", vec4.new(512,512,512,0))
 	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))
 	m:SetIsTransparent(true)
@@ -72,10 +73,12 @@ function MakePlanet()
 	t:AddTag(Tag.new("Planet"))
 	local m = World.AddComponent_Material(e)
 	m:SetFloat("PlanetRadius", 450)
+	m:SetFloat("OceanRadius", oceanHeight)
 	m:SetVec4("PlanetCenter", vec4.new(512,512,512,0))
 	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))
 	m:SetSampler("GrassTexture", Graphics.LoadTexture("grass2.jpg"))
 	m:SetSampler("RockTexture", Graphics.LoadTexture("Stylized_Rocks_001_SD/Stylized_Rocks_001_basecolor.jpg"))
+	m:SetSampler("SandTexture", Graphics.LoadTexture("sand.jpg"))
 	local transform = World.AddComponent_Transform(e)
 	transform:SetPosition(0,0,0)
 	local sdfModel = World.AddComponent_SDFMesh(e)

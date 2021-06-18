@@ -70,6 +70,8 @@ namespace Engine
 		void SetBloomMultiplier(float t) { m_bloomMultiplier = t; }
 		bool IsCullingEnabled() { return m_cullingEnabled; }
 		void SetCullingEnabled(bool b) { m_cullingEnabled = b; }
+		void SetWireframeMode(bool m) { m_showWireframe = m; }
+		bool GetWireframeMode() { return m_showWireframe; }
 	private:
 		struct InstanceList
 		{
@@ -102,6 +104,7 @@ namespace Engine
 		Render::RenderBuffer m_transforms;	// global instance transforms
 		int m_nextInstance = 0;				// index into buffers above
 		bool m_cullingEnabled = true;
+		bool m_showWireframe = false;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		ShaderManager* m_shaders;
 		TextureManager* m_textures;

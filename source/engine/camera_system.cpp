@@ -105,7 +105,7 @@ namespace Engine
 				m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
 			}
 			m_debugCamera->ApplyToCamera(*m_mainRenderCamera);
-			m_mainRenderCamera->SetProjection(70.0f, aspectRatio, 0.1f, 5000.0f);
+			m_mainRenderCamera->SetProjection(70.0f, aspectRatio, 0.1f, 8000.0f);
 		}
 		else
 		{

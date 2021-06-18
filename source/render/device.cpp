@@ -122,6 +122,12 @@ namespace Render
 		SDE_RENDER_PROCESS_GL_ERRORS("glMemoryBarrier");
 	}
 
+	void Device::SetWireframeDrawing(bool wireframe)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+		SDE_RENDER_PROCESS_GL_ERRORS("glPolygonMode");
+	}
+
 	void Device::SetViewport(glm::ivec2 pos, glm::ivec2 size)
 	{
 		glViewport(pos.x, pos.y, size.x, size.y);
