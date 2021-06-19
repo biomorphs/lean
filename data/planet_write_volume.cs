@@ -36,7 +36,6 @@ float SDF(vec3 worldPos)
 	float caves = RidgeNoise(vec3(worldPos.x * 0.02, worldPos.y * 0.02, worldPos.z * 0.02));
 	float innerCore = length(worldPos - vec3(512,512,512)) - 400;
 	d = min(d,length(worldPos - vec3(512,512,512)) - PlanetRadius - RidgeNoise(vec3(5 + worldPos.x * 0.01, 3 + worldPos.y * 0.01, 1 + worldPos.z * 0.01)) * 80);
-	d = min((PlanetRadius + 100) - length(worldPos - PlanetCenter.xyz), d);
 	//d = Subtract(caves, d);
 	//d = Union(d, innerCore);
 

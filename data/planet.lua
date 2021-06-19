@@ -11,27 +11,7 @@ local SDFWaterShader = Graphics.LoadComputeShader("Planet water",  "planet_write
 local blockSize = {1500,1500,1500}	-- dimensions in meters
 local res = {32,32,32}				-- mesh resolution
 local oceanHeight = 455
-
-function MakePlanetMaterial()
-	local e = World.AddEntity()
-	
-	return e
-end
-
-function MakeWaterMaterial()
-	local e = World.AddEntity()
-	local m = World.AddComponent_Material(e)
-	m:SetFloat("OceanRadius", oceanHeight)
-	m:SetVec4("PlanetCenter", vec4.new(512,512,512,0))
-	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))
-	m:SetIsTransparent(true)
-	m:SetCastShadows(false)
-	m:SetVec4("MeshDiffuseOpacity", vec4.new(0,0.37,0.54,0.32))
-	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("white.bmp"))
-	m:SetVec4("MeshSpecular", vec4.new(0.76,0.89,1,1.68))
-	m:SetFloat("MeshShininess", 21)
-	return e
-end
+local planetRadius = 450
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
@@ -72,7 +52,7 @@ function MakePlanet()
 	local t = World.AddComponent_Tags(e)
 	t:AddTag(Tag.new("Planet"))
 	local m = World.AddComponent_Material(e)
-	m:SetFloat("PlanetRadius", 450)
+	m:SetFloat("PlanetRadius", planetRadius)
 	m:SetFloat("OceanRadius", oceanHeight)
 	m:SetVec4("PlanetCenter", vec4.new(512,512,512,0))
 	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))

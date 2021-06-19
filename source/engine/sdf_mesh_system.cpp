@@ -440,9 +440,8 @@ bool SDFMeshSystem::Tick(float timeDelta)
 		}
 		auto requestUpdate = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth, uint64_t node)
 		{
-			glm::vec4 midPoint = glm::vec4(bmin + (bmax - bmin) / 2.0f, 1.0f) * transform->GetMatrix();
-			float distanceFromCamera = glm::distance(glm::vec3(midPoint), camera.Position());
-			nodesToUpdate.push_back({ depth, distanceFromCamera, &m, owner, bmin, bmax, node });
+			float distanceToBounds = DistanceToAABB(bmin, bmax, camera.Position());
+			nodesToUpdate.push_back({ depth, distanceToBounds, &m, owner, bmin, bmax, node });
 		};
 		auto shouldUpdateNode = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth)
 		{
