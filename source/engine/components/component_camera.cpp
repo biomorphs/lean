@@ -9,6 +9,9 @@ COMPONENT_SCRIPTS(Camera,
 )
 
 SERIALISE_BEGIN(Camera)
+SERIALISE_PROPERTY("NearPlane", m_nearPlane)
+SERIALISE_PROPERTY("FarPlane", m_farPlane)
+SERIALISE_PROPERTY("FOV", m_fov)
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(Camera, Engine::DebugGuiSystem& gui)

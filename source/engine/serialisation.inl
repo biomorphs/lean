@@ -1,4 +1,5 @@
 #pragma once
+#include "core/glm_headers.h"
 #include <nlohmann/json.hpp>
 #include <unordered_map>
 #include <functional>
@@ -58,6 +59,24 @@ namespace Engine
 		{
 			json = v;
 		}
+	}
+
+	inline void ToJson(const char* name, glm::vec3& v, nlohmann::json& json)
+	{
+		float values[3] = { v.x, v.y, v.z };
+		json[name] = values;
+	}
+
+	inline void ToJson(const char* name, glm::vec2& v, nlohmann::json& json)
+	{
+		float values[2] = { v.x, v.y };
+		json[name] = values;
+	}
+
+	inline void ToJson(const char* name, glm::ivec2& v, nlohmann::json& json)
+	{
+		int values[2] = { v.x, v.y };
+		json[name] = values;
 	}
 
 	template<class T>
@@ -166,6 +185,40 @@ namespace Engine
 			T newVal;
 			FromJson(newVal, it);
 			v.push_back(std::move(newVal));
+		}
+	}
+
+	inline void FromJson(const char* name, glm::ivec2& v, nlohmann::json& json)
+	{
+		auto& vjson = json[name];
+		if (json.size() == 2)
+		{
+			int x = vjson[0];
+			int y = vjson[1];
+			v = { x, y };
+		}
+	}
+
+	inline void FromJson(const char* name, glm::vec2& v, nlohmann::json& json)
+	{
+		auto& vjson = json[name];
+		if (json.size() == 2)
+		{
+			float x = vjson[0];
+			float y = vjson[1];
+			v = { x, y };
+		}
+	}
+
+	inline void FromJson(const char* name, glm::vec3& v, nlohmann::json& json)
+	{
+		auto& vjson = json[name];
+		if (json.size() == 3)
+		{
+			float x = vjson[0];
+			float y = vjson[1];
+			float z = vjson[2];
+			v = { x, y, z };
 		}
 	}
 

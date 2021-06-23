@@ -22,6 +22,17 @@ COMPONENT_SCRIPTS(Light,
 )
 
 SERIALISE_BEGIN(Light)
+SERIALISE_PROPERTY("Type", m_type)
+SERIALISE_PROPERTY("Colour", m_colour)
+SERIALISE_PROPERTY("Brightness", m_brightness)
+SERIALISE_PROPERTY("Distance", m_distance)
+SERIALISE_PROPERTY("Attenutation", m_attenuation)
+SERIALISE_PROPERTY("SpotAngles", m_spotAngles)
+SERIALISE_PROPERTY("Ambient", m_ambient)
+SERIALISE_PROPERTY("ShadowBias", m_shadowBias)
+SERIALISE_PROPERTY("ShadowOrthoScale", m_shadowOrthoScale)
+SERIALISE_PROPERTY("CastShadows", m_castShadows)
+SERIALISE_PROPERTY("ShadowMapSize", m_shadowMapSize)
 SERIALISE_END()
 
 glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
