@@ -8,6 +8,9 @@ COMPONENT_SCRIPTS(Camera,
 	"SetFOV", &Camera::SetFOV
 )
 
+SERIALISE_BEGIN(Camera)
+SERIALISE_END()
+
 COMPONENT_INSPECTOR_IMPL(Camera, Engine::DebugGuiSystem& gui)
 {
 	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)

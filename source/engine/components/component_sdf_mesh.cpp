@@ -14,6 +14,9 @@ COMPONENT_SCRIPTS(SDFMesh,
 	"SetLOD", &SDFMesh::SetLOD
 )
 
+SERIALISE_BEGIN(SDFMesh)
+SERIALISE_END()
+
 COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureManager& textures)
 {
 	auto fn = [&gui, &textures](ComponentStorage& cs, const EntityHandle& e)

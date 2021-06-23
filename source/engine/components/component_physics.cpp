@@ -25,6 +25,9 @@ COMPONENT_SCRIPTS(Physics,
 	"Rebuild", &Physics::Rebuild
 )
 
+SERIALISE_BEGIN(Physics)
+SERIALISE_END()
+
 Physics::Physics()
 {
 

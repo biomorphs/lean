@@ -8,6 +8,9 @@ COMPONENT_SCRIPTS(Tags,
 	"ContainsTag", &Tags::ContainsTag
 );
 
+SERIALISE_BEGIN(Tags)
+SERIALISE_END()
+
 void Tags::AddTag(const Engine::Tag& t)
 {
 	m_tags.push_back(t);

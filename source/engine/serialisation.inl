@@ -48,6 +48,19 @@ namespace Engine
 	}
 
 	template<class T>
+	void ToJson(std::unique_ptr<T>& v, nlohmann::json& json)
+	{
+		if constexpr (Serialisation::HasSerialiser<T>::value)
+		{
+			v->Serialise(json, Engine::SerialiseType::Write);
+		}
+		else
+		{
+			json = v;
+		}
+	}
+
+	template<class T>
 	void ToJson(T& v, nlohmann::json& json)
 	{
 		if constexpr (Serialisation::HasSerialiser<T>::value)	// I'm in love
@@ -65,7 +78,7 @@ namespace Engine
 	{
 		if constexpr (Serialisation::HasSerialiser<T>::value)
 		{
-			v.Serialise(json, Engine::SerialiseType::Write);
+			v->Serialise(json, Engine::SerialiseType::Write);
 		}
 		else
 		{
@@ -100,7 +113,7 @@ namespace Engine
 		if constexpr (Serialisation::HasSerialiser<T>::value)
 		{
 			// Get the actual class name from json
-			std::string classTypeName = json["SDE_ClassName"];
+			std::string classTypeName = json["ClassName"];
 			T* object = Serialisation::ObjectFactory<T>::CreateObject(classTypeName);
 			object->Serialise(json, Engine::SerialiseType::Read);
 			v.reset(object);
@@ -118,7 +131,7 @@ namespace Engine
 		if constexpr (Serialisation::HasSerialiser<T>::value)
 		{
 			// Get the actual class name from json
-			std::string classTypeName = json["SDE_ClassName"];
+			std::string classTypeName = json["ClassName"];
 			T* object = Serialisation::ObjectFactory<T>::CreateObject(classTypeName);
 			object->Serialise(json, Engine::SerialiseType::Read);
 			v.reset(object);

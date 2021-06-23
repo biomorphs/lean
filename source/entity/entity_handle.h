@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "engine/serialisation.h"
 
 namespace Engine
 {
@@ -15,6 +16,7 @@ public:
 	bool IsValid() { return m_id != -1; }
 	bool operator==(const EntityHandle& other) const { return m_id == other.m_id; }
 	bool operator<(const EntityHandle& other) const { return m_id < other.m_id; }
+	SERIALISED_CLASS();
 private:
 	uint32_t m_id = -1;
 };

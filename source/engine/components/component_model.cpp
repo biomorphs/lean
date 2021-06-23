@@ -10,6 +10,9 @@ COMPONENT_SCRIPTS(Model,
 	"SetMaterialEntity", &Model::SetMaterialEntity
 )
 
+SERIALISE_BEGIN(Model)
+SERIALISE_END()
+
 COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui, Engine::ModelManager& models, Engine::ShaderManager& shaders)
 {
 	auto fn = [&gui,&models,&shaders](ComponentStorage& cs, const EntityHandle& e)

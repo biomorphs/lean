@@ -13,7 +13,7 @@ namespace Engine
 
 // add this to the public interface of your class
 #define SERIALISED_CLASS()	\
-	void Serialise(nlohmann::json& json, Engine::SerialiseType op);
+	void Serialise(nlohmann::json& json, Engine::SerialiseType op)
 
 // add this to your cpp, generates serialise function + registers factories
 #define SERIALISE_BEGIN(classname)	\

@@ -13,6 +13,9 @@ COMPONENT_SCRIPTS(Transform,
 	"RotateEuler", &Transform::RotateEuler
 )
 
+SERIALISE_BEGIN(Transform)
+SERIALISE_END()
+
 void Transform::RebuildMatrix()
 {
 	glm::mat4 modelMat = glm::translate(glm::identity<glm::mat4>(), m_position);

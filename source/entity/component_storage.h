@@ -14,7 +14,7 @@ class ComponentStorage
 public:
 	ComponentStorage() = default;
 	virtual ~ComponentStorage() = default;
-	SERIALISED_CLASS();
+	virtual SERIALISED_CLASS() = 0;
 
 	virtual void Create(EntityHandle owner) = 0;
 	virtual bool Contains(EntityHandle owner) = 0;
@@ -27,6 +27,7 @@ template<class ComponentType>
 class LinearComponentStorage : public ComponentStorage
 {
 public:
+	SERIALISED_CLASS();
 	LinearComponentStorage();
 	ComponentType* Find(EntityHandle owner);
 	void ForEach(std::function<void(ComponentType&, EntityHandle)> fn);

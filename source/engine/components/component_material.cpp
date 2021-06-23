@@ -15,6 +15,9 @@ COMPONENT_SCRIPTS(Material,
 	"SetCastShadows", &Material::SetCastShadows
 )
 
+SERIALISE_BEGIN(Material)
+SERIALISE_END()
+
 Material::Material()
 {
 	m_material = std::make_unique<Render::Material>();

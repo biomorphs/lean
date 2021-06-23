@@ -24,6 +24,9 @@ COMPONENT_SCRIPTS(SDFModel,
 	"SetMaterialEntity", &SDFModel::SetMaterialEntity
 )
 
+SERIALISE_BEGIN(SDFModel)
+SERIALISE_END()
+
 // Use the common samples names as we get free default textures
 const char* c_textureSamplerName = "DiffuseTexture";
 

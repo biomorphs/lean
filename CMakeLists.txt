@@ -245,6 +245,7 @@ target_compile_options(Engine PRIVATE ${CommonCompilerOptions})
 add_library(Entity STATIC)
 set(ENTITY_SOURCES
 	Source/entity/entity_handle.h
+	Source/entity/entity_handle.cpp
 	Source/entity/world.h
 	Source/entity/world.cpp
 	Source/entity/entity_system.h

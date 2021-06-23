@@ -21,6 +21,9 @@ COMPONENT_SCRIPTS(Light,
 	"SetShadowOrthoScale", &Light::SetShadowOrthoScale
 )
 
+SERIALISE_BEGIN(Light)
+SERIALISE_END()
+
 glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
 {
 	if (m_type == Type::Point)
