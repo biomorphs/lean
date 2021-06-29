@@ -49,6 +49,19 @@ namespace Engine
 	}
 
 	template<class T>
+	void ToJson(const std::unique_ptr<T>& v, nlohmann::json& json)
+	{
+		if constexpr (Serialisation::HasSerialiser<T>::value)
+		{
+			v->Serialise(json, Engine::SerialiseType::Write);
+		}
+		else
+		{
+			json = v;
+		}
+	}
+
+	template<class T>
 	void ToJson(std::unique_ptr<T>& v, nlohmann::json& json)
 	{
 		if constexpr (Serialisation::HasSerialiser<T>::value)

@@ -23,28 +23,12 @@ using ComponentType = std::string;
 // (Very thin wrapper around sol, check the sol docs for details)
 // Finally declare serialised properties with SERIALISE_BEGIN/END
 #define COMPONENT_SCRIPTS(className, ...)	\
-	Engine::Serialisation::ObjectFactory<ComponentStorage>::Register \
-		s_registerFactory_parent_LCS_##className("LinearComponentStorage<" #className ">",[]() {	\
-		return reinterpret_cast<ComponentStorage*>(new LinearComponentStorage<className>);	\
-	});	\
-	void LinearComponentStorage<className>::Serialise(nlohmann::json& json, Engine::SerialiseType op)	\
-	{	\
-		if(op==Engine::SerialiseType::Write) {		\
-			std::unordered_map<uint32_t,uint32_t> m;	\
-			for(const auto& it : m_entityToComponent)	\
-				m[it.first] = it.second;				\
-			json["EntityToComponent"] = m;				\
-			Engine::ToJson("Owners", m_owners, json);	\
-			Engine::ToJson("Components", m_components, json);	\
-			Engine::ToJson("ClassName", "LinearComponentStorage<" #className ">", json);	\
-		}	\
-		else if(op==Engine::SerialiseType::Read) {		\
-			std::unordered_map<uint32_t,uint32_t> m = json["EntityToComponent"];	\
-			for(auto it : m)	m_entityToComponent[it.first] = it.second;	\
-			Engine::FromJson("Owners", m_owners, json);	\
-			Engine::FromJson("Components", m_components, json);	\
-		}	\
-	}	\
+	SERIALISE_BEGIN_WITH_PARENT_TEMPL(LinearComponentStorage, ComponentStorage, className)	\
+		SERIALISE_PROPERTY("Owners", m_owners)			\
+		SERIALISE_PROPERTY("Components", m_components)	\
+		SERIALISE_PROPERTY("Owners", m_owners)			\
+		SERIALISE_PROPERTY_ROBINHOOD("EntityToComponent", m_entityToComponent)	\
+	SERIALISE_END()	\
 	void className::RegisterScripts(sol::state& s)	\
 	{	\
 		s.new_usertype<className>(#className, sol::constructors<className()>(),	\

@@ -246,8 +246,6 @@ bool Playground::Tick(float timeDelta)
 	{
 		nlohmann::json json;
 		m_entitySystem->GetWorld()->Serialise(json, Engine::SerialiseType::Write);
-		printf("%s", json.dump(2).c_str());
-
 		Core::SaveTextToFile("worldtest.json", json.dump(2));
 
 		auto aWholeNewWorld = std::make_unique<World>();

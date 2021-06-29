@@ -10,27 +10,7 @@ SERIALISE_BEGIN(World)
 SERIALISE_PROPERTY("IDCounter", m_entityIDCounter)
 SERIALISE_PROPERTY("AllEntities", m_activeEntities)
 SERIALISE_PROPERTY("PendingDelete", m_pendingDelete)
-	if (op == Engine::SerialiseType::Write) 
-	{
-		std::unordered_map<ComponentType,nlohmann::json> allStorage;
-		for (auto& it : m_components)
-		{
-			nlohmann::json storageJson;
-			Engine::ToJson(it.second,storageJson);
-			allStorage[it.first] = storageJson;
-		}
-		json["Components"] = allStorage;
-	}
-	else   
-	{
-		std::unordered_map<ComponentType, nlohmann::json> allStorage = json["Components"];
-		for (auto& it : allStorage)
-		{
-			std::unique_ptr<ComponentStorage> storage;
-			Engine::FromJson(storage, it.second);
-			m_components[it.first] = std::move(storage);
-		}
-	}
+SERIALISE_PROPERTY_ROBINHOOD("Components", m_components)
 SERIALISE_END()
 
 void World::CollectGarbage()

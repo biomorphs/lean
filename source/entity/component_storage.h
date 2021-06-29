@@ -14,7 +14,7 @@ class ComponentStorage
 public:
 	ComponentStorage() = default;
 	virtual ~ComponentStorage() = default;
-	virtual SERIALISED_CLASS() = 0;
+	virtual SERIALISED_CLASS() {}
 
 	virtual void Create(EntityHandle owner) = 0;
 	virtual bool Contains(EntityHandle owner) = 0;
