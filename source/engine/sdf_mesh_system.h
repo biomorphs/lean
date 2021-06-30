@@ -48,7 +48,6 @@ private:
 	void PushSharedUniforms(Render::ShaderProgram& shader, glm::vec3 offset, glm::vec3 cellSize);
 	void BuildMeshJob(WorkingSet& w);
 	void FinaliseMesh(WorkingSet& w);
-	size_t GetWorkingDataSize(glm::ivec3 dims) const;
 	std::unique_ptr<WorkingSet> MakeWorkingSet(glm::ivec3 dimsRequired, EntityHandle h, uint64_t nodeIndex);
 
 	const uint32_t c_maxBlockDimensions = 128;

@@ -21,6 +21,8 @@
 #include "render/render_buffer.h"
 #include "render/mesh.h"
 
+const std::string c_writeVolumeShader = "sdf_write_volume.cs";
+
 struct OutputBufferHeader
 {
 	uint32_t m_vertexCount = 0;
@@ -216,11 +218,15 @@ void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, 
 void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 boundsMin, glm::vec3 boundsMax, uint32_t depth, uint64_t nodeIndex)
 {
 	SDE_PROF_EVENT();
+	
+	Engine::ShaderManager::CustomDefines shaderDefines = { {"SDF_SHADER_INCLUDE", mesh.GetSDFShaderPath()} };
+	const auto shaderName = "SDF Volume " + mesh.GetSDFShaderPath();
+	auto writeVolumeShader = m_graphics->Shaders().LoadComputeShader(shaderName.c_str(), c_writeVolumeShader.c_str(), shaderDefines);
 
-	auto sdfShader = m_graphics->Shaders().GetShader(mesh.GetSDFShader());
+	auto sdfVolumeShader = m_graphics->Shaders().GetShader(writeVolumeShader);
 	auto findVerticesShader = m_graphics->Shaders().GetShader(m_findCellVerticesShader);
 	auto makeTrianglesShader = m_graphics->Shaders().GetShader(m_createTrianglesShader);
-	if (sdfShader && findVerticesShader && makeTrianglesShader)
+	if (sdfVolumeShader && findVerticesShader && makeTrianglesShader)
 	{
 		Render::Material* instanceMaterial = nullptr;
 		if (mesh.GetMaterialEntity().GetID() != -1)
@@ -246,7 +252,7 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 
 		w->m_workingVertexBuffer->SetData(0, sizeof(newHeader), &newHeader);
 		w->m_workingIndexBuffer->SetData(0, sizeof(newHeader), &newHeader);
 
-		PopulateSDF(*w, *sdfShader, dims, instanceMaterial, worldOffset, cellSize);
+		PopulateSDF(*w, *sdfVolumeShader, dims, instanceMaterial, worldOffset, cellSize);
 		FindVertices(*w, *findVerticesShader, dims, worldOffset, cellSize);
 		FindTriangles(*w, *makeTrianglesShader, dims, worldOffset, cellSize);
 		m_meshesComputing.emplace_back(std::move(w));
@@ -429,15 +435,6 @@ bool SDFMeshSystem::Tick(float timeDelta)
 		const Transform* transform = transforms->Find(owner);
 		if (!transform)
 			return;
-		Render::Material* instanceMaterial = nullptr;
-		if (m.GetMaterialEntity().GetID() != -1)
-		{
-			auto matComponent = materials->Find(m.GetMaterialEntity());
-			if (matComponent != nullptr)
-			{
-				instanceMaterial = &matComponent->GetRenderMaterial();
-			}
-		}
 		auto requestUpdate = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth, uint64_t node)
 		{
 			float distanceToBounds = DistanceToAABB(bmin, bmax, camera.Position());
@@ -482,6 +479,15 @@ bool SDFMeshSystem::Tick(float timeDelta)
 		};
 		auto drawFn = [&](glm::vec3 bmin, glm::vec3 bmax, Render::Mesh& nodemesh)
 		{
+			Render::Material* instanceMaterial = nullptr;
+			if (m.GetMaterialEntity().GetID() != -1)
+			{
+				auto matComponent = materials->Find(m.GetMaterialEntity());
+				if (matComponent != nullptr)
+				{
+					instanceMaterial = &matComponent->GetRenderMaterial();
+				}
+			}
 			m_graphics->Renderer().SubmitInstance(transform->GetMatrix(), nodemesh, m.GetRenderShader(), bmin, bmax, instanceMaterial);
 			if (m_graphics->ShouldDrawBounds())
 			{

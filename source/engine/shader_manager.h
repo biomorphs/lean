@@ -22,7 +22,9 @@ namespace Engine
 		ShaderManager(const ShaderManager&) = delete;
 		ShaderManager(ShaderManager&&) = delete;
 
+		using CustomDefines = std::vector<std::tuple<std::string, std::string>>;	// name, value (optional)
 		std::vector<ShaderHandle> AllShaders() const;
+		ShaderHandle LoadComputeShader(const char* name, const char* path, const CustomDefines& customDefines);
 		ShaderHandle LoadComputeShader(const char* name, const char* path);
 		ShaderHandle LoadShader(const char* name, const char* vsPath, const char* fsPath);
 		Render::ShaderProgram* GetShader(const ShaderHandle& h);

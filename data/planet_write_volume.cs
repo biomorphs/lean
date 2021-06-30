@@ -1,11 +1,4 @@
-#version 460
-#pragma sde include "noise3D.glsl"
-
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
-layout(r16f, binding = 0) uniform image3D theTexture;
-
-uniform vec4 WorldOffset;
-uniform vec4 CellSize;
+#pragma sde include "noise3d.glsl"
 
 uniform vec4 PlanetCenter;
 uniform float PlanetRadius;
@@ -36,21 +29,6 @@ float SDF(vec3 worldPos)
 	float caves = RidgeNoise(vec3(worldPos.x * 0.02, worldPos.y * 0.02, worldPos.z * 0.02));
 	float innerCore = length(worldPos - vec3(512,512,512)) - 400;
 	d = min(d,length(worldPos - vec3(512,512,512)) - PlanetRadius - RidgeNoise(vec3(5 + worldPos.x * 0.01, 3 + worldPos.y * 0.01, 1 + worldPos.z * 0.01)) * 80);
-	//d = Subtract(caves, d);
-	//d = Union(d, innerCore);
 
 	return d;
 }
-
-void main() {
-  
-  // get index in global work group i.e x,y position
-  ivec3 pixel_coords = ivec3(gl_GlobalInvocationID.xyz);
-  vec3 worldPos = WorldOffset.xyz + CellSize.xyz * vec3(pixel_coords);
-  
-  float d = SDF(worldPos);
-  
-  // output to a specific pixel in the image
-  // WHY IS IT CLAMPED?!
-  imageStore(theTexture, pixel_coords, vec4(d,0,0,0));
-}	

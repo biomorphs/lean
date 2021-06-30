@@ -17,60 +17,6 @@ namespace Render
 		Destroy();
 	}
 
-	inline uint32_t ShaderBinary::TranslateShaderType(ShaderType type) const
-	{
-		switch (type)
-		{
-		case ShaderType::VertexShader:
-			return GL_VERTEX_SHADER;
-		case ShaderType::FragmentShader:
-			return GL_FRAGMENT_SHADER;
-		case ShaderType::ComputeShader:
-			return GL_COMPUTE_SHADER;
-		default:
-			return -1;
-		}
-	}
-
-	bool ShaderBinary::CompileFromBuffer(ShaderType type, const std::string& buffer, std::string& resultText)
-	{
-		return CompileSource(type, buffer, resultText);
-	}
-
-	bool ShaderBinary::CompileSource(ShaderType type, const std::string& src, std::string& resultText)
-	{
-		SDE_PROF_EVENT();
-
-		uint32_t shaderType = TranslateShaderType(type);
-		SDE_RENDER_ASSERT(shaderType != -1);
-
-		m_handle = glCreateShader(shaderType);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateShader");
-		SDE_RENDER_ASSERT(m_handle != 0);
-
-		char const* srcPtr = src.c_str();
-		glShaderSource(m_handle, 1, &srcPtr, nullptr);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glShaderSource");
-
-		glCompileShader(m_handle);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCompileShader");
-
-		// check for compile errors
-		int32_t compileResult = 0, resultLogSize = 0;
-		glGetShaderiv(m_handle, GL_COMPILE_STATUS, &compileResult);
-		glGetShaderiv(m_handle, GL_INFO_LOG_LENGTH, &resultLogSize);
-
-		char errorLogResult[4096] = { '\0' };
-		SDE_RENDER_ASSERT(resultLogSize < sizeof(errorLogResult));
-
-		glGetShaderInfoLog(m_handle, resultLogSize, nullptr, errorLogResult);
-		resultText = errorLogResult;
-
-		m_type = type;
-
-		return compileResult == GL_TRUE;
-	}
-
 	void ParseIncludes(std::string& src)
 	{
 		SDE_PROF_EVENT();
@@ -84,7 +30,7 @@ namespace Render
 			size_t firstQuote = src.find("\"", foundInclude + c_includeDirectivePrefix.length());
 			if (firstQuote == std::string::npos)
 			{
-				SDE_LOG("Malformed include path encountered (no quotes)\n%s", src.c_str()); 
+				SDE_LOG("Malformed include path encountered (no quotes)\n%s", src.c_str());
 				return;
 			}
 			if (firstNewline != std::string::npos && firstNewline < firstQuote)
@@ -124,6 +70,62 @@ namespace Render
 		}
 	}
 
+	inline uint32_t ShaderBinary::TranslateShaderType(ShaderType type) const
+	{
+		switch (type)
+		{
+		case ShaderType::VertexShader:
+			return GL_VERTEX_SHADER;
+		case ShaderType::FragmentShader:
+			return GL_FRAGMENT_SHADER;
+		case ShaderType::ComputeShader:
+			return GL_COMPUTE_SHADER;
+		default:
+			return -1;
+		}
+	}
+
+	bool ShaderBinary::CompileFromBuffer(ShaderType type, const std::string& buffer, std::string& resultText)
+	{
+		std::string srcBuffer = buffer;
+		ParseIncludes(srcBuffer);
+		return CompileSource(type, srcBuffer, resultText);
+	}
+
+	bool ShaderBinary::CompileSource(ShaderType type, const std::string& src, std::string& resultText)
+	{
+		SDE_PROF_EVENT();
+
+		uint32_t shaderType = TranslateShaderType(type);
+		SDE_RENDER_ASSERT(shaderType != -1);
+
+		m_handle = glCreateShader(shaderType);
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateShader");
+		SDE_RENDER_ASSERT(m_handle != 0);
+
+		char const* srcPtr = src.c_str();
+		glShaderSource(m_handle, 1, &srcPtr, nullptr);
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glShaderSource");
+
+		glCompileShader(m_handle);
+		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCompileShader");
+
+		// check for compile errors
+		int32_t compileResult = 0, resultLogSize = 0;
+		glGetShaderiv(m_handle, GL_COMPILE_STATUS, &compileResult);
+		glGetShaderiv(m_handle, GL_INFO_LOG_LENGTH, &resultLogSize);
+
+		char errorLogResult[4096] = { '\0' };
+		SDE_RENDER_ASSERT(resultLogSize < sizeof(errorLogResult));
+
+		glGetShaderInfoLog(m_handle, resultLogSize, nullptr, errorLogResult);
+		resultText = errorLogResult;
+
+		m_type = type;
+
+		return compileResult == GL_TRUE;
+	}
+
 	bool ShaderBinary::CompileFromFile(ShaderType type, const char* srcLocation, std::string& resultText)
 	{
 		char debugName[1024] = { '\0' };
@@ -137,8 +139,7 @@ namespace Render
 			return false;
 		}
 
-		ParseIncludes(shaderSource);
-		return CompileSource(type, shaderSource, resultText);
+		return CompileFromBuffer(type, shaderSource, resultText);
 	}
 
 	void ShaderBinary::Destroy()

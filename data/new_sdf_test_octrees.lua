@@ -4,7 +4,6 @@ local DrawShader = Graphics.LoadShader("SDF Draw Basic",  "sdf_model_basic.vs", 
 local DrawShaderFancy = Graphics.LoadShader("SDF Diffuse Lighting",  "sdf_model_basic.vs", "sdf_mesh_diffuse.fs")
 local ShadowShader = Graphics.LoadShader("SDF Shadows", "sdf_model_shadow.vs", "sdf_shadow.fs")
 Graphics.SetShadowShader(DrawShaderFancy, ShadowShader)
-local SDFShader = Graphics.LoadComputeShader("SDF Volume Test",  "compute_test_write_volume.cs")
 
 local sdfEntities = {}
 local blockSize = {4096,512,4096}	-- dimensions in meters
@@ -48,7 +47,7 @@ function MakeSDFEntity(pos,bmin,bmax,res)
 	sdfModel:SetBounds(vec3.new(bmin[1],bmin[2],bmin[3]),vec3.new(bmax[1],bmax[2],bmax[3]))
 	sdfModel:SetResolution(res[1],res[2],res[3])
 	sdfModel:SetRenderShader(DrawShaderFancy)
-	sdfModel:SetSDFShader(SDFShader)
+	sdfModel:SetSDFShaderPath("compute_test_write_volume.cs")
 	sdfModel:SetMaterialEntity(sharedMaterial)
 	sdfModel:SetOctreeDepth(5)
 	sdfModel:SetLOD(2,3500)

@@ -3,6 +3,7 @@
 #include "render/shader_binary.h"
 #include "core/profiler.h"
 #include "core/log.h"
+#include "core/file_io.h"
 
 namespace Engine
 {
@@ -55,6 +56,53 @@ namespace Engine
 				m_shaders.emplace_back(std::move(s));
 			}
 		}
+	}
+
+	ShaderHandle ShaderManager::LoadComputeShader(const char* name, const char* path, const CustomDefines& customDefines)
+	{
+		SDE_PROF_EVENT();
+		for (uint64_t i = 0; i < m_shaders.size(); ++i)
+		{
+			if (m_shaders[i].m_name == name)
+			{
+				return { static_cast<uint32_t>(i) };
+			}
+		}
+
+		std::string shaderSource;
+		if (!Core::LoadTextFromFile(path, shaderSource))
+		{
+			SDE_LOG("Failed to load shader source from %s", path);
+			return ShaderHandle::Invalid();
+		}
+
+		for (const auto& it : customDefines)
+		{
+			size_t foundPos = shaderSource.find(std::get<0>(it), 0);
+			while (foundPos != std::string::npos)
+			{
+				shaderSource.replace(foundPos, std::get<0>(it).length(), std::get<1>(it));
+				foundPos = shaderSource.find(std::get<0>(it), foundPos);
+			}
+		}
+
+		std::string errorText;
+		auto computeShader = std::make_unique<Render::ShaderBinary>();
+		if (!computeShader->CompileFromBuffer(Render::ShaderType::ComputeShader, shaderSource, errorText))
+		{
+			SDE_LOG("Compute shader compilation failed - %s\n%s", shaderSource.c_str(), errorText.c_str());
+			return ShaderHandle::Invalid();
+		}
+
+		auto shader = std::make_unique<Render::ShaderProgram>();
+		if (!shader->Create(*computeShader, errorText))
+		{
+			SDE_LOG("Shader linkage failed - %s", errorText.c_str());
+			return ShaderHandle::Invalid();
+		}
+
+		m_shaders.push_back({ std::move(shader), name, path, "" });
+		return ShaderHandle{ static_cast<uint32_t>(m_shaders.size() - 1) };
 	}
 
 	ShaderHandle ShaderManager::LoadComputeShader(const char* name, const char* path)

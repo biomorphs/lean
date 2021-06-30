@@ -30,8 +30,8 @@ public:
 	// note that uniforms from materials will be sent to the SDF shader!
 	void SetMaterialEntity(EntityHandle e) { m_materialEntity = e; }
 	EntityHandle GetMaterialEntity() { return m_materialEntity; }
-	void SetSDFShader(Engine::ShaderHandle s) { m_sdfShader = s; }
-	Engine::ShaderHandle GetSDFShader() const { return m_sdfShader; }
+	void SetSDFShaderPath(std::string path) { m_sdfShaderPath = path; }
+	std::string GetSDFShaderPath() { return m_sdfShaderPath; }
 	void SetRenderShader(Engine::ShaderHandle s) { m_renderShader = s; }
 	Engine::ShaderHandle GetRenderShader() const { return m_renderShader; }
 	void SetBounds(glm::vec3 minB, glm::vec3 maxB);
@@ -45,12 +45,13 @@ public:
 	using LODData = std::tuple<uint32_t, float>;	// depth, max distance
 	std::vector<LODData>& GetLODs() { return m_lods; }
 	void SetLOD(uint32_t depth, float distance);
+
 private:
-	using LODData = std::tuple<uint32_t, float>;	// depth, max distance
 	std::vector<LODData> m_lods;
 	std::unique_ptr<Engine::SDFMeshOctree> m_octree;
 	EntityHandle m_materialEntity;
 	bool m_remesh = false;
+	std::string m_sdfShaderPath;
 	Engine::ShaderHandle m_sdfShader;
 	Engine::ShaderHandle m_renderShader;
 	std::unique_ptr<Render::Mesh> m_mesh;

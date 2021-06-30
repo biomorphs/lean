@@ -5,8 +5,6 @@ local DrawWaterShader = Graphics.LoadShader("Water Shader",  "sdf_model_basic.vs
 local ShadowShader = Graphics.LoadShader("SDF Shadows", "sdf_model_shadow.vs", "sdf_shadow.fs")
 Graphics.SetShadowShader(DrawPlanetShader, ShadowShader)
 Graphics.SetShadowShader(DrawWaterShader, ShadowShader)
-local SDFPlanetShader = Graphics.LoadComputeShader("Planet volume",  "planet_write_volume.cs")
-local SDFWaterShader = Graphics.LoadComputeShader("Planet water",  "planet_write_water_volume.cs")
 
 local blockSize = {1500,1500,1500}	-- dimensions in meters
 local res = {32,32,32}				-- mesh resolution
@@ -65,7 +63,7 @@ function MakePlanet()
 	sdfModel:SetBounds(vec3.new(0,0,0),vec3.new(blockSize[1],blockSize[2],blockSize[3]))
 	sdfModel:SetResolution(res[1],res[2],res[3])
 	sdfModel:SetRenderShader(DrawPlanetShader)
-	sdfModel:SetSDFShader(SDFPlanetShader)
+	sdfModel:SetSDFShaderPath("planet_write_volume.cs")
 	sdfModel:SetMaterialEntity(e)
 	sdfModel:SetOctreeDepth(6)
 	sdfModel:SetLOD(5,256)
@@ -95,7 +93,7 @@ function MakeOcean()
 	sdfModel:SetResolution(48,48,48)
 	sdfModel:SetOctreeDepth(1)
 	sdfModel:SetRenderShader(DrawWaterShader)
-	sdfModel:SetSDFShader(SDFWaterShader)
+	sdfModel:SetSDFShaderPath("planet_write_water_volume.cs")
 	sdfModel:SetMaterialEntity(e)
 end
 
