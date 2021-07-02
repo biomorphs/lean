@@ -86,6 +86,7 @@ namespace Render
 		void SetUniformValue(uint32_t uniformHandle, const glm::vec4& val);
 		void SetUniformValue(uint32_t uniformHandle, float val);
 		void SetUniformValue(uint32_t uniformHandle, int32_t val);
+		void SetUniformValue(uint32_t uniformHandle, uint32_t val);
 		void MemoryBarrier(BarrierType m);
 		void SetSampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit);
 		void SetArraySampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit);

@@ -130,10 +130,14 @@ target_compile_options(ImguiLib PRIVATE ${CommonCompilerOptions})
 
 add_library(Engine STATIC)
 set(ENGINE_SOURCES
+	Source/engine/material_helpers.h
+	Source/engine/material_helpers.cpp
 	Source/engine/physics_handle.h
 	Source/engine/physics_handle.cpp
 	Source/engine/physics_system.h
 	Source/engine/physics_system.cpp
+	Source/engine/raycast_system.h
+	Source/engine/raycast_system.cpp
 	Source/engine/tag.h
 	Source/engine/tag.cpp
 	Source/engine/platform.h
@@ -189,8 +193,6 @@ set(ENGINE_SOURCES
 	Source/engine/renderer.cpp
 	Source/engine/light.h
 	Source/engine/mesh_instance.h
-	Source/engine/material_helpers.h
-	Source/engine/material_helpers.cpp
 	Source/engine/debug_render.cpp
 	Source/engine/debug_render.h
 	Source/engine/serialisation.inl

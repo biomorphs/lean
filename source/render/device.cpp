@@ -379,6 +379,13 @@ namespace Render
 		SDE_RENDER_PROCESS_GL_ERRORS("glUniform1i");
 	}
 
+	void Device::SetUniformValue(uint32_t uniformHandle, uint32_t val)
+	{
+		assert(uniformHandle != -1);
+		glUniform1ui(uniformHandle, val);
+		SDE_RENDER_PROCESS_GL_ERRORS("glUniform1iu");
+	}
+
 	void Device::DispatchCompute(uint32_t groupsX, uint32_t groupsY = 0, uint32_t groupsZ = 0)
 	{
 		glDispatchCompute(groupsX, groupsY, groupsZ);

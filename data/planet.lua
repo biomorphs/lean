@@ -104,7 +104,19 @@ function Planet.Init()
 	MakeOcean()
 end
 
+function RayHit(pos,normal,entityHandle)
+	print("Hit something!")
+end
+
 function Planet.Tick(deltaTime)	
+	local s = vec3.new(0,0,0)
+	local e = vec3.new(512,512,512)
+	Graphics.DebugDrawLine(s.x,s.y,s.z,e.x,e.y,e.z,1,0,0,1, 1,0,0,1)
+	Raycast.DoAsync(s, e, RayHit)
+	
+	e = vec3.new(512,0,0)
+	Graphics.DebugDrawLine(s.x,s.y,s.z,e.x,e.y,e.z,1,1,0,1, 1,1,0,1)
+	Raycast.DoAsync(s, e, RayHit)
 end 
 
 return Planet
