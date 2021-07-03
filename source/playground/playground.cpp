@@ -240,19 +240,6 @@ bool Playground::Tick(float timeDelta)
 		ShowSystemProfiler();
 	}
 
-	bool showWin = true;
-	m_debugGui->BeginWindow(showWin, "Save the cheerleader");
-	if (m_debugGui->Button("Save the world!"))
-	{
-		nlohmann::json json;
-		m_entitySystem->GetWorld()->Serialise(json, Engine::SerialiseType::Write);
-		Core::SaveTextToFile("worldtest.json", json.dump(2));
-
-		auto aWholeNewWorld = std::make_unique<World>();
-		aWholeNewWorld->Serialise(json, Engine::SerialiseType::Read);
-	}
-	m_debugGui->EndWindow();
-
 	if (m_sceneEditor.Tick() || m_reloadScripts)
 	{
 		ReloadScripts();

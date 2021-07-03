@@ -191,11 +191,6 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		bool openWin = true;
-		m_debugGuiSystem->BeginWindow(openWin, "Raycasts");
-		m_debugGuiSystem->Text("Pending Raycasts: %d", m_pendingRays.size());
-		m_debugGuiSystem->EndWindow();
-
 		// append all the pending rays to a large ssbo (active ray buffer)
 		// (ray-sdf shaders will lookup into this table by index)
 		m_activeRays = std::move(m_pendingRays);
