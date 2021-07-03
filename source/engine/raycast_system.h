@@ -29,9 +29,10 @@ namespace Engine
 		bool Tick(float timeDelta);
 		void Shutdown();
 
-		// hitpos, normal, entity
-		using CompletionFn = std::function<void(glm::vec3,glm::vec3,EntityHandle)>;
-		void RaycastAsync(glm::vec3 p0, glm::vec3 p1, CompletionFn onComplete);
+		// start, end, hitpos, normal, entity
+		using RayHitFn = std::function<void(glm::vec3, glm::vec3, glm::vec3,glm::vec3,EntityHandle)>;
+		using RayMissFn = std::function<void(glm::vec3, glm::vec3)>;	// start, end
+		void RaycastAsync(glm::vec3 p0, glm::vec3 p1, RayHitFn onHit, RayMissFn onMiss);
 
 		class ProcessResults : public System
 		{
@@ -47,7 +48,8 @@ namespace Engine
 		struct Raycast {
 			glm::vec3 m_p0;
 			glm::vec3 m_p1;
-			CompletionFn m_completion;
+			RayHitFn m_onHit;
+			RayMissFn m_onMiss;
 		};
 		std::vector<Raycast> m_pendingRays;			// these havent started yet
 		std::vector<Raycast> m_activeRays;			// these are in flight

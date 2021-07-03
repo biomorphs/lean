@@ -3,13 +3,34 @@ Planet = {}
 local DrawPlanetShader = Graphics.LoadShader("Planet Shader",  "sdf_model_basic.vs", "planet_shader.fs")
 local DrawWaterShader = Graphics.LoadShader("Water Shader",  "sdf_model_basic.vs", "sdf_mesh_diffuse.fs")
 local ShadowShader = Graphics.LoadShader("SDF Shadows", "sdf_model_shadow.vs", "sdf_shadow.fs")
+local ModelDiffuseShader = Graphics.LoadShader("model_diffuse", "simplediffuse.vs", "simplediffuse.fs")
+local ModelShadowShader = Graphics.LoadShader("model_shadow", "simpleshadow.vs", "simpleshadow.fs");
 Graphics.SetShadowShader(DrawPlanetShader, ShadowShader)
 Graphics.SetShadowShader(DrawWaterShader, ShadowShader)
+Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
+local SphereModel = Graphics.LoadModel("sphere_low.fbx")
 
 local blockSize = {1500,1500,1500}	-- dimensions in meters
 local res = {32,32,32}				-- mesh resolution
 local oceanHeight = 455
 local planetRadius = 450
+local drones = {}
+
+function MakeDrone(pos)
+	local newEntity = World.AddEntity()
+	local t = World.AddComponent_Tags(newEntity)
+	t:AddTag(Tag.new("Drone"))
+	
+	local transform = World.AddComponent_Transform(newEntity)
+	transform:SetPosition(pos[1],pos[2],pos[3])
+	transform:SetScale(4,4,4)
+	
+	local newModel = World.AddComponent_Model(newEntity)
+	newModel:SetModel(SphereModel)
+	newModel:SetShader(ModelDiffuseShader)
+	
+	table.insert(drones, newEntity)
+end
 
 function MakeSunEntity()
 	local newEntity = World.AddEntity()
@@ -102,21 +123,47 @@ function Planet.Init()
 	MakeSunEntity()
 	MakePlanet()
 	MakeOcean()
+	MakeDrone({173.5,893.75,408.25})
+	MakeDrone({900,100,807})
 end
 
-function RayHit(pos,normal,entityHandle)
-	print("Hit something!")
+function RandomFloat(minv,maxv) 
+	return minv + (math.random() * (maxv-minv))
+end
+
+function Vec3Length(v)
+	return math.sqrt((v[1] * v[1]) + (v[2] * v[2]) + (v[3] * v[3]));
+end
+
+function Vec3Normalise(v)
+	local vLength = Vec3Length(v)
+	if(vLength > 0) then 
+		return {v[1]/vLength,v[2]/vLength,v[3]/vLength}
+	else
+		return {0,0,0}
+	end
+end
+
+function DroneRayHit(s, e, pos,normal,entityHandle)
+	Graphics.DebugDrawLine(s.x,s.y,s.z,pos.x,pos.y,pos.z,0,1,0,1, 0,1,0,1)
+end
+
+function DroneRayMiss(s, e)
 end
 
 function Planet.Tick(deltaTime)	
-	local s = vec3.new(0,0,0)
-	local e = vec3.new(512,512,512)
-	Graphics.DebugDrawLine(s.x,s.y,s.z,e.x,e.y,e.z,1,0,0,1, 1,0,0,1)
-	Raycast.DoAsync(s, e, RayHit)
-	
-	e = vec3.new(512,0,0)
-	Graphics.DebugDrawLine(s.x,s.y,s.z,e.x,e.y,e.z,1,1,0,1, 1,1,0,1)
-	Raycast.DoAsync(s, e, RayHit)
+	for i=1,#drones do
+		for r=1,500 do 
+			local t = World.GetComponent_Transform(drones[i])
+			if(t ~= nil) then 
+				local s = t:GetPosition()
+				local dir = {RandomFloat(-1,1),RandomFloat(-1,1),RandomFloat(-1,1)}
+				dir = Vec3Normalise(dir)
+				local e = vec3.new(s.x + dir[1] * 256, s.y + dir[2] * 256, s.z + dir[3] * 256)
+				Raycast.DoAsync(s, e, DroneRayHit, DroneRayMiss)
+			end
+		end
+	end
 end 
 
 return Planet

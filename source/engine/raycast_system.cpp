@@ -25,6 +25,13 @@ namespace Engine
 	const uint32_t c_maxActiveRays = 1024 * 128;
 	const uint32_t c_maxActiveIndices = c_maxActiveRays * 4;
 
+	struct RaycastShaderOutput
+	{
+		glm::vec4 m_normalTPos;
+		uint32_t m_entityID;
+		uint32_t m_padding[3];
+	};
+
 	bool RaycastSystem::ProcessResults::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
@@ -44,13 +51,13 @@ namespace Engine
 
 				// find the closest hit for each ray
 				const void* outputBuffer = m_parent->m_raycastOutputBuffer->Map(Render::RenderBufferMapHint::Read, 0, m_parent->m_raycastOutputBuffer->GetSize());
-				auto result = reinterpret_cast<const glm::vec4*>(outputBuffer);
+				auto result = reinterpret_cast<const RaycastShaderOutput*>(outputBuffer);
 				for (auto index : m_parent->m_activeRayIndices)
 				{
-					if (result->w < closestResults[index].m_normalTPoint.w)
+					if (result->m_normalTPos.w != -1.0f && result->m_normalTPos.w < closestResults[index].m_normalTPoint.w)
 					{
-						closestResults[index].m_normalTPoint = *result;
-						// how do we determine the EntityHandle?!
+						closestResults[index].m_normalTPoint = result->m_normalTPos;
+						closestResults[index].m_hitEntity = result->m_entityID;
 					}
 					++result;
 				}
@@ -61,11 +68,15 @@ namespace Engine
 				// finally, fire off callbacks for anything that actually hit
 				for (int r = 0; r < m_parent->m_activeRays.size(); ++r)
 				{
+					const auto& ray = m_parent->m_activeRays[r];
 					if (closestResults[r].m_normalTPoint.w != FLT_MAX)
 					{
-						const auto& ray = m_parent->m_activeRays[r];
 						const auto hitPoint = ray.m_p0 + (ray.m_p1-ray.m_p0) * closestResults[r].m_normalTPoint.w;
-						m_parent->m_activeRays[r].m_completion(hitPoint, glm::vec3(closestResults[r].m_normalTPoint), closestResults[r].m_hitEntity);
+						m_parent->m_activeRays[r].m_onHit(ray.m_p0, ray.m_p1, hitPoint, glm::vec3(closestResults[r].m_normalTPoint), closestResults[r].m_hitEntity);
+					}
+					else
+					{
+						m_parent->m_activeRays[r].m_onMiss(ray.m_p0, ray.m_p1);
 					}
 				}
 			}
@@ -84,9 +95,9 @@ namespace Engine
 	{
 	}
 
-	void RaycastSystem::RaycastAsync(glm::vec3 p0, glm::vec3 p1, CompletionFn onComplete)
+	void RaycastSystem::RaycastAsync(glm::vec3 p0, glm::vec3 p1, RayHitFn onHit, RayMissFn onMiss)
 	{
-		m_pendingRays.push_back({ p0,p1,onComplete });
+		m_pendingRays.push_back({ p0,p1,onHit,onMiss });
 	}
 
 	RaycastSystem::ProcessResults* RaycastSystem::MakeResultProcessor()
@@ -113,7 +124,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		m_raycastOutputBuffer = std::make_unique<Render::RenderBuffer>();
-		m_raycastOutputBuffer->Create(c_maxActiveIndices * sizeof(float) * 4, Render::RenderBufferModification::Dynamic, true, true);
+		m_raycastOutputBuffer->Create(c_maxActiveIndices * sizeof(RaycastShaderOutput), Render::RenderBufferModification::Dynamic, true, true);
 
 		m_activeRayBuffer = std::make_unique<Render::RenderBuffer>();
 		m_activeRayBuffer->Create(c_maxActiveRays * sizeof(float) * 6, Render::RenderBufferModification::Dynamic, true);
@@ -123,8 +134,8 @@ namespace Engine
 
 		//// expose script functions
 		auto raycasts = m_scriptSystem->Globals()["Raycast"].get_or_create<sol::table>();
-		raycasts["DoAsync"] = [this](glm::vec3 start, glm::vec3 end, CompletionFn fn) {
-			RaycastAsync(start, end, fn);
+		raycasts["DoAsync"] = [this](glm::vec3 start, glm::vec3 end, RayHitFn hit, RayMissFn miss) {
+			RaycastAsync(start, end, hit, miss);
 		};
 
 		return true;
@@ -229,9 +240,11 @@ namespace Engine
 				device->BindStorageBuffer(1, *m_activeRayIndexBuffer);
 				device->BindStorageBuffer(2, *m_raycastOutputBuffer);
 				auto handle = raycastShader->GetUniformHandle("RayIndexOffset");
-				device->SetUniformValue(handle, (uint32_t)startIndexOffset);
+				if(handle!=-1)	device->SetUniformValue(handle, (uint32_t)startIndexOffset);
 				handle = raycastShader->GetUniformHandle("RayCount");
-				device->SetUniformValue(handle, (uint32_t)raysToCast.size());
+				if(handle!=-1)	device->SetUniformValue(handle, (uint32_t)raysToCast.size());
+				handle = raycastShader->GetUniformHandle("EntityID");
+				if(handle!=-1)	device->SetUniformValue(handle, owner.GetID());
 				Render::Material* instanceMaterial = nullptr;
 				auto matComponent = m_entitySystem->GetWorld()->GetComponent<Material>(m.GetMaterialEntity());
 				if (matComponent != nullptr)

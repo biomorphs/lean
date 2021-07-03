@@ -90,7 +90,7 @@ namespace Engine
 		auto computeShader = std::make_unique<Render::ShaderBinary>();
 		if (!computeShader->CompileFromBuffer(Render::ShaderType::ComputeShader, shaderSource, errorText))
 		{
-			SDE_LOG("Compute shader compilation failed - %s\n%s", shaderSource.c_str(), errorText.c_str());
+			SDE_LOG("Compute shader compilation failed - \n%s\n%s", shaderSource.c_str(), errorText.c_str());
 			return ShaderHandle::Invalid();
 		}
 
