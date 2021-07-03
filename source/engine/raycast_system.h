@@ -18,6 +18,7 @@ namespace Engine
 	class DebugGuiSystem;
 	class ScriptSystem;
 	class RenderSystem;
+	class PhysicsSystem;
 	class RaycastSystem : public System
 	{
 	public:
@@ -64,5 +65,6 @@ namespace Engine
 		ScriptSystem* m_scriptSystem = nullptr;
 		RenderSystem* m_renderSys = nullptr;
 		GraphicsSystem* m_graphics = nullptr;
+		PhysicsSystem* m_physics = nullptr;
 	};
 }

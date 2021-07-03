@@ -1,6 +1,7 @@
 #pragma once
 
 #include "system.h"
+#include "core/glm_headers.h"
 #include "physics_handle.h"
 #include <memory>
 #include <vector>
@@ -47,6 +48,7 @@ namespace Engine
 			PhysicsSystem* m_physicsSystem = nullptr;
 		};
 		UpdateEntities* MakeUpdater();
+		EntityHandle Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal);
 
 	private:
 		void RebuildActor(Physics& p, EntityHandle& e);

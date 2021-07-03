@@ -10,6 +10,7 @@
 #include "entity/entity_system.h"
 #include "entity/entity_handle.h"
 #include "graphics_system.h"
+#include "physics_system.h"
 #include "render/mesh.h"
 #include "render/render_buffer.h"
 #include "render/device.h"
@@ -36,19 +37,38 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
+		struct closestHit
+		{
+			glm::vec4 m_normalTPoint = glm::vec4(FLT_MAX);
+			EntityHandle m_hitEntity;
+		};
+		std::vector<closestHit> closestResults(m_parent->m_activeRays.size());	// keep track of the hit closest to start for each ray
+
+		// do the physics raycasts now to give gpu time to catch up
+		{
+			SDE_PROF_EVENT("PhysicsRaycasts");
+			for (int r = 0; r < m_parent->m_activeRays.size(); ++r)
+			{
+				const auto& ray = m_parent->m_activeRays[r];
+				glm::vec3 physHitNormal;
+				float tHitPoint;
+				auto physHitEntity = m_parent->m_physics->Raycast(ray.m_p0, ray.m_p1, tHitPoint, physHitNormal);
+				if (physHitEntity.IsValid())
+				{
+					closestResults[r].m_normalTPoint = glm::vec4(physHitNormal, tHitPoint);
+					closestResults[r].m_hitEntity = physHitEntity;
+				}
+			}
+		}
+
+		// process SDF raycasts
 		if (m_parent->m_activeRays.size() > 0)
 		{
+			SDE_PROF_EVENT("CollectSDFResults");
 			m_parent->m_renderSys->GetDevice()->MemoryBarrier(Render::BarrierType::BufferData);
 			auto r = m_parent->m_renderSys->GetDevice()->WaitOnFence(m_parent->m_activeRayFence, 0);
 			if (r == Render::FenceResult::Signalled)
 			{
-				struct closestHit
-				{
-					glm::vec4 m_normalTPoint = glm::vec4(FLT_MAX);
-					EntityHandle m_hitEntity;
-				};
-				std::vector<closestHit> closestResults(m_parent->m_activeRays.size());	// keep track of the hit closest to start for each ray
-
 				// find the closest hit for each ray
 				const void* outputBuffer = m_parent->m_raycastOutputBuffer->Map(Render::RenderBufferMapHint::Read, 0, m_parent->m_raycastOutputBuffer->GetSize());
 				auto result = reinterpret_cast<const RaycastShaderOutput*>(outputBuffer);
@@ -62,27 +82,29 @@ namespace Engine
 					++result;
 				}
 				m_parent->m_raycastOutputBuffer->Unmap();
+			}
+		}
 
-				// todo, also need to test against physics components
-
-				// finally, fire off callbacks for anything that actually hit
-				for (int r = 0; r < m_parent->m_activeRays.size(); ++r)
+		// finally, run callbacks
+		{
+			SDE_PROF_EVENT("FireCallbacks");
+			for (int r = 0; r < m_parent->m_activeRays.size(); ++r)
+			{
+				const auto& ray = m_parent->m_activeRays[r];
+				if (closestResults[r].m_normalTPoint.w != FLT_MAX)
 				{
-					const auto& ray = m_parent->m_activeRays[r];
-					if (closestResults[r].m_normalTPoint.w != FLT_MAX)
-					{
-						const auto hitPoint = ray.m_p0 + (ray.m_p1-ray.m_p0) * closestResults[r].m_normalTPoint.w;
-						m_parent->m_activeRays[r].m_onHit(ray.m_p0, ray.m_p1, hitPoint, glm::vec3(closestResults[r].m_normalTPoint), closestResults[r].m_hitEntity);
-					}
-					else
-					{
-						m_parent->m_activeRays[r].m_onMiss(ray.m_p0, ray.m_p1);
-					}
+					const auto hitPoint = ray.m_p0 + (ray.m_p1 - ray.m_p0) * closestResults[r].m_normalTPoint.w;
+					m_parent->m_activeRays[r].m_onHit(ray.m_p0, ray.m_p1, hitPoint, glm::vec3(closestResults[r].m_normalTPoint), closestResults[r].m_hitEntity);
+				}
+				else
+				{
+					m_parent->m_activeRays[r].m_onMiss(ray.m_p0, ray.m_p1);
 				}
 			}
-			m_parent->m_activeRays.clear();
-			m_parent->m_activeRayIndices.clear();
 		}
+
+		m_parent->m_activeRays.clear();
+		m_parent->m_activeRayIndices.clear();
 
 		return true;
 	}
@@ -115,6 +137,7 @@ namespace Engine
 		m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
 		m_renderSys = (Engine::RenderSystem*)manager.GetSystem("Render");
 		m_graphics = (GraphicsSystem*)manager.GetSystem("Graphics");
+		m_physics = (PhysicsSystem*)manager.GetSystem("Physics");
 
 		return true;
 	}

@@ -153,10 +153,10 @@ end
 
 function Planet.Tick(deltaTime)	
 	for i=1,#drones do
-		for r=1,500 do 
-			local t = World.GetComponent_Transform(drones[i])
+		local t = World.GetComponent_Transform(drones[i])
+		local s = t:GetPosition()
+		for r=1,1000 do 
 			if(t ~= nil) then 
-				local s = t:GetPosition()
 				local dir = {RandomFloat(-1,1),RandomFloat(-1,1),RandomFloat(-1,1)}
 				dir = Vec3Normalise(dir)
 				local e = vec3.new(s.x + dir[1] * 256, s.y + dir[2] * 256, s.z + dir[3] * 256)

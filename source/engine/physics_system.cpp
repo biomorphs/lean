@@ -310,6 +310,28 @@ namespace Engine
 		p.SetNeedsRebuild(false);
 	}
 
+	EntityHandle PhysicsSystem::Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal)
+	{
+		auto origin = physx::PxVec3(start.x, start.y, start.z);
+		auto dir = glm::normalize(end - start);
+		auto pxDir = physx::PxVec3(dir.x, dir.y, dir.z);
+		physx::PxRaycastBuffer hitResult;
+		bool hit = m_scene->raycast(origin, pxDir, glm::length(end - start), hitResult);
+		if (hit)
+		{
+			const auto& pxHitPos = hitResult.block.position;
+			const auto& pxHitNormal = hitResult.block.normal;
+			hitNormal = { pxHitNormal.x, pxHitNormal.y, pxHitNormal.z };
+			tHit = hitResult.block.distance / glm::distance(end, start);
+			if (hitResult.block.actor)
+			{
+				auto entityId = reinterpret_cast<uintptr_t>(hitResult.block.actor->userData);
+				return entityId;
+			}
+		}
+		return {};
+	}
+
 	bool PhysicsSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
