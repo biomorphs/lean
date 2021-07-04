@@ -312,9 +312,9 @@ namespace Engine
 
 	EntityHandle PhysicsSystem::Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal)
 	{
-		auto origin = physx::PxVec3(start.x, start.y, start.z);
-		auto dir = glm::normalize(end - start);
-		auto pxDir = physx::PxVec3(dir.x, dir.y, dir.z);
+		const auto origin = physx::PxVec3(start.x, start.y, start.z);
+		const auto dir = glm::normalize(end - start);
+		const auto pxDir = physx::PxVec3(dir.x, dir.y, dir.z);
 		physx::PxRaycastBuffer hitResult;
 		bool hit = m_scene->raycast(origin, pxDir, glm::length(end - start), hitResult);
 		if (hit)

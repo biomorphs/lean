@@ -297,8 +297,8 @@ void SDFMeshSystem::BuildMeshJob(WorkingSet& w)
 			float* vbase = reinterpret_cast<float*>(vheader + 1);
 			uint32_t* ibase = reinterpret_cast<uint32_t*>(iheader + 1);
 
-			// hacks, rebuild the entire mesh
-			// we dont try and change the old one since the gpu could be using it
+			// rebuild the entire mesh
+			// we dont try and change the old one since the gpu could be using it (gl lets us be lazy)
 			auto newMesh = std::make_unique<Render::Mesh>();
 			newMesh->GetStreams().push_back({});
 			auto& vb = newMesh->GetStreams()[0];

@@ -23,7 +23,7 @@
 
 namespace Engine
 {
-	const uint32_t c_maxActiveRays = 1024 * 128;
+	const uint32_t c_maxActiveRays = 1024 * 32;
 	const uint32_t c_maxActiveIndices = c_maxActiveRays * 4;
 
 	struct RaycastShaderOutput
@@ -94,7 +94,8 @@ namespace Engine
 				if (closestResults[r].m_normalTPoint.w != FLT_MAX)
 				{
 					const auto hitPoint = ray.m_p0 + (ray.m_p1 - ray.m_p0) * closestResults[r].m_normalTPoint.w;
-					m_parent->m_activeRays[r].m_onHit(ray.m_p0, ray.m_p1, hitPoint, glm::vec3(closestResults[r].m_normalTPoint), closestResults[r].m_hitEntity);
+					const auto hitNormal = glm::vec3(closestResults[r].m_normalTPoint);
+					m_parent->m_activeRays[r].m_onHit(ray.m_p0, ray.m_p1, hitPoint, hitNormal, closestResults[r].m_hitEntity);
 				}
 				else
 				{

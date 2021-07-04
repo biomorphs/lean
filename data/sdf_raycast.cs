@@ -26,6 +26,23 @@ uniform uint EntityID;
 
 #pragma sde include "SDF_SHADER_INCLUDE"
 
+vec3 SampleNormal(vec3 p, float sampleDelta)
+{
+	float samples[6];
+	samples[0] = SDF(p + vec3(sampleDelta,0,0));
+	samples[1] = SDF(p + vec3(-sampleDelta,0,0));
+	samples[2] = SDF(p + vec3(0,sampleDelta,0));
+	samples[3] = SDF(p + vec3(0,-sampleDelta,0));
+	samples[4] = SDF(p + vec3(0,0,sampleDelta));
+	samples[5] = SDF(p + vec3(0,0,-sampleDelta));
+	vec3 normal;
+	normal.x = (samples[0] - samples[1]);
+	normal.y = (samples[2] - samples[3]);
+	normal.z = (samples[4] - samples[5]);
+	normal = normalize(normal);
+	return normal;
+}
+
 void main() 
 {
 	// get index in global work group
@@ -44,7 +61,7 @@ void main()
 		vec3 v = rayStart;
 		while(true)
 		{
-			const float step = clamp(abs(d), 0.001, 0.5);
+			const float step = clamp(abs(d), 0.001, 0.5);	// parameterise? accuracy vs speed?
 			v = v + direction * step;
 			const float t = length(v-rayStart)/rayLength;
 			if(t>1.0)
@@ -52,7 +69,7 @@ void main()
 			d = SDF(v);
 			if(rayStartDGrtZero != (d > 0.0) || (d < 0.00001 && d > -0.00001))
 			{
-				vec3 hitNormal = vec3(rayStart.x,rayEnd.x,0);
+				vec3 hitNormal = SampleNormal(v,0.0001);	// parameterise?
 				m_results[p.x + RayIndexOffset].m_normalTPos = vec4(hitNormal, t);
 				m_results[p.x + RayIndexOffset].m_entityID = EntityID;
 				return;
