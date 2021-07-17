@@ -87,10 +87,10 @@ function MakePlanet()
 	sdfModel:SetSDFShaderPath("planet_write_volume.cs")
 	sdfModel:SetMaterialEntity(e)
 	sdfModel:SetOctreeDepth(6)
-	sdfModel:SetLOD(5,256)
-	sdfModel:SetLOD(4,512)
-	sdfModel:SetLOD(3,1024)
-	sdfModel:SetLOD(2,2048)
+	sdfModel:SetLOD(5,400)
+	sdfModel:SetLOD(4,800)
+	sdfModel:SetLOD(3,2048)
+	sdfModel:SetLOD(2,3000)
 end
 
 function MakeOcean()
@@ -144,23 +144,28 @@ function Vec3Normalise(v)
 	end
 end
 
-function DroneRayHit(s, e, pos,normal,entityHandle)
-	Graphics.DebugDrawLine(s.x,s.y,s.z,pos.x,pos.y,pos.z,0,1,0,1, 0,1,0,1)
-end
-
-function DroneRayMiss(s, e)
+function DroneRayResults(rayHits, rayMisses)
+	for r=1,#rayHits do 
+		local s = rayHits[r].start
+		local pos = rayHits[r].hitPos
+		local normal = rayHits[r].hitNormal
+		local col = {(1.0+normal.x)/2.0,(1.0+normal.y)/2.0,(1.0+normal.z)/2.0}
+		Graphics.DebugDrawLine(s.x,s.y,s.z,pos.x,pos.y,pos.z,col[1],col[2],col[3],1,col[1],col[2],col[3],1)
+	end
 end
 
 function Planet.Tick(deltaTime)	
 	for i=1,#drones do
 		local t = World.GetComponent_Transform(drones[i])
 		local s = t:GetPosition()
-		for r=1,100 do 
+		local raysToCast = {}
+		for r=1,1000 do 
 			local dir = {RandomFloat(-1,1),RandomFloat(-1,1),RandomFloat(-1,1)}
 			dir = Vec3Normalise(dir)
 			local e = vec3.new(s.x + dir[1] * 256, s.y + dir[2] * 256, s.z + dir[3] * 256)
-			Raycast.DoAsync(s, e, DroneRayHit, DroneRayMiss)
+			table.insert(raysToCast,RayInput.new(s, e))
 		end
+		Raycast.DoAsync(raysToCast, DroneRayResults)
 	end
 end 
 

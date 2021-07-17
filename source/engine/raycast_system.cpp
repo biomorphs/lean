@@ -52,7 +52,7 @@ namespace Engine
 				const auto& ray = m_parent->m_activeRays[r];
 				glm::vec3 physHitNormal;
 				float tHitPoint;
-				auto physHitEntity = m_parent->m_physics->Raycast(ray.m_p0, ray.m_p1, tHitPoint, physHitNormal);
+				auto physHitEntity = m_parent->m_physics->Raycast(ray.m_start, ray.m_end, tHitPoint, physHitNormal);
 				if (physHitEntity.IsValid())
 				{
 					closestResults[r].m_normalTPoint = glm::vec4(physHitNormal, tHitPoint);
@@ -85,22 +85,32 @@ namespace Engine
 			}
 		}
 
-		// finally, run callbacks
 		{
+			// build hit/miss lists for each request and fire callbacks
 			SDE_PROF_EVENT("FireCallbacks");
-			for (int r = 0; r < m_parent->m_activeRays.size(); ++r)
+			std::vector<RayHitResult> hitResults;
+			std::vector<RayMissResult> missResults;
+			for (const auto& request : m_parent->m_activeRequests)
 			{
-				const auto& ray = m_parent->m_activeRays[r];
-				if (closestResults[r].m_normalTPoint.w != FLT_MAX)
+				missResults.clear();
+				hitResults.clear();
+				const auto startRayIndex = request.m_firstRay;
+				const auto lastRayIndex = startRayIndex + request.m_rayCount;
+				for (auto r = startRayIndex; r < lastRayIndex; ++r)
 				{
-					const auto hitPoint = ray.m_p0 + (ray.m_p1 - ray.m_p0) * closestResults[r].m_normalTPoint.w;
-					const auto hitNormal = glm::vec3(closestResults[r].m_normalTPoint);
-					m_parent->m_activeRays[r].m_onHit(ray.m_p0, ray.m_p1, hitPoint, hitNormal, closestResults[r].m_hitEntity);
+					const auto& ray = m_parent->m_activeRays[r];
+					if (closestResults[r].m_normalTPoint.w != FLT_MAX)
+					{
+						const auto hitPoint = ray.m_start + (ray.m_end - ray.m_start) * closestResults[r].m_normalTPoint.w;
+						const auto hitNormal = glm::vec3(closestResults[r].m_normalTPoint);
+						hitResults.emplace_back(RayHitResult{ ray.m_start, ray.m_end, hitPoint, hitNormal, closestResults[r].m_hitEntity });
+					}
+					else
+					{
+						missResults.emplace_back(RayMissResult{ ray.m_start, ray.m_end });
+					}
 				}
-				else
-				{
-					m_parent->m_activeRays[r].m_onMiss(ray.m_p0, ray.m_p1);
-				}
+				request.m_resultFn(hitResults, missResults);
 			}
 		}
 
@@ -118,9 +128,12 @@ namespace Engine
 	{
 	}
 
-	void RaycastSystem::RaycastAsync(glm::vec3 p0, glm::vec3 p1, RayHitFn onHit, RayMissFn onMiss)
+	void RaycastSystem::RaycastAsyncMulti(const std::vector<RayInput>& rays, const RayResultsFn& fn)
 	{
-		m_pendingRays.push_back({ p0,p1,onHit,onMiss });
+		uint32_t startRayIndex = m_pendingRays.size();
+		uint32_t rayCount = rays.size();
+		m_pendingRequests.emplace_back(RaycastRequest{ startRayIndex, rayCount, fn });
+		m_pendingRays.insert(m_pendingRays.end(), rays.begin(), rays.end());
 	}
 
 	RaycastSystem::ProcessResults* RaycastSystem::MakeResultProcessor()
@@ -156,10 +169,27 @@ namespace Engine
 		m_activeRayIndexBuffer = std::make_unique<Render::RenderBuffer>();
 		m_activeRayIndexBuffer->Create(c_maxActiveIndices * sizeof(uint32_t), Render::RenderBufferModification::Dynamic, true, true);
 
+		// expose script types
+		auto& scripts = m_scriptSystem->Globals();
+		scripts.new_usertype<RayInput>("RayInput", sol::constructors<RayInput(), RayInput(glm::vec3, glm::vec3)>(),
+			"start", &RayInput::m_start,
+			"end", &RayInput::m_end);
+
+		scripts.new_usertype<RayHitResult>("RayHitResult", sol::constructors<RayHitResult()>(),
+			"start", &RayHitResult::m_start,
+			"end", &RayHitResult::m_end,
+			"hitPos", &RayHitResult::m_hitPos,
+			"hitNormal", &RayHitResult::m_hitNormal,
+			"hitEntity", &RayHitResult::m_hitEntity);
+
+		scripts.new_usertype<RayMissResult>("RayMissResult", sol::constructors<RayMissResult()>(),
+			"start", &RayMissResult::m_start,
+			"end", &RayMissResult::m_end);
+
 		//// expose script functions
 		auto raycasts = m_scriptSystem->Globals()["Raycast"].get_or_create<sol::table>();
-		raycasts["DoAsync"] = [this](glm::vec3 start, glm::vec3 end, RayHitFn hit, RayMissFn miss) {
-			RaycastAsync(start, end, hit, miss);
+		raycasts["DoAsync"] = [this](std::vector<RayInput> rays, RayResultsFn resultFn) {
+			RaycastAsyncMulti(rays, resultFn);
 		};
 
 		return true;
@@ -194,17 +224,23 @@ namespace Engine
 
 		// append all the pending rays to a large ssbo (active ray buffer)
 		// (ray-sdf shaders will lookup into this table by index)
+		m_activeRequests = std::move(m_pendingRequests);
 		m_activeRays = std::move(m_pendingRays);
+		if (m_activeRays.size() == 0)
+		{
+			return true;
+		}
+
 		void* activeRayBufferPtr = m_activeRayBuffer->Map(Render::RenderBufferMapHint::Write, 0, m_activeRayBuffer->GetSize());
 		float* rayBuff = reinterpret_cast<float*>(activeRayBufferPtr);
 		for (const auto& it : m_activeRays)
 		{
-			rayBuff[0] = it.m_p0.x;
-			rayBuff[1] = it.m_p0.y;
-			rayBuff[2] = it.m_p0.z;
-			rayBuff[3] = it.m_p1.x;
-			rayBuff[4] = it.m_p1.y;
-			rayBuff[5] = it.m_p1.z;
+			rayBuff[0] = it.m_start.x;
+			rayBuff[1] = it.m_start.y;
+			rayBuff[2] = it.m_start.z;
+			rayBuff[3] = it.m_end.x;
+			rayBuff[4] = it.m_end.y;
+			rayBuff[5] = it.m_end.z;
 			rayBuff = rayBuff + 6;
 		}
 		m_activeRayBuffer->Unmap();
@@ -224,8 +260,8 @@ namespace Engine
 			std::vector<uint32_t> raysToCast;	// indices into active ray buffer
 			for (const auto& r : m_activeRays)
 			{
-				const auto rs = glm::vec3(inverseTransform * glm::vec4(r.m_p0, 1));
-				const auto re = glm::vec3(inverseTransform * glm::vec4(r.m_p1, 1));
+				const auto rs = glm::vec3(inverseTransform * glm::vec4(r.m_start, 1));
+				const auto re = glm::vec3(inverseTransform * glm::vec4(r.m_end, 1));
 				float tPoint = 0.0f;
 				if (rayIntersectsAABB(m.GetBoundsMin(), m.GetBoundsMax(), rs, re, tPoint))
 				{
@@ -250,40 +286,34 @@ namespace Engine
 				const auto shaderName = "SDF Raycast " + m.GetSDFShaderPath();
 				auto loadedShader = m_graphics->Shaders().LoadComputeShader(shaderName.c_str(), "sdf_raycast.cs", shaderDefines);
 				auto raycastShader = m_graphics->Shaders().GetShader(loadedShader);
-
-				// call raycast shader, passing ray indices, ray buffer, and start offset
-				// the shader will write for each ray index, normalAtIntersection, tDistance (<0 for no hit) as a vec4
-				auto device = m_renderSys->GetDevice();
-				device->BindShaderProgram(*raycastShader);
-				device->BindStorageBuffer(0, *m_activeRayBuffer);
-				device->BindStorageBuffer(1, *m_activeRayIndexBuffer);
-				device->BindStorageBuffer(2, *m_raycastOutputBuffer);
-				auto handle = raycastShader->GetUniformHandle("RayIndexOffset");
-				if(handle!=-1)	device->SetUniformValue(handle, (uint32_t)startIndexOffset);
-				handle = raycastShader->GetUniformHandle("RayCount");
-				if(handle!=-1)	device->SetUniformValue(handle, (uint32_t)raysToCast.size());
-				handle = raycastShader->GetUniformHandle("EntityID");
-				if(handle!=-1)	device->SetUniformValue(handle, owner.GetID());
-				Render::Material* instanceMaterial = nullptr;
-				auto matComponent = m_entitySystem->GetWorld()->GetComponent<Material>(m.GetMaterialEntity());
-				if (matComponent != nullptr)
+				if (raycastShader)
 				{
-					instanceMaterial = &matComponent->GetRenderMaterial();
-					if (instanceMaterial)	// if we have a custom material, send the params!
+					// call raycast shader, passing ray indices, ray buffer, and start offset
+					// the shader will write for each ray index, normalAtIntersection, tDistance (<0 for no hit) as a vec4
+					auto device = m_renderSys->GetDevice();
+					device->BindShaderProgram(*raycastShader);
+					device->BindStorageBuffer(0, *m_activeRayBuffer);
+					device->BindStorageBuffer(1, *m_activeRayIndexBuffer);
+					device->BindStorageBuffer(2, *m_raycastOutputBuffer);
+					auto handle = raycastShader->GetUniformHandle("RayIndexOffset");
+					if (handle != -1)	device->SetUniformValue(handle, (uint32_t)startIndexOffset);
+					handle = raycastShader->GetUniformHandle("RayCount");
+					if (handle != -1)	device->SetUniformValue(handle, (uint32_t)raysToCast.size());
+					handle = raycastShader->GetUniformHandle("EntityID");
+					if (handle != -1)	device->SetUniformValue(handle, owner.GetID());
+					auto matComponent = m_entitySystem->GetWorld()->GetComponent<Material>(m.GetMaterialEntity());
+					if (matComponent != nullptr)
 					{
-						ApplyMaterial(*device, *raycastShader, *instanceMaterial, m_graphics->Textures());
+						const auto& instanceMaterial = matComponent->GetRenderMaterial();
+						ApplyMaterial(*device, *raycastShader, instanceMaterial, m_graphics->Textures());
 					}
+					uint32_t dispatchCount = ((raysToCast.size() - 1) / 64 + 1) * 64;
+					device->DispatchCompute(dispatchCount, 1, 1);
 				}
-				uint32_t dispatchCount = ((raysToCast.size() - 1) / 64 + 1) * 64;
-				device->DispatchCompute(dispatchCount, 1, 1);
 			}
 		});
 		m_activeRayIndexBuffer->Unmap();
-
-		if (m_activeRays.size() > 0)
-		{
-			m_activeRayFence = m_renderSys->GetDevice()->MakeFence();
-		}
+		m_activeRayFence = m_renderSys->GetDevice()->MakeFence();
 
 		return true;
 	}
@@ -292,7 +322,9 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		m_pendingRays.clear();
+		m_pendingRequests.clear();
 		m_activeRays.clear();
+		m_activeRequests.clear();
 		m_raycastOutputBuffer = nullptr;
 		m_activeRayBuffer = nullptr;
 		m_activeRayIndexBuffer = nullptr;

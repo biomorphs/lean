@@ -30,10 +30,26 @@ namespace Engine
 		bool Tick(float timeDelta);
 		void Shutdown();
 
-		// start, end, hitpos, normal, entity
-		using RayHitFn = std::function<void(glm::vec3, glm::vec3, glm::vec3,glm::vec3,EntityHandle)>;
-		using RayMissFn = std::function<void(glm::vec3, glm::vec3)>;	// start, end
-		void RaycastAsync(glm::vec3 p0, glm::vec3 p1, RayHitFn onHit, RayMissFn onMiss);
+		struct RayHitResult {
+			glm::vec3 m_start;
+			glm::vec3 m_end;
+			glm::vec3 m_hitPos;
+			glm::vec3 m_hitNormal;
+			EntityHandle m_hitEntity;
+		};
+		struct RayMissResult {
+			glm::vec3 m_start;
+			glm::vec3 m_end;
+		};
+		struct RayInput {
+			RayInput() = default;
+			RayInput(glm::vec3 start, glm::vec3 end) : m_start(start), m_end(end) {}
+			glm::vec3 m_start;
+			glm::vec3 m_end;
+		};
+
+		using RayResultsFn = std::function<void(const std::vector<RayHitResult>&, const std::vector<RayMissResult>&)>;
+		void RaycastAsyncMulti(const std::vector<RayInput>& rays, const RayResultsFn& fn);
 
 		class ProcessResults : public System
 		{
@@ -46,15 +62,16 @@ namespace Engine
 		ProcessResults* MakeResultProcessor();
 
 	private:
-		struct Raycast {
-			glm::vec3 m_p0;
-			glm::vec3 m_p1;
-			RayHitFn m_onHit;
-			RayMissFn m_onMiss;
+		struct RaycastRequest {		// input rays are pushed to m_activeRays, this tracks them for later
+			uint32_t m_firstRay;	// index into m_activeRays
+			uint32_t m_rayCount;	// count for above
+			RayResultsFn m_resultFn;
 		};
-		std::vector<Raycast> m_pendingRays;			// these havent started yet
-		std::vector<Raycast> m_activeRays;			// these are in flight
-		std::vector<uint32_t> m_activeRayIndices;	// each shader invocation uses a subset of indices
+		std::vector<RaycastRequest> m_pendingRequests;	// these havent started yet
+		std::vector<RayInput> m_pendingRays;			// ^^
+		std::vector<RaycastRequest> m_activeRequests;	// these are in flight
+		std::vector<RayInput> m_activeRays;				// ^^
+		std::vector<uint32_t> m_activeRayIndices;		// each shader invocation uses a subset of indices
 		std::unique_ptr<Render::RenderBuffer> m_raycastOutputBuffer;
 		std::unique_ptr<Render::RenderBuffer> m_activeRayBuffer;
 		std::unique_ptr<Render::RenderBuffer> m_activeRayIndexBuffer;
