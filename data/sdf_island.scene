@@ -1,0 +1,7 @@
+{
+  "ClassName": "Scene",
+  "Name": "SDF Island",
+  "Scripts": [
+    "sdf_island.lua"
+  ]
+}
