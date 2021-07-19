@@ -6,10 +6,12 @@ in vec3 vs_out_position;
 
 out vec4 fs_out_colour;
 
-uniform float GrassMinHeight = 2.0;
+uniform float GrassMinHeight = 30.0;
 uniform float GrassAngleMin = 0.9;
 uniform float GrassAngleMul = 5.0;
 uniform float BeachHeight = 1.5;
+uniform float BeachAngleMin = 0.95;
+uniform float BeachAngleMul = 10.0;
 uniform float BeachThickness = 1.5;
 uniform float WaterHeight = 0.0;
 uniform vec4 WaterColour = vec4(1,1,1,1);
@@ -190,12 +192,15 @@ void main()
 	float beachAmount = 1 - clamp(abs(BeachHeight - worldSpaceHeightMap) * BeachThickness,0,1);
 	if(beachAmount>0)
 	{
+		beachAmount = beachAmount * clamp(normalDotUp - BeachAngleMin,0,1) * BeachAngleMul;
 		diffuseTex = diffuseTex * (1-beachAmount) + SampleTriplanar(blending, BeachTexture) * beachAmount;
 	}
 	
 	float grassAmount = clamp(normalDotUp - GrassAngleMin,0,1) * GrassAngleMul;
 	if(grassAmount>0 && worldSpaceHeightMap > GrassMinHeight)
 	{
+		float grassMul = clamp(abs(GrassMinHeight - worldSpaceHeightMap),0,1);
+		grassAmount = grassAmount * grassMul;
 		diffuseTex = diffuseTex * (1-grassAmount) + SampleTriplanar(blending, GrassTexture) * grassAmount;
 	}
 	

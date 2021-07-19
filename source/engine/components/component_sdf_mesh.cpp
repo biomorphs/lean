@@ -38,6 +38,12 @@ COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureMa
 		{
 			m.SetResolution(r.x, r.y, r.z);
 		}
+		auto d = m.GetOctreeDepth();
+		d = gui.DragInt("Octree Depth", d, 1, 1, 8);
+		if (d != m.GetOctreeDepth())
+		{
+			m.SetOctreeDepth(d);
+		}
 		if (gui.Button("Remesh Now"))
 		{
 			m.Remesh();

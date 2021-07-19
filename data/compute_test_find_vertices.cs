@@ -118,9 +118,10 @@ void main()
 		outPosition = outPosition / intersectionCount;
 		averageNormal = normalize(averageNormal / intersectionCount);
 		
-		//vec3 outNormal = SampleNormal(outPosition,uvScale,NormalSampleBias);		
+		//outPosition = worldPos.xyz + CellSize.xyz * 0.5;	// minecraft mode
+		vec3 outNormal = SampleNormal(outPosition,uvScale,NormalSampleBias);		
 		//vec3 outNormal = averageNormal;
-		vec3 outNormal = (averageNormal + SampleNormal(outPosition,uvScale,NormalSampleBias))/2.0;
+		//vec3 outNormal = (averageNormal + SampleNormal(outPosition,uvScale,NormalSampleBias))/2.0;
 		
 		// Write the vertex to the buffer
 		uint startIndex = atomicAdd(m_count,2);

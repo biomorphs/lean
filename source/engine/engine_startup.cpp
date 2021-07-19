@@ -61,8 +61,8 @@ namespace Engine
 		EngineSystemRegister registerSystems(sysManager);
 		systemCreation(registerSystems);
 
-		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);
 		sysManager.RegisterSystem("Entities", new EntitySystem);
+		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);
 		sysManager.RegisterSystem("Graphics", new GraphicsSystem);
 		sysManager.RegisterSystem("Raycasts", raycaster);
 		sysManager.RegisterSystem("Physics", physics);
