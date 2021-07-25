@@ -1,5 +1,22 @@
 Island = {}
 
+-- todo 
+-- user edits
+-- make a giant buffer to store all user SDFs (100mb+, persistent mapped?)
+-- keep all SDFs stored in blocks of (x*y*z), indexed in a hastable 
+-- beginWriteUserData(areaMin,areaMax,writeUserDataFn)
+--	for each cell in grid (simple 3d grid hashing)
+--	 (user data storage is NOT tied to the octree at all - allows global sharing later)
+--	 if no data exists for this cell, allocate now from shared buffer
+--	 writeUserDataFn(cell index, pos, ptr, etc, etc...)
+--	mark octree nodes touching the areas as out of date
+-- when calling sdf write:
+--	upload cells hash table along with buffer to write
+
+-- in sdf write shader:
+-- 	check if userdata cell exists at this pos
+--		if it does, combine it with the current d somehow (write min value?)
+
 local IslandSDFSize = {2000,128,2000}
 local IslandSDFBlockRes = {32,32,32}
 local DrawSDFShader = Graphics.LoadShader("Planet Shader",  "sdf_model_basic.vs", "island_terrain.fs")
@@ -88,20 +105,20 @@ function MakeIsland()
 	t:AddTag(Tag.new("Island"))
 	local m = World.AddComponent_Material(e)
 	m:SetVec4("MeshUVOffsetScale", vec4.new(0,0,1,1))
-	m:SetFloat("MaxHeight",150)
+	m:SetFloat("MaxHeight",500)
 	m:SetSampler("DiffuseTexture", Graphics.LoadTexture("Rock_028_SD/Rock_028_COLOR.jpg"))
 	m:SetSampler("BeachTexture", Graphics.LoadTexture("sand.jpg"))
 	m:SetSampler("WaterTexture", Graphics.LoadTexture("textures/water/Water_001_COLOR.jpg"))
 	m:SetSampler("GrassTexture", Graphics.LoadTexture("grass2.jpg"))
-	m:SetSampler("Heightmap2D", Graphics.LoadTexture("NZDEM_SoS_v1-0_29_Invercargill_gf_01_0.png"))
-	m:SetFloat("GrassMinHeight",1.5)
-	m:SetFloat("GrassAngleMin",0.98)
-	m:SetFloat("GrassAngleMul",40)
-	m:SetFloat("BeachHeight",-25.1)
-	m:SetFloat("BeachAngleMin",0.53)
+	m:SetSampler("Heightmap2D", Graphics.LoadTexture("Mt Ruapehu and Mt Ngauruhoe Heightmap_0.png"))
+	m:SetFloat("GrassMinHeight",146.6)
+	m:SetFloat("GrassAngleMin",0.84)
+	m:SetFloat("GrassAngleMul",6.55)
+	m:SetFloat("BeachHeight",143.3)
+	m:SetFloat("BeachAngleMin",0.0)
 	m:SetFloat("BeachAngleMul",7.41)
-	m:SetFloat("BeachThickness",0.03)
-	m:SetFloat("WaterHeight",-30.0)
+	m:SetFloat("BeachThickness",0.19)
+	m:SetFloat("WaterHeight",138.9)
 	m:SetFloat("NormalSampleBias",1)
 	m:SetVec4("WaterColour",vec4.new(0.05,0.1,0.12,1))
 	local transform = World.AddComponent_Transform(e)
@@ -113,10 +130,10 @@ function MakeIsland()
 	sdfModel:SetSDFShaderPath("heightmap_to_sdf.cs")
 	sdfModel:SetMaterialEntity(e)
 	sdfModel:SetOctreeDepth(7)
-	sdfModel:SetLOD(3,3000)
-	sdfModel:SetLOD(4,1500)
-	sdfModel:SetLOD(5,800)
-	sdfModel:SetLOD(6,400)
+	sdfModel:SetLOD(3,2200)
+	sdfModel:SetLOD(4,1200)
+	sdfModel:SetLOD(5,600)
+	sdfModel:SetLOD(6,300)
 	currentIsland = e
 end
 

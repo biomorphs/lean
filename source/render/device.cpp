@@ -13,7 +13,54 @@
 
 namespace Render
 {
-	Device::Device(Window& theWindow)
+	void GLDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message,const void* user)
+	{
+		// stop spamming us nvidia!
+		// 131185 - buffer allocation message
+		// 131204 - texture bounds to image unit has no base texture (I.e. its only used as image).
+		if (id == 131185 || id == 131204)
+		{
+			return;
+		}
+
+		SDE_LOG("OpenGL is telling us something!\n\t(%d): %s",id, message);
+
+		char* sourceStr = "unknown";
+		switch (source)
+		{
+			case GL_DEBUG_SOURCE_API:             sourceStr = "API";	break;
+			case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   sourceStr = "Window System";	break;
+			case GL_DEBUG_SOURCE_SHADER_COMPILER: sourceStr = "Shader Compiler";	break;
+			case GL_DEBUG_SOURCE_THIRD_PARTY:     sourceStr = "Third Party";	break;
+			case GL_DEBUG_SOURCE_APPLICATION:     sourceStr = "Application";	break;
+			case GL_DEBUG_SOURCE_OTHER:           sourceStr = "Other";	break;
+		}
+
+		char* typeStr = "unknown";
+		switch (type)
+		{
+			case GL_DEBUG_TYPE_ERROR:              typeStr = "Error";		break;
+			case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:typeStr = "Deprecated Behaviour";	break;
+			case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeStr = "Undefined Behaviour";	break;
+			case GL_DEBUG_TYPE_PORTABILITY:        typeStr = "Portability";	break;
+			case GL_DEBUG_TYPE_PERFORMANCE:        typeStr = "Performance";	break;
+			case GL_DEBUG_TYPE_MARKER:             typeStr = "Marker";	break;
+			case GL_DEBUG_TYPE_PUSH_GROUP:         typeStr = "Push Group";	break;
+			case GL_DEBUG_TYPE_POP_GROUP:          typeStr = "Pop Group";		break;
+			case GL_DEBUG_TYPE_OTHER:              typeStr = "Other";		break;
+		}
+		char* severityStr = "unknown";
+		switch (severity)
+		{
+			case GL_DEBUG_SEVERITY_HIGH:         severityStr = "High";	break;
+			case GL_DEBUG_SEVERITY_MEDIUM:       severityStr = "Medium";	break;
+			case GL_DEBUG_SEVERITY_LOW:          severityStr = "Low";	break;
+			case GL_DEBUG_SEVERITY_NOTIFICATION: severityStr = "Notification";	break;
+		} 
+		SDE_LOG("\tSource: %s\n\tType: %s\n\tSeverity: %s", sourceStr, typeStr, severityStr);
+	}
+
+	Device::Device(Window& theWindow, bool makeDebugContext)
 		: m_window( theWindow )
 	{
 		SDE_PROF_EVENT();
@@ -37,6 +84,16 @@ namespace Render
 			glErrorPop = glGetError();
 		}
 		SDE_RENDER_PROCESS_GL_ERRORS("Device Initialise");
+
+		int flags=0; 
+		glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+		if (flags & GL_CONTEXT_FLAG_DEBUG_BIT && makeDebugContext)
+		{
+			glEnable(GL_DEBUG_OUTPUT);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+			glDebugMessageCallback(GLDebugOutput, nullptr);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+		}
 
 		// Setting this here allows all point sprite shaders to set the sprite size
 		// dynamically.
@@ -138,8 +195,8 @@ namespace Render
 	{
 		if (fb.GetDepthStencil() != nullptr)
 		{
-			glClearNamedFramebufferfi(fb.GetHandle(), GL_DEPTH_STENCIL, 0, depth, 0);
-			SDE_RENDER_PROCESS_GL_ERRORS("glClearNamedFramebufferfi");
+			glClearNamedFramebufferfv(fb.GetHandle(), GL_DEPTH, 0, &depth);
+			SDE_RENDER_PROCESS_GL_ERRORS("glClearNamedFramebufferfv");
 		}
 	}
 
@@ -164,7 +221,7 @@ namespace Render
 
 		if (fb.GetDepthStencil() != nullptr)
 		{
-			glClearNamedFramebufferfi(fb.GetHandle(), GL_DEPTH_STENCIL, 0, depth, 0);
+			glClearNamedFramebufferfv(fb.GetHandle(), GL_DEPTH, 0, &depth);
 			SDE_RENDER_PROCESS_GL_ERRORS("glClearNamedFramebufferfi");
 		}
 	}

@@ -37,6 +37,9 @@ namespace Render
 		// We want all contexts created by us to share resources
 		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 
+		// Enable debug context (slower, but better error messages)
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
 		// Vsync
 		SDL_GL_SetSwapInterval(1);
 

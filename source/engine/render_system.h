@@ -54,6 +54,7 @@ namespace Engine
 			uint32_t m_windowHeight = 1080;
 			std::string m_windowTitle = "LEAN";
 			bool m_fullscreen = false;
+			bool m_debugContext = true;
 		} m_config;
 
 		struct Pass { Render::RenderPass* m_pass; uint32_t m_key; };

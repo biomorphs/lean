@@ -58,7 +58,7 @@ namespace Render
 	class Device
 	{
 	public:
-		Device(Window& theWindow);
+		Device(Window& theWindow, bool makeDebugContext);
 		~Device();
 		Fence MakeFence();
 		void DestroyFence(Fence& f);

@@ -54,7 +54,7 @@ namespace Engine
 			return false;
 		}
 
-		m_device = std::make_unique<Render::Device>(*m_window);
+		m_device = std::make_unique<Render::Device>(*m_window, m_config.m_debugContext);
 		if (!m_device)
 		{
 			SDE_LOGC(SDE, "Failed to create render device");
