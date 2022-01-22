@@ -1,7 +1,6 @@
 #pragma once
 
 #include "entity/component.h"
-#include "core/glm_headers.h"
 
 class Camera
 {

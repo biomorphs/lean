@@ -46,7 +46,7 @@ COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureMa
 		}
 		if (gui.Button("Remesh Now"))
 		{
-			m.Remesh();
+			m.Remesh(true);
 		}
 	};
 	return fn;
@@ -91,9 +91,9 @@ void SDFMesh::SetResolution(int x, int y, int z)
 	m_octree->Invalidate();
 }
 
-void SDFMesh::Remesh()
+void SDFMesh::Remesh(bool destroyAll)
 {
-	m_octree->Invalidate();
+	m_octree->Invalidate(destroyAll);
 }
 
 void SDFMesh::SetOctreeDepth(uint32_t d)

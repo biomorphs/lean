@@ -122,9 +122,3 @@ ComponentType* World::GetComponent(EntityHandle owner)
 	}
 	return nullptr;
 }
-
-template<class ComponentType>
-void ForEachComponentAsync(std::function<void(ComponentType&, EntityHandle)> fn, class JobSystem*, int32_t componentsPerJob = 100)
-{
-
-}

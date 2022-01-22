@@ -24,7 +24,7 @@ public:
 	COMPONENT(SDFMesh);
 	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::TextureManager& textures);
 
-	void Remesh();
+	void Remesh(bool destroyAll=false);
 	Engine::SDFMeshOctree& GetOctree() { return *m_octree; }
 
 	// note that uniforms from materials will be sent to the SDF shader!
