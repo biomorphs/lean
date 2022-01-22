@@ -74,6 +74,27 @@ namespace Engine
 		}
 	}
 
+	inline void ToJson(const char* name, glm::mat4& v, nlohmann::json& json)
+	{
+		float values[16] = {	v[0].x, v[0].y, v[0].z, v[0].w,
+								v[1].x, v[1].y, v[1].z, v[1].w,
+								v[2].x, v[2].y, v[2].z, v[2].w ,
+								v[3].x, v[3].y, v[3].z, v[3].w };
+		json[name] = values;
+	}
+
+	inline void ToJson(const char* name, glm::quat& v, nlohmann::json& json)
+	{
+		float values[4] = { v.x, v.y, v.z, v.w };
+		json[name] = values;
+	}
+
+	inline void ToJson(const char* name, glm::vec4& v, nlohmann::json& json)
+	{
+		float values[4] = { v.x, v.y, v.z, v.w };
+		json[name] = values;
+	}
+
 	inline void ToJson(const char* name, glm::vec3& v, nlohmann::json& json)
 	{
 		float values[3] = { v.x, v.y, v.z };
@@ -232,6 +253,44 @@ namespace Engine
 			float y = vjson[1];
 			float z = vjson[2];
 			v = { x, y, z };
+		}
+	}
+
+	inline void FromJson(const char* name, glm::quat& v, nlohmann::json& json)
+	{
+		auto& vjson = json[name];
+		if (json.size() == 4)
+		{
+			float x = vjson[0];
+			float y = vjson[1];
+			float z = vjson[2];
+			float w = vjson[3];
+			v = { x, y, z, w };
+		}
+	}
+
+	inline void FromJson(const char* name, glm::vec4& v, nlohmann::json& json)
+	{
+		auto& vjson = json[name];
+		if (json.size() == 4)
+		{
+			float x = vjson[0];
+			float y = vjson[1];
+			float z = vjson[2];
+			float w = vjson[3];
+			v = { x, y, z, w };
+		}
+	}
+
+	inline void FromJson(const char* name, glm::mat4& v, nlohmann::json& json)
+	{
+		auto& vjson = json[name];
+		if (json.size() == 16)
+		{
+			v[0] = glm::vec4(json[0], json[1], json[2], json[3]);
+			v[1] = glm::vec4(json[4], json[5], json[6], json[7]);
+			v[2] = glm::vec4(json[8], json[9], json[10], json[11]);
+			v[3] = glm::vec4(json[12], json[13], json[14], json[15]);
 		}
 	}
 

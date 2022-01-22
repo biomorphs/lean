@@ -72,7 +72,13 @@ namespace Engine
 		auto threadCount = m_jobSystem->GetThreadCount();
 		for (int i = 0; i < threadCount; ++i)
 		{
-			m_renderContexts.push_back(m_device->CreateSharedGLContext());
+			void* sharedContext = m_device->CreateSharedGLContext();
+			if (sharedContext == nullptr)
+			{
+				SDE_LOG("Error when creating shared GL context. Too many threads?");
+				return false;
+			}
+			m_renderContexts.push_back(sharedContext);
 		}
 		// Creating a context sets it by default, so make sure we reset the main thread context
 		m_device->SetGLContext(m_device->GetGLContext());

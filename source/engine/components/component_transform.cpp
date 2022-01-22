@@ -14,6 +14,9 @@ COMPONENT_SCRIPTS(Transform,
 )
 
 SERIALISE_BEGIN(Transform)
+	SERIALISE_PROPERTY("Position", m_position)
+	SERIALISE_PROPERTY("Orientation", m_orientation)
+	SERIALISE_PROPERTY("Scale", m_scale)
 SERIALISE_END()
 
 void Transform::RebuildMatrix()

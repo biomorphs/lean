@@ -18,7 +18,9 @@ namespace Engine
 	struct TextureHandle
 	{
 		uint32_t m_index = -1;
-		static TextureHandle Invalid() { return { (uint32_t)-1 }; };
+		class TextureManager* m_parent = nullptr;
+		static TextureHandle Invalid() { return { (uint32_t)-1, nullptr }; };
+		inline const char* GetTextureName() const;
 	};
 
 	class TextureManager
@@ -56,4 +58,9 @@ namespace Engine
 		std::atomic<int32_t> m_inFlightTextures = 0;
 		JobSystem* m_jobSystem = nullptr;
 	};
+
+	const char* TextureHandle::GetTextureName() const
+	{
+		return m_parent ? m_parent->GetTexturePath(*this).c_str() : nullptr;
+	}
 }

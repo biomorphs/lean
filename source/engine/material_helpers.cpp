@@ -17,7 +17,7 @@ namespace Engine
 			uint32_t uniformHandle = shader.GetUniformHandle(s.second.m_name.c_str());
 			if (uniformHandle != -1)
 			{
-				TextureHandle texHandle = { s.second.m_handle };
+				TextureHandle texHandle = { s.second.m_handle, &tm };	// sketchy!
 				const auto theTexture = tm.GetTexture({ texHandle });
 				if (theTexture)
 				{

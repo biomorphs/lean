@@ -119,7 +119,7 @@ namespace Engine
 		{
 			if (m_textures[i].m_path == path)
 			{
-				TextureHandle index = { static_cast<uint32_t>(i) };
+				TextureHandle index = { static_cast<uint32_t>(i), this };
 				if(onFinish)
 					onFinish(true, index);
 				return index;
@@ -127,7 +127,7 @@ namespace Engine
 		}
 
 		m_textures.push_back({nullptr, path });
-		auto newHandle = TextureHandle{ static_cast<uint32_t>(m_textures.size() - 1) };
+		auto newHandle = TextureHandle{ static_cast<uint32_t>(m_textures.size() - 1), this };
 		m_inFlightTextures += 1;
 
 		std::string pathString = path;
@@ -195,6 +195,7 @@ namespace Engine
 	{
 		if (h.m_index != -1 && h.m_index < m_textures.size())
 		{
+			assert(h.m_parent == this);
 			return m_textures[h.m_index].m_path;
 		}
 		else
@@ -207,6 +208,7 @@ namespace Engine
 	{
 		if (h.m_index != -1 && h.m_index < m_textures.size())
 		{
+			assert(h.m_parent == this);
 			return m_textures[h.m_index].m_texture.get();
 		}
 		else

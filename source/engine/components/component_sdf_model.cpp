@@ -30,7 +30,7 @@ SERIALISE_END()
 // Use the common samples names as we get free default textures
 const char* c_textureSamplerName = "DiffuseTexture";
 
-void SDFModel::SetDiffuseTexture(Engine::TextureHandle t)
+void SDFModel::SetDiffuseTexture(const Engine::TextureHandle& t)
 {
 	m_diffuseTexture = t;
 	if (m_mesh != nullptr)

@@ -9,6 +9,7 @@ COMPONENT_SCRIPTS(Tags,
 );
 
 SERIALISE_BEGIN(Tags)
+	SERIALISE_PROPERTY("Tags", m_tags)
 SERIALISE_END()
 
 void Tags::AddTag(const Engine::Tag& t)

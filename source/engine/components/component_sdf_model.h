@@ -52,8 +52,8 @@ public:
 	void SetDebugEnabled(bool d) { m_debugRender = d; }
 	float GetNormalSmoothness() { return m_normalSmoothness; }
 	void SetNormalSmoothness(float s) { m_normalSmoothness = s; }
-	void SetDiffuseTexture(Engine::TextureHandle t);
-	Engine::TextureHandle GetDiffuseTexture() const { return m_diffuseTexture; }
+	void SetDiffuseTexture(const Engine::TextureHandle& t);
+	const Engine::TextureHandle& GetDiffuseTexture() const { return m_diffuseTexture; }
 
 	// sdf data provider
 	void SetSampleScriptFunction(sol::protected_function fn);

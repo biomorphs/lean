@@ -109,6 +109,28 @@ ComponentType* LinearComponentStorage<ComponentType>::Find(EntityHandle owner)
 }
 
 template<class ComponentType>
+void LinearComponentStorage<ComponentType>::Serialise(EntityHandle owner, nlohmann::json& json, Engine::SerialiseType op)
+{
+	ComponentType* foundComponent = Find(owner);
+	if (op == Engine::SerialiseType::Write)
+	{
+		if (foundComponent)
+		{
+			Engine::ToJson(*foundComponent, json);
+		}
+	}
+	else
+	{
+		if (!foundComponent)
+		{
+			Create(owner);
+			foundComponent = Find(owner);
+		}
+		Engine::FromJson(*foundComponent, json);
+	}
+}
+
+template<class ComponentType>
 void LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
 {
 	SDE_PROF_EVENT();

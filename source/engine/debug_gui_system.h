@@ -38,6 +38,9 @@ namespace Engine
 		virtual void Shutdown() override;
 		bool IsCapturingMouse();	// if true the gui is interacting with mouse
 		bool IsCapturingKeyboard();	// if true the gui is interacting with keyboard
+		bool BeginModalPopup(const char* windowName, uint32_t flags = 0);
+		void CloseCurrentPopup();
+		void EndModalPopup();
 		bool BeginWindow(bool& windowOpen, const char* windowName, uint32_t flags=0);
 		void SetWindowPosition(glm::vec2 p);
 		void SetWindowSize(glm::vec2 s);

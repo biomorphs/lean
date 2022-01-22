@@ -1,4 +1,5 @@
 #pragma once
+#include "serialisation.h"
 #include "core/string_hashing.h"
 #include <string>
 #include <functional>
@@ -25,6 +26,8 @@ namespace Engine
 
 		const char* c_str() const { return m_string.c_str(); }
 		uint32_t GetHash() const { return m_hash; }
+
+		SERIALISED_CLASS();
 	private:
 		std::string m_string;
 		uint32_t m_hash;

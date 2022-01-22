@@ -1,18 +1,38 @@
 #include "engine/engine_startup.h"
 #include "playground/playground.h"
+#include "editor/editor.h"
 #include "entity/entity_system.h"
 #include "core/log.h"
+#include <algorithm>
 
-void CreateSystems(Engine::SystemRegister& r)
+class CreateSystems
 {
-	r.Register("Playground", new Playground());
-}
+public:
+	CreateSystems(std::string cmdLine)
+		: m_cmdline(cmdLine)
+	{
+	}
+	void operator()(Engine::SystemRegister& r)
+	{
+		//if (m_cmdline.find("-playground") != -1)
+		{
+			r.Register("Playground", new Playground());
+		}
+		//else
+		{
+			r.Register("Editor", new Editor());
+		}
+	}
+
+private:
+	std::string m_cmdline;
+};
 
 int main(int argc, char** args)
 {
+	std::string fullCmdLine;
 	if (argc > 1)
 	{
-		std::string fullCmdLine = "";
 		for (int i = 1; i < argc; ++i)
 		{
 			fullCmdLine += args[i];
@@ -28,5 +48,5 @@ int main(int argc, char** args)
 			}
 		}
 	}
-	return Engine::Run(CreateSystems, 0, nullptr);
+	return Engine::Run(CreateSystems(fullCmdLine), 0, nullptr);
 }

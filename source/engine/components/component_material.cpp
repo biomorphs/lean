@@ -16,6 +16,33 @@ COMPONENT_SCRIPTS(Material,
 )
 
 SERIALISE_BEGIN(Material)
+if (op == Engine::SerialiseType::Write)
+{
+	bool castingShadows = m_material->GetCastsShadows();
+	Engine::ToJson("CastShadow", castingShadows, json);
+	bool isTransparent = m_material->GetIsTransparent();
+	Engine::ToJson("IsTransparent", isTransparent, json);
+	
+	auto writeUniformsToJson = [](const char* name, nlohmann::json& target, auto& uniforms) {
+		std::vector<nlohmann::json> uniformsJson;
+		uniformsJson.reserve(uniforms.size());
+		for (auto& v : uniforms)
+		{
+			Engine::ToJson(v.second.m_name.c_str(), v.second.m_value, uniformsJson.emplace_back());
+		}
+		target[name] = std::move(uniformsJson);
+	};
+	writeUniformsToJson("Float", json, m_material->GetUniforms().FloatValues());
+	writeUniformsToJson("Vec4", json, m_material->GetUniforms().Vec4Values());
+	writeUniformsToJson("Mat4", json, m_material->GetUniforms().Mat4Values());
+	writeUniformsToJson("Int", json, m_material->GetUniforms().IntValues());
+
+	Engine::ToJson("Samplers", m_samplerTextures, json);
+}
+else
+{
+
+}
 SERIALISE_END()
 
 Material::Material()
@@ -45,6 +72,7 @@ void Material::SetInt32(const char* name, int32_t v)
 
 void Material::SetSampler(const char* name, const Engine::TextureHandle& v)
 { 
+	m_samplerTextures[name] = v.GetTextureName();
 	m_material->SetSampler(name, v.m_index);
 }
 

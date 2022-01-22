@@ -1,5 +1,4 @@
 #pragma once
-#include "engine/serialisation.h"
 #include "engine/job_system.h"
 #include "entity_handle.h"
 #include "component.h"
@@ -18,7 +17,6 @@ class World
 public:
 	World() = default;
 	~World() = default;
-	SERIALISED_CLASS();
 
 	EntityHandle AddEntity();
 	void RemoveEntity(EntityHandle h);	// defers actual deletion until CollectGarbage() called

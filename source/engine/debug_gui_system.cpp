@@ -174,6 +174,37 @@ namespace Engine
 		ImGui::SameLine(xOffset, spacing);
 	}
 
+	void DebugGuiSystem::EndModalPopup()
+	{
+		ImGui::EndPopup();
+	}
+
+	void DebugGuiSystem::CloseCurrentPopup()
+	{
+		ImGui::CloseCurrentPopup();
+	}
+
+	bool DebugGuiSystem::BeginModalPopup(const char* windowName, uint32_t flags)
+	{
+		uint32_t windowFlags = 0;
+		if (flags & NoMove)
+		{
+			windowFlags |= ImGuiWindowFlags_NoMove;
+		}
+		if (flags & NoTitlebar)
+		{
+			windowFlags |= ImGuiWindowFlags_NoTitleBar;
+		}
+		if (flags & NoResize)
+		{
+			windowFlags |= ImGuiWindowFlags_NoResize;
+		}
+
+		ImGui::OpenPopup(windowName);
+		bool ret = ImGui::BeginPopupModal(windowName, nullptr, windowFlags);
+		return ret;
+	}
+
 	bool DebugGuiSystem::BeginWindow(bool& windowOpen, const char* windowName, uint32_t flags)
 	{
 		uint32_t windowFlags = 0;

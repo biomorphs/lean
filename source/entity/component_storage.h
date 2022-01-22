@@ -16,6 +16,7 @@ public:
 	virtual ~ComponentStorage() = default;
 	virtual SERIALISED_CLASS() {}
 
+	virtual void Serialise(EntityHandle owner, nlohmann::json& json, Engine::SerialiseType op) = 0;
 	virtual void Create(EntityHandle owner) = 0;
 	virtual bool Contains(EntityHandle owner) = 0;
 	virtual void Destroy(EntityHandle owner) = 0;
@@ -33,6 +34,7 @@ public:
 	void ForEach(std::function<void(ComponentType&, EntityHandle)> fn);
 	void ForEachAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& js, int32_t componentsPerJob);
 
+	virtual void Serialise(EntityHandle owner, nlohmann::json& json, Engine::SerialiseType op);
 	virtual void Create(EntityHandle owner);
 	virtual bool Contains(EntityHandle owner) { return Find(owner) != nullptr; }
 	virtual void Destroy(EntityHandle owner);

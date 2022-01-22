@@ -6,13 +6,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-SERIALISE_BEGIN(World)
-SERIALISE_PROPERTY("IDCounter", m_entityIDCounter)
-SERIALISE_PROPERTY("AllEntities", m_activeEntities)
-SERIALISE_PROPERTY("PendingDelete", m_pendingDelete)
-SERIALISE_PROPERTY_ROBINHOOD("Components", m_components)
-SERIALISE_END()
-
 void World::CollectGarbage()
 {
 	for (auto entityId : m_pendingDelete)
