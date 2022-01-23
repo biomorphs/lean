@@ -35,6 +35,5 @@ public:
 	void SetCastShadows(bool s);
 
 private:
-	std::unordered_map<std::string, std::string> m_samplerTextures;
 	std::unique_ptr<Render::Material> m_material;
 };

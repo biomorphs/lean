@@ -39,7 +39,17 @@ if (op == Engine::SerialiseType::Write)
 	writeUniformsToJson("Vec4", json, m_material->GetUniforms().Vec4Values());
 	writeUniformsToJson("Mat4", json, m_material->GetUniforms().Mat4Values());
 	writeUniformsToJson("Int", json, m_material->GetUniforms().IntValues());
-	Engine::ToJson("Samplers", m_samplerTextures, json);
+	
+	std::vector<nlohmann::json> samplersJson;
+	for (const auto& sampler : m_material->GetSamplers())
+	{
+		nlohmann::json& thisSamplerData = samplersJson.emplace_back();
+		Engine::ToJson("Name", sampler.second.m_name, thisSamplerData);
+		auto& valueJson = thisSamplerData["Texture"];
+		Engine::TextureHandle texHandle{ sampler.second.m_handle };
+		Engine::ToJson(texHandle, valueJson);
+	}
+	json["Samplers"] = samplersJson;
 }
 else
 {
@@ -65,9 +75,15 @@ else
 	readUniforms("Mat4", json, m_material->GetUniforms().Mat4Values());
 	readUniforms("Int", json, m_material->GetUniforms().IntValues());
 
-	Engine::ToJson("Samplers", m_samplerTextures, json);
-
-	// Todo - needs major refactor!
+	auto& samplersJson = json["Samplers"];
+	for (int index = 0; index < samplersJson.size(); ++index)
+	{
+		std::string samplerName = "";
+		Engine::TextureHandle texture;
+		Engine::FromJson("Name", samplerName, samplersJson[index]);
+		Engine::FromJson("Texture", texture, samplersJson[index]);
+		SetSampler(samplerName.c_str(), texture);
+	}
 }
 SERIALISE_END()
 
@@ -98,7 +114,6 @@ void Material::SetInt32(const char* name, int32_t v)
 
 void Material::SetSampler(const char* name, const Engine::TextureHandle& v)
 { 
-	m_samplerTextures[name] = v.GetTextureName();
 	m_material->SetSampler(name, v.m_index);
 }
 

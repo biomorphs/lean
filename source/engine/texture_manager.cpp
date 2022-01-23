@@ -12,6 +12,17 @@
 namespace Engine
 {
 	SERIALISE_BEGIN(TextureHandle)
+		static TextureManager* texManager = GetSystem<TextureManager>("Textures");
+		if (op == Engine::SerialiseType::Write)
+		{
+			Engine::ToJson("Path", texManager->GetTexturePath(*this), json);
+		}
+		else
+		{
+			std::string path = "";
+			Engine::FromJson("Path", path, json);
+			*this = texManager->LoadTexture(path);
+		}
 	SERIALISE_END()
 
 	bool TextureManager::ShowGui(DebugGuiSystem& gui)
