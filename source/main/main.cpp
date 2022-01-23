@@ -1,32 +1,24 @@
 #include "engine/engine_startup.h"
+#include "engine/system_manager.h"
+
 #include "playground/playground.h"
 #include "editor/editor.h"
-#include "entity/entity_system.h"
+
 #include "core/log.h"
 #include <algorithm>
 
-class CreateSystems
+void CreateSystems(const std::string& cmdLine)
 {
-public:
-	CreateSystems(std::string cmdLine)
-		: m_cmdline(cmdLine)
+	auto& sysManager = Engine::SystemManager::GetInstance();
+	//if (cmdLine.find("-playground") != -1)
 	{
+		sysManager.RegisterSystem("Playground", new Playground());
 	}
-	void operator()(Engine::SystemRegister& r)
+	//else
 	{
-		//if (m_cmdline.find("-playground") != -1)
-		{
-			r.Register("Playground", new Playground());
-		}
-		//else
-		{
-			r.Register("Editor", new Editor());
-		}
+		sysManager.RegisterSystem("Editor", new Editor());
 	}
-
-private:
-	std::string m_cmdline;
-};
+}
 
 int main(int argc, char** args)
 {
@@ -48,5 +40,9 @@ int main(int argc, char** args)
 			}
 		}
 	}
-	return Engine::Run(CreateSystems(fullCmdLine), 0, nullptr);
+	auto createUserSystems = [fullCmdLine]()
+	{
+		CreateSystems(fullCmdLine);
+	};
+	return Engine::Run(createUserSystems, argc, args);
 }

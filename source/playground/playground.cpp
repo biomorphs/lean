@@ -150,13 +150,12 @@ Engine::MenuBar g_menuBar;
 bool g_keepRunning = true;
 bool g_pauseScriptDelta = false;
 
-bool Playground::PreInit(Engine::SystemManager& manager)
+bool Playground::PreInit()
 {
 	SDE_PROF_EVENT();
-	m_systemManager = &manager;
-	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
-	m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
-	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
+	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
+	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
+	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
 
 	m_sceneEditor.Init(&m_scene, m_debugGui);
 
@@ -199,7 +198,7 @@ void Playground::ShowSystemProfiler()
 	m_debugGui->BeginWindow(open, "System Profiler");
 	char text[256] = "";
 	double totalTime = 0.0;
-	for (const auto& it : m_systemManager->GetLastUpdateTimes())
+	for (const auto& it : Engine::SystemManager::GetInstance().GetLastUpdateTimes())
 	{
 		const auto& name = std::get<0>(it);
 		const auto& timeSeconds = std::get<1>(it);

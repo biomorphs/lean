@@ -22,7 +22,7 @@ namespace Engine
 		ScriptSystem();
 		virtual ~ScriptSystem();
 
-		bool PreInit(SystemManager& manager);
+		bool PreInit();
 		bool Tick(float timeDelta);
 		void PostShutdown();
 

@@ -141,17 +141,17 @@ namespace Engine
 		return new ProcessResults(this);
 	}
 
-	bool RaycastSystem::PreInit(SystemManager& manager)
+	bool RaycastSystem::PreInit()
 	{
 		SDE_PROF_EVENT();
 
-		m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
-		m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
-		m_debugGuiSystem = (DebugGuiSystem*)manager.GetSystem("DebugGui");
-		m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
-		m_renderSys = (Engine::RenderSystem*)manager.GetSystem("Render");
-		m_graphics = (GraphicsSystem*)manager.GetSystem("Graphics");
-		m_physics = (PhysicsSystem*)manager.GetSystem("Physics");
+		m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
+		m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+		m_debugGuiSystem = (DebugGuiSystem*)Engine::GetSystem("DebugGui");
+		m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
+		m_renderSys = (Engine::RenderSystem*)Engine::GetSystem("Render");
+		m_graphics = (GraphicsSystem*)Engine::GetSystem("Graphics");
+		m_physics = (PhysicsSystem*)Engine::GetSystem("Physics");
 
 		return true;
 	}

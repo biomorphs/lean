@@ -30,15 +30,15 @@ void CreatureSystem::AddBehaviour(Engine::Tag tag, Creature::Behaviour b)
 	m_behaviours[tag] = b;
 }
 
-bool CreatureSystem::PreInit(Engine::SystemManager& manager)
+bool CreatureSystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
-	m_graphicsSystem = (GraphicsSystem*)manager.GetSystem("Graphics");
-	m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
-	m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
-	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
+	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+	m_graphicsSystem = (GraphicsSystem*)Engine::GetSystem("Graphics");
+	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
+	m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
+	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
 
 	return true;
 }

@@ -37,16 +37,16 @@ SDFMeshSystem::~SDFMeshSystem()
 {
 }
 
-bool SDFMeshSystem::PreInit(Engine::SystemManager& manager)
+bool SDFMeshSystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
-	m_renderSys = (Engine::RenderSystem*)manager.GetSystem("Render");
-	m_graphics = (GraphicsSystem*)manager.GetSystem("Graphics");
-	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
-	m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
-	m_cameras = (Engine::CameraSystem*)manager.GetSystem("Cameras");
+	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
+	m_renderSys = (Engine::RenderSystem*)Engine::GetSystem("Render");
+	m_graphics = (GraphicsSystem*)Engine::GetSystem("Graphics");
+	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+	m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
+	m_cameras = (Engine::CameraSystem*)Engine::GetSystem("Cameras");
 	
 	return true;
 }

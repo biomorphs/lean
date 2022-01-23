@@ -3,12 +3,11 @@
 
 namespace Engine
 {
-	class SystemManager;
 	class System
 	{
 	public:
 		virtual ~System() {}
-		virtual bool PreInit(SystemManager&) { SDE_PROF_EVENT(); return true; }
+		virtual bool PreInit() { SDE_PROF_EVENT(); return true; }
 		virtual bool Initialise() { SDE_PROF_EVENT(); return true; }
 		virtual bool PostInit() { SDE_PROF_EVENT(); return true; }
 

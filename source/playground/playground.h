@@ -8,7 +8,6 @@
 
 namespace Engine
 {
-	class SystemManager;
 	class DebugGuiSystem;
 	class ScriptSystem;
 }
@@ -20,7 +19,7 @@ class Playground : public Engine::System
 public:
 	Playground();
 	virtual ~Playground();
-	virtual bool PreInit(Engine::SystemManager& manager);
+	virtual bool PreInit();
 	virtual bool PostInit();
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
@@ -41,5 +40,4 @@ private:
 	Engine::ScriptSystem* m_scriptSystem = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
 	CreatureSystem* m_creatures = nullptr;
-	Engine::SystemManager* m_systemManager = nullptr;
 };

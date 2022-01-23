@@ -32,11 +32,11 @@ void Editor::StopRunning()
 	m_keepRunning = false;
 }
 
-bool Editor::PreInit(Engine::SystemManager& manager)
+bool Editor::PreInit()
 {
 	SDE_PROF_EVENT();
-	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
-	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
+	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
+	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
 	
 	return true;
 }

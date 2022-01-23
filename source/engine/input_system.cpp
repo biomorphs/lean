@@ -131,12 +131,12 @@ namespace Engine
 		}
 	}
 
-	bool InputSystem::PreInit(SystemManager& manager)
+	bool InputSystem::PreInit()
 	{
-		auto eventSystem = (EventSystem*)manager.GetSystem("Events");
+		auto eventSystem = (EventSystem*)Engine::GetSystem("Events");
 		eventSystem->RegisterEventHandler([this](void* e) { OnSystemEvent(e); });
 
-		m_scripts = (ScriptSystem*)manager.GetSystem("Script");
+		m_scripts = (ScriptSystem*)Engine::GetSystem("Script");
 
 		return true;
 	}

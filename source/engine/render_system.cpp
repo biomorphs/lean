@@ -39,10 +39,10 @@ namespace Engine
 		return new DevicePresenter(this);
 	}
 
-	bool RenderSystem::PreInit(SystemManager& manager)
+	bool RenderSystem::PreInit()
 	{
 		SDE_PROF_EVENT();
-		m_jobSystem = (JobSystem*)manager.GetSystem("Jobs");
+		m_jobSystem = (JobSystem*)Engine::GetSystem("Jobs");
 
 		// Create the window + device asap
 		Render::Window::Properties winProps(m_config.m_windowTitle, m_config.m_windowWidth, m_config.m_windowHeight);

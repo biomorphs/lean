@@ -167,15 +167,15 @@ namespace Engine
 		return new UpdateEntities(this);
 	}
 
-	bool PhysicsSystem::PreInit(SystemManager& manager)
+	bool PhysicsSystem::PreInit()
 	{
 		SDE_PROF_EVENT();
 
-		m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
-		m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
-		m_graphicsSystem = (GraphicsSystem*)manager.GetSystem("Graphics");
-		m_debugGuiSystem = (DebugGuiSystem*)manager.GetSystem("DebugGui");
-		m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
+		m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
+		m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+		m_graphicsSystem = (GraphicsSystem*)Engine::GetSystem("Graphics");
+		m_debugGuiSystem = (DebugGuiSystem*)Engine::GetSystem("DebugGui");
+		m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
 
 		m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_physxAllocator, g_physxErrors);
 

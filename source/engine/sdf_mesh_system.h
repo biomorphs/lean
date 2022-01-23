@@ -31,7 +31,7 @@ class SDFMeshSystem : public Engine::System
 public:
 	SDFMeshSystem();
 	virtual ~SDFMeshSystem();
-	virtual bool PreInit(Engine::SystemManager& manager);
+	virtual bool PreInit();
 	virtual bool Initialise();
 	virtual bool PostInit();
 	virtual bool Tick(float timeDelta);

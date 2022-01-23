@@ -5,6 +5,7 @@
 #include "core/profiler.h"
 #include "core/timer.h"
 #include <cassert>
+#include <memory>
 
 namespace Engine
 {
@@ -14,6 +15,17 @@ namespace Engine
 
 	SystemManager::~SystemManager()
 	{
+	}
+
+	SystemManager& SystemManager::GetInstance()
+	{
+		static SystemManager s_instance;
+		return s_instance;
+	}
+
+	static SystemManager* SetInstance()
+	{
+
 	}
 
 	void SystemManager::RegisterSystem(const char* systemName, System* theSystem)
@@ -44,7 +56,7 @@ namespace Engine
 			SDE_PROF_EVENT("PreInit");
 			for (const auto it : m_systems)
 			{
-				if (!std::get<1>(it)->PreInit(*this))
+				if (!std::get<1>(it)->PreInit())
 				{
 					return false;
 				}

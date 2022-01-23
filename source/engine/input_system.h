@@ -14,7 +14,7 @@ namespace Engine
 	public:
 		InputSystem();
 		virtual ~InputSystem();
-		virtual bool PreInit(Engine::SystemManager& manager);
+		virtual bool PreInit();
 		virtual bool Initialise();
 		virtual bool Tick(float timeDelta);
 

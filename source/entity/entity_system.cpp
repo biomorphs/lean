@@ -115,13 +115,13 @@ void EntitySystem::ShowDebugGui()
 	m_debugGui->MainMenuBar(g_entityMenu);
 }
 
-bool EntitySystem::PreInit(Engine::SystemManager& s)
+bool EntitySystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_scriptSystem = (Engine::ScriptSystem*)s.GetSystem("Script");
+	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
 	assert(m_scriptSystem);
-	m_debugGui = (Engine::DebugGuiSystem*)s.GetSystem("DebugGui");
+	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
 	assert(m_debugGui);
 
 	auto& scripts = m_scriptSystem->Globals();

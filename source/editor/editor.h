@@ -14,7 +14,7 @@ class Editor : public Engine::System
 public:
 	Editor();
 	virtual ~Editor();
-	virtual bool PreInit(Engine::SystemManager& manager);
+	virtual bool PreInit();
 	virtual bool PostInit();
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();

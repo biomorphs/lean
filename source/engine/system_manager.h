@@ -10,11 +10,13 @@ namespace Engine
 	class System;
 
 	// This class handles ownership and updates of systems
+	// It is the *only* singleton allowed!
 	class SystemManager
 	{
 	public:
-		SystemManager();
 		~SystemManager();
+
+		static SystemManager& GetInstance();
 
 		virtual System* GetSystem(const char* systemName);
 		void RegisterSystem(const char* systemName, System* theSystem);
@@ -26,6 +28,8 @@ namespace Engine
 		const ProfilerData& GetLastUpdateTimes() const { return m_lastUpdateTime; }
 
 	private:
+		SystemManager();
+
 		typedef std::vector<std::tuple<std::string, System*>> SystemArray;
 		typedef std::map<uint32_t, System*> SystemMap;
 		typedef std::pair<uint32_t, System*> SystemPair;
@@ -33,5 +37,10 @@ namespace Engine
 		ProfilerData m_lastUpdateTime;
 		SystemArray m_systems;
 		SystemMap m_systemMap;
+	};
+
+	inline System* GetSystem(const char* name)	// Helper for less typing!
+	{
+		return SystemManager::GetInstance().GetSystem(name);
 	};
 }

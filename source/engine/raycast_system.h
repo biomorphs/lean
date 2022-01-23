@@ -25,7 +25,7 @@ namespace Engine
 		RaycastSystem();
 		virtual ~RaycastSystem();
 
-		bool PreInit(SystemManager& manager);
+		bool PreInit();
 		bool Initialise();
 		bool Tick(float timeDelta);
 		void Shutdown();

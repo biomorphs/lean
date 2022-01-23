@@ -31,7 +31,7 @@ namespace Engine
 		inline Render::Window* GetWindow() { return m_window.get(); }
 		inline Render::Device* GetDevice() { return m_device.get(); }
 
-		bool PreInit(SystemManager& manager);
+		bool PreInit();
 		bool Initialise();		// Window and device are created here
 		bool PostInit();		// Window made visible
 		bool Tick(float timeDelta);			// All passes are drawn here

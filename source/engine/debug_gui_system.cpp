@@ -21,13 +21,13 @@ namespace Engine
 	{
 	}
 
-	bool DebugGuiSystem::PreInit(SystemManager& manager)
+	bool DebugGuiSystem::PreInit()
 	{
 		SDE_PROF_EVENT();
 
-		m_renderSystem = (RenderSystem*)manager.GetSystem("Render");
-		m_scriptSystem = (ScriptSystem*)manager.GetSystem("Script");
-		auto EventSystem = (Engine::EventSystem*)manager.GetSystem("Events");
+		m_renderSystem = (RenderSystem*)Engine::GetSystem("Render");
+		m_scriptSystem = (ScriptSystem*)Engine::GetSystem("Script");
+		auto EventSystem = (Engine::EventSystem*)Engine::GetSystem("Events");
 		EventSystem->RegisterEventHandler([this](void* e)
 		{
 			this->m_imguiPass->HandleEvent(e);

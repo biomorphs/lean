@@ -40,16 +40,16 @@ namespace Engine
 		};
 	}
 
-	bool CameraSystem::PreInit(Engine::SystemManager& manager)
+	bool CameraSystem::PreInit()
 	{
 		SDE_PROF_EVENT();
 
-		m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
-		m_renderSystem = (Engine::RenderSystem*)manager.GetSystem("Render");
-		m_inputSystem = (Engine::InputSystem*)manager.GetSystem("Input");
-		m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
-		m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
-		m_graphics = (GraphicsSystem*)manager.GetSystem("Graphics");
+		m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
+		m_renderSystem = (Engine::RenderSystem*)Engine::GetSystem("Render");
+		m_inputSystem = (Engine::InputSystem*)Engine::GetSystem("Input");
+		m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
+		m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+		m_graphics = (GraphicsSystem*)Engine::GetSystem("Graphics");
 
 		m_mainRenderCamera = std::make_unique<Render::Camera>();
 

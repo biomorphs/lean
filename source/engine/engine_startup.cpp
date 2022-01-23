@@ -20,19 +20,8 @@
 
 namespace Engine
 {
-	class EngineSystemRegister : public SystemRegister
-	{
-	public:
-		EngineSystemRegister(SystemManager& sys) : m_systemManager(sys) {}
-		virtual void Register(const char* systemName, System* theSystem)
-		{
-			m_systemManager.RegisterSystem(systemName, theSystem);
-		}
-		SystemManager& m_systemManager;
-	};
-
 	// Application entry point
-	int Run(std::function<void(SystemRegister&)> systemCreation, int argc, char* args[])
+	int Run(std::function<void()> systemCreation, int argc, char* args[])
 	{
 		// Initialise platform stuff
 		Platform::InitResult result = Platform::Initialise(argc, args);
@@ -49,7 +38,7 @@ namespace Engine
 		auto render = new RenderSystem;
 		auto raycaster = new RaycastSystem;
 
-		SystemManager sysManager;
+		SystemManager& sysManager = SystemManager::GetInstance();
 		sysManager.RegisterSystem("Events", new EventSystem);
 		sysManager.RegisterSystem("Jobs", new JobSystem);
 		sysManager.RegisterSystem("Input", new InputSystem);
@@ -57,10 +46,7 @@ namespace Engine
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
 		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
 		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
-		
-		EngineSystemRegister registerSystems(sysManager);
-		systemCreation(registerSystems);
-
+		systemCreation();
 		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);
 		sysManager.RegisterSystem("Graphics", new GraphicsSystem);

@@ -3,13 +3,7 @@
 
 namespace Engine
 {
-	class System;
-	class SystemRegister
-	{
-	public:
-		virtual void Register(const char* name, System* theSystem) = 0;
-	};
-
 	// This runs everything. Call it from main()!
-	int Run(std::function<void(SystemRegister&)> systemCreation, int argc, char* args[]);
+	// Use systemCreationCb to create/register app-specific systems
+	int Run(std::function<void()> systemCreationCb, int argc, char* args[]);
 }

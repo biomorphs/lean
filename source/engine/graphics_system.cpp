@@ -171,16 +171,16 @@ void GraphicsSystem::RegisterScripts()
 	};
 }
 
-bool GraphicsSystem::PreInit(Engine::SystemManager& manager)
+bool GraphicsSystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_scriptSystem = (Engine::ScriptSystem*)manager.GetSystem("Script");
-	m_renderSystem = (Engine::RenderSystem*)manager.GetSystem("Render");
-	m_inputSystem = (Engine::InputSystem*)manager.GetSystem("Input");
-	m_jobSystem = (Engine::JobSystem*)manager.GetSystem("Jobs");
-	m_debugGui = (Engine::DebugGuiSystem*)manager.GetSystem("DebugGui");
-	m_entitySystem = (EntitySystem*)manager.GetSystem("Entities");
+	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
+	m_renderSystem = (Engine::RenderSystem*)Engine::GetSystem("Render");
+	m_inputSystem = (Engine::InputSystem*)Engine::GetSystem("Input");
+	m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
+	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
+	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
 
 	m_shaders = std::make_unique<Engine::ShaderManager>();
 	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);
