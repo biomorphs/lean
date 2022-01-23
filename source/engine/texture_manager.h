@@ -20,7 +20,7 @@ namespace Engine
 		uint32_t m_index = -1;
 		class TextureManager* m_parent = nullptr;
 		static TextureHandle Invalid() { return { (uint32_t)-1, nullptr }; };
-		inline const char* GetTextureName() const;
+		inline std::string GetTextureName() const;
 	};
 
 	class TextureManager
@@ -59,8 +59,8 @@ namespace Engine
 		JobSystem* m_jobSystem = nullptr;
 	};
 
-	const char* TextureHandle::GetTextureName() const
+	std::string TextureHandle::GetTextureName() const
 	{
-		return m_parent ? m_parent->GetTexturePath(*this).c_str() : nullptr;
+		return m_parent ? m_parent->GetTexturePath(*this) : "";
 	}
 }

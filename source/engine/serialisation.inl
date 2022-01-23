@@ -214,7 +214,7 @@ namespace Engine
 	{
 		auto& jj = json[name];
 		v.reserve(jj.size());
-		for (auto it : jj)
+		for (auto& it : jj)
 		{
 			T newVal;
 			FromJson(newVal, it);
@@ -225,7 +225,7 @@ namespace Engine
 	inline void FromJson(const char* name, glm::ivec2& v, nlohmann::json& json)
 	{
 		auto& vjson = json[name];
-		if (json.size() == 2)
+		if (vjson.size() == 2)
 		{
 			int x = vjson[0];
 			int y = vjson[1];
@@ -236,7 +236,7 @@ namespace Engine
 	inline void FromJson(const char* name, glm::vec2& v, nlohmann::json& json)
 	{
 		auto& vjson = json[name];
-		if (json.size() == 2)
+		if (vjson.size() == 2)
 		{
 			float x = vjson[0];
 			float y = vjson[1];
@@ -247,7 +247,7 @@ namespace Engine
 	inline void FromJson(const char* name, glm::vec3& v, nlohmann::json& json)
 	{
 		auto& vjson = json[name];
-		if (json.size() == 3)
+		if (vjson.size() == 3)
 		{
 			float x = vjson[0];
 			float y = vjson[1];
@@ -259,7 +259,7 @@ namespace Engine
 	inline void FromJson(const char* name, glm::quat& v, nlohmann::json& json)
 	{
 		auto& vjson = json[name];
-		if (json.size() == 4)
+		if (vjson.size() == 4)
 		{
 			float x = vjson[0];
 			float y = vjson[1];
@@ -272,7 +272,7 @@ namespace Engine
 	inline void FromJson(const char* name, glm::vec4& v, nlohmann::json& json)
 	{
 		auto& vjson = json[name];
-		if (json.size() == 4)
+		if (vjson.size() == 4)
 		{
 			float x = vjson[0];
 			float y = vjson[1];
@@ -285,7 +285,7 @@ namespace Engine
 	inline void FromJson(const char* name, glm::mat4& v, nlohmann::json& json)
 	{
 		auto& vjson = json[name];
-		if (json.size() == 16)
+		if (vjson.size() == 16)
 		{
 			v[0] = glm::vec4(json[0], json[1], json[2], json[3]);
 			v[1] = glm::vec4(json[4], json[5], json[6], json[7]);

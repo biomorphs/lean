@@ -21,6 +21,7 @@ public:
 	void StopRunning();
 	void NewScene(const char* sceneName);
 	bool SaveScene(const char* fileName);
+	bool ImportScene(const char* fileName);
 private:
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	EntitySystem* m_entitySystem = nullptr;

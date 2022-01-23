@@ -28,7 +28,9 @@ if (op == Engine::SerialiseType::Write)
 		uniformsJson.reserve(uniforms.size());
 		for (auto& v : uniforms)
 		{
-			Engine::ToJson(v.second.m_name.c_str(), v.second.m_value, uniformsJson.emplace_back());
+			nlohmann::json& uniformJson = uniformsJson.emplace_back();
+			Engine::ToJson("Name", v.second.m_name, uniformJson);
+			Engine::ToJson("Value", v.second.m_value, uniformJson);
 		}
 		target[name] = std::move(uniformsJson);
 	};
@@ -36,12 +38,35 @@ if (op == Engine::SerialiseType::Write)
 	writeUniformsToJson("Vec4", json, m_material->GetUniforms().Vec4Values());
 	writeUniformsToJson("Mat4", json, m_material->GetUniforms().Mat4Values());
 	writeUniformsToJson("Int", json, m_material->GetUniforms().IntValues());
-
 	Engine::ToJson("Samplers", m_samplerTextures, json);
 }
 else
 {
+	bool castShadow = false;
+	Engine::FromJson("CastShadow", castShadow, json);
+	bool isTransparent = false;
+	Engine::FromJson("IsTransparent", isTransparent, json);
 
+	auto readUniforms = [this](const char* name, nlohmann::json& src, auto& uniforms)
+	{
+		nlohmann::json& uniformsJson = src[name];
+		int count = uniformsJson.size();
+		for (int i = 0; i < count; ++i)
+		{
+			std::decay<decltype(uniforms)>::type::mapped_type newUniform;
+			Engine::FromJson("Name", newUniform.m_name, uniformsJson[i]);
+			Engine::FromJson("Value", newUniform.m_value, uniformsJson[i]);
+			m_material->GetUniforms().SetValue(newUniform.m_name, newUniform.m_value);
+		}
+	};
+	readUniforms("Float", json, m_material->GetUniforms().FloatValues());
+	readUniforms("Vec4", json, m_material->GetUniforms().Vec4Values());
+	readUniforms("Mat4", json, m_material->GetUniforms().Mat4Values());
+	readUniforms("Int", json, m_material->GetUniforms().IntValues());
+
+	Engine::ToJson("Samplers", m_samplerTextures, json);
+
+	// Todo - needs major refactor!
 }
 SERIALISE_END()
 

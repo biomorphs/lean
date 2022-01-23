@@ -1,4 +1,5 @@
 #include "file_io.h"
+#include "profiler.h"
 #include <cassert>
 #include <fstream>
 
@@ -6,6 +7,8 @@ namespace Core
 {
 	bool SaveTextToFile(const std::string& filePath, const std::string& src)
 	{
+		SDE_PROF_EVENT();
+
 		std::ofstream fileStream(filePath.c_str(), std::ios::out);
 		if (!fileStream.is_open())
 		{
@@ -18,6 +21,8 @@ namespace Core
 
 	bool LoadTextFromFile(const std::string& fileSrcPath, std::string& resultBuffer)
 	{
+		SDE_PROF_EVENT();
+
 		resultBuffer.clear();
 		std::ifstream fileStream(fileSrcPath.c_str(), std::ios::in);
 		if (!fileStream.is_open())

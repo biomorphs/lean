@@ -298,7 +298,6 @@ add_library(Editor STATIC)
 set(EDITOR_SOURCES
 	source/editor/editor.h
 	source/editor/editor.cpp
-	source/editor/command.cpp
 	source/editor/command.h
 	source/editor/command_list.cpp
 	source/editor/command_list.h
@@ -308,6 +307,8 @@ set(EDITOR_SOURCES
 	source/editor/commands/editor_new_scene_cmd.h
 	source/editor/commands/editor_save_scene_cmd.cpp
 	source/editor/commands/editor_save_scene_cmd.h
+	source/editor/commands/editor_import_scene_cmd.cpp
+	source/editor/commands/editor_import_scene_cmd.h
 )
 
 target_sources(Editor PRIVATE ${EDITOR_SOURCES})
