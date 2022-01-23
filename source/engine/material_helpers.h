@@ -1,4 +1,5 @@
 #pragma once
+#include "texture_manager.h"
 #include <stdint.h>
 #include <map>
 #include <string>
@@ -12,7 +13,8 @@ namespace Render
 
 namespace Engine
 {
-	struct TextureHandle;
 	using DefaultTextures = std::map<std::string, TextureHandle>;
-	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, DefaultTextures* defaults = nullptr, uint32_t textureUnit=0);
+	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, DefaultTextures* defaults, uint32_t textureUnit);
+
+	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m);
 }

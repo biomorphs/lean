@@ -1,4 +1,5 @@
 #pragma once
+#include "serialisation.h"
 #include "system.h"
 #include "render/texture.h"
 #include "render/texture_source.h"
@@ -17,10 +18,9 @@ namespace Engine
 
 	struct TextureHandle
 	{
+		SERIALISED_CLASS();
 		uint32_t m_index = -1;
-		class TextureManager* m_parent = nullptr;
-		static TextureHandle Invalid() { return { (uint32_t)-1, nullptr }; };
-		inline std::string GetTextureName() const;
+		static TextureHandle Invalid() { return { (uint32_t)-1 }; };
 	};
 
 	class TextureManager : public System
@@ -54,9 +54,4 @@ namespace Engine
 		std::vector<LoadedTexture> m_loadedTextures;
 		std::atomic<int32_t> m_inFlightTextures = 0;
 	};
-
-	std::string TextureHandle::GetTextureName() const
-	{
-		return m_parent ? m_parent->GetTexturePath(*this) : "";
-	}
 }

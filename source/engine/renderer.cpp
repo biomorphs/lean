@@ -48,7 +48,7 @@ namespace Engine
 		float m_hdrExposure;
 	};
 
-	std::map<std::string, TextureHandle> g_defaultTextures;
+	DefaultTextures g_defaultTextures;
 	std::vector<std::string> g_shadowSamplerNames, g_shadowCubeSamplerNames;
 
 	Renderer::Renderer(ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize)

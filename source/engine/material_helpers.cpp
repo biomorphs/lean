@@ -3,10 +3,38 @@
 #include "render/shader_program.h"
 #include "render/material.h"
 #include "engine/system_manager.h"
-#include "texture_manager.h"
+#include "core/profiler.h"
+#include "engine/texture_manager.h"
 
 namespace Engine
 {
+	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m)
+	{
+		SDE_PROF_EVENT();
+
+		static Engine::TextureManager* s_tm = Engine::GetSystem<Engine::TextureManager>("Textures");
+		const auto& uniforms = m.GetUniforms();
+		uniforms.Apply(d, shader);
+
+		int textureUnit = 0;
+		const auto& samplers = m.GetSamplers();
+		for (const auto& s : samplers)
+		{
+			uint32_t uniformHandle = shader.GetUniformHandle(s.second.m_name.c_str());
+			if (uniformHandle != -1)
+			{
+				// todo - remove indirection here, samplers should be a list of texture handle NOT ints
+				TextureHandle texHandle = { s.second.m_handle };
+				const auto theTexture = s_tm->GetTexture({ texHandle });
+				if (theTexture)
+				{
+					d.SetSampler(uniformHandle, theTexture->GetHandle(), textureUnit++);
+				}
+			}
+		}
+		return textureUnit;
+	}
+
 	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, DefaultTextures* defaults, uint32_t textureUnit)
 	{
 		SDE_PROF_EVENT();
@@ -21,7 +49,8 @@ namespace Engine
 			uint32_t uniformHandle = shader.GetUniformHandle(s.second.m_name.c_str());
 			if (uniformHandle != -1)
 			{
-				TextureHandle texHandle = { s.second.m_handle, s_tm };	// sketchy!
+				// todo - remove indirection here, samplers should be a list of texture handle NOT ints
+				TextureHandle texHandle = { s.second.m_handle };	
 				const auto theTexture = s_tm->GetTexture({ texHandle });
 				if (theTexture)
 				{
