@@ -142,7 +142,14 @@ namespace Engine
 	template<class T>
 	void ToJson(const char* name, T& v, nlohmann::json& json)
 	{
-		json[name] = v;
+		if constexpr (Serialisation::HasSerialiser<T>::value)
+		{
+			v.Serialise(json[name], Engine::SerialiseType::Write);
+		}
+		else
+		{
+			json[name] = v;
+		}
 	}
 
 	template<class T>
@@ -265,7 +272,7 @@ namespace Engine
 			float y = vjson[1];
 			float z = vjson[2];
 			float w = vjson[3];
-			v = { x, y, z, w };
+			v = { w, x, y, z };
 		}
 	}
 

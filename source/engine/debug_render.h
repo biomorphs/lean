@@ -16,7 +16,7 @@ namespace Engine
 	class DebugRender
 	{
 	public:
-		DebugRender(ShaderManager* sm);
+		DebugRender();
 		~DebugRender() = default;
 
 		void DrawLine(glm::vec3 p0, glm::vec3 p1, glm::vec3 c);

@@ -20,13 +20,12 @@ namespace Render
 
 namespace Engine
 {
-	class ModelManager;
 	class JobSystem;
 
 	class Renderer : public Render::RenderPass
 	{
 	public:
-		Renderer(ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize);
+		Renderer(JobSystem* js, glm::ivec2 windowSize);
 		virtual ~Renderer() = default;
 
 		void Reset();
@@ -105,8 +104,6 @@ namespace Engine
 		bool m_cullingEnabled = true;
 		bool m_showWireframe = false;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
-		ShaderManager* m_shaders;
-		ModelManager* m_models;
 		JobSystem* m_jobSystem = nullptr;
 		float m_bloomThreshold = 1.0f;
 		float m_bloomMultiplier = 0.5f;

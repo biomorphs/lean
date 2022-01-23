@@ -17,6 +17,10 @@ SERIALISE_BEGIN(Transform)
 	SERIALISE_PROPERTY("Position", m_position)
 	SERIALISE_PROPERTY("Orientation", m_orientation)
 	SERIALISE_PROPERTY("Scale", m_scale)
+	if (op == Engine::SerialiseType::Read)
+	{
+		RebuildMatrix();
+	}
 SERIALISE_END()
 
 void Transform::RebuildMatrix()

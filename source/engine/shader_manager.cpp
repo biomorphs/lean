@@ -1,4 +1,5 @@
 #include "shader_manager.h"
+#include "system_manager.h"
 #include "render/shader_program.h"
 #include "render/shader_binary.h"
 #include "core/profiler.h"
@@ -7,6 +8,40 @@
 
 namespace Engine
 {
+	SERIALISE_BEGIN(ShaderHandle)
+		static ShaderManager* sm = GetSystem<ShaderManager>("Shaders");
+		std::string name;
+		std::string vs, fs;
+		if (op == Engine::SerialiseType::Write)
+		{
+			name = sm->GetShaderName(*this);
+			sm->GetShaderPaths(*this, vs, fs);
+			Engine::ToJson("Name", name, json);
+			if (vs.length() > 0)
+			{
+				Engine::ToJson("VSCS", vs, json);
+			}
+			if (fs.length() > 0)
+			{
+				Engine::ToJson("FS", fs, json);
+			}
+		}
+		else
+		{
+			Engine::FromJson("Name", name, json);
+			Engine::FromJson("VSCS", vs, json);
+			Engine::FromJson("FS", fs, json);
+			if (vs.length() > 0 && fs.length() == 0 && vs.find(".cs") != -1)
+			{
+				*this = sm->LoadComputeShader(name.c_str(), vs.c_str());
+			}
+			else if (vs.length() > 0 && fs.length() > 0)
+			{
+				*this = sm->LoadShader(name.c_str(), vs.c_str(), fs.c_str());
+			}
+		}
+	SERIALISE_END()
+
 	ShaderHandle ShaderManager::GetShadowsShader(ShaderHandle lightingShader)
 	{
 		const auto& foundShadowShader = m_shadowShaders.find(lightingShader.m_index);
@@ -171,6 +206,18 @@ namespace Engine
 		return ShaderHandle{ static_cast<uint32_t>(m_shaders.size() - 1) };
 	}
 
+	std::string ShaderManager::GetShaderName(const ShaderHandle& h) const
+	{
+		if (h.m_index != -1 && h.m_index < m_shaders.size())
+		{
+			return m_shaders[h.m_index].m_name;
+		}
+		else
+		{
+			return {};
+		}
+	}
+
 	bool ShaderManager::GetShaderPaths(const ShaderHandle& h, std::string& vs, std::string& fs)
 	{
 		if (h.m_index != -1 && h.m_index < m_shaders.size())
@@ -195,5 +242,11 @@ namespace Engine
 		{
 			return nullptr;
 		}
+	}
+
+	void ShaderManager::Shutdown()
+	{
+		m_shadowShaders.clear();
+		m_shaders.clear();
 	}
 }

@@ -4,6 +4,7 @@
 #include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
+#include "engine/physics_system.h"
 #include "entity/entity_system.h"
 #include "entity/component_storage.h"
 #include "commands/editor_close_cmd.h"
@@ -44,6 +45,10 @@ bool Editor::PreInit()
 bool Editor::PostInit()
 {
 	SDE_PROF_EVENT();
+
+	// Disable physics sim in editor by default
+	Engine::GetSystem<Engine::PhysicsSystem>("Physics")->SetSimulationEnabled(false);
+
 	return true;
 }
 

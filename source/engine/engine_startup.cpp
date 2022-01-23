@@ -2,7 +2,9 @@
 #include "system_manager.h"
 #include "event_system.h"
 #include "job_system.h"
+#include "shader_manager.h"
 #include "texture_manager.h"
+#include "model_manager.h"
 #include "input_system.h"
 #include "render_system.h"
 #include "script_system.h"
@@ -55,6 +57,8 @@ namespace Engine
 		sysManager.RegisterSystem("Physics", physics);
 		sysManager.RegisterSystem("Cameras", new CameraSystem);
 		sysManager.RegisterSystem("Textures", new TextureManager);
+		sysManager.RegisterSystem("Models", new ModelManager);
+		sysManager.RegisterSystem("Shaders", new ShaderManager);
 		sysManager.RegisterSystem("Render", render);
 		sysManager.RegisterSystem("RenderPresent", render->MakePresenter());
 

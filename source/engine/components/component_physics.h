@@ -15,6 +15,24 @@ namespace Engine
 	class DebugRender;
 }
 
+struct PlaneCollider {
+	glm::vec3 m_normal;
+	glm::vec3 m_origin;
+	SERIALISED_CLASS();
+};
+
+struct SphereCollider {
+	glm::vec3 m_origin;
+	float m_radius;
+	SERIALISED_CLASS();
+};
+
+struct BoxCollider {
+	glm::vec3 m_origin;
+	glm::vec3 m_dimensions;
+	SERIALISED_CLASS();
+};
+
 class Physics
 {
 public:
@@ -48,15 +66,15 @@ public:
 	float GetRestitution() { return m_restitution; }
 	void SetRestitution(float s) { m_restitution = s; }
 
-	using PlaneColliders = std::vector < std::tuple < glm::vec3, glm::vec3 >>;	// normal, origin
+	using PlaneColliders = std::vector<PlaneCollider>;
 	void AddPlaneCollider(glm::vec3 normal, glm::vec3 origin) { m_planeColliders.push_back({normal,origin}); }
 	PlaneColliders& GetPlaneColliders() { return m_planeColliders; }
 
-	using SphereColliders = std::vector< std::tuple<glm::vec3, float> >;	// offset, radius
+	using SphereColliders = std::vector<SphereCollider>;
 	void AddSphereCollider(glm::vec3 offset, float radius) { m_sphereColliders.push_back({offset, radius}); }
 	SphereColliders& GetSphereColliders() { return m_sphereColliders; }
 
-	using BoxColliders = std::vector< std::tuple<glm::vec3, glm::vec3> >;	// offset, dimensions
+	using BoxColliders = std::vector<BoxCollider>;
 	void AddBoxCollider(glm::vec3 offset, glm::vec3 dim) { m_boxColliders.push_back({ offset, dim }); }
 	BoxColliders& GetBoxColliders() { return m_boxColliders; }
 

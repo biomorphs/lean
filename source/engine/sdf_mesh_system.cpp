@@ -13,6 +13,7 @@
 #include "engine/render_system.h"
 #include "engine/renderer.h"
 #include "engine/texture_manager.h"
+#include "engine/shader_manager.h"
 #include "material_helpers.h"
 #include "engine/graphics_system.h"
 #include "render/texture.h"
@@ -65,8 +66,9 @@ bool SDFMeshSystem::PostInit()
 	SDE_PROF_EVENT();
 
 	// Compute shaders
-	m_findCellVerticesShader = m_graphics->Shaders().LoadComputeShader("FindSDFVertices", "compute_test_find_vertices.cs");
-	m_createTrianglesShader = m_graphics->Shaders().LoadComputeShader("CreateTriangles", "compute_test_make_triangles.cs");
+	auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+	m_findCellVerticesShader = shaders->LoadComputeShader("FindSDFVertices", "compute_test_find_vertices.cs");
+	m_createTrianglesShader = shaders->LoadComputeShader("CreateTriangles", "compute_test_make_triangles.cs");
 
 	return true;
 }
@@ -221,11 +223,12 @@ void SDFMeshSystem::KickoffRemesh(SDFMesh& mesh, EntityHandle handle, glm::vec3 
 	
 	Engine::ShaderManager::CustomDefines shaderDefines = { {"SDF_SHADER_INCLUDE", mesh.GetSDFShaderPath()} };
 	const auto shaderName = "SDF Volume " + mesh.GetSDFShaderPath();
-	auto writeVolumeShader = m_graphics->Shaders().LoadComputeShader(shaderName.c_str(), c_writeVolumeShader.c_str(), shaderDefines);
+	auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+	auto writeVolumeShader = shaders->LoadComputeShader(shaderName.c_str(), c_writeVolumeShader.c_str(), shaderDefines);
 
-	auto sdfVolumeShader = m_graphics->Shaders().GetShader(writeVolumeShader);
-	auto findVerticesShader = m_graphics->Shaders().GetShader(m_findCellVerticesShader);
-	auto makeTrianglesShader = m_graphics->Shaders().GetShader(m_createTrianglesShader);
+	auto sdfVolumeShader = shaders->GetShader(writeVolumeShader);
+	auto findVerticesShader = shaders->GetShader(m_findCellVerticesShader);
+	auto makeTrianglesShader = shaders->GetShader(m_createTrianglesShader);
 	if (sdfVolumeShader && findVerticesShader && makeTrianglesShader)
 	{
 		Render::Material* instanceMaterial = nullptr;

@@ -278,8 +278,8 @@ namespace Engine
 		auto material = GetOrCreateMaterial(p);
 		for (const auto& collider : p.GetPlaneColliders())
 		{
-			physx::PxVec3 normal = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
-			physx::PxVec3 origin = { std::get<1>(collider).x, std::get<1>(collider).y, std::get<1>(collider).z };
+			physx::PxVec3 normal = { collider.m_normal.x, collider.m_normal.y, collider.m_normal.z };
+			physx::PxVec3 origin = { collider.m_origin.x, collider.m_origin.y, collider.m_origin.z };
 			auto planePose = physx::PxTransformFromPlaneEquation(physx::PxPlane(origin, normal));
 			auto shape = m_physics->createShape(physx::PxPlaneGeometry(), *material, true);
 			shape->setLocalPose(planePose);
@@ -287,18 +287,18 @@ namespace Engine
 		}
 		for (const auto& collider : p.GetSphereColliders())
 		{
-			physx::PxVec3 offset = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
-			float radius = std::get<1>(collider);
+			physx::PxVec3 origin = { collider.m_origin.x, collider.m_origin.y, collider.m_origin.z };
+			float radius = collider.m_radius;
 			auto shape = m_physics->createShape(physx::PxSphereGeometry(radius), *material, true);
-			shape->setLocalPose(physx::PxTransform(offset));
+			shape->setLocalPose(physx::PxTransform(origin));
 			body->attachShape(*shape);
 		}
 		for (const auto& collider : p.GetBoxColliders())
 		{
-			physx::PxVec3 offset = { std::get<0>(collider).x, std::get<0>(collider).y, std::get<0>(collider).z };
-			physx::PxVec3 dims = { std::get<1>(collider).x/2.0f, std::get<1>(collider).y/2.0f, std::get<1>(collider).z/2.0f };
+			physx::PxVec3 origin = { collider.m_origin.x, collider.m_origin.y, collider.m_origin.z };
+			physx::PxVec3 dims = { collider.m_dimensions.x/2.0f, collider.m_dimensions.y/2.0f, collider.m_dimensions.z/2.0f };
 			auto shape = m_physics->createShape(physx::PxBoxGeometry(dims.x,dims.y,dims.z), *material, true);
-			shape->setLocalPose(physx::PxTransform(offset));
+			shape->setLocalPose(physx::PxTransform(origin));
 			body->attachShape(*shape);
 		}
 		if (!p.IsStatic())
@@ -337,7 +337,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		m_timeAccumulator += timeDelta;
-		if (m_timeAccumulator >= m_timeStep)
+		if (m_timeAccumulator >= m_timeStep && m_simEnabled)
 		{
 			SDE_PROF_EVENT("Simulate");
 			m_timeAccumulator -= m_timeStep;

@@ -10,7 +10,7 @@ class Model
 {
 public:
 	COMPONENT(Model);
-	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::ModelManager& models, Engine::ShaderManager& shaders);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui);
 
 	// set this to a entity with a MaterialComponent for per-entity materials
 	void SetMaterialEntity(EntityHandle e) { m_materialEntity = e; }

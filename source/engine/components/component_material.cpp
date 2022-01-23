@@ -57,6 +57,8 @@ else
 	Engine::FromJson("CastShadow", castShadow, json);
 	bool isTransparent = false;
 	Engine::FromJson("IsTransparent", isTransparent, json);
+	SetCastShadows(castShadow);
+	SetIsTransparent(isTransparent);
 
 	auto readUniforms = [this](const char* name, nlohmann::json& src, auto& uniforms)
 	{

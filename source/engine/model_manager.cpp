@@ -1,4 +1,5 @@
 #include "model_manager.h"
+#include "system_manager.h"
 #include "model.h"
 #include "model_asset.h"
 #include "texture_manager.h"
@@ -13,14 +14,19 @@
 
 namespace Engine
 {
-	ModelManager::ModelManager(JobSystem* js)
-		: m_jobSystem(js)
-	{
-	}
-
-	ModelManager::~ModelManager()
-	{
-	}
+	SERIALISE_BEGIN(ModelHandle)
+		static ModelManager* mm = GetSystem<ModelManager>("Models");
+		if (op == Engine::SerialiseType::Write)
+		{
+			Engine::ToJson("Path", mm->GetModelPath(*this), json);
+		}
+		else
+		{
+			std::string path = "";
+			Engine::FromJson("Path", path, json);
+			*this = mm->LoadModel(path.c_str());
+		}
+	SERIALISE_END()
 
 	bool ModelManager::ShowGui(DebugGuiSystem& gui)
 	{
@@ -280,7 +286,7 @@ namespace Engine
 		m_inFlightModels += 1;
 
 		std::string pathString = path;
-		m_jobSystem->PushSlowJob([this, pathString, newHandle](void*) {
+		GetSystem<JobSystem>("Jobs")->PushSlowJob([this, pathString, newHandle](void*) {
 			char debugName[1024] = { '\0' };
 			sprintf_s(debugName, "LoadModel %s", pathString.c_str());
 			SDE_PROF_EVENT_DYN(debugName);
@@ -328,5 +334,31 @@ namespace Engine
 		{
 			return nullptr;
 		}
+	}
+
+	bool ModelManager::Tick(float timeDelta)
+	{
+		SDE_PROF_EVENT();
+
+		ProcessLoadedModels();
+		ShowGui(*Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui"));
+
+		return true;
+	}
+
+	void ModelManager::Shutdown()
+	{
+		// wait until all jobs finish, not great but eh
+		while (m_inFlightModels > 0)
+		{
+			int v = m_inFlightModels;
+			Core::Thread::Sleep(1);
+		}
+		// clear out the old results
+		{
+			Core::ScopedMutex guard(m_loadedModelsMutex);
+			m_loadedModels.clear();
+		}
+		m_models.clear();
 	}
 }

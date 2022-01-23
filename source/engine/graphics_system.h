@@ -13,7 +13,6 @@ namespace Engine
 	class RenderSystem;
 	class JobSystem;
 	class DebugGuiSystem;
-	class ModelManager;
 	class ShaderManager;
 	class Renderer;
 	class DebugRender;
@@ -31,7 +30,6 @@ public:
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
-	Engine::ShaderManager& Shaders() { return *m_shaders; }
 	Engine::Renderer& Renderer() { return *m_renderer; }
 	bool ShouldDrawBounds() const { return m_showBounds; }
 private:
@@ -45,8 +43,6 @@ private:
 	bool m_showStats = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
-	std::unique_ptr<Engine::ModelManager> m_models;
-	std::unique_ptr<Engine::ShaderManager> m_shaders;
 	glm::ivec2 m_windowSize = { 0,0 };
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	Engine::ScriptSystem* m_scriptSystem = nullptr;

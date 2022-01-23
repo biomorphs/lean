@@ -5,11 +5,13 @@
 #include "render/mesh.h"
 #include "core/log.h"
 #include "core/profiler.h"
+#include "shader_manager.h"
+#include "system_manager.h"
 #include <cassert>
 
 namespace Engine
 {
-	DebugRender::DebugRender(ShaderManager* sm)
+	DebugRender::DebugRender()
 	{
 		auto deleter = [](glm::vec4* p)
 		{
@@ -29,7 +31,7 @@ namespace Engine
 			m_colBuffer = std::unique_ptr<glm::vec4[], decltype(deleter)>((glm::vec4*)rawBuffer, deleter);
 		}
 
-		m_shader = sm->LoadShader("DebugRender", "DebugRender.vs", "DebugRender.fs");
+		m_shader = Engine::GetSystem<ShaderManager>("Shaders")->LoadShader("DebugRender", "DebugRender.vs", "DebugRender.fs");
 
 		CreateMesh();
 	}

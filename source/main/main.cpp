@@ -10,11 +10,11 @@
 void CreateSystems(const std::string& cmdLine)
 {
 	auto& sysManager = Engine::SystemManager::GetInstance();
-	//if (cmdLine.find("-playground") != -1)
+	if (cmdLine.find("-playground") != -1)
 	{
 		sysManager.RegisterSystem("Playground", new Playground());
 	}
-	//else
+	else
 	{
 		sysManager.RegisterSystem("Editor", new Editor());
 	}

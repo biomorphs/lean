@@ -3,6 +3,7 @@
 #include "engine/model_manager.h"
 #include "engine/shader_manager.h"
 #include "engine/file_picker_dialog.h"
+#include "engine/system_manager.h"
 
 COMPONENT_SCRIPTS(Model,
 	"SetShader", &Model::SetShader,
@@ -11,33 +12,38 @@ COMPONENT_SCRIPTS(Model,
 )
 
 SERIALISE_BEGIN(Model)
+	SERIALISE_PROPERTY("MaterialEntity", m_materialEntity)
+	SERIALISE_PROPERTY("Shader", m_shader)
+	SERIALISE_PROPERTY("Model", m_model)
 SERIALISE_END()
 
-COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui, Engine::ModelManager& models, Engine::ShaderManager& shaders)
+COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui,&models,&shaders](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<Model::StorageType&>(cs).Find(e);
-		std::string modelPath = models.GetModelPath(m.GetModel());
+		auto models = Engine::GetSystem<Engine::ModelManager>("Models");
+		std::string modelPath = models->GetModelPath(m.GetModel());
 		if (gui.Button(modelPath.c_str()))
 		{
 			std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
 			if (newFile != "")
 			{
-				auto loadedModel = models.LoadModel(newFile.c_str());
+				auto loadedModel = models->LoadModel(newFile.c_str());
 				m.SetModel(loadedModel);
 			}
 		}
-		auto allShaders = shaders.AllShaders();
+		auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+		auto allShaders = shaders->AllShaders();
 		std::vector<std::string> shaderpaths;
 		std::string vs, fs;
 		for (auto it : allShaders)
 		{
-			if (shaders.GetShaderPaths(it, vs, fs))
+			char shaderText[1024];
+			if (shaders->GetShaderPaths(it, vs, fs))
 			{
-				char shaderPathText[1024];
-				sprintf(shaderPathText, "%s, %s", vs.c_str(), fs.c_str());
-				shaderpaths.push_back(shaderPathText);
+				sprintf(shaderText, "%s: %s, %s", shaders->GetShaderName(it).c_str(), vs.c_str(), fs.c_str());
+				shaderpaths.push_back(shaderText);
 			}
 		}
 		shaderpaths.push_back("None");

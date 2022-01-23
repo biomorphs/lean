@@ -50,6 +50,8 @@ namespace Engine
 		UpdateEntities* MakeUpdater();
 		EntityHandle Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal);
 
+		void SetSimulationEnabled(bool enabled) { m_simEnabled = enabled; }
+
 	private:
 		void RebuildActor(Physics& p, EntityHandle& e);
 		physx::PxMaterial* GetOrCreateMaterial(Physics&);
@@ -64,6 +66,8 @@ namespace Engine
 		float m_timeAccumulator = 0.0f;
 		float m_timeStep = 1.0f / 60.0f;	// fixed time step for now
 		bool m_hasTicked = false;
+		bool m_simEnabled = true;
+
 		// Since physx has a 64k material limit, we will cache materials with the same values
 		// later on we probably want some kind of proper physics material exposed
 		struct PhysicsMaterial 

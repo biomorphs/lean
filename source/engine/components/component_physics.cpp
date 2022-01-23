@@ -25,7 +25,35 @@ COMPONENT_SCRIPTS(Physics,
 	"Rebuild", &Physics::Rebuild
 )
 
+SERIALISE_BEGIN(PlaneCollider)
+	SERIALISE_PROPERTY("Normal", m_normal)
+	SERIALISE_PROPERTY("Origin", m_origin)
+SERIALISE_END()
+
+SERIALISE_BEGIN(SphereCollider)
+	SERIALISE_PROPERTY("Radius", m_radius)
+	SERIALISE_PROPERTY("Origin", m_origin)
+SERIALISE_END()
+
+SERIALISE_BEGIN(BoxCollider)
+	SERIALISE_PROPERTY("Dimensions", m_dimensions)
+	SERIALISE_PROPERTY("Origin", m_origin)
+SERIALISE_END()
+
 SERIALISE_BEGIN(Physics)
+	SERIALISE_PROPERTY("IsStatic", m_isStatic)
+	SERIALISE_PROPERTY("IsKinematic", m_isKinematic)
+	SERIALISE_PROPERTY("Density", m_density)
+	SERIALISE_PROPERTY("StaticFriction", m_staticFriction)
+	SERIALISE_PROPERTY("DynamicFriction", m_dynamicFriction)
+	SERIALISE_PROPERTY("Restitution", m_restitution)
+	SERIALISE_PROPERTY("PlaneColliders", m_planeColliders)
+	SERIALISE_PROPERTY("SphereColliders", m_sphereColliders)
+	SERIALISE_PROPERTY("BoxColliders", m_boxColliders)
+	if (op == Engine::SerialiseType::Read)
+	{
+		SetNeedsRebuild(true);
+	}
 SERIALISE_END()
 
 Physics::Physics()
@@ -70,10 +98,10 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 				sprintf(text, "Plane %d", (int)(&it - p.GetPlaneColliders().data()));
 				if (gui.TreeNode(text))
 				{
-					std::get<0>(it) = gui.DragVector("Normal", std::get<0>(it), 0.01f, -1.0f, 1.0f);
-					std::get<1>(it) = gui.DragVector("Origin", std::get<1>(it), 0.01f, -1.0f, 1.0f);
+					it.m_normal = gui.DragVector("Normal", it.m_normal, 0.01f, -1.0f, 1.0f);
+					it.m_origin = gui.DragVector("Origin", it.m_origin, 0.01f, -1.0f, 1.0f);
 					gui.TreePop();
-					render.DrawLine(std::get<1>(it), std::get<1>(it) + std::get<0>(it), { 0.0f,1.0f,1.0f });
+					render.DrawLine(it.m_origin, it.m_origin + it.m_normal, { 0.0f,1.0f,1.0f });
 				}
 			}
 			for (auto& it : p.GetSphereColliders())
@@ -81,14 +109,14 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 				sprintf(text, "Sphere %d", (int)(&it - p.GetSphereColliders().data()));
 				if (gui.TreeNode(text))
 				{
-					std::get<0>(it) = gui.DragVector("Offset", std::get<0>(it), 0.01f);
-					std::get<1>(it) = gui.DragFloat("Radius", std::get<1>(it), 0.01f, 0.0f, 100000.0f);
+					it.m_origin = gui.DragVector("Origin", it.m_origin, 0.01f);
+					it.m_radius = gui.DragFloat("Radius", it.m_radius, 0.01f, 0.0f, 100000.0f);
 					gui.TreePop();
 					auto transform = world.GetComponent<Transform>(e);
 					if (transform)
 					{
-						auto bMin = std::get<0>(it) - std::get<1>(it);
-						auto bMax = std::get<0>(it) + std::get<1>(it);
+						auto bMin = it.m_origin - it.m_radius;
+						auto bMax = it.m_origin + it.m_radius;
 						// ignore scale since we dont pass it to physx
 						glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
 						matrix = matrix * glm::toMat4(transform->GetOrientation());
@@ -101,14 +129,14 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 				sprintf(text, "Box %d", (int)(&it - p.GetBoxColliders().data()));
 				if (gui.TreeNode(text))
 				{
-					std::get<0>(it) = gui.DragVector("Offset", std::get<0>(it), 0.01f);
-					std::get<1>(it) = gui.DragVector("Dimensions", std::get<1>(it), 0.01f, 0.0f, 100000.0f);
+					it.m_origin = gui.DragVector("Origin", it.m_origin, 0.01f);
+					it.m_dimensions = gui.DragVector("Dimensions", it.m_dimensions, 0.01f, 0.0f, 100000.0f);
 					gui.TreePop();
 					auto transform = world.GetComponent<Transform>(e);
 					if (transform && transform->GetScale().length() != 0.0f)
 					{
-						auto bMin = std::get<0>(it) - std::get<1>(it) * 0.5f;
-						auto bMax = std::get<0>(it) + std::get<1>(it) * 0.5f;
+						auto bMin = it.m_origin - it.m_dimensions * 0.5f;
+						auto bMax = it.m_origin + it.m_dimensions * 0.5f;
 						// ignore scale since we dont pass it to physx
 						glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
 						matrix = matrix * glm::toMat4(transform->GetOrientation());

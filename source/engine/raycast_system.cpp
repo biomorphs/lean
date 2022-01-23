@@ -284,8 +284,9 @@ namespace Engine
 
 				Engine::ShaderManager::CustomDefines shaderDefines = { {"SDF_SHADER_INCLUDE", m.GetSDFShaderPath()} };
 				const auto shaderName = "SDF Raycast " + m.GetSDFShaderPath();
-				auto loadedShader = m_graphics->Shaders().LoadComputeShader(shaderName.c_str(), "sdf_raycast.cs", shaderDefines);
-				auto raycastShader = m_graphics->Shaders().GetShader(loadedShader);
+				auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+				auto loadedShader = shaders->LoadComputeShader(shaderName.c_str(), "sdf_raycast.cs", shaderDefines);
+				auto raycastShader = shaders->GetShader(loadedShader);
 				if (raycastShader)
 				{
 					// call raycast shader, passing ray indices, ray buffer, and start offset

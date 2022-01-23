@@ -51,24 +51,23 @@ namespace Engine
 	DefaultTextures g_defaultTextures;
 	std::vector<std::string> g_shadowSamplerNames, g_shadowCubeSamplerNames;
 
-	Renderer::Renderer(ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize)
-		: m_models(mm)
-		, m_shaders(sm)
-		, m_jobSystem(js)
+	Renderer::Renderer(JobSystem* js, glm::ivec2 windowSize)
+		: m_jobSystem(js)
 		, m_windowSize(windowSize)
 		, m_mainFramebuffer(windowSize)
 		, m_mainFramebufferResolved(windowSize)
 		, m_bloomBrightnessBuffer(windowSize)
 	{
 		auto tm = Engine::GetSystem<Engine::TextureManager>("Textures");
+		auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		g_defaultTextures["DiffuseTexture"] = tm->LoadTexture("white.bmp");
 		g_defaultTextures["NormalsTexture"] = tm->LoadTexture("default_normalmap.png");
 		g_defaultTextures["SpecularTexture"] = tm->LoadTexture("white.bmp");
-		m_blitShader = m_shaders->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
-		m_bloomBrightnessShader = m_shaders->LoadShader("BloomBrightness", "basic_blit.vs", "bloom_brightness.fs");
-		m_bloomBlurShader = m_shaders->LoadShader("BloomBlur", "basic_blit.vs", "bloom_blur.fs");
-		m_bloomCombineShader = m_shaders->LoadShader("BloomCombine", "basic_blit.vs", "bloom_combine.fs");
-		m_tonemapShader = m_shaders->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
+		m_blitShader = sm->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
+		m_bloomBrightnessShader = sm->LoadShader("BloomBrightness", "basic_blit.vs", "bloom_brightness.fs");
+		m_bloomBlurShader = sm->LoadShader("BloomBlur", "basic_blit.vs", "bloom_blur.fs");
+		m_bloomCombineShader = sm->LoadShader("BloomCombine", "basic_blit.vs", "bloom_combine.fs");
+		m_tonemapShader = sm->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
 			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferModification::Dynamic, true);
@@ -127,8 +126,9 @@ namespace Engine
 
 	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
+		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		float distanceToCamera = glm::length(glm::vec3(trns[3]) - cam);
-		const auto foundShader = m_shaders->GetShader(shader);
+		const auto foundShader = sm->GetShader(shader);
 		list.m_instances.emplace_back(std::move(MeshInstance{ trns, aabbMin, aabbMax, foundShader, &mesh, instanceMat, distanceToCamera }));
 	}
 
@@ -142,6 +142,7 @@ namespace Engine
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat)
 	{
+		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		bool castShadow = mesh.GetMaterial().GetCastsShadows();
 		bool isTransparent = mesh.GetMaterial().GetIsTransparent();
 
@@ -153,7 +154,7 @@ namespace Engine
 
 		if (castShadow)
 		{
-			auto shadowShader = m_shaders->GetShadowsShader(shader);
+			auto shadowShader = sm->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
 				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, mesh, shadowShader, boundsMin, boundsMax);
@@ -171,8 +172,10 @@ namespace Engine
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat)
 	{
-		const auto theModel = m_models->GetModel(model);
-		const auto theShader = m_shaders->GetShader(shader);
+		static ModelManager* mm = Engine::GetSystem<ModelManager>("Models");
+		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+		const auto theModel = mm->GetModel(model);
+		const auto theShader = sm->GetShader(shader);
 		ShaderHandle shadowShader = ShaderHandle::Invalid();
 
 		bool castShadow = true;
@@ -182,7 +185,7 @@ namespace Engine
 		}
 		if (castShadow)
 		{
-			shadowShader = m_shaders->GetShadowsShader(shader);
+			shadowShader = sm->GetShadowsShader(shader);
 		}
 
 		if (theModel != nullptr && theShader != nullptr)
@@ -616,7 +619,8 @@ namespace Engine
 		// blit to bloom brightness buffer
 		d.SetDepthState(false, false);
 		d.SetBlending(false);
-		auto brightnessShader = m_shaders->GetShader(m_bloomBrightnessShader);
+		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+		auto brightnessShader = sm->GetShader(m_bloomBrightnessShader);
 		if (brightnessShader)
 		{
 			SDE_PROF_EVENT("BloomBrightness");
@@ -631,7 +635,7 @@ namespace Engine
 		}
 
 		// gaussian blur 
-		auto blurShader = m_shaders->GetShader(m_bloomBlurShader);
+		auto blurShader = sm->GetShader(m_bloomBlurShader);
 		if (blurShader)
 		{
 			SDE_PROF_EVENT("BloomBlur");
@@ -648,7 +652,7 @@ namespace Engine
 		}
 
 		// combine bloom with main buffer
-		auto combineShader = m_shaders->GetShader(m_bloomCombineShader);
+		auto combineShader = sm->GetShader(m_bloomCombineShader);
 		if (combineShader)
 		{
 			SDE_PROF_EVENT("BloomCombine");
@@ -665,8 +669,8 @@ namespace Engine
 		// blit main buffer to backbuffer + tonemap
 		d.SetDepthState(false, false);
 		d.SetBlending(true);
-		auto tonemapShader = m_shaders->GetShader(m_tonemapShader);
-		auto blitShader = m_shaders->GetShader(m_blitShader);
+		auto tonemapShader = sm->GetShader(m_tonemapShader);
+		auto blitShader = sm->GetShader(m_blitShader);
 		if (blitShader && tonemapShader)
 		{
 			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, *mainFb, *tonemapShader);

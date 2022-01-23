@@ -27,7 +27,6 @@
 #include "engine/components/component_material.h"
 
 Engine::MenuBar g_graphicsMenu;
-bool g_showModelGui = false;
 bool g_enableShadowUpdate = true;
 
 struct SDFDebugDraw : public Engine::SDFMeshBuilder::Debug
@@ -101,7 +100,7 @@ void GraphicsSystem::RegisterComponents()
 	m_entitySystem->RegisterInspector<Light>(Light::MakeInspector(*m_debugGui, *m_debugRender));
 
 	m_entitySystem->RegisterComponentType<Model>();
-	m_entitySystem->RegisterInspector<Model>(Model::MakeInspector(*m_debugGui, *m_models, *m_shaders));
+	m_entitySystem->RegisterInspector<Model>(Model::MakeInspector(*m_debugGui));
 
 	m_entitySystem->RegisterComponentType<SDFModel>();
 	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui));
@@ -132,16 +131,16 @@ void GraphicsSystem::RegisterScripts()
 		return Engine::GetSystem<Engine::TextureManager>("Textures")->LoadTexture(path);
 	};
 	graphics["LoadModel"] = [this](const char* path) -> Engine::ModelHandle {
-		return m_models->LoadModel(path);
+		return Engine::GetSystem<Engine::ModelManager>("Models")->LoadModel(path);
 	};
 	graphics["LoadShader"] = [this](const char* name, const char* vsPath, const char* fsPath) -> Engine::ShaderHandle {
-		return m_shaders->LoadShader(name, vsPath, fsPath);
+		return Engine::GetSystem<Engine::ShaderManager>("Shaders")->LoadShader(name, vsPath, fsPath);
 	};
 	graphics["LoadComputeShader"] = [this](const char* name, const char* csPath) -> Engine::ShaderHandle {
-		return m_shaders->LoadComputeShader(name, csPath);
+		return Engine::GetSystem<Engine::ShaderManager>("Shaders")->LoadComputeShader(name, csPath);
 	};
 	graphics["SetShadowShader"] = [this](Engine::ShaderHandle lightingShander, Engine::ShaderHandle shadowShader) {
-		m_shaders->SetShadowsShader(lightingShander, shadowShader);
+		Engine::GetSystem<Engine::ShaderManager>("Shaders")->SetShadowsShader(lightingShander, shadowShader);
 	};
 	graphics["DrawModel"] = [this](float px, float py, float pz, float scale, Engine::ModelHandle h, Engine::ShaderHandle sh) {
 		auto transform = glm::scale(glm::translate(glm::identity<glm::mat4>(), glm::vec3(px, py, pz)), glm::vec3(scale));
@@ -181,9 +180,6 @@ bool GraphicsSystem::PreInit()
 	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 	m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
 
-	m_shaders = std::make_unique<Engine::ShaderManager>();
-	m_models = std::make_unique<Engine::ModelManager>(m_jobSystem);
-
 	return true;
 }
 
@@ -195,17 +191,14 @@ bool GraphicsSystem::Initialise()
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
 	//// add our renderer to the global passes
-	m_renderer = std::make_unique<Engine::Renderer>(m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
+	m_renderer = std::make_unique<Engine::Renderer>(m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
-	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
+	m_debugRender = std::make_unique<Engine::DebugRender>();
 
 	RegisterComponents();
 	RegisterScripts();
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
-	gMenu.AddItem("Reload Shaders", [this]() { m_renderer->Reset(); m_shaders->ReloadAll(); });
-	gMenu.AddItem("Reload Models", [this]() { m_renderer->Reset(); m_models->ReloadAll(); });
-	gMenu.AddItem("ModelManager", [this]() { g_showModelGui = true; });
 	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
 
 	return true;
@@ -328,8 +321,9 @@ void GraphicsSystem::ProcessEntities()
 	if(m_showBounds)
 	{
 		SDE_PROF_EVENT("ShowBounds");
-		world->ForEachComponent<Model>([this, &world, &transforms](Model& m, EntityHandle owner) {
-			const auto renderModel = m_models->GetModel(m.GetModel());
+		auto* models = Engine::GetSystem<Engine::ModelManager>("Models");
+		world->ForEachComponent<Model>([this, &world, &transforms, models](Model& m, EntityHandle owner) {
+			const auto renderModel = models->GetModel(m.GetModel());
 			const Transform* transform = transforms->Find(owner);
 			if (transform && renderModel)
 			{
@@ -387,11 +381,6 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 {
 	m_debugGui->MainMenuBar(g_graphicsMenu);
 
-	if (g_showModelGui)
-	{
-		g_showModelGui = m_models->ShowGui(*m_debugGui);
-	}
-
 	if (m_showStats)
 	{
 		const auto& fs = m_renderer->GetStats();
@@ -443,9 +432,6 @@ bool GraphicsSystem::Tick(float timeDelta)
 
 	m_debugRender->PushToRenderer(*m_renderer);
 
-	// Process loaded data on main thread
-	m_models->ProcessLoadedModels();
-
 	return true;
 }
 
@@ -456,6 +442,4 @@ void GraphicsSystem::Shutdown()
 	m_scriptSystem->Globals()["Graphics"] = nullptr;
 	m_debugRender = nullptr;
 	m_renderer = nullptr;
-	m_models = nullptr;
-	m_shaders = nullptr;
 }
