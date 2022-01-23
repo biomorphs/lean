@@ -13,7 +13,6 @@ namespace Engine
 	class RenderSystem;
 	class JobSystem;
 	class DebugGuiSystem;
-	class TextureManager;
 	class ModelManager;
 	class ShaderManager;
 	class Renderer;
@@ -33,7 +32,6 @@ public:
 	virtual void Shutdown();
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
 	Engine::ShaderManager& Shaders() { return *m_shaders; }
-	Engine::TextureManager& Textures() { return *m_textures; }
 	Engine::Renderer& Renderer() { return *m_renderer; }
 	bool ShouldDrawBounds() const { return m_showBounds; }
 private:
@@ -47,7 +45,6 @@ private:
 	bool m_showStats = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
-	std::unique_ptr<Engine::TextureManager> m_textures;
 	std::unique_ptr<Engine::ModelManager> m_models;
 	std::unique_ptr<Engine::ShaderManager> m_shaders;
 	glm::ivec2 m_windowSize = { 0,0 };

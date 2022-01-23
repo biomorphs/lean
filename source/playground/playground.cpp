@@ -153,9 +153,9 @@ bool g_pauseScriptDelta = false;
 bool Playground::PreInit()
 {
 	SDE_PROF_EVENT();
-	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
-	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
-	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+	m_scriptSystem = Engine::GetSystem<Engine::ScriptSystem>("Script");
+	m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
 
 	m_sceneEditor.Init(&m_scene, m_debugGui);
 

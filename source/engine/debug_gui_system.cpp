@@ -25,9 +25,9 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		m_renderSystem = (RenderSystem*)Engine::GetSystem("Render");
-		m_scriptSystem = (ScriptSystem*)Engine::GetSystem("Script");
-		auto EventSystem = (Engine::EventSystem*)Engine::GetSystem("Events");
+		m_renderSystem = Engine::GetSystem<RenderSystem>("Render");
+		m_scriptSystem = Engine::GetSystem<ScriptSystem>("Script");
+		auto EventSystem = Engine::GetSystem<Engine::EventSystem>("Events");
 		EventSystem->RegisterEventHandler([this](void* e)
 		{
 			this->m_imguiPass->HandleEvent(e);

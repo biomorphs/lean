@@ -9,11 +9,9 @@
 namespace Render
 {
 	class Mesh;
-	class TextureManager;
 }
 namespace Engine
 {
-	class TextureManager;
 	class SDFMeshOctree;
 }
 
@@ -22,7 +20,7 @@ class SDFMesh
 public:
 	SDFMesh();
 	COMPONENT(SDFMesh);
-	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::TextureManager& textures);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui);
 
 	void Remesh(bool destroyAll=false);
 	Engine::SDFMeshOctree& GetOctree() { return *m_octree; }

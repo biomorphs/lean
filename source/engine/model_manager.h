@@ -9,7 +9,6 @@
 
 namespace Engine
 {
-	class TextureManager;
 	class DebugGuiSystem;
 	class JobSystem;
 
@@ -22,7 +21,7 @@ namespace Engine
 	class ModelManager
 	{
 	public:
-		ModelManager(TextureManager* tm, JobSystem* js);
+		ModelManager(JobSystem* js);
 		~ModelManager();
 		ModelManager(const ModelManager&) = delete;
 		ModelManager(ModelManager&&) = delete;
@@ -56,7 +55,6 @@ namespace Engine
 		std::vector<ModelLoadResult> m_loadedModels;	// models to process after successful load
 		std::atomic<int32_t> m_inFlightModels = 0;
 
-		TextureManager* m_textureManager;
 		JobSystem* m_jobSystem;
 	};
 }

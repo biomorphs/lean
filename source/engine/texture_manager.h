@@ -1,4 +1,5 @@
 #pragma once
+#include "system.h"
 #include "render/texture.h"
 #include "render/texture_source.h"
 #include "core/mutex.h"
@@ -12,7 +13,6 @@
 
 namespace Engine
 {
-	class JobSystem;
 	class DebugGuiSystem;
 
 	struct TextureHandle
@@ -23,24 +23,21 @@ namespace Engine
 		inline std::string GetTextureName() const;
 	};
 
-	class TextureManager
+	class TextureManager : public System
 	{
 	public:
-		TextureManager(JobSystem* js);
-		TextureManager(const TextureManager&) = delete;
-		TextureManager(TextureManager&&) = delete;
-		~TextureManager() = default;
-
 		TextureHandle LoadTexture(std::string path, std::function<void(bool, TextureHandle)> onFinish = nullptr);
 		Render::Texture* GetTexture(const TextureHandle& h);
 		std::string GetTexturePath(const TextureHandle& h);
-		void ProcessLoadedTextures();
-
-		bool ShowGui(DebugGuiSystem& gui);
-
 		void ReloadAll();
 
+		virtual bool Tick(float timeDelta);
+		virtual void Shutdown();
+
 	private:
+		void ProcessLoadedTextures();
+		bool ShowGui(DebugGuiSystem& gui);
+
 		struct TextureDesc {
 			std::unique_ptr<Render::Texture> m_texture;
 			std::string m_path;
@@ -56,7 +53,6 @@ namespace Engine
 		Core::Mutex m_loadedTexturesMutex;
 		std::vector<LoadedTexture> m_loadedTextures;
 		std::atomic<int32_t> m_inFlightTextures = 0;
-		JobSystem* m_jobSystem = nullptr;
 	};
 
 	std::string TextureHandle::GetTextureName() const

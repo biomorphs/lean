@@ -15,6 +15,7 @@
 #include "model.h"
 #include "material_helpers.h"
 #include "job_system.h"
+#include "system_manager.h"
 #include <algorithm>
 #include <map>
 
@@ -50,9 +51,8 @@ namespace Engine
 	std::map<std::string, TextureHandle> g_defaultTextures;
 	std::vector<std::string> g_shadowSamplerNames, g_shadowCubeSamplerNames;
 
-	Renderer::Renderer(TextureManager* ta, ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize)
-		: m_textures(ta)
-		, m_models(mm)
+	Renderer::Renderer(ModelManager* mm, ShaderManager* sm, JobSystem* js, glm::ivec2 windowSize)
+		: m_models(mm)
 		, m_shaders(sm)
 		, m_jobSystem(js)
 		, m_windowSize(windowSize)
@@ -60,9 +60,10 @@ namespace Engine
 		, m_mainFramebufferResolved(windowSize)
 		, m_bloomBrightnessBuffer(windowSize)
 	{
-		g_defaultTextures["DiffuseTexture"] = m_textures->LoadTexture("white.bmp");
-		g_defaultTextures["NormalsTexture"] = m_textures->LoadTexture("default_normalmap.png");
-		g_defaultTextures["SpecularTexture"] = m_textures->LoadTexture("white.bmp");
+		auto tm = Engine::GetSystem<Engine::TextureManager>("Textures");
+		g_defaultTextures["DiffuseTexture"] = tm->LoadTexture("white.bmp");
+		g_defaultTextures["NormalsTexture"] = tm->LoadTexture("default_normalmap.png");
+		g_defaultTextures["SpecularTexture"] = tm->LoadTexture("white.bmp");
 		m_blitShader = m_shaders->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
 		m_bloomBrightnessShader = m_shaders->LoadShader("BloomBrightness", "basic_blit.vs", "bloom_brightness.fs");
 		m_bloomBlurShader = m_shaders->LoadShader("BloomBlur", "basic_blit.vs", "bloom_blur.fs");
@@ -438,12 +439,12 @@ namespace Engine
 
 				// apply mesh material uniforms and samplers
 				uint32_t textureUnit = firstTextureUnit;
-				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), *m_textures, &g_defaultTextures, textureUnit);
+				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), &g_defaultTextures, textureUnit);
 
 				// apply instance material uniforms and samplers (materials can be shared across instances!)
 				if (instanceMaterial != nullptr && instanceMaterial != lastInstanceMaterial)
 				{
-					ApplyMaterial(d, *theShader, *instanceMaterial, *m_textures, &g_defaultTextures, textureUnit);
+					ApplyMaterial(d, *theShader, *instanceMaterial, &g_defaultTextures, textureUnit);
 					lastInstanceMaterial = instanceMaterial;
 				}
 

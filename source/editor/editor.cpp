@@ -35,8 +35,8 @@ void Editor::StopRunning()
 bool Editor::PreInit()
 {
 	SDE_PROF_EVENT();
-	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
-	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+	m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
 	
 	return true;
 }

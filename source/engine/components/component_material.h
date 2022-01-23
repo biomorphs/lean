@@ -11,7 +11,6 @@ namespace Render
 namespace Engine
 {
 	class TextureHandle;
-	class TextureManager;
 	class DebugGuiSystem;
 }
 
@@ -21,7 +20,7 @@ class Material
 public:
 	Material();
 	COMPONENT(Material);
-	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::TextureManager& textures);
+	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui);
 
 	const Render::Material& GetRenderMaterial() const { return *m_material; }
 	Render::Material& GetRenderMaterial() { return *m_material; }

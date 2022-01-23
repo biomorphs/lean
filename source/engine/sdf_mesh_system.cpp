@@ -41,12 +41,12 @@ bool SDFMeshSystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
-	m_renderSys = (Engine::RenderSystem*)Engine::GetSystem("Render");
-	m_graphics = (GraphicsSystem*)Engine::GetSystem("Graphics");
-	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
-	m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
-	m_cameras = (Engine::CameraSystem*)Engine::GetSystem("Cameras");
+	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+	m_renderSys = Engine::GetSystem<Engine::RenderSystem>("Render");
+	m_graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+	m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
+	m_jobSystem = Engine::GetSystem<Engine::JobSystem>("Jobs");
+	m_cameras = Engine::GetSystem<Engine::CameraSystem>("Cameras");
 	
 	return true;
 }
@@ -55,7 +55,7 @@ bool SDFMeshSystem::Initialise()
 {
 	// Register component
 	m_entitySystem->RegisterComponentType<SDFMesh>();
-	m_entitySystem->RegisterInspector<SDFMesh>(SDFMesh::MakeInspector(*m_debugGui, m_graphics->Textures()));
+	m_entitySystem->RegisterInspector<SDFMesh>(SDFMesh::MakeInspector(*m_debugGui));
 
 	return true;
 }
@@ -163,7 +163,7 @@ void SDFMeshSystem::PopulateSDF(WorkingSet& w, Render::ShaderProgram& shader, gl
 	device->BindComputeImage(0, w.m_volumeDataTexture->GetHandle(), Render::ComputeImageFormat::RF16, Render::ComputeImageAccess::WriteOnly, true);
 	if (mat)	// if we have a custom material, send the params!
 	{
-		Engine::ApplyMaterial(*device, shader, *mat, m_graphics->Textures());
+		Engine::ApplyMaterial(*device, shader, *mat);
 	}
 	PushSharedUniforms(shader, offset, cellSize);	// set after so the material can't screw it up!
 	dims = glm::vec3((dims.x + 3) & ~0x03, (dims.y + 3) & ~0x03, (dims.z + 3) & ~0x03);	// round up to next mul. 4

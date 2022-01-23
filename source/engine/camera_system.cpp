@@ -44,12 +44,12 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
-		m_renderSystem = (Engine::RenderSystem*)Engine::GetSystem("Render");
-		m_inputSystem = (Engine::InputSystem*)Engine::GetSystem("Input");
-		m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
-		m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
-		m_graphics = (GraphicsSystem*)Engine::GetSystem("Graphics");
+		m_scriptSystem = Engine::GetSystem<Engine::ScriptSystem>("Script");
+		m_renderSystem = Engine::GetSystem<Engine::RenderSystem>("Render");
+		m_inputSystem = Engine::GetSystem<Engine::InputSystem>("Input");
+		m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+		m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
+		m_graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
 
 		m_mainRenderCamera = std::make_unique<Render::Camera>();
 

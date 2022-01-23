@@ -171,11 +171,11 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
-		m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
-		m_graphicsSystem = (GraphicsSystem*)Engine::GetSystem("Graphics");
-		m_debugGuiSystem = (DebugGuiSystem*)Engine::GetSystem("DebugGui");
-		m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
+		m_jobSystem = Engine::GetSystem<Engine::JobSystem>("Jobs");
+		m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
+		m_graphicsSystem = Engine::GetSystem<GraphicsSystem>("Graphics");
+		m_debugGuiSystem = Engine::GetSystem<DebugGuiSystem>("DebugGui");
+		m_scriptSystem = Engine::GetSystem<Engine::ScriptSystem>("Script");
 
 		m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_physxAllocator, g_physxErrors);
 

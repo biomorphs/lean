@@ -1,6 +1,8 @@
 #include "texture_manager.h"
+#include "system_manager.h"
 #include "job_system.h"
 #include "debug_gui_system.h"
+#include "debug_gui_menubar.h"
 #include "core/profiler.h"
 #include "core/thread.h"
 #include "render/device.h"
@@ -9,47 +11,51 @@
 
 namespace Engine
 {
-	TextureManager::TextureManager(Engine::JobSystem* js)
-		: m_jobSystem(js)
-	{
-	}
-
 	bool TextureManager::ShowGui(DebugGuiSystem& gui)
 	{
-		static bool s_showWindow = true;
-		static TextureHandle s_showTexture;
-		gui.BeginWindow(s_showWindow, "TextureManager");
-		char text[1024] = { '\0' };
-		int32_t inFlight = m_inFlightTextures;
-		sprintf_s(text, "Loading: %d", inFlight);
-		gui.Text(text);
-		gui.Separator();
-		for (int t=0;t<m_textures.size();++t)
-		{
-			sprintf_s(text, "%d: %s (0x%p) - %d components", 
-				t, 
-				m_textures[t].m_path.c_str(),
-				m_textures[t].m_texture.get(),
-				m_textures[t].m_texture ? m_textures[t].m_texture->GetComponentCount() : 0);
-			if (gui.Button(text))
-			{
-				s_showTexture = { static_cast<uint32_t>(t) };
-			}
-		}
-		gui.EndWindow();
+		static bool s_showWindow = false;
 
-		if(s_showTexture.m_index != -1)
-		{ 
-			auto previewTexture = GetTexture(s_showTexture);
-			if (previewTexture != nullptr)
+		Engine::MenuBar menuBar;
+		auto& fileMenu = menuBar.AddSubmenu(ICON_FK_PAINT_BRUSH " Assets");
+		fileMenu.AddItem("Texture Manager", [this]() {
+			s_showWindow = !s_showWindow;
+		});
+		gui.MainMenuBar(menuBar);
+
+		static TextureHandle s_showTexture;
+		if (s_showWindow && gui.BeginWindow(s_showWindow, "TextureManager"))
+		{
+			char text[1024] = { '\0' };
+			int32_t inFlight = m_inFlightTextures;
+			sprintf_s(text, "Loading: %d", inFlight);
+			gui.Text(text);
+			gui.Separator();
+			for (int t = 0; t < m_textures.size(); ++t)
 			{
-				bool show = true;
-				gui.BeginWindow(show, m_textures[s_showTexture.m_index].m_path.c_str());
-				gui.Image(*previewTexture, glm::vec2(512, 512));
-				gui.EndWindow();
-				if (!show)
+				sprintf_s(text, "%d: %s (0x%p) - %d components",
+					t,
+					m_textures[t].m_path.c_str(),
+					m_textures[t].m_texture.get(),
+					m_textures[t].m_texture ? m_textures[t].m_texture->GetComponentCount() : 0);
+				if (gui.Button(text))
 				{
-					s_showTexture = {(uint32_t)-1};
+					s_showTexture = { static_cast<uint32_t>(t) };
+				}
+			}
+			gui.EndWindow();
+			if (s_showTexture.m_index != -1)
+			{
+				auto previewTexture = GetTexture(s_showTexture);
+				if (previewTexture != nullptr)
+				{
+					bool show = true;
+					gui.BeginWindow(show, m_textures[s_showTexture.m_index].m_path.c_str());
+					gui.Image(*previewTexture, glm::vec2(512, 512));
+					gui.EndWindow();
+					if (!show)
+					{
+						s_showTexture = { (uint32_t)-1 };
+					}
 				}
 			}
 		}
@@ -79,6 +85,16 @@ namespace Engine
 			auto newHandle = LoadTexture(currentTextures[t].m_path.c_str());
 			assert(t == newHandle.m_index);
 		}
+	}
+
+	bool TextureManager::Tick(float timeDelta)
+	{
+		SDE_PROF_EVENT();
+
+		ProcessLoadedTextures();
+		ShowGui(*Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui"));
+
+		return true;
 	}
 
 	void TextureManager::ProcessLoadedTextures()
@@ -131,7 +147,7 @@ namespace Engine
 		m_inFlightTextures += 1;
 
 		std::string pathString = path;
-		m_jobSystem->PushSlowJob([this, pathString, newHandle, onFinish](void*) {
+		GetSystem<JobSystem>("Jobs")->PushSlowJob([this, pathString, newHandle, onFinish](void*) {
 			char debugName[1024] = { '\0' };
 			sprintf_s(debugName, "LoadTexture %s", pathString.c_str());
 			SDE_PROF_EVENT_DYN(debugName);
@@ -217,4 +233,22 @@ namespace Engine
 		}
 	}
 
+	void TextureManager::Shutdown()
+	{
+		// wait until all jobs finish, not great but eh
+		while (m_inFlightTextures > 0)
+		{
+			int v = m_inFlightTextures;
+			Core::Thread::Sleep(1);
+		}
+
+		// clear out any results
+		{
+			Core::ScopedMutex guard(m_loadedTexturesMutex);
+			m_loadedTextures.clear();
+		}
+
+		// remove all textures
+		m_textures.clear();
+	}
 }

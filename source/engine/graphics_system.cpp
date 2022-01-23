@@ -27,7 +27,6 @@
 #include "engine/components/component_material.h"
 
 Engine::MenuBar g_graphicsMenu;
-bool g_showTextureGui = false;
 bool g_showModelGui = false;
 bool g_enableShadowUpdate = true;
 
@@ -90,7 +89,7 @@ GraphicsSystem::~GraphicsSystem()
 void GraphicsSystem::RegisterComponents()
 {
 	m_entitySystem->RegisterComponentType<Material>();
-	m_entitySystem->RegisterInspector<Material>(Material::MakeInspector(*m_debugGui, *m_textures));
+	m_entitySystem->RegisterInspector<Material>(Material::MakeInspector(*m_debugGui));
 
 	m_entitySystem->RegisterComponentType<Tags>();
 	m_entitySystem->RegisterInspector<Tags>(Tags::MakeInspector(*m_debugGui));
@@ -105,7 +104,7 @@ void GraphicsSystem::RegisterComponents()
 	m_entitySystem->RegisterInspector<Model>(Model::MakeInspector(*m_debugGui, *m_models, *m_shaders));
 
 	m_entitySystem->RegisterComponentType<SDFModel>();
-	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui, *m_textures));
+	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui));
 }
 
 void GraphicsSystem::RegisterScripts()
@@ -130,7 +129,7 @@ void GraphicsSystem::RegisterScripts()
 		m_renderer->SetClearColour(glm::vec4(r, g, b, 1.0f));
 	};
 	graphics["LoadTexture"] = [this](const char* path) -> Engine::TextureHandle {
-		return m_textures->LoadTexture(path);
+		return Engine::GetSystem<Engine::TextureManager>("Textures")->LoadTexture(path);
 	};
 	graphics["LoadModel"] = [this](const char* path) -> Engine::ModelHandle {
 		return m_models->LoadModel(path);
@@ -175,16 +174,15 @@ bool GraphicsSystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
-	m_renderSystem = (Engine::RenderSystem*)Engine::GetSystem("Render");
-	m_inputSystem = (Engine::InputSystem*)Engine::GetSystem("Input");
-	m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
-	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
-	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
+	m_scriptSystem = Engine::GetSystem<Engine::ScriptSystem>("Script");
+	m_renderSystem = Engine::GetSystem<Engine::RenderSystem>("Render");
+	m_inputSystem = Engine::GetSystem<Engine::InputSystem>("Input");
+	m_jobSystem = Engine::GetSystem<Engine::JobSystem>("Jobs");
+	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+	m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
 
 	m_shaders = std::make_unique<Engine::ShaderManager>();
-	m_textures = std::make_unique<Engine::TextureManager>(m_jobSystem);
-	m_models = std::make_unique<Engine::ModelManager>(m_textures.get(), m_jobSystem);
+	m_models = std::make_unique<Engine::ModelManager>(m_jobSystem);
 
 	return true;
 }
@@ -197,7 +195,7 @@ bool GraphicsSystem::Initialise()
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
 	//// add our renderer to the global passes
-	m_renderer = std::make_unique<Engine::Renderer>(m_textures.get(), m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
+	m_renderer = std::make_unique<Engine::Renderer>(m_models.get(), m_shaders.get(), m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
 	m_debugRender = std::make_unique<Engine::DebugRender>(m_shaders.get());
 
@@ -206,9 +204,7 @@ bool GraphicsSystem::Initialise()
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
 	gMenu.AddItem("Reload Shaders", [this]() { m_renderer->Reset(); m_shaders->ReloadAll(); });
-	gMenu.AddItem("Reload Textures", [this]() { m_renderer->Reset(); m_textures->ReloadAll(); });
 	gMenu.AddItem("Reload Models", [this]() { m_renderer->Reset(); m_models->ReloadAll(); });
-	gMenu.AddItem("TextureManager", [this]() { g_showTextureGui = true; });
 	gMenu.AddItem("ModelManager", [this]() { g_showModelGui = true; });
 	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
 
@@ -390,11 +386,6 @@ void GraphicsSystem::ProcessEntities()
 void GraphicsSystem::ShowGui(int framesPerSecond)
 {
 	m_debugGui->MainMenuBar(g_graphicsMenu);
-	
-	if (g_showTextureGui)
-	{
-		g_showTextureGui = m_textures->ShowGui(*m_debugGui);
-	}
 
 	if (g_showModelGui)
 	{
@@ -453,7 +444,6 @@ bool GraphicsSystem::Tick(float timeDelta)
 	m_debugRender->PushToRenderer(*m_renderer);
 
 	// Process loaded data on main thread
-	m_textures->ProcessLoadedTextures();
 	m_models->ProcessLoadedModels();
 
 	return true;
@@ -467,6 +457,5 @@ void GraphicsSystem::Shutdown()
 	m_debugRender = nullptr;
 	m_renderer = nullptr;
 	m_models = nullptr;
-	m_textures = nullptr;
 	m_shaders = nullptr;
 }

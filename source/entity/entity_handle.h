@@ -2,11 +2,6 @@
 #include <stdint.h>
 #include "engine/serialisation.h"
 
-namespace Engine
-{
-	class ScriptSystem;
-}
-
 class EntityHandle
 {
 public:

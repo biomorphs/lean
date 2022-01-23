@@ -1,4 +1,5 @@
 #include "component_material.h"
+#include "engine/system_manager.h"
 #include "engine/file_picker_dialog.h"
 #include "engine/texture_manager.h"
 #include "engine/debug_gui_system.h"
@@ -111,9 +112,9 @@ void Material::SetCastShadows(bool s)
 	m_material->SetCastsShadows(s);
 }
 
-COMPONENT_INSPECTOR_IMPL(Material, Engine::DebugGuiSystem& gui, Engine::TextureManager& textures)
+COMPONENT_INSPECTOR_IMPL(Material, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui, &textures](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<StorageType&>(cs).Find(e);
 		auto& rmat = m.GetRenderMaterial();
@@ -142,6 +143,7 @@ COMPONENT_INSPECTOR_IMPL(Material, Engine::DebugGuiSystem& gui, Engine::TextureM
 			sprintf_s(text, "%s", t.second.m_name.c_str());
 			if (t.second.m_handle != 0 && gui.TreeNode(text))
 			{
+				auto& textures = *Engine::GetSystem<Engine::TextureManager>("Textures");
 				auto texture = textures.GetTexture({ t.second.m_handle });
 				auto path = textures.GetTexturePath({ t.second.m_handle });
 				if (texture)

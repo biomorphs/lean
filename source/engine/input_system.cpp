@@ -133,10 +133,10 @@ namespace Engine
 
 	bool InputSystem::PreInit()
 	{
-		auto eventSystem = (EventSystem*)Engine::GetSystem("Events");
+		auto eventSystem = Engine::GetSystem<EventSystem>("Events");
 		eventSystem->RegisterEventHandler([this](void* e) { OnSystemEvent(e); });
 
-		m_scripts = (ScriptSystem*)Engine::GetSystem("Script");
+		m_scripts = Engine::GetSystem<ScriptSystem>("Script");
 
 		return true;
 	}

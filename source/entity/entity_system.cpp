@@ -119,9 +119,9 @@ bool EntitySystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
+	m_scriptSystem = Engine::GetSystem<Engine::ScriptSystem>("Script");
 	assert(m_scriptSystem);
-	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
+	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 	assert(m_debugGui);
 
 	auto& scripts = m_scriptSystem->Globals();

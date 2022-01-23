@@ -1,4 +1,5 @@
 #include "component_sdf_model.h"
+#include "engine/system_manager.h"
 #include "engine/job_system.h"
 #include "engine/debug_gui_system.h"
 #include "engine/file_picker_dialog.h"
@@ -102,9 +103,9 @@ void SDFModel::SetSampleScriptFunction(sol::protected_function fn)
 	m_sampleFunction = std::move(wrappedFn);
 }
 
-COMPONENT_INSPECTOR_IMPL(SDFModel, Engine::DebugGuiSystem& gui, Engine::TextureManager& textures)
+COMPONENT_INSPECTOR_IMPL(SDFModel, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui, &textures](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
 		int typeIndex = static_cast<int>(m.GetMeshMode());
@@ -125,6 +126,7 @@ COMPONENT_INSPECTOR_IMPL(SDFModel, Engine::DebugGuiSystem& gui, Engine::TextureM
 		r.z = gui.DragInt("ResZ", r.z, 1, 1);
 		m.SetResolution(r.x, r.y, r.z);
 		m.SetNormalSmoothness(gui.DragFloat("Normal Smooth", m.GetNormalSmoothness(), 0.01f, 0.0f));
+		auto& textures = *Engine::GetSystem<Engine::TextureManager>("Textures");
 		std::string texturePath = textures.GetTexturePath(m.GetDiffuseTexture());
 		texturePath = "Diffuse: " + texturePath;
 		if (gui.Button(texturePath.c_str()))

@@ -34,11 +34,11 @@ bool CreatureSystem::PreInit()
 {
 	SDE_PROF_EVENT();
 
-	m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
-	m_graphicsSystem = (GraphicsSystem*)Engine::GetSystem("Graphics");
-	m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
-	m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
-	m_debugGui = (Engine::DebugGuiSystem*)Engine::GetSystem("DebugGui");
+	m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
+	m_graphicsSystem = Engine::GetSystem<GraphicsSystem>("Graphics");
+	m_scriptSystem = Engine::GetSystem<Engine::ScriptSystem>("Script");
+	m_jobSystem = Engine::GetSystem<Engine::JobSystem>("Jobs");
+	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 
 	return true;
 }

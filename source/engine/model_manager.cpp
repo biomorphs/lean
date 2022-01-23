@@ -7,14 +7,14 @@
 #include "debug_gui_system.h"
 #include "core/profiler.h"
 #include "core/thread.h"
+#include "engine/system_manager.h"
 #include "render/device.h"
 #include "render/mesh.h"
 
 namespace Engine
 {
-	ModelManager::ModelManager(TextureManager* tm, JobSystem* js)
-		: m_textureManager(tm)
-		, m_jobSystem(js)
+	ModelManager::ModelManager(JobSystem* js)
+		: m_jobSystem(js)
 	{
 	}
 
@@ -25,6 +25,8 @@ namespace Engine
 	bool ModelManager::ShowGui(DebugGuiSystem& gui)
 	{
 		SDE_PROF_EVENT();
+
+		auto& tm = *Engine::GetSystem<Engine::TextureManager>("Textures");
 
 		bool showWindow = true;
 		gui.BeginWindow(showWindow, "ModelManager");
@@ -73,8 +75,8 @@ namespace Engine
 									sprintf_s(text, "%s", t.second.m_name.c_str());
 									if (t.second.m_handle != 0 && gui.TreeNode(text))
 									{
-										auto texture = m_textureManager->GetTexture({ t.second.m_handle });
-										auto path = m_textureManager->GetTexturePath({ t.second.m_handle });
+										auto texture = tm.GetTexture({ t.second.m_handle });
+										auto path = tm.GetTexturePath({ t.second.m_handle });
 										if (texture)
 										{
 											gui.Image(*texture, { 256,256 });
@@ -85,7 +87,7 @@ namespace Engine
 											std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
 											if (newFile != "")
 											{
-												auto loadedTexture = m_textureManager->LoadTexture(newFile.c_str());
+												auto loadedTexture = tm.LoadTexture(newFile.c_str());
 												t.second.m_handle = loadedTexture.m_index;
 											}
 										}
@@ -135,6 +137,7 @@ namespace Engine
 	void ModelManager::FinaliseModel(Assets::Model& model, Model& renderModel)
 	{
 		SDE_PROF_EVENT();
+		auto& tm = *Engine::GetSystem<Engine::TextureManager>("Textures");
 		const auto meshCount = renderModel.Parts().size();
 		for (int index = 0; index < meshCount; ++index)
 		{
@@ -149,16 +152,16 @@ namespace Engine
 				std::string specPath = mat.SpecularMaps().size() > 0 ? mat.SpecularMaps()[0] : "";
 				auto& material = renderModel.Parts()[index].m_mesh->GetMaterial();
 				// Set transparent flag based on diffuse texture
-				auto diffuseTexture = m_textureManager->LoadTexture(diffusePath.c_str(), [this, &renderModel, index](bool loaded, TextureHandle h) {
-					auto texture = m_textureManager->GetTexture(h);
+				auto diffuseTexture = tm.LoadTexture(diffusePath.c_str(), [this, &tm, &renderModel, index](bool loaded, TextureHandle h) {
+					auto texture = tm.GetTexture(h);
 					if (texture != nullptr && texture->GetComponentCount() == 4 && renderModel.Parts()[index].m_mesh != nullptr)
 					{
 						renderModel.Parts()[index].m_mesh->GetMaterial().SetIsTransparent(true);
 					}
 				});
 				material.SetSampler("DiffuseTexture", diffuseTexture.m_index);
-				material.SetSampler("NormalsTexture", m_textureManager->LoadTexture(normalPath.c_str()).m_index);
-				material.SetSampler("SpecularTexture", m_textureManager->LoadTexture(specPath.c_str()).m_index);
+				material.SetSampler("NormalsTexture", tm.LoadTexture(normalPath.c_str()).m_index);
+				material.SetSampler("SpecularTexture", tm.LoadTexture(specPath.c_str()).m_index);
 
 				// Create render resources that cannot be shared across contexts
 				renderModel.Parts()[index].m_mesh->GetVertexArray().Create();

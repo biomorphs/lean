@@ -39,8 +39,9 @@ namespace Engine
 		SystemMap m_systemMap;
 	};
 
-	inline System* GetSystem(const char* name)	// Helper for less typing!
+	template<class T>
+	inline T* GetSystem(const char* name)	// Helper for less typing!
 	{
-		return SystemManager::GetInstance().GetSystem(name);
+		return static_cast<T*>(SystemManager::GetInstance().GetSystem(name));
 	};
 }

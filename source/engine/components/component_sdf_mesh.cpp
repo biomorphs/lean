@@ -17,9 +17,9 @@ COMPONENT_SCRIPTS(SDFMesh,
 SERIALISE_BEGIN(SDFMesh)
 SERIALISE_END()
 
-COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui, Engine::TextureManager& textures)
+COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui, &textures](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<SDFMesh::StorageType&>(cs).Find(e);
 		auto bMin = m.GetBoundsMin();

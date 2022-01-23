@@ -145,13 +145,13 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		m_jobSystem = (Engine::JobSystem*)Engine::GetSystem("Jobs");
-		m_entitySystem = (EntitySystem*)Engine::GetSystem("Entities");
-		m_debugGuiSystem = (DebugGuiSystem*)Engine::GetSystem("DebugGui");
-		m_scriptSystem = (Engine::ScriptSystem*)Engine::GetSystem("Script");
-		m_renderSys = (Engine::RenderSystem*)Engine::GetSystem("Render");
-		m_graphics = (GraphicsSystem*)Engine::GetSystem("Graphics");
-		m_physics = (PhysicsSystem*)Engine::GetSystem("Physics");
+		m_jobSystem = Engine::GetSystem<Engine::JobSystem>("Jobs");
+		m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
+		m_debugGuiSystem = Engine::GetSystem<DebugGuiSystem>("DebugGui");
+		m_scriptSystem = Engine::GetSystem<Engine::ScriptSystem>("Script");
+		m_renderSys = Engine::GetSystem<Engine::RenderSystem>("Render");
+		m_graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+		m_physics = Engine::GetSystem<PhysicsSystem>("Physics");
 
 		return true;
 	}
@@ -305,7 +305,7 @@ namespace Engine
 					if (matComponent != nullptr)
 					{
 						const auto& instanceMaterial = matComponent->GetRenderMaterial();
-						ApplyMaterial(*device, *raycastShader, instanceMaterial, m_graphics->Textures());
+						ApplyMaterial(*device, *raycastShader, instanceMaterial);
 					}
 					uint32_t dispatchCount = ((raysToCast.size() - 1) / 64 + 1) * 64;
 					device->DispatchCompute(dispatchCount, 1, 1);
