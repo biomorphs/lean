@@ -30,14 +30,15 @@ namespace Core
 			return false;
 		}
 
-		char oneLine[512] = { '\0' };
-		while (!fileStream.eof())
-		{
-			fileStream.getline(oneLine, 512);
-			resultBuffer += oneLine;
-			resultBuffer += "\n";
-		}
-		fileStream.close();
+		fileStream.seekg(0, std::ios::end);
+		const size_t fileSize = fileStream.tellg();
+
+		std::unique_ptr<char[]> buf(new char[fileSize]);
+		std::memset(buf.get(), 0, fileSize);
+		fileStream.seekg(0, std::ios::beg);
+		fileStream.read(buf.get(), fileSize);
+		resultBuffer = buf.get();		
+
 		return true;
 	}
 
@@ -50,10 +51,10 @@ namespace Core
 		}
 
 		fileStream.seekg(0, std::ios::end);
-		std::streamoff fileSize = fileStream.tellg();
+		int fileSize = fileStream.tellg();
 		fileStream.seekg(0, std::ios::beg);
 
-		resultBuffer.resize(static_cast<uint32_t>(fileSize));
+		resultBuffer.resize(fileSize);
 		fileStream.read(reinterpret_cast<char*>(resultBuffer.data()), fileSize);
 		fileStream.close();
 

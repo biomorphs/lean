@@ -62,24 +62,20 @@ namespace Render
 		SDE_RENDER_ASSERT(m_handle == 0);
 
 		glCreateVertexArrays(1, &m_handle);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateVertexArrays");
 
 		for (auto it = m_descriptors.begin(); it != m_descriptors.end(); ++it)
 		{
 			// bind the VBs
 			glVertexArrayVertexBuffer(m_handle, it->m_attribIndex, it->m_srcBuffer->GetHandle(), it->m_offset, it->m_stride);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glVertexArrayVertexBuffer");
 
 			uint32_t glDataType = TranslateDataType(it->m_dataType);
 			SDE_RENDER_ASSERT(glDataType != -1);
 
 			// set the array format
 			glVertexArrayAttribFormat(m_handle, it->m_attribIndex, it->m_componentCount, glDataType, false, 0);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glVertexArrayAttribFormat");
 
 			// enable the stream
 			glEnableVertexArrayAttrib(m_handle, it->m_attribIndex);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glEnableVertexArrayAttrib");
 		}
 
 		return true;
@@ -93,7 +89,6 @@ namespace Render
 		if (m_handle != 0)
 		{
 			glDeleteVertexArrays(1, &m_handle);
-			SDE_RENDER_PROCESS_GL_ERRORS("glDeleteVertexArrays");
 		}		
 
 		m_handle = 0;

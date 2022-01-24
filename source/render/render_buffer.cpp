@@ -48,19 +48,18 @@ namespace Render
 	bool RenderBuffer::Create(void* sourceData, size_t bufferSize, RenderBufferModification modification, bool usePersistentMapping, bool isReadable)
 	{
 		SDE_PROF_EVENT();
-		SDE_RENDER_ASSERT(bufferSize > 0, "Buffer size must be >0");
+		assert(bufferSize > 0);
 
 		if (bufferSize > 0)
 		{
 			{
 				SDE_PROF_EVENT("glCreateBuffers");
 				glCreateBuffers(1, &m_handle);
-				SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateBuffers");
 			}
 
 			{
 				SDE_PROF_EVENT("glNamedBufferStorage");
-				SDE_RENDER_ASSERT(!(modification == RenderBufferModification::Static && sourceData == nullptr), "Buffer must be dynamic");
+				assert(!(modification == RenderBufferModification::Static && sourceData == nullptr));
 				auto storageType = TranslateStorageType(modification);
 				if (usePersistentMapping)
 				{
@@ -71,7 +70,6 @@ namespace Render
 					storageType |= GL_MAP_READ_BIT;
 				}
 				glNamedBufferStorage(m_handle, bufferSize, sourceData, storageType);
-				SDE_RENDER_PROCESS_GL_ERRORS_RET("glNamedBufferStorage");
 			}
 
 			if (usePersistentMapping)
@@ -79,7 +77,6 @@ namespace Render
 				SDE_PROF_EVENT("glMapNamedBufferRange");
 				GLuint mappingBits = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 				m_persistentMappedBuffer = glMapNamedBufferRange(m_handle, 0, bufferSize, mappingBits);
-				SDE_RENDER_PROCESS_GL_ERRORS_RET("glMapNamedBufferRange");
 			}
 
 			m_bufferSize = bufferSize;
@@ -112,7 +109,6 @@ namespace Render
 				mappingBits |= GL_MAP_WRITE_BIT;
 			}
 			void* buffer = glMapNamedBufferRange(m_handle, offset, size, mappingBits);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glMapNamedBufferRange");
 			return buffer;
 		}
 	}
@@ -123,7 +119,6 @@ namespace Render
 		if (!m_persistentMappedBuffer)
 		{
 			glUnmapNamedBuffer(m_handle);
-			SDE_RENDER_PROCESS_GL_ERRORS("glUnmapNamedBuffer");
 		}
 	}
 
@@ -145,7 +140,6 @@ namespace Render
 		{
 			SDE_PROF_EVENT("glNamedBufferSubData");
 			glNamedBufferSubData(m_handle, offset, size, srcData);
-			SDE_RENDER_PROCESS_GL_ERRORS("glNamedBufferSubData");
 		}
 	}
 
@@ -161,7 +155,6 @@ namespace Render
 		if (m_handle != 0)
 		{
 			glDeleteBuffers(1, &m_handle);
-			SDE_RENDER_PROCESS_GL_ERRORS("glDeleteBuffers");
 			m_handle = 0;
 			m_bufferSize = 0;
 		}

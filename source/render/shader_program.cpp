@@ -25,13 +25,10 @@ namespace Render
 		SDE_RENDER_ASSERT(computeShader.GetHandle() != 0);
 
 		m_handle = glCreateProgram();
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateProgram");
 
 		glAttachShader(m_handle, computeShader.GetHandle());
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glAttachShader");
 
 		glLinkProgram(m_handle);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glLinkProgram");
 
 		// check the results
 		int32_t linkResult = 0, logLength = 0;
@@ -57,16 +54,12 @@ namespace Render
 		SDE_RENDER_ASSERT(fragmentShader.GetHandle() != 0);
 
 		m_handle = glCreateProgram();
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateProgram");
 
 		glAttachShader(m_handle, vertexShader.GetHandle());
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glAttachShader");
 
 		glAttachShader(m_handle, fragmentShader.GetHandle());
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glAttachShader");
 
 		glLinkProgram(m_handle);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glLinkProgram");
 
 		// check the results
 		int32_t linkResult = 0, logLength = 0;
@@ -90,7 +83,6 @@ namespace Render
 	uint32_t ShaderProgram::GetUniformBufferBlockIndex(const char* bufferName) const
 	{
 		uint32_t index = glGetUniformBlockIndex(m_handle, bufferName);
-		SDE_RENDER_PROCESS_GL_ERRORS("glGetUniformBlockIndex");
 		return index;
 	}
 
@@ -116,7 +108,6 @@ namespace Render
 		if (m_handle != 0)
 		{
 			glDeleteProgram(m_handle);
-			SDE_RENDER_PROCESS_GL_ERRORS("glDeleteProgram");
 		}
 		
 		m_handle = 0;

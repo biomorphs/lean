@@ -22,7 +22,6 @@ namespace Render
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboHandle);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.GetHandle());
 		glBlitFramebuffer(0, 0, m_dimensions.x, m_dimensions.y, 0, 0, target.m_dimensions.x, target.m_dimensions.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		SDE_RENDER_PROCESS_GL_ERRORS("glBlitFrameBuffer");
 	}
 
 	TextureSource::Antialiasing GetAAMode(int samples)
@@ -120,31 +119,25 @@ namespace Render
 	bool FrameBuffer::Create()
 	{
 		glCreateFramebuffers(1, &m_fboHandle);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateFramebuffers");
 
 		for (int c = 0; c < m_colourAttachments.size(); ++c)
 		{
 			glNamedFramebufferTexture(m_fboHandle, GL_COLOR_ATTACHMENT0 + c, m_colourAttachments[c]->GetHandle(), 0);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glNamedFramebufferTexture");
 		}
 
 		if (m_depthStencil != nullptr)
 		{
 			glNamedFramebufferTexture(m_fboHandle, GL_DEPTH_ATTACHMENT, m_depthStencil->GetHandle(), 0);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glNamedFramebufferTexture");
 		}
 
 		// an fbo MUST have a colour attachment, we can use binding 0 if we dont have any
 		if (m_colourAttachments.size() == 0)
 		{
 			glNamedFramebufferDrawBuffer(m_fboHandle, 0);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glNamedFramebufferDrawBuffer");
 			glNamedFramebufferReadBuffer(m_fboHandle, 0);
-			SDE_RENDER_PROCESS_GL_ERRORS_RET("glNamedFramebufferReadBuffer");
 		}
 
 		bool readyToGo = glCheckNamedFramebufferStatus(m_fboHandle, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCheckNamedFramebufferStatus");
 		return readyToGo;
 	}
 
@@ -153,7 +146,6 @@ namespace Render
 		if (m_fboHandle != 0)
 		{
 			glDeleteFramebuffers(1, &m_fboHandle);
-			SDE_RENDER_PROCESS_GL_ERRORS("glDeleteFramebuffers");
 		}
 
 		m_colourAttachments.clear();

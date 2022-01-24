@@ -1,4 +1,5 @@
 #include "file_picker_dialog.h"
+#include "core/profiler.h"
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -10,6 +11,8 @@ namespace Engine
 {
 	std::string ShowFilePicker(std::string windowTitle, std::string rootDirectory, const char* filter, bool createNewFile)
 	{
+		SDE_PROF_EVENT();
+
 		OPENFILENAMEA ofa;
 		memset(&ofa, 0, sizeof(ofa));
 		ofa.lStructSize = sizeof(ofa);

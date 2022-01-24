@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "core/file_io.h"
 #include "core/profiler.h"
+#include "core/log.h"
 #include <cassert>
 
 namespace Render
@@ -97,18 +98,15 @@ namespace Render
 		SDE_PROF_EVENT();
 
 		uint32_t shaderType = TranslateShaderType(type);
-		SDE_RENDER_ASSERT(shaderType != -1);
+		assert(shaderType != -1);
 
 		m_handle = glCreateShader(shaderType);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCreateShader");
-		SDE_RENDER_ASSERT(m_handle != 0);
+		assert(m_handle != 0);
 
 		char const* srcPtr = src.c_str();
 		glShaderSource(m_handle, 1, &srcPtr, nullptr);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glShaderSource");
 
 		glCompileShader(m_handle);
-		SDE_RENDER_PROCESS_GL_ERRORS_RET("glCompileShader");
 
 		// check for compile errors
 		int32_t compileResult = 0, resultLogSize = 0;
@@ -116,7 +114,7 @@ namespace Render
 		glGetShaderiv(m_handle, GL_INFO_LOG_LENGTH, &resultLogSize);
 
 		char errorLogResult[4096] = { '\0' };
-		SDE_RENDER_ASSERT(resultLogSize < sizeof(errorLogResult));
+		assert(resultLogSize < sizeof(errorLogResult));
 
 		glGetShaderInfoLog(m_handle, resultLogSize, nullptr, errorLogResult);
 		resultText = errorLogResult;
@@ -148,7 +146,6 @@ namespace Render
 		if (m_handle != 0)
 		{
 			glDeleteShader(m_handle);
-			SDE_RENDER_PROCESS_GL_ERRORS("glDeleteShader");
 		}
 
 		m_handle = 0;

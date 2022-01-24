@@ -32,87 +32,90 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
+		static bool s_showWindow = false;
 		auto& tm = *Engine::GetSystem<Engine::TextureManager>("Textures");
 
-		bool showWindow = true;
-		gui.BeginWindow(showWindow, "ModelManager");
-		char text[1024] = { '\0' };
-		int32_t inFlight = m_inFlightModels;
-		sprintf_s(text, "Loading: %d", inFlight);
-		gui.Text(text);
-		gui.Separator();
-		if (gui.TreeNode("All Models", true))
+		if (s_showWindow)
 		{
-			for (int t = 0; t < m_models.size(); ++t)
+			gui.BeginWindow(s_showWindow, "ModelManager");
+			char text[1024] = { '\0' };
+			int32_t inFlight = m_inFlightModels;
+			sprintf_s(text, "Loading: %d", inFlight);
+			gui.Text(text);
+			gui.Separator();
+			if (gui.TreeNode("All Models", true))
 			{
-				sprintf_s(text, "%s", m_models[t].m_name.c_str());
-				if (m_models[t].m_model.get() && gui.TreeNode(text))
+				for (int t = 0; t < m_models.size(); ++t)
 				{
-					if (gui.TreeNode("Parts"))
+					sprintf_s(text, "%s", m_models[t].m_name.c_str());
+					if (m_models[t].m_model.get() && gui.TreeNode(text))
 					{
-						auto& parts = m_models[t].m_model->Parts();
-						for (auto& p : parts)
+						if (gui.TreeNode("Parts"))
 						{
-							sprintf_s(text, "%d: (%3.1f,%3.1f,%3.1f) - (%3.1f,%3.1f,%3.1f)", (int)(&p - parts.data()),
-								p.m_boundsMin.x, p.m_boundsMin.y, p.m_boundsMin.z,
-								p.m_boundsMax.x, p.m_boundsMax.y, p.m_boundsMax.z);
-							if(p.m_mesh && gui.TreeNode(text))
+							auto& parts = m_models[t].m_model->Parts();
+							for (auto& p : parts)
 							{
-								auto& material = p.m_mesh->GetMaterial();
-								auto& uniforms = material.GetUniforms();
-								auto& samplers = material.GetSamplers();
-								for (auto& v : uniforms.FloatValues())
+								sprintf_s(text, "%d: (%3.1f,%3.1f,%3.1f) - (%3.1f,%3.1f,%3.1f)", (int)(&p - parts.data()),
+									p.m_boundsMin.x, p.m_boundsMin.y, p.m_boundsMin.z,
+									p.m_boundsMax.x, p.m_boundsMax.y, p.m_boundsMax.z);
+								if (p.m_mesh && gui.TreeNode(text))
 								{
-									sprintf_s(text, "%s", v.second.m_name.c_str());
-									v.second.m_value = gui.DragFloat(text, v.second.m_value);
-								}
-								for (auto& v : uniforms.Vec4Values())
-								{
-									sprintf_s(text, "%s", v.second.m_name.c_str());
-									v.second.m_value = gui.DragVector(text, v.second.m_value);
-								}
-								for (auto& v : uniforms.IntValues())
-								{
-									sprintf_s(text, "%s", v.second.m_name.c_str());
-									v.second.m_value = gui.DragInt(text, v.second.m_value);
-								}
-								for (auto& t : samplers)
-								{
-									sprintf_s(text, "%s", t.second.m_name.c_str());
-									if (t.second.m_handle != 0 && gui.TreeNode(text))
+									auto& material = p.m_mesh->GetMaterial();
+									auto& uniforms = material.GetUniforms();
+									auto& samplers = material.GetSamplers();
+									for (auto& v : uniforms.FloatValues())
 									{
-										auto texture = tm.GetTexture({ t.second.m_handle });
-										auto path = tm.GetTexturePath({ t.second.m_handle });
-										if (texture)
-										{
-											gui.Image(*texture, { 256,256 });
-										}
-										sprintf_s(text, "%s", t.second.m_name.c_str());
-										if (gui.Button(text))
-										{
-											std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
-											if (newFile != "")
-											{
-												auto loadedTexture = tm.LoadTexture(newFile.c_str());
-												t.second.m_handle = loadedTexture.m_index;
-											}
-										}
-										gui.TreePop();
+										sprintf_s(text, "%s", v.second.m_name.c_str());
+										v.second.m_value = gui.DragFloat(text, v.second.m_value);
 									}
+									for (auto& v : uniforms.Vec4Values())
+									{
+										sprintf_s(text, "%s", v.second.m_name.c_str());
+										v.second.m_value = gui.DragVector(text, v.second.m_value);
+									}
+									for (auto& v : uniforms.IntValues())
+									{
+										sprintf_s(text, "%s", v.second.m_name.c_str());
+										v.second.m_value = gui.DragInt(text, v.second.m_value);
+									}
+									for (auto& t : samplers)
+									{
+										sprintf_s(text, "%s", t.second.m_name.c_str());
+										if (t.second.m_handle != 0 && gui.TreeNode(text))
+										{
+											auto texture = tm.GetTexture({ t.second.m_handle });
+											auto path = tm.GetTexturePath({ t.second.m_handle });
+											if (texture)
+											{
+												gui.Image(*texture, { 256,256 });
+											}
+											sprintf_s(text, "%s", t.second.m_name.c_str());
+											if (gui.Button(text))
+											{
+												std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
+												if (newFile != "")
+												{
+													auto loadedTexture = tm.LoadTexture(newFile.c_str());
+													t.second.m_handle = loadedTexture.m_index;
+												}
+											}
+											gui.TreePop();
+										}
+									}
+									gui.TreePop();
 								}
-								gui.TreePop();
 							}
+							gui.TreePop();
 						}
+
 						gui.TreePop();
 					}
-
-					gui.TreePop();
 				}
+				gui.TreePop();
 			}
-			gui.TreePop();
+			gui.EndWindow();
 		}
-		gui.EndWindow();
-		return showWindow;
+		return true;
 	}
 
 	void ModelManager::ReloadAll()
