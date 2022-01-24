@@ -21,7 +21,7 @@ namespace Engine
 	class ModelManager : public System
 	{
 	public:
-		ModelHandle LoadModel(const char* path);
+		ModelHandle LoadModel(const char* path, std::function<void(bool, ModelHandle)> onFinish = nullptr);
 		Model* GetModel(const ModelHandle& h);
 		std::string GetModelPath(const ModelHandle& h);
 		void ReloadAll();
@@ -35,7 +35,7 @@ namespace Engine
 
 		struct ModelDesc 
 		{
-			std::unique_ptr<Model> m_model;
+			std::unique_ptr<Model> m_renderModel;
 			std::string m_name;
 		};
 		struct ModelLoadResult
@@ -43,6 +43,7 @@ namespace Engine
 			std::unique_ptr<Assets::Model> m_model;
 			std::unique_ptr<Model> m_renderModel;
 			ModelHandle m_destinationHandle;
+			std::function<void(bool, ModelHandle)> m_onFinish;
 		};
 		std::unique_ptr<Render::Mesh> CreateMeshPart(const Assets::ModelMesh&);
 		std::unique_ptr<Model> CreateModel(Assets::Model& model, std::vector<std::unique_ptr<Render::Mesh>>& meshes);

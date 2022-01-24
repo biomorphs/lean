@@ -5,12 +5,15 @@
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/physics_system.h"
+#include "engine/shader_manager.h"
+#include "engine/file_picker_dialog.h"
 #include "entity/entity_system.h"
 #include "entity/component_storage.h"
 #include "commands/editor_close_cmd.h"
 #include "commands/editor_new_scene_cmd.h"
 #include "commands/editor_save_scene_cmd.h"
 #include "commands/editor_import_scene_cmd.h"
+#include "commands/editor_create_entity_from_mesh_cmd.h"
 #include "engine/serialisation.h"
 
 Editor::Editor()
@@ -48,6 +51,12 @@ bool Editor::PostInit()
 
 	// Disable physics sim in editor by default
 	Engine::GetSystem<Engine::PhysicsSystem>("Physics")->SetSimulationEnabled(false);
+
+	// Todo Hacks to fix later 
+	auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+	auto lightingShader = sm->LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs");
+	auto shadowShader = sm->LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
+	sm->SetShadowsShader(lightingShader, shadowShader);
 
 	return true;
 }
@@ -204,6 +213,13 @@ void Editor::UpdateMenubar()
 	});
 	scenesMenu.AddItem("Import Scene", [this]() {
 		m_commands.Push(std::make_unique<EditorImportSceneCommand>(this));
+	});
+	scenesMenu.AddItem("Make Entity From Mesh", [this]() {
+		std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
+		if (newFile != "")
+		{
+			m_commands.Push(std::make_unique<EditorCreateEntityFromMeshCommand>(newFile));
+		}
 	});
 
 	m_debugGui->MainMenuBar(menuBar);

@@ -58,6 +58,7 @@ namespace Render
 			case GL_DEBUG_SEVERITY_NOTIFICATION: severityStr = "Notification";	break;
 		} 
 		SDE_LOG("\tSource: %s\n\tType: %s\n\tSeverity: %s", sourceStr, typeStr, severityStr);
+		__debugbreak();
 	}
 
 	Device::Device(Window& theWindow, bool makeDebugContext)
@@ -364,6 +365,7 @@ namespace Render
 	void Device::SetSampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit)
 	{
 		assert(uniformHandle != -1);
+		assert(textureHandle != -1);
 
 		glBindTextureUnit(textureUnit, textureHandle);
 

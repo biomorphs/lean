@@ -309,6 +309,8 @@ set(EDITOR_SOURCES
 	source/editor/commands/editor_save_scene_cmd.h
 	source/editor/commands/editor_import_scene_cmd.cpp
 	source/editor/commands/editor_import_scene_cmd.h
+	source/editor/commands/editor_create_entity_from_mesh_cmd.h
+	source/editor/commands/editor_create_entity_from_mesh_cmd.cpp
 )
 
 target_sources(Editor PRIVATE ${EDITOR_SOURCES})

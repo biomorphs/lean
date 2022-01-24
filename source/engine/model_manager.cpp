@@ -48,11 +48,11 @@ namespace Engine
 				for (int t = 0; t < m_models.size(); ++t)
 				{
 					sprintf_s(text, "%s", m_models[t].m_name.c_str());
-					if (m_models[t].m_model.get() && gui.TreeNode(text))
+					if (m_models[t].m_renderModel.get() && gui.TreeNode(text))
 					{
 						if (gui.TreeNode("Parts"))
 						{
-							auto& parts = m_models[t].m_model->Parts();
+							auto& parts = m_models[t].m_renderModel->Parts();
 							for (auto& p : parts)
 							{
 								sprintf_s(text, "%d: (%3.1f,%3.1f,%3.1f) - (%3.1f,%3.1f,%3.1f)", (int)(&p - parts.data()),
@@ -219,7 +219,11 @@ namespace Engine
 			if (loadedModel.m_renderModel != nullptr)
 			{
 				FinaliseModel(*loadedModel.m_model, *loadedModel.m_renderModel);
-				m_models[loadedModel.m_destinationHandle.m_index].m_model = std::move(loadedModel.m_renderModel);
+				m_models[loadedModel.m_destinationHandle.m_index].m_renderModel = std::move(loadedModel.m_renderModel);
+				if (loadedModel.m_onFinish != nullptr)
+				{
+					loadedModel.m_onFinish(true, loadedModel.m_destinationHandle);
+				}
 			}
 		}
 	}
@@ -271,7 +275,7 @@ namespace Engine
 		return rmesh;
 	}
 
-	ModelHandle ModelManager::LoadModel(const char* path)
+	ModelHandle ModelManager::LoadModel(const char* path, std::function<void(bool, ModelHandle)> onFinish)
 	{
 		SDE_PROF_EVENT();
 
@@ -279,7 +283,10 @@ namespace Engine
 		{
 			if (m_models[i].m_name == path)
 			{
-				return { static_cast<uint32_t>(i) };
+				ModelHandle result = { static_cast<uint32_t>(i) };
+				if (onFinish)
+					onFinish(true, result);
+				return result;
 			}
 		}
 
@@ -289,7 +296,7 @@ namespace Engine
 		m_inFlightModels += 1;
 
 		std::string pathString = path;
-		GetSystem<JobSystem>("Jobs")->PushSlowJob([this, pathString, newHandle](void*) {
+		GetSystem<JobSystem>("Jobs")->PushSlowJob([this, pathString, newHandle, onFinish](void*) {
 			char debugName[1024] = { '\0' };
 			sprintf_s(debugName, "LoadModel %s", pathString.c_str());
 			SDE_PROF_EVENT_DYN(debugName);
@@ -307,9 +314,13 @@ namespace Engine
 				{
 					Core::ScopedMutex guard(m_loadedModelsMutex);
 					m_loadedModels.push_back({ std::move(loadedAsset), std::move(theModel), newHandle });
-					m_inFlightModels -= 1;
 				}
 			}
+			else if (onFinish != nullptr)
+			{
+				onFinish(false, newHandle);
+			}
+			m_inFlightModels -= 1;
 		});
 		
 		return newHandle;
@@ -331,7 +342,7 @@ namespace Engine
 	{
 		if (h.m_index != -1 && h.m_index < m_models.size())
 		{
-			return m_models[h.m_index].m_model.get();
+			return m_models[h.m_index].m_renderModel.get();
 		}
 		else
 		{
