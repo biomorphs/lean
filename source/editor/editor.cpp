@@ -7,6 +7,8 @@
 #include "engine/physics_system.h"
 #include "engine/shader_manager.h"
 #include "engine/file_picker_dialog.h"
+#include "engine/graphics_system.h"
+#include "engine/input_system.h"
 #include "entity/entity_system.h"
 #include "entity/component_storage.h"
 #include "commands/editor_close_cmd.h"
@@ -16,6 +18,9 @@
 #include "commands/editor_create_entity_from_mesh_cmd.h"
 #include "commands/editor_select_all_cmd.h"
 #include "commands/editor_clear_selection_cmd.h"
+#include "commands/editor_delete_selection_cmd.h"
+#include "engine/components/component_transform.h"
+#include "engine/components/component_model.h"
 #include "engine/serialisation.h"
 
 Editor::Editor()
@@ -108,73 +113,7 @@ bool Editor::ImportScene(const char* fileName)
 
 	Engine::FromJson("SceneName", m_sceneName, sceneJson);
 
-	uint32_t entityCount = 0;
-	Engine::FromJson("EntityCount", entityCount, sceneJson);
-
-	std::vector<uint32_t> oldEntityIDs;
-	Engine::FromJson("EntityIDs", oldEntityIDs, sceneJson);
-	if (oldEntityIDs.size() != entityCount)
-	{
-		SDE_LOG("Wha?");
-		return false;
-	}
-
-	// First create the entities and build a remap table for the IDs
-	std::unordered_map<uint32_t, uint32_t> oldEntityToNewEntity;
-	{
-		SDE_PROF_EVENT("AddEntities");
-		oldEntityToNewEntity.reserve(oldEntityIDs.size());
-		for (uint32_t oldID : oldEntityIDs)
-		{
-			oldEntityToNewEntity[oldID] = world->AddEntity().GetID();
-		}
-	}
-
-	// Hook the OnLoaded callback of EntityHandle and remap any IDs we find during loading
-	EntityHandle::OnLoaded remapId = [&oldEntityToNewEntity](EntityHandle& h) {
-		if (h.GetID() != -1)
-		{
-			auto foundRemap = oldEntityToNewEntity.find(h.GetID());
-			if (foundRemap != oldEntityToNewEntity.end())
-			{
-				h = EntityHandle(foundRemap->second);
-			}
-			else
-			{
-				SDE_LOG("Entity handle references ID that doesn't exist in the scene!");
-			}
-		}
-	};
-	EntityHandle::SetOnLoadFinishCallback(remapId);
-
-	for (int index = 0; index < entityCount; ++index)
-	{
-		nlohmann::json& thisEntityData = sceneJson["Entities"][index];
-		uint32_t oldId = 0;
-		Engine::FromJson("ID", oldId, thisEntityData);		// this is the OLD id
-		if (oldId != oldEntityIDs[index])
-		{
-			SDE_LOG("Wha?");
-		}
-		const uint32_t remappedId = oldEntityToNewEntity[oldId];
-		auto& cmpList = thisEntityData["Components"];
-		int componentCount = cmpList.size();
-		for (int component = 0; component < componentCount; ++component)
-		{
-			std::string typeStr;
-			nlohmann::json& cmpJson = cmpList[component];
-			Engine::FromJson("Type", typeStr, cmpJson);
-
-			ComponentStorage* storage = world->GetStorage(typeStr);
-			if (storage)
-			{
-				nlohmann::json& dataJson = cmpJson["Data"];
-				storage->Serialise(remappedId, dataJson, Engine::SerialiseType::Read);
-			}
-		}
-	}
-
-	EntityHandle::SetOnLoadFinishCallback(nullptr);
+	m_entitySystem->SerialiseEntities(sceneJson);
 
 	return true;
 }
@@ -186,34 +125,8 @@ bool Editor::SaveScene(const char* fileName)
 	World* world = m_entitySystem->GetWorld();
 	std::vector<uint32_t> allEntities = world->AllEntities();
 
-	nlohmann::json json;
+	nlohmann::json json = m_entitySystem->SerialiseEntities(allEntities);
 	Engine::ToJson("SceneName", m_sceneName, json);
-	
-	const uint32_t entityCount = allEntities.size();
-	Engine::ToJson("EntityCount", entityCount, json);
-	Engine::ToJson("EntityIDs", allEntities, json);
-
-	std::vector<nlohmann::json> allEntityData;
-	allEntityData.reserve(entityCount);
-	for (int index=0;index<entityCount;++index)
-	{
-		auto& entityJson = allEntityData.emplace_back();
-		Engine::ToJson("ID", allEntities[index], entityJson);
-
-		std::vector<ComponentType> cmpTypes = world->GetOwnedComponentTypes(allEntities[index]);
-		std::vector<nlohmann::json> componentData;
-		componentData.reserve(cmpTypes.size());
-		for (const auto& type : cmpTypes)
-		{
-			nlohmann::json& cmpJson = componentData.emplace_back();
-			cmpJson["Type"] = type;
-			ComponentStorage* storage = world->GetStorage(type);
-			nlohmann::json& dataJson = cmpJson["Data"];
-			storage->Serialise(allEntities[index], dataJson, Engine::SerialiseType::Write);
-		}
-		entityJson["Components"] = componentData;
-	}
-	json["Entities"] = allEntityData;
 
 	bool result = Core::SaveTextToFile(fileName, json.dump(2));
 	if (result)
@@ -268,14 +181,83 @@ void Editor::UpdateMenubar()
 	editMenu.AddItem(ICON_FK_MINUS_SQUARE " Clear Selection", [this] {
 		m_commands.Push(std::make_unique<EditorClearSelectionCommand>());
 	});
+	if (m_selectedEntities.size() > 0)
+	{
+		editMenu.AddItem(ICON_FK_TRASH " Delete Selection", [this]() {
+			m_commands.Push(std::make_unique<EditorDeleteSelectionCommand>());
+		});
+	}
 
 	m_debugGui->MainMenuBar(menuBar);
+
+	Engine::SubMenu rightClickBar;
+	rightClickBar.m_label = "Options";
+	auto& entityMenu = rightClickBar.AddSubmenu("Add Entity");
+	entityMenu.AddItem("From Mesh", [this]() {
+		std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
+		if (newFile != "")
+		{
+			m_commands.Push(std::make_unique<EditorCreateEntityFromMeshCommand>(newFile));
+		}
+	});
+	if (m_selectedEntities.size() > 0)
+	{
+		rightClickBar.AddItem(ICON_FK_TRASH " Delete Selection", [this]() {
+			m_commands.Push(std::make_unique<EditorDeleteSelectionCommand>());
+		});
+	}
+	m_debugGui->ContextMenuVoid(rightClickBar);
 }
 
 bool Editor::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
 	UpdateMenubar();
+
+	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
+	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+	auto world = m_entitySystem->GetWorld();
+	for (auto sel : m_selectedEntities)
+	{
+		auto modelCmp = world->GetComponent<Model>(sel);
+		auto transformCmp = world->GetComponent<Transform>(sel);
+		if (modelCmp && transformCmp)
+		{
+			auto theModel = mm->GetModel(modelCmp->GetModel());
+			if (theModel)
+			{
+				graphics->DrawModelBounds(*theModel, transformCmp->GetMatrix(), glm::vec4(1.0f,1.0f,0.0f,1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
+			}
+		}
+	}
+
+	if (!m_debugGui->IsCapturingKeyboard())
+	{
+		auto input = Engine::GetSystem<Engine::InputSystem>("Input");
+		auto keyPressed = input->GetKeyboardState().m_keyPressed;
+		static float s_ignoreKeyTimer = 0.0f;
+		s_ignoreKeyTimer -= timeDelta;
+		if (s_ignoreKeyTimer < 0.0f)	// throttle commands
+		{
+			s_ignoreKeyTimer = 0.1f;
+			if (keyPressed[Engine::Key::KEY_LCTRL] && keyPressed[Engine::Key::KEY_z] && m_commands.CanUndo())
+			{
+				m_commands.Undo();
+			}
+			else if (keyPressed[Engine::Key::KEY_LCTRL] && keyPressed[Engine::Key::KEY_y] && m_commands.CanRedo())
+			{
+				m_commands.Redo();
+			}
+			else if (keyPressed[Engine::Key::KEY_LCTRL] && keyPressed[Engine::Key::KEY_a])
+			{
+				m_commands.Push(std::make_unique<EditorSelectAllCommand>());
+			}
+			else
+			{
+				s_ignoreKeyTimer = 0.0f;
+			}
+		}
+	}
 
 	m_commands.ShowWindow();
 	m_commands.RunNext();

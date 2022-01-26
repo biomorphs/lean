@@ -18,7 +18,7 @@ public:
 	World() = default;
 	~World() = default;
 
-	EntityHandle AddEntityFromHandle(EntityHandle id);	// only the tools are allowed to use this! return valid handle if success
+	EntityHandle AddEntityFromHandle(EntityHandle id);	// only the tools and serialiser are allowed to use this! return valid handle if success
 	EntityHandle AddEntity();
 	void RemoveEntity(EntityHandle h);	// defers actual deletion until CollectGarbage() called
 	const std::vector<uint32_t>& AllEntities() const { return m_activeEntities; }

@@ -21,6 +21,132 @@ void EntitySystem::NewWorld()
 	m_world->RemoveAllEntities();
 }
 
+nlohmann::json EntitySystem::SerialiseEntities(const std::vector<uint32_t>& entityIDs)
+{
+	nlohmann::json json;
+
+	const uint32_t entityCount = entityIDs.size();
+	Engine::ToJson("EntityCount", entityCount, json);
+	Engine::ToJson("EntityIDs", entityIDs, json);
+
+	std::vector<nlohmann::json> allEntityData;
+	allEntityData.reserve(entityCount);
+	for (int index = 0; index < entityCount; ++index)
+	{
+		auto& entityJson = allEntityData.emplace_back();
+		Engine::ToJson("ID", entityIDs[index], entityJson);
+
+		std::vector<ComponentType> cmpTypes = m_world->GetOwnedComponentTypes(entityIDs[index]);
+		std::vector<nlohmann::json> componentData;
+		componentData.reserve(cmpTypes.size());
+		for (const auto& type : cmpTypes)
+		{
+			nlohmann::json& cmpJson = componentData.emplace_back();
+			cmpJson["Type"] = type;
+			ComponentStorage* storage = m_world->GetStorage(type);
+			nlohmann::json& dataJson = cmpJson["Data"];
+			storage->Serialise(entityIDs[index], dataJson, Engine::SerialiseType::Write);
+		}
+		entityJson["Components"] = componentData;
+	}
+	json["Entities"] = allEntityData;
+
+	return json;
+}
+
+std::vector<uint32_t> EntitySystem::SerialiseEntities(nlohmann::json& data, bool restoreIDsFromData)
+{
+	uint32_t entityCount = 0;
+	Engine::FromJson("EntityCount", entityCount, data);
+
+	std::vector<uint32_t> oldEntityIDs;
+	Engine::FromJson("EntityIDs", oldEntityIDs, data);
+	if (oldEntityIDs.size() != entityCount)
+	{
+		SDE_LOG("Error - ID list size does not match entity count! Bad data?");
+		return {};
+	}
+
+	// First create the entities and build a remap table for the IDs
+	std::unordered_map<uint32_t, uint32_t> oldEntityToNewEntity;
+	{
+		SDE_PROF_EVENT("AddEntities");
+		oldEntityToNewEntity.reserve(oldEntityIDs.size());
+		if (restoreIDsFromData)
+		{
+			for (uint32_t oldID : oldEntityIDs)
+			{
+				auto newEntity = m_world->AddEntityFromHandle(oldID);
+				if (newEntity.GetID() == -1)
+				{
+					SDE_LOG("Error - failed to recreate entity with fixed ID %d. References to this entity will break!", oldID);
+					newEntity = m_world->AddEntity().GetID();
+				}
+				oldEntityToNewEntity[oldID] = newEntity.GetID();
+			}
+		}
+		else
+		{
+			for (uint32_t oldID : oldEntityIDs)
+			{
+				oldEntityToNewEntity[oldID] = m_world->AddEntity().GetID();
+			}
+		}
+	}
+
+	// Hook the OnLoaded callback of EntityHandle and remap any IDs we find during loading
+	// This is how references to entities are fixed up!
+	EntityHandle::OnLoaded remapId = [&oldEntityToNewEntity](EntityHandle& h) {
+		if (h.GetID() != -1)
+		{
+			auto foundRemap = oldEntityToNewEntity.find(h.GetID());
+			if (foundRemap != oldEntityToNewEntity.end())
+			{
+				h = EntityHandle(foundRemap->second);
+			}
+			else
+			{
+				SDE_LOG("Entity handle references ID that doesn't exist in the scene!");
+			}
+		}
+	};
+	EntityHandle::SetOnLoadFinishCallback(remapId);
+
+	// Load the data!
+	for (int index = 0; index < entityCount; ++index)
+	{
+		nlohmann::json& thisEntityData = data["Entities"][index];
+		uint32_t oldId = 0;
+		Engine::FromJson("ID", oldId, thisEntityData);		// this is the OLD id
+		const uint32_t remappedId = oldEntityToNewEntity[oldId];
+		auto& cmpList = thisEntityData["Components"];
+		int componentCount = cmpList.size();
+		for (int component = 0; component < componentCount; ++component)
+		{
+			std::string typeStr;
+			nlohmann::json& cmpJson = cmpList[component];
+			Engine::FromJson("Type", typeStr, cmpJson);
+
+			ComponentStorage* storage = m_world->GetStorage(typeStr);
+			if (storage)
+			{
+				nlohmann::json& dataJson = cmpJson["Data"];
+				storage->Serialise(remappedId, dataJson, Engine::SerialiseType::Read);
+			}
+		}
+	}
+
+	EntityHandle::SetOnLoadFinishCallback(nullptr);
+
+	std::vector<uint32_t> results;
+	results.reserve(oldEntityToNewEntity.size());
+	for (const auto& it : oldEntityToNewEntity)
+	{
+		results.emplace_back(it.second);
+	}
+	return results;
+}
+
 std::string EntitySystem::GetEntityNameWithTags(EntityHandle e) const
 {
 	char text[1024] = "";
@@ -127,7 +253,6 @@ bool EntitySystem::PreInit()
 	auto& scripts = m_scriptSystem->Globals();
 
 	// Tag
-	// This is probably not a good place for it
 	scripts.new_usertype<Engine::Tag>("Tag", sol::constructors<Engine::Tag(), Engine::Tag(const char*)>(),
 		"AsString", &Engine::Tag::c_str,
 		"GetHash", &Engine::Tag::GetHash);

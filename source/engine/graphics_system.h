@@ -32,13 +32,13 @@ public:
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
 	Engine::Renderer& Renderer() { return *m_renderer; }
 	bool ShouldDrawBounds() const { return m_showBounds; }
+	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform, glm::vec4 mainColour, glm::vec4 partsColour = glm::vec4(0.0f));
 private:
 	void RegisterScripts();
 	void RegisterComponents();
 	void ShowGui(int fps);
 	void ProcessLight(class Light& l, const class Transform* transform);
 	void ProcessEntities();
-	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform);
 	bool m_showBounds = false;
 	bool m_showStats = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;

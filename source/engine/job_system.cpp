@@ -17,6 +17,7 @@ namespace Engine
 		{
 			m_threadCount = cpuCount - 1;
 		}
+		m_threadCount = 4;
 	}
 
 	JobSystem::~JobSystem()

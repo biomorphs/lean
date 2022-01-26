@@ -56,7 +56,9 @@ namespace Engine
 		{ SDLK_LEFT, KEY_LEFT },
 		{ SDLK_RIGHT, KEY_RIGHT },
 		{ SDLK_UP, KEY_UP },
-		{ SDLK_DOWN, KEY_DOWN }
+		{ SDLK_DOWN, KEY_DOWN },
+		{ SDLK_LCTRL, KEY_LCTRL },
+		{ SDLK_RCTRL, KEY_RCTRL },
 	};
 
 	const std::map<std::string, Key> c_keyStringMapping = {
@@ -102,7 +104,9 @@ namespace Engine
 		{"KEY_LEFT", Key::KEY_LEFT },
 		{"KEY_RIGHT", Key::KEY_RIGHT },
 		{"KEY_UP", Key::KEY_UP },
-		{"KEY_DOWN", Key::KEY_DOWN }
+		{"KEY_DOWN", Key::KEY_DOWN },
+		{"KEY_LCTRL", Key::KEY_LCTRL },
+		{"KEY_RCTRL", Key::KEY_RCTRL }
 	};
 
 	InputSystem::InputSystem()

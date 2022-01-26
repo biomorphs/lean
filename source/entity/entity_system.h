@@ -30,6 +30,9 @@ public:
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();
 
+	nlohmann::json SerialiseEntities(const std::vector<uint32_t>& entityIDs);
+	std::vector<uint32_t> SerialiseEntities(nlohmann::json& data, bool restoreIDsFromData=false);
+
 	std::string GetEntityNameWithTags(EntityHandle e) const;
 
 private:

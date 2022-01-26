@@ -18,7 +18,7 @@ Command::Result EditorCloseCommand::Execute()
 		if (m_gui->Button("NO!"))
 		{
 			m_gui->CloseCurrentPopup();
-			commandResult = Command::Result::Succeeded;
+			commandResult = Command::Result::Failed;
 		}
 		m_gui->EndModalPopup();
 	}

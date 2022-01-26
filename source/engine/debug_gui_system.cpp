@@ -137,6 +137,44 @@ namespace Engine
 		}
 	}
 
+	void DoSubContextMenu(SubMenu& b)
+	{
+		if (ImGui::TreeNode(b.m_label.c_str()))
+		{
+			for (auto item : b.m_menuItems)
+			{
+				if (ImGui::Selectable(item.m_label.c_str()))
+				{
+					item.m_onSelected();
+				}
+			}
+			for (auto submenu : b.m_subMenus)
+			{
+				DoSubContextMenu(submenu);
+			}
+			ImGui::TreePop();
+		}
+	}
+
+	void DebugGuiSystem::ContextMenuVoid(SubMenu& menu)
+	{
+		if (ImGui::BeginPopupContextVoid())
+		{
+			for (auto submenu : menu.m_subMenus)
+			{
+				DoSubContextMenu(submenu);
+			}
+			for (auto item : menu.m_menuItems)
+			{
+				if (ImGui::Selectable(item.m_label.c_str()))
+				{
+					item.m_onSelected();
+				}
+			}
+			ImGui::EndPopup();
+		}
+	}
+
 	bool DebugGuiSystem::TreeNode(const char* label, bool forceExpanded)
 	{
 		if (forceExpanded)

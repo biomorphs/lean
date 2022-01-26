@@ -204,16 +204,19 @@ bool GraphicsSystem::Initialise()
 	return true;
 }
 
-void GraphicsSystem::DrawModelBounds(const Engine::Model& m, glm::mat4 transform)
+void GraphicsSystem::DrawModelBounds(const Engine::Model& m, glm::mat4 transform, glm::vec4 mainColour, glm::vec4 partsColour)
 {
 	SDE_PROF_EVENT();
-	for (const auto& part : m.Parts())
+	if (partsColour != glm::vec4(0.0f))
 	{
-		const auto bmin = part.m_boundsMin;
-		const auto bmax = part.m_boundsMax;
-		m_debugRender->DrawBox(bmin, bmax, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), transform);
+		for (const auto& part : m.Parts())
+		{
+			const auto bmin = part.m_boundsMin;
+			const auto bmax = part.m_boundsMax;
+			m_debugRender->DrawBox(bmin, bmax, partsColour, transform);
+		}
 	}
-	m_debugRender->DrawBox(m.BoundsMin(), m.BoundsMax(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), transform);
+	m_debugRender->DrawBox(m.BoundsMin(), m.BoundsMax(), mainColour, transform);
 }
 
 void GraphicsSystem::ProcessLight(Light& l, const Transform* transform)
@@ -327,7 +330,7 @@ void GraphicsSystem::ProcessEntities()
 			const Transform* transform = transforms->Find(owner);
 			if (transform && renderModel)
 			{
-				DrawModelBounds(*renderModel, transform->GetMatrix());
+				DrawModelBounds(*renderModel, transform->GetMatrix(), glm::vec4(1.0f), glm::vec4(1.0f,0.0f,0.0f,1.0f));
 			}
 		});
 	}
