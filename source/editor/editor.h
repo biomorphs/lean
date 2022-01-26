@@ -1,6 +1,7 @@
 #pragma once
 #include "engine/system.h"
 #include "command_list.h"
+#include "core/glm_headers.h"
 #include <string>
 #include <set>
 
@@ -31,6 +32,8 @@ public:
 	void DeselectAll();
 	void SelectAll();
 private:
+	void DrawGrid(float cellSize, int cellCount, glm::vec4 colour);
+
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
 	CommandList m_commands;
@@ -39,6 +42,11 @@ private:
 	
 	std::string m_sceneName = "";
 	std::string m_sceneFilepath = "";
+
+	float m_gridSize = 8.0f;
+	int m_gridCount = 64;
+	bool m_showGrid = true;
+	glm::vec4 m_gridColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 
 	void UpdateMenubar();
 	bool m_keepRunning = true;

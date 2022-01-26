@@ -434,14 +434,13 @@ bool SDFMeshSystem::Tick(float timeDelta)
 	using NodeToUpdate = std::tuple<uint32_t, float, SDFMesh*, EntityHandle, glm::vec3, glm::vec3, uint64_t >;
 	std::vector<NodeToUpdate> nodesToUpdate;
 	nodesToUpdate.reserve(64 * 1024);
-	world->ForEachComponent<SDFMesh>([&](SDFMesh& m, EntityHandle owner) {
-		const Transform* transform = transforms->Find(owner);
-		if (!transform)
-			return;
+
+	static World::EntityIterator iterator = world->MakeIterator<SDFMesh, Transform>();
+	iterator.ForEach([&](SDFMesh& m, Transform& t, EntityHandle h) {
 		auto requestUpdate = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth, uint64_t node)
 		{
 			float distanceToBounds = DistanceToAABB(bmin, bmax, camera.Position());
-			nodesToUpdate.push_back({ depth, distanceToBounds, &m, owner, bmin, bmax, node });
+			nodesToUpdate.push_back({ depth, distanceToBounds, &m, h, bmin, bmax, node });
 		};
 		auto shouldUpdateNode = [&](glm::vec3 bmin, glm::vec3 bmax, uint32_t depth)
 		{
@@ -491,17 +490,17 @@ bool SDFMeshSystem::Tick(float timeDelta)
 					instanceMaterial = &matComponent->GetRenderMaterial();
 				}
 			}
-			m_graphics->Renderer().SubmitInstance(transform->GetMatrix(), nodemesh, m.GetRenderShader(), bmin, bmax, instanceMaterial);
+			m_graphics->Renderer().SubmitInstance(t.GetMatrix(), nodemesh, m.GetRenderShader(), bmin, bmax, instanceMaterial);
 			if (m_graphics->ShouldDrawBounds())
 			{
 				auto colour = glm::vec4(1, 0, 0, 1);
-				m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour, transform->GetMatrix());
+				m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour, t.GetMatrix());
 			}
 		};
 		if (m_graphics->ShouldDrawBounds())
 		{
 			auto colour = glm::vec4(1, 1, 1, 1);
-			m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
+			m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, t.GetMatrix());
 		}
 		m.GetOctree().Update(shouldUpdateNode, requestUpdate, shouldDrawNode, drawFn);
 	});

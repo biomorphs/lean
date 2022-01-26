@@ -5,6 +5,7 @@
 #include "debug_render.h"
 #include "components/component_physics.h"
 #include "components/component_transform.h"
+#include "components/component_environment_settings.h"
 #include "engine/system_manager.h"
 #include "entity/entity_system.h"
 #include "entity/entity_handle.h"
@@ -87,23 +88,19 @@ namespace Engine
 		// we should not be doing this by looping through all components!
 		{
 			SDE_PROF_EVENT("RebuildPending");
-			entities->GetWorld()->ForEachComponent<Physics>([this,entities](Physics& p, EntityHandle e)
-			{
+			static World::EntityIterator iterator = entities->GetWorld()->MakeIterator<Physics, Transform>();
+			iterator.ForEach([this](Physics& p, Transform& t, EntityHandle h) {
 				if (p.NeedsRebuild())
 				{
-					m_physicsSystem->RebuildActor(p, e);
+					m_physicsSystem->RebuildActor(p, h);
 				}
 				// update kinematic target transforms
 				if (!p.IsStatic() && p.IsKinematic() && p.GetActor().Get() != nullptr)
 				{
-					auto transformComponent = entities->GetWorld()->GetComponent<Transform>(e);
-					if (transformComponent)
-					{
-						const auto pos = transformComponent->GetPosition();
-						const auto orient = transformComponent->GetOrientation();
-						physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
-						static_cast<physx::PxRigidDynamic*>(p.GetActor().Get())->setKinematicTarget(trans);
-					}
+					const auto pos = t.GetPosition();
+					const auto orient = t.GetOrientation();
+					physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
+					static_cast<physx::PxRigidDynamic*>(p.GetActor().Get())->setKinematicTarget(trans);
 				}
 			});
 		}
@@ -335,6 +332,16 @@ namespace Engine
 	bool PhysicsSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
+
+		m_entitySystem->GetWorld()->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
+			auto currentGravity = m_scene->getGravity();
+			auto g = s.GetGravity();
+			physx::PxVec3 newGravity = { g.x, g.y, g.z };
+			if (currentGravity != newGravity)
+			{
+				m_scene->setGravity(newGravity);
+			}
+		});
 
 		m_timeAccumulator += timeDelta;
 		if (m_timeAccumulator >= m_timeStep && m_simEnabled)

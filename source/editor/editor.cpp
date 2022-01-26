@@ -5,6 +5,7 @@
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/physics_system.h"
+#include "engine/debug_render.h"
 #include "engine/shader_manager.h"
 #include "engine/file_picker_dialog.h"
 #include "engine/graphics_system.h"
@@ -58,9 +59,10 @@ void Editor::SelectAll()
 
 void Editor::NewScene(const char* sceneName)
 {
-	m_sceneName = sceneName;
 	m_sceneFilepath = "";
 	m_entitySystem->NewWorld();
+	ImportScene("editor/empty_scene_template.scn");
+	m_sceneName = sceneName;
 }
 
 void Editor::StopRunning()
@@ -209,14 +211,44 @@ void Editor::UpdateMenubar()
 	m_debugGui->ContextMenuVoid(rightClickBar);
 }
 
+void Editor::DrawGrid(float cellSize, int cellCount, glm::vec4 colour)
+{
+	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+	for (int x = -cellCount; x < cellCount; ++x)
+	{
+		graphics->DebugRenderer().DrawLine({ x * cellSize, 0.0f, -cellCount * cellSize }, { x * cellSize, 0.0f, cellCount * cellSize }, colour);
+		for (int z = -cellCount; z < cellCount; ++z)
+		{
+			graphics->DebugRenderer().DrawLine({ -cellCount * cellSize, 0.0f, z * cellSize }, { cellCount * cellSize, 0.0f, z * cellSize }, colour);
+		}
+	}
+}
+
 bool Editor::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
-	UpdateMenubar();
 
 	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
 	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
 	auto world = m_entitySystem->GetWorld();
+
+	UpdateMenubar();
+
+	bool keepOpen = true;
+	if (m_debugGui->BeginWindow(keepOpen, "Grid Settings"))
+	{
+		m_showGrid = m_debugGui->Checkbox("Show Grid", m_showGrid);
+		m_gridSize = m_debugGui->DragFloat("Grid Size", m_gridSize, 0.25f, 0.25f, 8192.0f);
+		m_gridCount = m_debugGui->DragInt("Grid Lines", m_gridCount, 1, 1024);
+		m_gridColour = m_debugGui->ColourEdit("Colour", m_gridColour);
+		m_debugGui->EndWindow();
+	}
+
+	if (m_showGrid)
+	{
+		DrawGrid(m_gridSize, m_gridCount, m_gridColour);
+	}
+	
 	for (auto sel : m_selectedEntities)
 	{
 		auto modelCmp = world->GetComponent<Model>(sel);
@@ -259,7 +291,6 @@ bool Editor::Tick(float timeDelta)
 		}
 	}
 
-	m_commands.ShowWindow();
 	m_commands.RunNext();
 
 	return m_keepRunning;

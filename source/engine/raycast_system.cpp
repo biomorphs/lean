@@ -251,12 +251,11 @@ namespace Engine
 		uint32_t* currentIndex = indexBuffer;
 		auto world = m_entitySystem->GetWorld();
 		auto transforms = world->GetAllComponents<Transform>();
-		world->ForEachComponent<SDFMesh>([&](SDFMesh& m, EntityHandle owner) {
-			const Transform* transform = transforms->Find(owner);
-			if (!transform)
-				return;
+
+		static World::EntityIterator iterator = world->MakeIterator<SDFMesh, Transform>();
+		iterator.ForEach([&](SDFMesh& m, Transform& t, EntityHandle h) {
 			// transform ray to object space for aabb intersection
-			auto inverseTransform = glm::inverse(transform->GetMatrix());
+			auto inverseTransform = glm::inverse(t.GetMatrix());
 			std::vector<uint32_t> raysToCast;	// indices into active ray buffer
 			for (const auto& r : m_activeRays)
 			{
@@ -301,7 +300,7 @@ namespace Engine
 					handle = raycastShader->GetUniformHandle("RayCount");
 					if (handle != -1)	device->SetUniformValue(handle, (uint32_t)raysToCast.size());
 					handle = raycastShader->GetUniformHandle("EntityID");
-					if (handle != -1)	device->SetUniformValue(handle, owner.GetID());
+					if (handle != -1)	device->SetUniformValue(handle, h.GetID());
 					auto matComponent = m_entitySystem->GetWorld()->GetComponent<Material>(m.GetMaterialEntity());
 					if (matComponent != nullptr)
 					{

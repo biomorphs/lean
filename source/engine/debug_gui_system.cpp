@@ -321,6 +321,13 @@ namespace Engine
 		return ff;
 	}
 
+	glm::vec3 DebugGuiSystem::ColourEdit(const char* label, glm::vec3 c)
+	{
+		auto vv = c;
+		ImGui::ColorEdit3(label, glm::value_ptr(vv));
+		return vv;
+	}
+
 	glm::vec4 DebugGuiSystem::ColourEdit(const char* label, glm::vec4 c, bool showAlpha)
 	{
 		auto vv = c;

@@ -101,7 +101,7 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 					it.m_normal = gui.DragVector("Normal", it.m_normal, 0.01f, -1.0f, 1.0f);
 					it.m_origin = gui.DragVector("Origin", it.m_origin, 0.01f, -1.0f, 1.0f);
 					gui.TreePop();
-					render.DrawLine(it.m_origin, it.m_origin + it.m_normal, { 0.0f,1.0f,1.0f });
+					render.DrawLine(it.m_origin, it.m_origin + it.m_normal, { 0.0f,1.0f,1.0f,1.0f });
 				}
 			}
 			for (auto& it : p.GetSphereColliders())

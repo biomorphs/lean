@@ -230,6 +230,8 @@ set(ENGINE_SOURCES
 	source/engine/components/component_physics.cpp
 	source/engine/components/component_material.h
 	source/engine/components/component_material.cpp
+	source/engine/components/component_environment_settings.h
+	source/engine/components/component_environment_settings.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})

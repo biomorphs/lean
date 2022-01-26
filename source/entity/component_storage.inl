@@ -146,10 +146,12 @@ void LinearComponentStorage<ComponentType>::Create(EntityHandle owner)
 			*((int*)0x0) = 3;	// force crash
 		}
 
+		size_t oldCapacity = m_components.capacity();
 		m_owners.push_back(owner);
 		m_components.emplace_back(std::move(ComponentType()));
 		uint32_t newIndex = m_components.size() - 1;
 		m_entityToComponent.insert({ owner.GetID(), newIndex });
+		++m_generation;
 	}
 	assert(m_owners.size() == m_components.size() && m_entityToComponent.size() == m_owners.size());
 }
@@ -169,6 +171,7 @@ void LinearComponentStorage<ComponentType>::DestroyAll()
 	m_entityToComponent.clear();
 	m_owners.clear();
 	m_components.clear();
+	++m_generation;
 }
 
 template<class ComponentType>
@@ -188,11 +191,13 @@ void LinearComponentStorage<ComponentType>::Destroy(EntityHandle owner)
 	{
 		auto currentIndex = foundEntity->second;
 
-		// swap and pop for fast deletions (safe since nobody is allowed to cache component ptrs anyway)
 		std::iter_swap(m_owners.begin() + currentIndex, m_owners.end() - 1);
 		m_owners.pop_back();
 		std::iter_swap(m_components.begin() + currentIndex, m_components.end() - 1);
 		m_components.pop_back();
+
+		// we may want to be more fancy and only invalidate particular handles, but for now this works
+		++m_generation;
 
 		if (currentIndex < m_owners.size())	// why? investigate
 		{

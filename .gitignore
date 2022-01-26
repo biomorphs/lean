@@ -48,7 +48,6 @@ videos/*
 *.skp
 *.tif
 *.hdr
-*.scn
 
 data/imgui.ini
 data/playground_config.json

@@ -60,6 +60,7 @@ namespace Engine
 		bool BeginListbox(const char* label, glm::vec2 size = {});
 		void EndListbox();
 		glm::vec4 ColourEdit(const char* label, glm::vec4 c, bool showAlpha = true);
+		glm::vec3 ColourEdit(const char* label, glm::vec3 c);
 		float DragFloat(const char* label, float f, float step = 1.0f, float min = 0.0f, float max = 0.0f);
 		int32_t DragInt(const char* label, int32_t t, int32_t step = 1, int32_t min = 0, int32_t max = 0);
 		glm::vec4 DragVector(const char* label, glm::vec4 v, float step = 1.0f, float min = 0.0f, float max = 0.0f);

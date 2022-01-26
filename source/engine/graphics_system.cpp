@@ -25,6 +25,7 @@
 #include "engine/components/component_sdf_model.h"
 #include "engine/components/component_tags.h"
 #include "engine/components/component_material.h"
+#include "engine/components/component_environment_settings.h"
 
 Engine::MenuBar g_graphicsMenu;
 bool g_enableShadowUpdate = true;
@@ -104,6 +105,9 @@ void GraphicsSystem::RegisterComponents()
 
 	m_entitySystem->RegisterComponentType<SDFModel>();
 	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui));
+
+	m_entitySystem->RegisterComponentType<EnvironmentSettings>();
+	m_entitySystem->RegisterInspector<EnvironmentSettings>(EnvironmentSettings::MakeInspector(*m_debugGui));
 }
 
 void GraphicsSystem::RegisterScripts()
@@ -291,32 +295,29 @@ void GraphicsSystem::ProcessEntities()
 	// submit all lights
 	{
 		SDE_PROF_EVENT("SubmitLights");
-		world->ForEachComponent<Light>([this, &world, &transforms](Light& light, EntityHandle owner) {
-			const Transform* transform = transforms->Find(owner);
-			if (transform)
-			{
-				ProcessLight(light, transform);
-			}
+		static auto lightIterator = world->MakeIterator<Light, Transform>();
+		lightIterator.ForEach([this](Light& l, Transform& t, EntityHandle h) {
+			ProcessLight(l, &t);
 		});
 	}
 
 	// submit all models
 	{
 		SDE_PROF_EVENT("SubmitEntities");
-		world->ForEachComponent<Model>([this, &world, &transforms, &materials](Model& model, EntityHandle owner) {
-			const Transform* transform = transforms->Find(owner);
-			if (transform && model.GetModel().m_index != -1 && model.GetShader().m_index != -1)
+		static auto modelIterator = world->MakeIterator<Model, Transform>();
+		modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
+			if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
 			{
 				Render::Material* instanceMaterial = nullptr;
-				if (model.GetMaterialEntity().GetID() != -1)
+				if (m.GetMaterialEntity().GetID() != -1)
 				{
-					auto matComponent = materials->Find(model.GetMaterialEntity());
+					auto matComponent = materials->Find(m.GetMaterialEntity());
 					if (matComponent != nullptr)
 					{
 						instanceMaterial = &matComponent->GetRenderMaterial();
 					}
 				}
-				m_renderer->SubmitInstance(transform->GetMatrix(), model.GetModel(), model.GetShader(), instanceMaterial);
+				m_renderer->SubmitInstance(t.GetMatrix(), m.GetModel(), m.GetShader(), instanceMaterial);
 			}
 		});
 	}
@@ -325,28 +326,23 @@ void GraphicsSystem::ProcessEntities()
 	{
 		SDE_PROF_EVENT("ShowBounds");
 		auto* models = Engine::GetSystem<Engine::ModelManager>("Models");
-		world->ForEachComponent<Model>([this, &world, &transforms, models](Model& m, EntityHandle owner) {
+
+		static World::EntityIterator iterator = world->MakeIterator<Model, Transform>();
+		iterator.ForEach([this, models](Model& m, Transform& t, EntityHandle h) {
 			const auto renderModel = models->GetModel(m.GetModel());
-			const Transform* transform = transforms->Find(owner);
-			if (transform && renderModel)
-			{
-				DrawModelBounds(*renderModel, transform->GetMatrix(), glm::vec4(1.0f), glm::vec4(1.0f,0.0f,0.0f,1.0f));
-			}
+			DrawModelBounds(*renderModel, t.GetMatrix(), glm::vec4(1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 		});
 	}
 
 	// SDF Models
 	{
 		SDE_PROF_EVENT("ProcessSDFModels");
-		world->ForEachComponent<SDFModel>([this, &world, &transforms, &materials](SDFModel& m, EntityHandle owner) {
-			const Transform* transform = transforms->Find(owner);
-			if (!transform)
-				return;
-
+		static World::EntityIterator iterator = world->MakeIterator<SDFModel, Transform>();
+		iterator.ForEach([this,&materials](SDFModel& m, Transform& t, EntityHandle h) {
 			if (m_showBounds)
 			{
 				auto colour = m.IsRemeshing() ? glm::vec4(0.5f, 0.5f, 0.0f, 0.5f) : glm::vec4(0.0f, 0.5f, 0.0f, 0.5f);
-				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, transform->GetMatrix());
+				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, t.GetMatrix());
 			}
 
 			if (m.GetDebugEnabled())
@@ -355,7 +351,7 @@ void GraphicsSystem::ProcessEntities()
 				debug.cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
 				debug.dbg = m_debugRender.get();
 				debug.gui = m_debugGui;
-				debug.transform = transform->GetMatrix();
+				debug.transform = t.GetMatrix();
 				m.UpdateMesh(m_jobSystem, debug);
 			}
 			else
@@ -374,10 +370,14 @@ void GraphicsSystem::ProcessEntities()
 						instanceMaterial = &matComponent->GetRenderMaterial();
 					}
 				}
-				m_renderer->SubmitInstance(transform->GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
+				m_renderer->SubmitInstance(t.GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
 			}
 		});
 	}
+
+	world->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
+		m_renderer->SetClearColour(glm::vec4(s.GetClearColour(),1.0f));
+	});
 }
 
 void GraphicsSystem::ShowGui(int framesPerSecond)

@@ -51,12 +51,74 @@ public:
 
 	void CollectGarbage();					// destroy all entities pending deletion
 
+	template<class Cmp1, class Cmp2>
+	class EntityIterator
+	{
+	public:
+		EntityIterator(World* w) : m_world(w) {}
+		void ForEach(std::function<void(Cmp1&, Cmp2&, EntityHandle)> fn);
+	private:
+		World* m_world;
+		uint64_t m_lastGeneration1 = 0;
+		uint64_t m_lastGeneration2 = 0;
+		std::vector<Cmp1*> m_cmp1;	// only touch these if you validate the generation first!
+		std::vector<Cmp2*> m_cmp2;	// only touch these if you validate the generation first!
+		std::vector<EntityHandle> m_entities;
+	};
+
+	template<class Cmp1, class Cmp2>
+	EntityIterator<Cmp1, Cmp2> MakeIterator();
+
 private:
 	uint32_t m_entityIDCounter;
 	std::vector<uint32_t> m_activeEntities;	// all active entity IDs
 	std::vector<uint32_t> m_pendingDelete;	// all entities to be deleted
 	robin_hood::unordered_map<ComponentType, std::unique_ptr<ComponentStorage>> m_components;	// all active component data
 };
+
+template<class Cmp1, class Cmp2>
+void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, EntityHandle)> fn)
+{
+	const uint64_t currentGen1 = m_world->GetStorage(Cmp1::GetType())->GetGeneration();
+	const uint64_t currentGen2 = m_world->GetStorage(Cmp2::GetType())->GetGeneration();
+	const bool listsDirty = m_lastGeneration1 != currentGen1 || m_lastGeneration2 != currentGen2;
+
+	// Slow path
+	if (listsDirty)
+	{
+		m_cmp1.clear();
+		m_cmp2.clear();
+		m_entities.clear();
+		m_world->ForEachComponent<Cmp1>([this, &fn](Cmp1& c1, EntityHandle h) {
+			Cmp2* c2 = m_world->GetComponent<Cmp2>(h);
+			if (c2 != nullptr)
+			{
+				m_cmp1.push_back(&c1);
+				m_cmp2.push_back(c2);
+				m_entities.push_back(h);
+				fn(c1, *c2, h);
+			}
+		});
+		m_lastGeneration1 = currentGen1;
+		m_lastGeneration2 = currentGen2;
+	}
+	else
+	{
+		// woo!
+		const int count = m_entities.size();
+		for (int index = 0; index < count; ++index)
+		{
+			fn(*m_cmp1[index], *m_cmp2[index], m_entities[index]);
+		}
+	}
+}
+
+template<class Cmp1, class Cmp2>
+World::EntityIterator<Cmp1, Cmp2> World::MakeIterator()
+{
+	EntityIterator<Cmp1, Cmp2> it(this);
+	return it;
+}
 
 template<class ComponentType>
 void World::RegisterComponentType()

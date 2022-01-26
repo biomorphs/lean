@@ -205,13 +205,13 @@ namespace Engine
 		m_currentLines = 0;
 	}
 
-	void DebugRender::DrawLine(glm::vec3 p0, glm::vec3 p1, glm::vec3 colour)
+	void DebugRender::DrawLine(glm::vec3 p0, glm::vec3 p1, glm::vec4 colour)
 	{
 		glm::vec4 v[] = {
 			{p0,1.0f},	{p1,1.0f},
 		};
 		const glm::vec4 c[] = {
-			{colour,1.0f},{colour,1.0f}
+			colour,colour
 		};
 		AddLines(v, c, 1);
 	}
