@@ -18,7 +18,7 @@ public:
 	}
 	virtual const char* GetName() { return "Close Editor"; }
 	virtual Result Execute();
-	virtual bool CanUndo() { return false; }
+	virtual bool CanUndoRedo() { return false; }
 
 private:
 	Engine::DebugGuiSystem* m_gui = nullptr;

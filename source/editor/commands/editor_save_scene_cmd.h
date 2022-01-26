@@ -20,7 +20,7 @@ public:
 	}
 	virtual const char* GetName() { return "Save Scene"; }
 	virtual Result Execute();
-	virtual bool CanUndo() { return false; }
+	virtual bool CanUndoRedo() { return false; }
 
 private:
 	Engine::DebugGuiSystem* m_gui = nullptr;

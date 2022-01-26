@@ -14,7 +14,7 @@ void CreateSystems(const std::string& cmdLine)
 	{
 		sysManager.RegisterSystem("Playground", new Playground());
 	}
-	else
+	if (cmdLine.find("-editor") != -1)
 	{
 		sysManager.RegisterSystem("Editor", new Editor());
 	}

@@ -14,6 +14,8 @@
 #include "commands/editor_save_scene_cmd.h"
 #include "commands/editor_import_scene_cmd.h"
 #include "commands/editor_create_entity_from_mesh_cmd.h"
+#include "commands/editor_select_all_cmd.h"
+#include "commands/editor_clear_selection_cmd.h"
 #include "engine/serialisation.h"
 
 Editor::Editor()
@@ -22,6 +24,31 @@ Editor::Editor()
 
 Editor::~Editor()
 {
+}
+
+void Editor::SelectEntity(EntityHandle h)
+{
+	m_selectedEntities.insert(h);
+}
+
+void Editor::DeselectEntity(EntityHandle h)
+{
+	m_selectedEntities.erase(h);
+}
+
+void Editor::DeselectAll()
+{
+	m_selectedEntities.clear();
+}
+
+void Editor::SelectAll()
+{
+	const auto& allEntities = Engine::GetSystem<EntitySystem>("Entities")->GetWorld()->AllEntities();
+	m_selectedEntities.clear();
+	for (const auto& e : allEntities)
+	{
+		m_selectedEntities.insert(e);
+	}
 }
 
 void Editor::NewScene(const char* sceneName)
@@ -222,6 +249,26 @@ void Editor::UpdateMenubar()
 		}
 	});
 
+	auto& editMenu = menuBar.AddSubmenu(ICON_FK_CLIPBOARD " Edit");
+	if (m_commands.CanUndo())
+	{
+		editMenu.AddItem(ICON_FK_UNDO " Undo", [this]() {
+			m_commands.Undo();
+		});
+	}
+	if (m_commands.CanRedo())
+	{
+		editMenu.AddItem(ICON_FK_ARROW_CIRCLE_O_UP " Redo", [this]() {
+			m_commands.Redo();
+		});
+	}
+	editMenu.AddItem(ICON_FK_OBJECT_GROUP " Select All", [this] {
+		m_commands.Push(std::make_unique<EditorSelectAllCommand>());
+	});
+	editMenu.AddItem(ICON_FK_MINUS_SQUARE " Clear Selection", [this] {
+		m_commands.Push(std::make_unique<EditorClearSelectionCommand>());
+	});
+
 	m_debugGui->MainMenuBar(menuBar);
 }
 
@@ -230,6 +277,7 @@ bool Editor::Tick(float timeDelta)
 	SDE_PROF_EVENT();
 	UpdateMenubar();
 
+	m_commands.ShowWindow();
 	m_commands.RunNext();
 
 	return m_keepRunning;

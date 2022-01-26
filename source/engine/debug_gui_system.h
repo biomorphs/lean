@@ -56,6 +56,8 @@ namespace Engine
 		bool ComboBox(const char* label, const char* items[], int itemCount, int &currentItem);
 		bool ComboBox(const char* label, std::vector<std::string> items, int& currentItem);
 		bool Checkbox(const char* text, bool val);
+		bool BeginListbox(const char* label, glm::vec2 size = {});
+		void EndListbox();
 		glm::vec4 ColourEdit(const char* label, glm::vec4 c, bool showAlpha = true);
 		float DragFloat(const char* label, float f, float step = 1.0f, float min = 0.0f, float max = 0.0f);
 		int32_t DragInt(const char* label, int32_t t, int32_t step = 1, int32_t min = 0, int32_t max = 0);

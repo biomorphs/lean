@@ -240,6 +240,16 @@ namespace Engine
 		ImGui::End();
 	}
 
+	bool DebugGuiSystem::BeginListbox(const char* label, glm::vec2 size)
+	{
+		return ImGui::ListBoxHeader(label, { size.x,size.y });
+	}
+
+	void DebugGuiSystem::EndListbox()
+	{
+		ImGui::ListBoxFooter();
+	}
+
 	bool DebugGuiSystem::ComboBox(const char* label, std::vector<std::string> items, int& currentItem)
 	{
 		struct Fn

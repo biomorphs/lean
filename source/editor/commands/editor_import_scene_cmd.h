@@ -18,7 +18,7 @@ public:
 	}
 	virtual const char* GetName() { return "Import Scene"; }
 	virtual Result Execute();
-	virtual bool CanUndo() { return false; }
+	virtual bool CanUndoRedo() { return false; }
 
 private:
 	Editor* m_editor = nullptr;

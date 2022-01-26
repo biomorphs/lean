@@ -18,6 +18,25 @@ void World::CollectGarbage()
 	m_pendingDelete.clear();
 }
 
+EntityHandle World::AddEntityFromHandle(EntityHandle id)
+{
+	SDE_PROF_EVENT();
+	if (id.GetID() > m_entityIDCounter)
+	{
+		return {};	// we will get an ID clash later
+	}
+	if (std::find(m_activeEntities.begin(), m_activeEntities.end(), id.GetID()) != m_activeEntities.end())
+	{
+		return {};	// an entity already exists with that ID
+	}
+	if (std::find(m_pendingDelete.begin(), m_pendingDelete.end(), id.GetID()) != m_pendingDelete.end())
+	{
+		return {};	// the old entity didn't clean up fully yet
+	}
+	m_activeEntities.push_back(id.GetID());
+	return id;
+}
+
 EntityHandle World::AddEntity()
 {
 	SDE_PROF_EVENT();

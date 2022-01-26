@@ -11,9 +11,10 @@ public:
 		Waiting,	// the command needs to wait for something, try again later
 	};
 	virtual const char* GetName() = 0;
-	virtual bool CanUndo() = 0;
+	virtual bool CanUndoRedo() = 0;
 	virtual Result Execute() = 0;
 	virtual Result Undo() { return Result::Failed; }
+	virtual Result Redo() { return Result::Failed; }
 
 private:
 };

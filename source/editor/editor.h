@@ -2,6 +2,7 @@
 #include "engine/system.h"
 #include "command_list.h"
 #include <string>
+#include <set>
 
 namespace Engine
 {
@@ -9,6 +10,7 @@ namespace Engine
 }
 
 class EntitySystem;
+class EntityHandle;
 class Editor : public Engine::System
 {
 public:
@@ -22,10 +24,18 @@ public:
 	void NewScene(const char* sceneName);
 	bool SaveScene(const char* fileName);
 	bool ImportScene(const char* fileName);
+
+	const std::set<EntityHandle>& SelectedEntities() { return m_selectedEntities; }
+	void SelectEntity(const EntityHandle h);
+	void DeselectEntity(const EntityHandle h);
+	void DeselectAll();
+	void SelectAll();
 private:
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
 	CommandList m_commands;
+
+	std::set<EntityHandle> m_selectedEntities;
 	
 	std::string m_sceneName = "";
 	std::string m_sceneFilepath = "";
