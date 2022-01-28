@@ -143,8 +143,8 @@ function Fishtank.Tick(deltaTime)
 	DebugGui.EndWindow()
 end
 
-local ModelDiffuseShader = Graphics.LoadShader("model_diffuse", "simplediffuse.vs", "simplediffuse.fs")
-local ModelShadowShader = Graphics.LoadShader("model_shadow", "simpleshadow.vs", "simpleshadow.fs");
+local ModelDiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs")
+local ModelShadowShader = Graphics.LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 local ModelNoLighting = Graphics.LoadShader("model_nolight",  "basic.vs", "basic.fs")
 Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
 

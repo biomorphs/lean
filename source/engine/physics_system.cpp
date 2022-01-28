@@ -7,6 +7,7 @@
 #include "components/component_transform.h"
 #include "components/component_environment_settings.h"
 #include "engine/system_manager.h"
+#include "debug_gui_menubar.h"
 #include "entity/entity_system.h"
 #include "entity/entity_handle.h"
 #include "core/log.h"
@@ -332,6 +333,13 @@ namespace Engine
 	bool PhysicsSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
+
+		Engine::MenuBar mainMenu;
+		auto& physicsMenu = mainMenu.AddSubmenu("Physics");
+		physicsMenu.AddItem(m_simEnabled ? "Disable Simulation" : "Enable Simulation", [this]() {
+			m_simEnabled = !m_simEnabled;
+		});
+		m_debugGuiSystem->MainMenuBar(mainMenu);
 
 		m_entitySystem->GetWorld()->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
 			auto currentGravity = m_scene->getGravity();

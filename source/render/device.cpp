@@ -15,14 +15,6 @@ namespace Render
 {
 	void GLDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message,const void* user)
 	{
-		// stop spamming us nvidia!
-		// 131185 - buffer allocation message
-		// 131204 - texture bounds to image unit has no base texture (I.e. its only used as image).
-		if (id == 131185 || id == 131204)
-		{
-			return;
-		}
-
 		SDE_LOG("OpenGL is telling us something!\n\t(%d): %s",id, message);
 
 		char* sourceStr = "unknown";
@@ -92,7 +84,15 @@ namespace Render
 			glEnable(GL_DEBUG_OUTPUT);
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 			glDebugMessageCallback(GLDebugOutput, nullptr);
+
+			// enable all messages
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+
+			// but disable low priority stuff
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);
+
+			// we also dont care about notifications
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 		}
 
 		// Setting this here allows all point sprite shaders to set the sprite size
@@ -368,7 +368,6 @@ namespace Render
 		assert(textureHandle != -1);
 
 		glBindTextureUnit(textureUnit, textureHandle);
-
 		glUniform1i(uniformHandle, textureUnit);
 	}
 
