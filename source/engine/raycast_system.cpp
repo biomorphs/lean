@@ -1,4 +1,5 @@
 #include "raycast_system.h"
+#include "intersection_tests.h"
 #include "debug_gui_system.h"
 #include "job_system.h"
 #include "debug_render.h"
@@ -195,29 +196,6 @@ namespace Engine
 		return true;
 	}
 
-	// adapted from https://tavianator.com/2015/ray_box_nan.html
-	bool rayIntersectsAABB(glm::vec3 bmin, glm::vec3 bmax, glm::vec3 rayStart, glm::vec3 rayEnd, float& t) 
-	{
-		const auto invDir = 1.0f / glm::normalize(rayEnd - rayStart);
-		double t1 = (bmin[0] - rayStart[0]) * invDir[0];
-		double t2 = (bmax[0] - rayStart[0]) * invDir[0];
-		double tmin = glm::min(t1, t2);
-		double tmax = glm::max(t1, t2);
-		for (int i = 1; i < 3; ++i) 
-		{
-			t1 = (bmin[i] - rayStart[i]) * invDir[i];
-			t2 = (bmax[i] - rayStart[i]) * invDir[i];
-
-			tmin = glm::max(tmin, glm::min(glm::min(t1, t2), tmax));
-			tmax = glm::min(tmax, glm::max(glm::max(t1, t2), tmin));
-		}
-
-		// tmin < 0 = start point inside the box
-		t = tmin < 0 ? tmax : tmin;
-
-		return tmax >= glm::max(tmin, 0.0);		// >= - we treat rays on the edge of objects as an intersection
-	}
-
 	bool RaycastSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
@@ -261,8 +239,8 @@ namespace Engine
 			{
 				const auto rs = glm::vec3(inverseTransform * glm::vec4(r.m_start, 1));
 				const auto re = glm::vec3(inverseTransform * glm::vec4(r.m_end, 1));
-				float tPoint = 0.0f;
-				if (rayIntersectsAABB(m.GetBoundsMin(), m.GetBoundsMax(), rs, re, tPoint))
+				float t = 0.0f;
+				if (RayIntersectsAABB(rs, re, m.GetBoundsMin(), m.GetBoundsMax(), t))
 				{
 					raysToCast.push_back(&r - m_activeRays.data());
 				}

@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/system.h"
+#include "entity/entity_handle.h"
 #include "command_list.h"
 #include "core/glm_headers.h"
 #include <string>
@@ -32,7 +33,18 @@ public:
 	void DeselectAll();
 	void SelectAll();
 private:
+	struct PossibleSelection
+	{
+		EntityHandle m_handle;
+		float m_hitT;
+	};
+	std::vector<PossibleSelection> FindSelectionCandidates();
+	void UpdateSelection();
+	void DrawSelected();
+	void DrawSelectionCandidates(const std::vector<PossibleSelection>&);
+
 	void DrawGrid(float cellSize, int cellCount, glm::vec4 colour);
+	void UpdateGrid();
 
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
@@ -43,10 +55,11 @@ private:
 	std::string m_sceneName = "";
 	std::string m_sceneFilepath = "";
 
+	bool m_showGridSettings = false;
 	float m_gridSize = 8.0f;
 	int m_gridCount = 64;
 	bool m_showGrid = true;
-	glm::vec4 m_gridColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+	glm::vec4 m_gridColour = glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
 
 	void UpdateMenubar();
 	bool m_keepRunning = true;

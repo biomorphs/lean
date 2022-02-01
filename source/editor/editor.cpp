@@ -9,8 +9,11 @@
 #include "engine/shader_manager.h"
 #include "engine/file_picker_dialog.h"
 #include "engine/graphics_system.h"
+#include "engine/camera_system.h"
 #include "engine/input_system.h"
+#include "engine/intersection_tests.h"
 #include "entity/entity_system.h"
+#include "engine/render_system.h"
 #include "entity/component_storage.h"
 #include "commands/editor_close_cmd.h"
 #include "commands/editor_new_scene_cmd.h"
@@ -20,9 +23,12 @@
 #include "commands/editor_select_all_cmd.h"
 #include "commands/editor_clear_selection_cmd.h"
 #include "commands/editor_delete_selection_cmd.h"
+#include "commands/editor_select_entity_cmd.h"
 #include "engine/components/component_transform.h"
 #include "engine/components/component_model.h"
 #include "engine/serialisation.h"
+#include "render/camera.h"
+#include "render/window.h"
 
 Editor::Editor()
 {
@@ -165,6 +171,9 @@ void Editor::UpdateMenubar()
 	});
 
 	auto& editMenu = menuBar.AddSubmenu(ICON_FK_CLIPBOARD " Edit");
+	editMenu.AddItem(ICON_FK_CROSSHAIRS " Grid Settings", [this]() {
+		m_showGridSettings = true;
+	});
 	if (m_commands.CanUndo())
 	{
 		editMenu.AddItem(ICON_FK_UNDO " Undo", [this]() {
@@ -224,31 +233,47 @@ void Editor::DrawGrid(float cellSize, int cellCount, glm::vec4 colour)
 	}
 }
 
-bool Editor::Tick(float timeDelta)
+std::vector<Editor::PossibleSelection> Editor::FindSelectionCandidates()
 {
-	SDE_PROF_EVENT();
+	std::vector<PossibleSelection> candidates;
 
+	// Find the raycast start/end pos from the mouse cursor
+	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
 	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
 	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+	auto mainCam = Engine::GetSystem<Engine::CameraSystem>("Cameras")->MainCamera();
+
+	const glm::vec3 selectionRayStart = mainCam.Position();
+	const auto windowSize = glm::vec2(Engine::GetSystem<Engine::RenderSystem>("Render")->GetWindow()->GetSize());
+	const glm::vec2 cursorPos(input->GetMouseState().m_cursorX, windowSize.y - input->GetMouseState().m_cursorY);
+	glm::vec3 mouseWorldSpace = mainCam.WindowPositionToWorldSpace(cursorPos, windowSize);
+	const glm::vec3 lookDirWorldspace = glm::normalize(mouseWorldSpace - mainCam.Position());
+	const glm::vec3 selectionRayEnd = mainCam.Position() + lookDirWorldspace * 100000.0f;
+
+	static auto modelIterator = m_entitySystem->GetWorld()->MakeIterator<Model, Transform>();
+	modelIterator.ForEach([&](Model& m, Transform& t, EntityHandle h) {
+		const auto renderModel = mm->GetModel(m.GetModel());
+		if (renderModel)
+		{
+			const glm::mat4 inverseTransform = glm::inverse(t.GetMatrix());
+			const auto rs = glm::vec3(inverseTransform * glm::vec4(selectionRayStart, 1));
+			const auto re = glm::vec3(inverseTransform * glm::vec4(selectionRayEnd, 1));
+			float hitT = 0.0f;
+			if (Engine::RayIntersectsAABB(rs, re, renderModel->BoundsMin(), renderModel->BoundsMax(), hitT))
+			{
+				candidates.push_back({ h, hitT });
+			}
+		}
+	});
+
+	return candidates;
+}
+
+void Editor::DrawSelected()
+{
+	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
 	auto world = m_entitySystem->GetWorld();
-
-	UpdateMenubar();
-
-	bool keepOpen = true;
-	if (m_debugGui->BeginWindow(keepOpen, "Grid Settings"))
-	{
-		m_showGrid = m_debugGui->Checkbox("Show Grid", m_showGrid);
-		m_gridSize = m_debugGui->DragFloat("Grid Size", m_gridSize, 0.25f, 0.25f, 8192.0f);
-		m_gridCount = m_debugGui->DragInt("Grid Lines", m_gridCount, 1, 1024);
-		m_gridColour = m_debugGui->ColourEdit("Colour", m_gridColour);
-		m_debugGui->EndWindow();
-	}
-
-	if (m_showGrid)
-	{
-		DrawGrid(m_gridSize, m_gridCount, m_gridColour);
-	}
-	
+	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
 	for (auto sel : m_selectedEntities)
 	{
 		auto modelCmp = world->GetComponent<Model>(sel);
@@ -258,14 +283,111 @@ bool Editor::Tick(float timeDelta)
 			auto theModel = mm->GetModel(modelCmp->GetModel());
 			if (theModel)
 			{
-				graphics->DrawModelBounds(*theModel, transformCmp->GetMatrix(), glm::vec4(1.0f,1.0f,0.0f,1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
+				graphics->DrawModelBounds(*theModel, transformCmp->GetMatrix(), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
 			}
 		}
 	}
+}
+
+void Editor::DrawSelectionCandidates(const std::vector<PossibleSelection>& candidates)
+{
+	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
+	auto world = m_entitySystem->GetWorld();
+	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+
+	// Find the closest hit that we are not inside
+	float closestHit = FLT_MAX;
+	EntityHandle hitEntity;
+	for (const auto& it : candidates)
+	{
+		if (it.m_hitT < closestHit && it.m_hitT >= 0.0f)
+		{
+			closestHit = it.m_hitT;
+			hitEntity = it.m_handle;
+		}
+	}
+
+	if (hitEntity.GetID() != -1)
+	{
+		auto modelCmp = world->GetComponent<Model>(hitEntity);
+		auto transformCmp = world->GetComponent<Transform>(hitEntity);
+		if (modelCmp && transformCmp)
+		{
+			auto theModel = mm->GetModel(modelCmp->GetModel());
+			if (theModel)
+			{
+				graphics->DrawModelBounds(*theModel, transformCmp->GetMatrix(), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
+			}
+		}
+	}
+}
+
+void Editor::UpdateSelection()
+{
+	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
+	static bool middleButtonDown = false;
+	std::vector<PossibleSelection> candidates;
+
+	if (!m_debugGui->IsCapturingMouse() && (input->GetMouseState().m_buttonState & Engine::MiddleButton))
+	{
+		middleButtonDown = true;
+		candidates = FindSelectionCandidates();
+		DrawSelectionCandidates(candidates);
+	}
+	else if (middleButtonDown)	// just released
+	{
+		candidates = FindSelectionCandidates();
+
+		// Find the entity closest to the mouse that we are not inside
+		float closestHit = FLT_MAX;
+		EntityHandle hitEntity;
+		for (const auto& it : candidates)
+		{
+			if (it.m_hitT < closestHit && it.m_hitT >= 0.0f)
+			{
+				closestHit = it.m_hitT;
+				hitEntity = it.m_handle;
+			}
+		}
+		if (hitEntity.GetID() != -1)
+		{
+			bool append = input->GetKeyboardState().m_keyPressed[Engine::KEY_LSHIFT];
+			append = append & !m_debugGui->IsCapturingKeyboard();
+			m_commands.Push(std::make_unique<EditorSelectEntityCommand>(hitEntity, append));
+		}
+		middleButtonDown = false;
+	}
+}
+
+void Editor::UpdateGrid()
+{
+	if (m_showGridSettings && m_debugGui->BeginWindow(m_showGridSettings, "Grid Settings"))
+	{
+		m_showGrid = m_debugGui->Checkbox("Show Grid", m_showGrid);
+		m_gridSize = m_debugGui->DragFloat("Grid Size", m_gridSize, 0.25f, 0.25f, 8192.0f);
+		m_gridCount = m_debugGui->DragInt("Grid Lines", m_gridCount, 1, 1024);
+		m_gridColour = m_debugGui->ColourEdit("Colour", m_gridColour);
+		m_debugGui->EndWindow();
+	}
+	if (m_showGrid)
+	{
+		DrawGrid(m_gridSize, m_gridCount, m_gridColour);
+	}
+}
+
+bool Editor::Tick(float timeDelta)
+{
+	SDE_PROF_EVENT();
+
+	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
+
+	UpdateMenubar();
+	UpdateSelection();
+	DrawSelected();
+	UpdateGrid();
 
 	if (!m_debugGui->IsCapturingKeyboard())
 	{
-		auto input = Engine::GetSystem<Engine::InputSystem>("Input");
 		auto keyPressed = input->GetKeyboardState().m_keyPressed;
 		static float s_ignoreKeyTimer = 0.0f;
 		s_ignoreKeyTimer -= timeDelta;

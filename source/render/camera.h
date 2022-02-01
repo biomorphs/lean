@@ -20,6 +20,9 @@ namespace Render
 		void LookAt(const glm::vec3& target, const glm::vec3& up);
 		void LookAt(const glm::vec3& target);
 
+		// 0,0 = bottom left
+		inline glm::vec3 WindowPositionToWorldSpace(glm::vec2 p, glm::vec2 windowSize) const;
+
 		inline const glm::vec3& Position() const			{ return m_position; }
 		inline const glm::vec3& Up() const					{ return m_up; }
 		inline const glm::vec3& Target() const				{ return m_target; }

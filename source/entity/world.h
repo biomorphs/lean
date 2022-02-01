@@ -96,20 +96,16 @@ void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, 
 				m_cmp1.push_back(&c1);
 				m_cmp2.push_back(c2);
 				m_entities.push_back(h);
-				fn(c1, *c2, h);
 			}
 		});
 		m_lastGeneration1 = currentGen1;
 		m_lastGeneration2 = currentGen2;
 	}
-	else
+
+	const int count = m_entities.size();
+	for (int index = 0; index < count; ++index)
 	{
-		// woo!
-		const int count = m_entities.size();
-		for (int index = 0; index < count; ++index)
-		{
-			fn(*m_cmp1[index], *m_cmp2[index], m_entities[index]);
-		}
+		fn(*m_cmp1[index], *m_cmp2[index], m_entities[index]);
 	}
 }
 

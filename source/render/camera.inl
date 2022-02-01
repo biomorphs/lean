@@ -20,6 +20,18 @@ namespace Render
 	{
 	}
 
+	glm::vec3 Camera::WindowPositionToWorldSpace(glm::vec2 p, glm::vec2 windowSize) const
+	{
+		// place the point on the far plane in clip space (-1 z)?
+		glm::vec4 cursorClipspace(-1.0f + (p.x / windowSize.x) * 2.0f, -1.0f + (p.y / windowSize.y) * 2.0f, -1.0f, 1.0f);
+		auto inverseView = glm::inverse(m_viewMatrix);
+		auto inverseProj = glm::inverse(m_projectionMatrix);
+		auto transUnproj = inverseProj * cursorClipspace;
+		auto transWs = inverseView * transUnproj;
+		transWs = transWs / transWs.w;
+		return glm::vec3(transWs);
+	}
+
 	inline void Camera::SetProjection(float fov, float aspect, float nearPlane, float farPlane)
 	{
 		m_fov = fov;

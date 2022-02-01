@@ -51,3 +51,9 @@ videos/*
 
 data/imgui.ini
 data/playground_config.json
+*.glb
+*.scn
+*.url
+*.dae
+*.stl
+*.gltf

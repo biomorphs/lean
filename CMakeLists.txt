@@ -136,6 +136,8 @@ set(ENGINE_SOURCES
 	source/engine/physics_handle.cpp
 	source/engine/physics_system.h
 	source/engine/physics_system.cpp
+	source/engine/intersection_tests.h
+	source/engine/intersection_tests.cpp
 	source/engine/raycast_system.h
 	source/engine/raycast_system.cpp
 	source/engine/tag.h
@@ -319,6 +321,8 @@ set(EDITOR_SOURCES
 	source/editor/commands/editor_select_all_cmd.cpp
 	source/editor/commands/editor_delete_selection_cmd.h
 	source/editor/commands/editor_delete_selection_cmd.cpp
+	source/editor/commands/editor_select_entity_cmd.h
+	source/editor/commands/editor_select_entity_cmd.cpp
 )
 
 target_sources(Editor PRIVATE ${EDITOR_SOURCES})
