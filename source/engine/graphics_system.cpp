@@ -223,10 +223,10 @@ void GraphicsSystem::DrawModelBounds(const Engine::Model& m, glm::mat4 transform
 	m_debugRender->DrawBox(m.BoundsMin(), m.BoundsMax(), mainColour, transform);
 }
 
-void GraphicsSystem::ProcessLight(Light& l, const Transform* transform)
+void GraphicsSystem::ProcessLight(Light& l, Transform* transform)
 {
 	SDE_PROF_EVENT();
-	const glm::vec3 position = transform ? transform->GetPosition() : glm::vec3(0.0f);
+	const glm::vec3 position = glm::vec3(transform->GetWorldspaceMatrix()[3]);
 	const glm::vec4 posAndType = { position, static_cast<float>(l.GetLightType()) };
 	const float distance = l.GetDistance();
 	const float attenuation = l.GetAttenuation();
@@ -234,7 +234,7 @@ void GraphicsSystem::ProcessLight(Light& l, const Transform* transform)
 	if (!l.IsPointLight())
 	{
 		// direction is based on entity transform, default is (0,-1,0)
-		auto transformRot = glm::mat3(transform->GetMatrix());
+		auto transformRot = glm::mat3(transform->GetWorldspaceMatrix());
 		direction = glm::normalize(transformRot * direction);
 	}
 	if (l.CastsShadows())
@@ -317,7 +317,7 @@ void GraphicsSystem::ProcessEntities()
 						instanceMaterial = &matComponent->GetRenderMaterial();
 					}
 				}
-				m_renderer->SubmitInstance(t.GetMatrix(), m.GetModel(), m.GetShader(), instanceMaterial);
+				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), instanceMaterial);
 			}
 		});
 	}
@@ -330,7 +330,7 @@ void GraphicsSystem::ProcessEntities()
 		static World::EntityIterator iterator = world->MakeIterator<Model, Transform>();
 		iterator.ForEach([this, models](Model& m, Transform& t, EntityHandle h) {
 			const auto renderModel = models->GetModel(m.GetModel());
-			DrawModelBounds(*renderModel, t.GetMatrix(), glm::vec4(1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			DrawModelBounds(*renderModel, t.GetWorldspaceMatrix(), glm::vec4(1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 		});
 	}
 
@@ -342,7 +342,7 @@ void GraphicsSystem::ProcessEntities()
 			if (m_showBounds)
 			{
 				auto colour = m.IsRemeshing() ? glm::vec4(0.5f, 0.5f, 0.0f, 0.5f) : glm::vec4(0.0f, 0.5f, 0.0f, 0.5f);
-				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, t.GetMatrix());
+				m_debugRender->DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, t.GetWorldspaceMatrix());
 			}
 
 			if (m.GetDebugEnabled())
@@ -351,7 +351,7 @@ void GraphicsSystem::ProcessEntities()
 				debug.cellSize = (m.GetBoundsMax() - m.GetBoundsMin()) / glm::vec3(m.GetResolution());
 				debug.dbg = m_debugRender.get();
 				debug.gui = m_debugGui;
-				debug.transform = t.GetMatrix();
+				debug.transform = t.GetWorldspaceMatrix();
 				m.UpdateMesh(m_jobSystem, debug);
 			}
 			else
@@ -370,7 +370,7 @@ void GraphicsSystem::ProcessEntities()
 						instanceMaterial = &matComponent->GetRenderMaterial();
 					}
 				}
-				m_renderer->SubmitInstance(t.GetMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
+				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), *m.GetMesh(), m.GetShader(), m.GetBoundsMin(), m.GetBoundsMax(), instanceMaterial);
 			}
 		});
 	}

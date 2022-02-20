@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entity/component.h"
+#include "entity/component_handle.h"
 #include "core/glm_headers.h"
 
 namespace Engine
@@ -27,6 +28,10 @@ public:
 	glm::vec3 GetRotationDegrees() const { return glm::degrees(GetRotationRadians()); }
 	glm::vec3 GetScale() const { return m_scale; }
 	glm::mat4 GetMatrix() const { return m_matrix; }
+	glm::mat4 GetWorldspaceMatrix();
+	void SetParent(ComponentHandle<Transform> parent) { m_parent = parent; }
+	ComponentHandle<Transform>& GetParent() { return m_parent; }
+	const ComponentHandle<Transform>& GetParent() const { return m_parent; }
 private:
 	void SetPos3(float x, float y, float z) { m_position = { x, y, z }; RebuildMatrix(); }
 	void SetScale3(float x, float y, float z) { m_scale = { x, y, z }; RebuildMatrix(); }
@@ -35,4 +40,5 @@ private:
 	glm::quat m_orientation = glm::identity<glm::quat>();
 	glm::vec3 m_scale = { 1.0f,1.0f,1.0f };
 	glm::mat4 m_matrix = glm::identity<glm::mat4>();
+	ComponentHandle<Transform> m_parent;
 };

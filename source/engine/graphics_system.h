@@ -37,7 +37,7 @@ private:
 	void RegisterScripts();
 	void RegisterComponents();
 	void ShowGui(int fps);
-	void ProcessLight(class Light& l, const class Transform* transform);
+	void ProcessLight(class Light& l, class Transform* transform);
 	void ProcessEntities();
 	bool m_showBounds = false;
 	bool m_showStats = false;

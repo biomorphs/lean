@@ -1,5 +1,6 @@
 #pragma once
 #include "core/glm_headers.h"
+#include "core/log.h"
 #include <nlohmann/json.hpp>
 #include <unordered_map>
 #include <functional>
@@ -310,7 +311,14 @@ namespace Engine
 		}
 		else
 		{
-			v = json[name];
+			try
+			{
+				v = json[name];
+			}
+			catch (...)
+			{
+				SDE_LOG("Failed to load '%s'", name);
+			}
 		}
 	}
 }

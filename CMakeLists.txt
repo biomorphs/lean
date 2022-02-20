@@ -259,6 +259,8 @@ set(ENTITY_SOURCES
 	source/entity/component.h
 	source/entity/component_storage.h
 	source/entity/component_storage.inl
+	source/entity/component_handle.h
+	source/entity/component_handle.inl
 )
 target_sources(Entity PRIVATE ${ENTITY_SOURCES})
 target_include_directories(Entity PRIVATE ${CommonIncludePaths})
@@ -302,6 +304,8 @@ add_library(Editor STATIC)
 set(EDITOR_SOURCES
 	source/editor/editor.h
 	source/editor/editor.cpp
+	source/editor/transform_widget.h
+	source/editor/transform_widget.cpp
 	source/editor/command.h
 	source/editor/command_list.cpp
 	source/editor/command_list.h
@@ -321,6 +325,8 @@ set(EDITOR_SOURCES
 	source/editor/commands/editor_select_all_cmd.cpp
 	source/editor/commands/editor_delete_selection_cmd.h
 	source/editor/commands/editor_delete_selection_cmd.cpp
+	source/editor/commands/editor_clone_selection_cmd.h
+	source/editor/commands/editor_clone_selection_cmd.cpp
 	source/editor/commands/editor_select_entity_cmd.h
 	source/editor/commands/editor_select_entity_cmd.cpp
 )

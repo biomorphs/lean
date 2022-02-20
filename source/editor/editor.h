@@ -13,6 +13,7 @@ namespace Engine
 
 class EntitySystem;
 class EntityHandle;
+class TransformWidget;
 class Editor : public Engine::System
 {
 public:
@@ -23,11 +24,12 @@ public:
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
 	void StopRunning();
+
 	void NewScene(const char* sceneName);
 	bool SaveScene(const char* fileName);
 	bool ImportScene(const char* fileName);
 
-	const std::set<EntityHandle>& SelectedEntities() { return m_selectedEntities; }
+	const std::vector<EntityHandle>& SelectedEntities() { return m_selectedEntities; }
 	void SelectEntity(const EntityHandle h);
 	void DeselectEntity(const EntityHandle h);
 	void DeselectAll();
@@ -46,11 +48,15 @@ private:
 	void DrawGrid(float cellSize, int cellCount, glm::vec4 colour);
 	void UpdateGrid();
 
+	void UpdateUndoRedo(float timeDelta);
+
+	std::unique_ptr<TransformWidget> m_transformWidget;
+
 	Engine::DebugGuiSystem* m_debugGui = nullptr;
 	EntitySystem* m_entitySystem = nullptr;
 	CommandList m_commands;
 
-	std::set<EntityHandle> m_selectedEntities;
+	std::vector<EntityHandle> m_selectedEntities;
 	
 	std::string m_sceneName = "";
 	std::string m_sceneFilepath = "";

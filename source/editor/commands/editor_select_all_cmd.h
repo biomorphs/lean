@@ -2,7 +2,7 @@
 
 #include "entity/entity_handle.h"
 #include "editor/command.h"
-#include <set>
+#include <vector>
 
 class EditorSelectAllCommand : public Command
 {
@@ -14,5 +14,5 @@ public:
 	virtual Result Redo();
 
 private:
-	std::set<EntityHandle> m_oldSelection;
+	std::vector<EntityHandle> m_oldSelection;
 };

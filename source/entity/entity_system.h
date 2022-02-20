@@ -26,6 +26,7 @@ public:
 	using InspectorFn = std::function<void(ComponentStorage&, EntityHandle)>;
 	template<class ComponentType> 
 	void RegisterInspector(InspectorFn fn);
+	void ShowInspector(const std::vector<uint32_t>& entities, bool expandAll=false, const char* titleText = "Entities");
 
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();
@@ -36,7 +37,6 @@ public:
 	std::string GetEntityNameWithTags(EntityHandle e) const;
 
 private:
-	void ShowDebugGui();
 	std::map<ComponentType, InspectorFn> m_componentInspectors;
 	std::unique_ptr<World> m_world;
 	Engine::ScriptSystem* m_scriptSystem;

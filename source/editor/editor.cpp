@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "transform_widget.h"
 #include "core/log.h"
 #include "core/file_io.h"
 #include "engine/system_manager.h"
@@ -24,6 +25,7 @@
 #include "commands/editor_clear_selection_cmd.h"
 #include "commands/editor_delete_selection_cmd.h"
 #include "commands/editor_select_entity_cmd.h"
+#include "commands/editor_clone_selection_cmd.h"
 #include "engine/components/component_transform.h"
 #include "engine/components/component_model.h"
 #include "engine/serialisation.h"
@@ -40,12 +42,20 @@ Editor::~Editor()
 
 void Editor::SelectEntity(EntityHandle h)
 {
-	m_selectedEntities.insert(h);
+	auto foundIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), h);
+	if (foundIt == m_selectedEntities.end())
+	{
+		m_selectedEntities.push_back(h);
+	}
 }
 
 void Editor::DeselectEntity(EntityHandle h)
 {
-	m_selectedEntities.erase(h);
+	auto foundIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), h);
+	if (foundIt != m_selectedEntities.end())
+	{
+		m_selectedEntities.erase(foundIt);
+	}
 }
 
 void Editor::DeselectAll()
@@ -59,7 +69,7 @@ void Editor::SelectAll()
 	m_selectedEntities.clear();
 	for (const auto& e : allEntities)
 	{
-		m_selectedEntities.insert(e);
+		m_selectedEntities.push_back(e);
 	}
 }
 
@@ -82,6 +92,8 @@ bool Editor::PreInit()
 	m_debugGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 	m_entitySystem = Engine::GetSystem<EntitySystem>("Entities");
 	
+	m_transformWidget = std::make_unique<TransformWidget>();
+
 	return true;
 }
 
@@ -162,13 +174,6 @@ void Editor::UpdateMenubar()
 	scenesMenu.AddItem("Import Scene", [this]() {
 		m_commands.Push(std::make_unique<EditorImportSceneCommand>(this));
 	});
-	scenesMenu.AddItem("Make Entity From Mesh", [this]() {
-		std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
-		if (newFile != "")
-		{
-			m_commands.Push(std::make_unique<EditorCreateEntityFromMeshCommand>(newFile));
-		}
-	});
 
 	auto& editMenu = menuBar.AddSubmenu(ICON_FK_CLIPBOARD " Edit");
 	editMenu.AddItem(ICON_FK_CROSSHAIRS " Grid Settings", [this]() {
@@ -213,6 +218,9 @@ void Editor::UpdateMenubar()
 	});
 	if (m_selectedEntities.size() > 0)
 	{
+		rightClickBar.AddItem(ICON_FK_CLONE " Clone Selection", [this]() {
+			m_commands.Push(std::make_unique<EditorCloneSelectionCommand>());
+		});
 		rightClickBar.AddItem(ICON_FK_TRASH " Delete Selection", [this]() {
 			m_commands.Push(std::make_unique<EditorDeleteSelectionCommand>());
 		});
@@ -255,7 +263,7 @@ std::vector<Editor::PossibleSelection> Editor::FindSelectionCandidates()
 		const auto renderModel = mm->GetModel(m.GetModel());
 		if (renderModel)
 		{
-			const glm::mat4 inverseTransform = glm::inverse(t.GetMatrix());
+			const glm::mat4 inverseTransform = glm::inverse(t.GetWorldspaceMatrix());
 			const auto rs = glm::vec3(inverseTransform * glm::vec4(selectionRayStart, 1));
 			const auto re = glm::vec3(inverseTransform * glm::vec4(selectionRayEnd, 1));
 			float hitT = 0.0f;
@@ -274,8 +282,11 @@ void Editor::DrawSelected()
 	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
 	auto world = m_entitySystem->GetWorld();
 	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+	std::vector<uint32_t> selectedIDs;
+	selectedIDs.reserve(m_selectedEntities.size());
 	for (auto sel : m_selectedEntities)
 	{
+		selectedIDs.push_back(sel.GetID());
 		auto modelCmp = world->GetComponent<Model>(sel);
 		auto transformCmp = world->GetComponent<Transform>(sel);
 		if (modelCmp && transformCmp)
@@ -283,9 +294,14 @@ void Editor::DrawSelected()
 			auto theModel = mm->GetModel(modelCmp->GetModel());
 			if (theModel)
 			{
-				graphics->DrawModelBounds(*theModel, transformCmp->GetMatrix(), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
+				graphics->DrawModelBounds(*theModel, transformCmp->GetWorldspaceMatrix(), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
 			}
 		}
+	}
+
+	if (selectedIDs.size() > 0)
+	{
+		m_entitySystem->ShowInspector(selectedIDs, true, "Selected Entities");
 	}
 }
 
@@ -316,7 +332,7 @@ void Editor::DrawSelectionCandidates(const std::vector<PossibleSelection>& candi
 			auto theModel = mm->GetModel(modelCmp->GetModel());
 			if (theModel)
 			{
-				graphics->DrawModelBounds(*theModel, transformCmp->GetMatrix(), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
+				graphics->DrawModelBounds(*theModel, transformCmp->GetWorldspaceMatrix(), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), glm::vec4(0.0f, 1.0f, 1.0f, 0.05f));
 			}
 		}
 	}
@@ -351,9 +367,13 @@ void Editor::UpdateSelection()
 		}
 		if (hitEntity.GetID() != -1)
 		{
-			bool append = input->GetKeyboardState().m_keyPressed[Engine::KEY_LSHIFT];
+			bool append = input->GetKeyboardState().m_keyPressed[Engine::KEY_LCTRL];
 			append = append & !m_debugGui->IsCapturingKeyboard();
 			m_commands.Push(std::make_unique<EditorSelectEntityCommand>(hitEntity, append));
+		}
+		else
+		{
+			m_commands.Push(std::make_unique<EditorClearSelectionCommand>());
 		}
 		middleButtonDown = false;
 	}
@@ -375,17 +395,9 @@ void Editor::UpdateGrid()
 	}
 }
 
-bool Editor::Tick(float timeDelta)
+void Editor::UpdateUndoRedo(float timeDelta)
 {
-	SDE_PROF_EVENT();
-
 	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
-
-	UpdateMenubar();
-	UpdateSelection();
-	DrawSelected();
-	UpdateGrid();
-
 	if (!m_debugGui->IsCapturingKeyboard())
 	{
 		auto keyPressed = input->GetKeyboardState().m_keyPressed;
@@ -393,7 +405,7 @@ bool Editor::Tick(float timeDelta)
 		s_ignoreKeyTimer -= timeDelta;
 		if (s_ignoreKeyTimer < 0.0f)	// throttle commands
 		{
-			s_ignoreKeyTimer = 0.1f;
+			s_ignoreKeyTimer = 0.15f;
 			if (keyPressed[Engine::Key::KEY_LCTRL] && keyPressed[Engine::Key::KEY_z] && m_commands.CanUndo())
 			{
 				m_commands.Undo();
@@ -412,6 +424,20 @@ bool Editor::Tick(float timeDelta)
 			}
 		}
 	}
+}
+
+bool Editor::Tick(float timeDelta)
+{
+	SDE_PROF_EVENT();
+
+	UpdateMenubar();
+	UpdateSelection();
+	DrawSelected();
+	UpdateGrid();
+	UpdateUndoRedo(timeDelta);
+
+	// todo
+	//m_transformWidget->Update(m_selectedEntities);
 
 	m_commands.RunNext();
 
@@ -421,4 +447,6 @@ bool Editor::Tick(float timeDelta)
 void Editor::Shutdown()
 {
 	SDE_PROF_EVENT();
+
+	m_transformWidget = nullptr;
 }

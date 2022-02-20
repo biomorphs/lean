@@ -3,7 +3,7 @@
 #include "engine/serialisation.h"
 #include "entity/entity_handle.h"
 #include "editor/command.h"
-#include <set>
+#include <vector>
 
 class EditorDeleteSelectionCommand : public Command
 {
@@ -15,6 +15,6 @@ public:
 	virtual Result Redo();
 
 private:
-	std::set<EntityHandle> m_oldSelection;
+	std::vector<EntityHandle> m_oldSelection;
 	nlohmann::json m_selectedEntityData;	// selection is serialised so all components are restored
 };

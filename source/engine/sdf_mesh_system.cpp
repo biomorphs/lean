@@ -490,17 +490,17 @@ bool SDFMeshSystem::Tick(float timeDelta)
 					instanceMaterial = &matComponent->GetRenderMaterial();
 				}
 			}
-			m_graphics->Renderer().SubmitInstance(t.GetMatrix(), nodemesh, m.GetRenderShader(), bmin, bmax, instanceMaterial);
+			m_graphics->Renderer().SubmitInstance(t.GetWorldspaceMatrix(), nodemesh, m.GetRenderShader(), bmin, bmax, instanceMaterial);
 			if (m_graphics->ShouldDrawBounds())
 			{
 				auto colour = glm::vec4(1, 0, 0, 1);
-				m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour, t.GetMatrix());
+				m_graphics->DebugRenderer().DrawBox(bmin, bmax, colour, t.GetWorldspaceMatrix());
 			}
 		};
 		if (m_graphics->ShouldDrawBounds())
 		{
 			auto colour = glm::vec4(1, 1, 1, 1);
-			m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, t.GetMatrix());
+			m_graphics->DebugRenderer().DrawBox(m.GetBoundsMin(), m.GetBoundsMax(), colour, t.GetWorldspaceMatrix());
 		}
 		m.GetOctree().Update(shouldUpdateNode, requestUpdate, shouldDrawNode, drawFn);
 	});

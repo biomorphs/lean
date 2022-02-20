@@ -167,78 +167,73 @@ std::string EntitySystem::GetEntityNameWithTags(EntityHandle e) const
 	return text;
 }
 
-void EntitySystem::ShowDebugGui()
+void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool expandAll, const char* titleText)
 {
 	SDE_PROF_EVENT();
 	static std::string filterText = "";
 
-	if(g_showWindow)
+	bool keepOpen = true;
+	m_debugGui->BeginWindow(keepOpen, titleText);
+	m_debugGui->TextInput("Tag Filter", filterText);
+	if (m_debugGui->TreeNode("All Entities", true))
 	{
-		m_debugGui->BeginWindow(g_showWindow, "Entity System");
-		m_debugGui->TextInput("Tag Filter", filterText);
-		if (m_debugGui->TreeNode("All Entities", true))
+		auto allComponentTypes = m_world->GetAllComponentTypes();
+		for (auto entityID : entities)
 		{
-			auto allComponentTypes = m_world->GetAllComponentTypes();
-			const auto& allEntities = m_world->AllEntities();
-			for (auto entityID : allEntities)
+			auto tags = m_world->GetComponent<Tags>(entityID);
+			if (filterText.size() > 0 && tags != nullptr)
 			{
-				auto tags = m_world->GetComponent<Tags>(entityID);
-				if (filterText.size() > 0 && tags != nullptr)
+				bool foundMatching = false;
+				for (const auto& tag : tags->AllTags())
 				{
-					bool foundMatching = false;
-					for (const auto& tag : tags->AllTags())
+					if (strstr(tag.c_str(), filterText.c_str()) != nullptr)
 					{
-						if (strstr(tag.c_str(), filterText.c_str()) != nullptr)
-						{
-							foundMatching = true;
-							break;
-						}
-					}
-					if (!foundMatching)
-					{
-						continue;
+						foundMatching = true;
+						break;
 					}
 				}
-
-				if (m_debugGui->TreeNode(GetEntityNameWithTags(entityID).c_str()))
+				if (!foundMatching)
 				{
-					std::vector<ComponentType> owned = m_world->GetOwnedComponentTypes(entityID);
-					for (const auto& cmp : owned)
-					{
-						if (m_debugGui->TreeNode(cmp.c_str()))
-						{
-							auto inspector = m_componentInspectors.find(cmp);
-							if (inspector != m_componentInspectors.end())
-							{
-								inspector->second(*m_world->GetStorage(cmp), entityID);
-							}
-							m_debugGui->TreePop();
-						}
-					}
-					std::vector<ComponentType> notOwned = allComponentTypes;
-					notOwned.erase(std::remove_if(notOwned.begin(), notOwned.end(),[&owned](const ComponentType& t) {
-						return std::find(owned.begin(), owned.end(), t) != owned.end();
-					}), notOwned.end());
-					if (notOwned.size() > 0)
-					{
-						int currentItem = 0;
-						if (m_debugGui->ComboBox("Add Component", notOwned, currentItem))
-						{
-							m_world->AddComponent(entityID, notOwned[currentItem]);
-						}
-					}
-					m_debugGui->TreePop();
+					continue;
 				}
 			}
-			if (m_debugGui->Button("Add entity"))
+			if (m_debugGui->TreeNode(GetEntityNameWithTags(entityID).c_str(), expandAll))
 			{
-				m_world->AddEntity();
+				std::vector<ComponentType> owned = m_world->GetOwnedComponentTypes(entityID);
+				for (const auto& cmp : owned)
+				{
+					if (m_debugGui->TreeNode(cmp.c_str(), expandAll))
+					{
+						auto inspector = m_componentInspectors.find(cmp);
+						if (inspector != m_componentInspectors.end())
+						{
+							inspector->second(*m_world->GetStorage(cmp), entityID);
+						}
+						m_debugGui->TreePop();
+					}
+				}
+				std::vector<ComponentType> notOwned = allComponentTypes;
+				notOwned.erase(std::remove_if(notOwned.begin(), notOwned.end(),[&owned](const ComponentType& t) {
+					return std::find(owned.begin(), owned.end(), t) != owned.end();
+				}), notOwned.end());
+				if (notOwned.size() > 0)
+				{
+					int currentItem = 0;
+					if (m_debugGui->ComboBox("Add Component", notOwned, currentItem))
+					{
+						m_world->AddComponent(entityID, notOwned[currentItem]);
+					}
+				}
+				m_debugGui->TreePop();
 			}
-			m_debugGui->TreePop();
 		}
-		m_debugGui->EndWindow();
+		if (m_debugGui->Button("Add entity"))
+		{
+			m_world->AddEntity();
+		}
+		m_debugGui->TreePop();
 	}
-	m_debugGui->MainMenuBar(g_entityMenu);
+	m_debugGui->EndWindow();
 }
 
 bool EntitySystem::PreInit()
@@ -275,7 +270,7 @@ bool EntitySystem::Initialise()
 	SDE_PROF_EVENT();
 
 	auto& menu = g_entityMenu.AddSubmenu(ICON_FK_EYE " Entities");
-	menu.AddItem("List", []() {	g_showWindow = true; });
+	menu.AddItem("List", []() {	g_showWindow = !g_showWindow; });
 
 	return true;
 }
@@ -283,7 +278,13 @@ bool EntitySystem::Initialise()
 bool EntitySystem::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
-	ShowDebugGui();
+
+	if (g_showWindow)
+	{
+		ShowInspector(m_world->AllEntities());
+	}
+	m_debugGui->MainMenuBar(g_entityMenu);
+
 	m_world->CollectGarbage();
 	return true;
 }

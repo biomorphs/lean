@@ -233,7 +233,7 @@ namespace Engine
 		static World::EntityIterator iterator = world->MakeIterator<SDFMesh, Transform>();
 		iterator.ForEach([&](SDFMesh& m, Transform& t, EntityHandle h) {
 			// transform ray to object space for aabb intersection
-			auto inverseTransform = glm::inverse(t.GetMatrix());
+			auto inverseTransform = glm::inverse(t.GetWorldspaceMatrix());
 			std::vector<uint32_t> raysToCast;	// indices into active ray buffer
 			for (const auto& r : m_activeRays)
 			{

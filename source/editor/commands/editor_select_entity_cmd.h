@@ -2,7 +2,7 @@
 
 #include "entity/entity_handle.h"
 #include "editor/command.h"
-#include <set>
+#include <vector>
 
 class EditorSelectEntityCommand : public Command
 {
@@ -17,5 +17,5 @@ public:
 private:
 	EntityHandle m_newSelection;
 	bool m_appendSelection = false;
-	std::set<EntityHandle> m_oldSelection;
+	std::vector<EntityHandle> m_oldSelection;
 };

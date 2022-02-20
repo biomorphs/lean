@@ -50,7 +50,7 @@ namespace Render
 			case GL_DEBUG_SEVERITY_NOTIFICATION: severityStr = "Notification";	break;
 		} 
 		SDE_LOG("\tSource: %s\n\tType: %s\n\tSeverity: %s", sourceStr, typeStr, severityStr);
-		__debugbreak();
+		//__debugbreak();
 	}
 
 	Device::Device(Window& theWindow, bool makeDebugContext)
