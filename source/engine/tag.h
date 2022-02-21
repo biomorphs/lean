@@ -6,8 +6,6 @@
 
 namespace Engine
 {
-	//using Tag = std::string;	// todo - hashing or something
-
 	class Tag
 	{
 	public:

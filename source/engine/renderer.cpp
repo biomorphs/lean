@@ -124,20 +124,72 @@ namespace Engine
 		m_camera = c;
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
+	__m128i ShadowCasterSortKey(const ShaderHandle& shader, const Render::Mesh& mesh)
 	{
-		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-		float distanceToCamera = glm::length(glm::vec3(trns[3]) - cam);
-		const auto foundShader = sm->GetShader(shader);
-		list.m_instances.emplace_back(std::move(MeshInstance{ trns, aabbMin, aabbMax, foundShader, &mesh, instanceMat, distanceToCamera }));
+		const Render::VertexArray* va = &mesh.GetVertexArray();
+		const void* vaPtrVoid = static_cast<const void*>(va);
+		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
+		uint32_t ptrHigh = static_cast<uint32_t>((vaPtr & 0xffffffff00000000) >> 32);
+		uint32_t ptrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
+		__m128i result = _mm_set_epi32(shader.m_index, 0, ptrHigh, ptrLow);
+		return result;
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat)
+	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::Mesh& mesh, const Render::Material* instanceMat)
 	{
-		// objects submitted with no bounds have infinite aabb
-		const auto boundsMin = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-		const auto boundsMax = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-		SubmitInstance(list, cameraPos, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
+		const Render::VertexArray* va = &mesh.GetVertexArray();
+		const void* vaPtrVoid = static_cast<const void*>(va);
+		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
+		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
+		
+		const void* matPtrVoid = static_cast<const void*>(instanceMat);
+		uintptr_t matPtr = reinterpret_cast<uintptr_t>(matPtrVoid);
+		uint32_t matPtrLow = static_cast<uint32_t>((matPtr & 0x00000000ffffffff));
+		
+		__m128i result = _mm_set_epi32(shader.m_index, vaPtrLow, matPtrLow, 0);
+
+		return result;
+	}
+
+	__m128i TransparentSortKey(const ShaderHandle& shader, const Render::Mesh& mesh, const Render::Material* instanceMat, float distanceToCamera)
+	{
+		const Render::VertexArray* va = &mesh.GetVertexArray();
+		const void* vaPtrVoid = static_cast<const void*>(va);
+		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
+		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
+
+		const void* matPtrVoid = static_cast<const void*>(instanceMat);
+		uintptr_t matPtr = reinterpret_cast<uintptr_t>(matPtrVoid);
+		uint32_t matPtrLow = static_cast<uint32_t>((matPtr & 0x00000000ffffffff));
+
+		uint32_t distanceToCameraAsInt = static_cast<uint32_t>(distanceToCamera * 100.0f);
+		__m128i result = _mm_set_epi32(distanceToCameraAsInt, shader.m_index, vaPtrLow, matPtrLow);
+
+		return result;
+	}
+
+	// https://stackoverflow.com/questions/56341434/compare-two-m128i-values-for-total-order/56346628
+	inline bool SortKeyLessThan(__m128i a, __m128i b)
+	{
+		/* Compare 8-bit lanes for ( a < b ), store the bits in the low 16 bits of the
+		   scalar value: */
+		const int less = _mm_movemask_epi8(_mm_cmplt_epi8(a, b));
+
+		/* Compare 8-bit lanes for ( a > b ), store the bits in the low 16 bits of the
+		   scalar value: */
+		const int greater = _mm_movemask_epi8(_mm_cmpgt_epi8(a, b));
+
+		/* It's counter-intuitive, but this scalar comparison does the right thing.
+		   Essentially, integer comparison searches for the most significant bit that
+		   differs... */
+		return less > greater;
+	}
+
+	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
+	{
+		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+		const auto foundShader = sm->GetShader(shader);
+		list.m_instances.emplace_back(std::move(MeshInstance{ sortKey, trns, aabbMin, aabbMax, foundShader, &mesh, instanceMat }));
 	}
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat)
@@ -157,12 +209,22 @@ namespace Engine
 			auto shadowShader = sm->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, mesh, shadowShader, boundsMin, boundsMax);
+				auto sortKey = ShadowCasterSortKey(shadowShader, mesh);
+				SubmitInstance(m_allShadowCasterInstances, sortKey, transform, mesh, shadowShader, boundsMin, boundsMax);
 			}
 		}
-		
-		InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-		SubmitInstance(instances, m_camera.Position(), transform, mesh, shader, boundsMin, boundsMax, instanceMat);
+
+		if (isTransparent)
+		{
+			const float distanceToCamera = glm::length(glm::vec3(transform[3]) - m_camera.Position());
+			__m128i sortKey = TransparentSortKey(shader, mesh, instanceMat, distanceToCamera);
+			SubmitInstance(m_transparentInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
+		}
+		else
+		{
+			__m128i sortKey = OpaqueSortKey(shader, mesh, instanceMat);
+			SubmitInstance(m_opaqueInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
+		}
 	}
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat)
@@ -197,7 +259,8 @@ namespace Engine
 				glm::vec3 boundsMin = part.m_boundsMin, boundsMax = part.m_boundsMax;
 				if (castShadow && shadowShader.m_index != (uint32_t)-1)
 				{
-					SubmitInstance(m_allShadowCasterInstances, m_camera.Position(), transform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
+					auto sortKey = ShadowCasterSortKey(shadowShader, *part.m_mesh);
+					SubmitInstance(m_allShadowCasterInstances, sortKey, transform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
 				}
 
 				bool isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
@@ -205,8 +268,18 @@ namespace Engine
 				{
 					isTransparent |= instanceMat->GetIsTransparent();
 				}
-				InstanceList& instances = isTransparent ? m_transparentInstances : m_opaqueInstances;
-				SubmitInstance(instances, m_camera.Position(), instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
+
+				if (isTransparent)
+				{
+					const float distanceToCamera = glm::length(glm::vec3(transform[3]) - m_camera.Position());
+					__m128i sortKey = TransparentSortKey(shader, *part.m_mesh, instanceMat, distanceToCamera);
+					SubmitInstance(m_transparentInstances, sortKey, transform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
+				}
+				else
+				{
+					__m128i sortKey = OpaqueSortKey(shader, *part.m_mesh, instanceMat);
+					SubmitInstance(m_opaqueInstances, sortKey, transform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
+				}
 			}
 		}
 	}
@@ -681,37 +754,11 @@ namespace Engine
 	int Renderer::PrepareCulledShadowInstances(InstanceList& visibleInstances)
 	{
 		SDE_PROF_EVENT();
-		std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
-			if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
-			{
-				return true;
-			}
-			else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
-			{
-				return false;
-			}
-			auto q1Mesh = reinterpret_cast<uintptr_t>(q1.m_mesh);	// mesh
-			auto q2Mesh = reinterpret_cast<uintptr_t>(q2.m_mesh);
-			if (q1Mesh < q2Mesh)
-			{
-				return true;
-			}
-			else if (q1Mesh > q2Mesh)
-			{
-				return false;
-			}
-			auto q1Mat = reinterpret_cast<uintptr_t>(q1.m_material);	// per-instance material
-			auto q2Mat = reinterpret_cast<uintptr_t>(q2.m_material);
-			if (q1Mat < q2Mat)
-			{
-				return true;
-			}
-			else if (q1Mat > q2Mat)
-			{
-				return false;
-			}
-			return false;
+
+		std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2){
+			return SortKeyLessThan(q1.m_sortKey, q2.m_sortKey);
 		});
+		
 		return PopulateInstanceBuffers(visibleInstances);
 	}
 
@@ -748,44 +795,8 @@ namespace Engine
 		}
 		{
 			SDE_PROF_EVENT("Sort");
-			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
-				if (q1.m_distanceToCamera < q2.m_distanceToCamera)	// back to front
-				{
-					return false;
-				}
-				else if (q1.m_distanceToCamera > q2.m_distanceToCamera)
-				{
-					return true;
-				}
-				if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
-				{
-					return true;
-				}
-				else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
-				{
-					return false;
-				}
-				auto q1Mesh = reinterpret_cast<uintptr_t>(q1.m_mesh);	// mesh
-				auto q2Mesh = reinterpret_cast<uintptr_t>(q2.m_mesh);
-				if (q1Mesh < q2Mesh)
-				{
-					return true;
-				}
-				else if (q1Mesh > q2Mesh)
-				{
-					return false;
-				}
-				auto q1Mat = reinterpret_cast<uintptr_t>(q1.m_material);	// per-instance material
-				auto q2Mat = reinterpret_cast<uintptr_t>(q2.m_material);
-				if (q1Mat < q2Mat)
-				{
-					return true;
-				}
-				else if (q1Mat > q2Mat)
-				{
-					return false;
-				}
-				return false;
+			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) {
+				return SortKeyLessThan(q1.m_sortKey, q2.m_sortKey);
 			});
 		}
 		list.m_instances = std::move(visibleInstances.m_instances);
@@ -807,44 +818,8 @@ namespace Engine
 		}
 		{
 			SDE_PROF_EVENT("Sort");
-			std::sort(allVisibleInstances.m_instances.begin(), allVisibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) -> bool {
-				if ((uintptr_t)q1.m_shader < (uintptr_t)q2.m_shader)	// shader
-				{
-					return true;
-				}
-				else if ((uintptr_t)q1.m_shader > (uintptr_t)q2.m_shader)
-				{
-					return false;
-				}
-				auto q1Mesh = reinterpret_cast<uintptr_t>(q1.m_mesh);	// mesh
-				auto q2Mesh = reinterpret_cast<uintptr_t>(q2.m_mesh);
-				if (q1Mesh < q2Mesh)
-				{
-					return true;
-				}
-				else if (q1Mesh > q2Mesh)
-				{
-					return false;
-				}
-				auto q1Mat = reinterpret_cast<uintptr_t>(q1.m_material);	// per-instance material
-				auto q2Mat = reinterpret_cast<uintptr_t>(q2.m_material);
-				if (q1Mat < q2Mat)
-				{
-					return true;
-				}
-				else if (q1Mat > q2Mat)
-				{
-					return false;
-				}
-				if (q1.m_distanceToCamera < q2.m_distanceToCamera)	// front to back
-				{
-					return true;
-				}
-				else if (q1.m_distanceToCamera > q2.m_distanceToCamera)
-				{
-					return false;
-				}
-				return false;
+			std::sort(allVisibleInstances.m_instances.begin(), allVisibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2){
+				return SortKeyLessThan(q1.m_sortKey, q2.m_sortKey);
 			});
 		}
 		list.m_instances = allVisibleInstances.m_instances;
@@ -899,6 +874,7 @@ namespace Engine
 				Core::Thread::Sleep(0);
 			}
 		}
+
 		{
 			SDE_PROF_EVENT("PushResults");
 			for (int listIndex = 0; listIndex < listCount; ++listIndex)

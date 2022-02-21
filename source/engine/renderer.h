@@ -79,8 +79,7 @@ namespace Engine
 
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
 		void RenderShadowmap(Render::Device& d, Light& l);
-		void SubmitInstance(InstanceList& list, const glm::vec3& cameraPos, const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat = nullptr);
-		void SubmitInstance(InstanceList& list, const glm::vec3& cam, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
+		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
 		int PrepareOpaqueInstances(InstanceList& list);
 		int PrepareTransparentInstances(InstanceList& list);
 		int PrepareCulledShadowInstances(InstanceList& visibleInstances);
