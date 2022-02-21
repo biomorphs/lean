@@ -4,6 +4,7 @@
 
 Command::Result EditorCloseCommand::Execute()
 {
+	SDE_PROF_EVENT();
 	Command::Result commandResult = Command::Result::Waiting;
 	if (m_gui->BeginModalPopup("Close Editor?"))
 	{	

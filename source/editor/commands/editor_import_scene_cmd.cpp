@@ -5,6 +5,7 @@
 
 Command::Result EditorImportSceneCommand::Execute()
 {
+	SDE_PROF_EVENT();
 	std::string scenePath = Engine::ShowFilePicker("Import Scene", "", "Scene Files (.scn)\0*.scn\0");
 	if (scenePath != "")
 	{

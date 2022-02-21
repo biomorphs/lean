@@ -10,6 +10,7 @@ Command::Result EditorCloneSelectionCommand::Redo()
 
 Command::Result EditorCloneSelectionCommand::Undo()
 {
+	SDE_PROF_EVENT();
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
 	auto editor = Engine::GetSystem<Editor>("Editor");
 
@@ -33,6 +34,7 @@ Command::Result EditorCloneSelectionCommand::Undo()
 
 Command::Result EditorCloneSelectionCommand::Execute()
 {
+	SDE_PROF_EVENT();
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
 	auto editor = Engine::GetSystem<Editor>("Editor");
 

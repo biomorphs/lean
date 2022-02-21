@@ -292,6 +292,10 @@ set(PLAYGROUND_SOURCES
 	source/playground/scene.cpp
 	source/playground/scene_editor.h
 	source/playground/scene_editor.cpp
+	source/playground/walkable_area.h
+	source/playground/walkable_area.cpp
+	source/playground/walkable_system.h
+	source/playground/walkable_system.cpp
 )
 
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})

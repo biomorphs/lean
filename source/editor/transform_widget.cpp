@@ -7,6 +7,8 @@
 
 void TransformWidget::Reset(const std::vector<EntityHandle>& entities)
 {
+	SDE_PROF_EVENT();
+
 	// first find the new position of the widget from the world-space positions of the entities
 	auto esys = Engine::GetSystem<EntitySystem>("Entities");
 	auto world = esys->GetWorld();
@@ -43,6 +45,8 @@ void TransformWidget::Reset(const std::vector<EntityHandle>& entities)
 
 void TransformWidget::Update(const std::vector<EntityHandle>& entities)
 {
+	SDE_PROF_EVENT();
+
 	if (entities != m_currentEntities)
 	{
 		Reset(entities);

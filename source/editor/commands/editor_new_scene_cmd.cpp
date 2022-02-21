@@ -4,6 +4,7 @@
 
 Command::Result EditorNewSceneCommand::Execute()
 {
+	SDE_PROF_EVENT();
 	Command::Result commandResult = Command::Result::Waiting;
 	if (m_gui->BeginModalPopup("New Scene"))
 	{	

@@ -2,6 +2,8 @@
 #include "engine/system_manager.h"
 
 #include "playground/playground.h"
+#include "playground/walkable_system.h"
+
 #include "editor/editor.h"
 
 #include "core/log.h"
@@ -10,6 +12,7 @@
 void CreateSystems(const std::string& cmdLine)
 {
 	auto& sysManager = Engine::SystemManager::GetInstance();
+	sysManager.RegisterSystem("Walkables", new WalkableSystem);
 	if (cmdLine.find("-playground") != -1)
 	{
 		sysManager.RegisterSystem("Playground", new Playground());

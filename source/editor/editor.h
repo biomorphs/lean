@@ -64,7 +64,7 @@ private:
 	bool m_showGridSettings = false;
 	float m_gridSize = 8.0f;
 	int m_gridCount = 64;
-	bool m_showGrid = true;
+	bool m_showGrid = false;
 	glm::vec4 m_gridColour = glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
 
 	void UpdateMenubar();

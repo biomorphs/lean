@@ -5,6 +5,7 @@
 
 Command::Result EditorSaveSceneCommand::Execute()
 {
+	SDE_PROF_EVENT();
 	std::string targetPath = m_targetPath;
 	if (targetPath == "")
 	{

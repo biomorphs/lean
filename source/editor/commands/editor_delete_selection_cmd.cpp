@@ -10,6 +10,8 @@ Command::Result EditorDeleteSelectionCommand::Redo()
 
 Command::Result EditorDeleteSelectionCommand::Undo()
 {
+	SDE_PROF_EVENT();
+
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
 	auto editor = Engine::GetSystem<Editor>("Editor");
 
@@ -24,6 +26,8 @@ Command::Result EditorDeleteSelectionCommand::Undo()
 
 Command::Result EditorDeleteSelectionCommand::Execute()
 {
+	SDE_PROF_EVENT();
+
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
 	auto editor = Engine::GetSystem<Editor>("Editor");
 

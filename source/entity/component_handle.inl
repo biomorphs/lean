@@ -13,6 +13,9 @@ void ComponentHandle<Component>::Serialise(nlohmann::json& json, Engine::Seriali
 	else
 	{
 		Engine::FromJson(m_entity, json);
+		m_storage = nullptr;
+		m_generation = -1;
+		m_cachedPtr = nullptr;
 	}
 }
 

@@ -16,12 +16,15 @@ Command::Result EditorCreateEntityFromMeshCommand::Redo()
 
 Command::Result EditorCreateEntityFromMeshCommand::Undo()
 {
+	SDE_PROF_EVENT();
 	Engine::GetSystem<EntitySystem>("Entities")->GetWorld()->RemoveEntity(m_entityCreated);
 	return Command::Result::Succeeded;
 }
 
 Command::Result EditorCreateEntityFromMeshCommand::CreateEntity(const Engine::ModelHandle& mh)
 {
+	SDE_PROF_EVENT();
+
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
 	auto world = entities->GetWorld();
 
@@ -61,6 +64,8 @@ Command::Result EditorCreateEntityFromMeshCommand::CreateEntity(const Engine::Mo
 
 Command::Result EditorCreateEntityFromMeshCommand::Execute()
 {
+	SDE_PROF_EVENT();
+
 	if (m_currentStatus == Command::Result::Failed)
 	{
 		return m_currentStatus;

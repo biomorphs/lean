@@ -42,6 +42,7 @@ Editor::~Editor()
 
 void Editor::SelectEntity(EntityHandle h)
 {
+	SDE_PROF_EVENT();
 	auto foundIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), h);
 	if (foundIt == m_selectedEntities.end())
 	{
@@ -51,6 +52,7 @@ void Editor::SelectEntity(EntityHandle h)
 
 void Editor::DeselectEntity(EntityHandle h)
 {
+	SDE_PROF_EVENT();
 	auto foundIt = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), h);
 	if (foundIt != m_selectedEntities.end())
 	{
@@ -60,11 +62,13 @@ void Editor::DeselectEntity(EntityHandle h)
 
 void Editor::DeselectAll()
 {
+	SDE_PROF_EVENT();
 	m_selectedEntities.clear();
 }
 
 void Editor::SelectAll()
 {
+	SDE_PROF_EVENT();
 	const auto& allEntities = Engine::GetSystem<EntitySystem>("Entities")->GetWorld()->AllEntities();
 	m_selectedEntities.clear();
 	for (const auto& e : allEntities)
@@ -75,6 +79,7 @@ void Editor::SelectAll()
 
 void Editor::NewScene(const char* sceneName)
 {
+	SDE_PROF_EVENT();
 	m_sceneFilepath = "";
 	m_entitySystem->NewWorld();
 	ImportScene("editor/empty_scene_template.scn");
@@ -158,6 +163,8 @@ bool Editor::SaveScene(const char* fileName)
 
 void Editor::UpdateMenubar()
 {
+	SDE_PROF_EVENT();
+
 	Engine::MenuBar menuBar;
 	auto& fileMenu = menuBar.AddSubmenu(ICON_FK_FILE_O " File");
 	fileMenu.AddItem("Exit", [this]() {
@@ -230,6 +237,8 @@ void Editor::UpdateMenubar()
 
 void Editor::DrawGrid(float cellSize, int cellCount, glm::vec4 colour)
 {
+	SDE_PROF_EVENT();
+
 	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
 	for (int x = -cellCount; x < cellCount; ++x)
 	{
@@ -243,6 +252,8 @@ void Editor::DrawGrid(float cellSize, int cellCount, glm::vec4 colour)
 
 std::vector<Editor::PossibleSelection> Editor::FindSelectionCandidates()
 {
+	SDE_PROF_EVENT();
+
 	std::vector<PossibleSelection> candidates;
 
 	// Find the raycast start/end pos from the mouse cursor
@@ -279,6 +290,8 @@ std::vector<Editor::PossibleSelection> Editor::FindSelectionCandidates()
 
 void Editor::DrawSelected()
 {
+	SDE_PROF_EVENT();
+
 	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
 	auto world = m_entitySystem->GetWorld();
 	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
@@ -307,6 +320,8 @@ void Editor::DrawSelected()
 
 void Editor::DrawSelectionCandidates(const std::vector<PossibleSelection>& candidates)
 {
+	SDE_PROF_EVENT();
+
 	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
 	auto world = m_entitySystem->GetWorld();
 	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
@@ -340,6 +355,8 @@ void Editor::DrawSelectionCandidates(const std::vector<PossibleSelection>& candi
 
 void Editor::UpdateSelection()
 {
+	SDE_PROF_EVENT();
+
 	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
 	static bool middleButtonDown = false;
 	std::vector<PossibleSelection> candidates;
@@ -381,6 +398,8 @@ void Editor::UpdateSelection()
 
 void Editor::UpdateGrid()
 {
+	SDE_PROF_EVENT();
+
 	if (m_showGridSettings && m_debugGui->BeginWindow(m_showGridSettings, "Grid Settings"))
 	{
 		m_showGrid = m_debugGui->Checkbox("Show Grid", m_showGrid);
@@ -397,6 +416,8 @@ void Editor::UpdateGrid()
 
 void Editor::UpdateUndoRedo(float timeDelta)
 {
+	SDE_PROF_EVENT();
+
 	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
 	if (!m_debugGui->IsCapturingKeyboard())
 	{

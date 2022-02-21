@@ -85,6 +85,7 @@ void CommandList::Push(std::unique_ptr<Command>&& cmdPtr)
 
 void CommandList::RunNext()
 {
+	SDE_PROF_EVENT();
 	if (m_undoCommand != nullptr)
 	{
 		Command::Result undoResult = m_undoCommand->Undo();

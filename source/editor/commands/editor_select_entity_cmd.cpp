@@ -9,6 +9,7 @@ Command::Result EditorSelectEntityCommand::Redo()
 
 Command::Result EditorSelectEntityCommand::Undo()
 {
+	SDE_PROF_EVENT();
 	auto editor = Engine::GetSystem<Editor>("Editor");
 	editor->DeselectAll();
 	for (auto h : m_oldSelection)
@@ -20,6 +21,7 @@ Command::Result EditorSelectEntityCommand::Undo()
 
 Command::Result EditorSelectEntityCommand::Execute()
 {
+	SDE_PROF_EVENT();
 	auto editor = Engine::GetSystem<Editor>("Editor");
 	m_oldSelection = editor->SelectedEntities();
 	if (!m_appendSelection)
