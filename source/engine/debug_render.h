@@ -26,6 +26,8 @@ namespace Engine
 		void DrawFrustum(const class Frustum& f, glm::vec4 colour);
 		void DrawBox(glm::vec3 bmin, glm::vec3 bmax, glm::vec4 colour, glm::mat4 boxTransform = glm::identity<glm::mat4>());
 		void DrawSphere(glm::vec3 center, float radius, glm::vec4 colour, glm::mat4 transform = glm::identity<glm::mat4>());
+		void DrawCapsule(float radius, float halfHeight, glm::vec4 colour, glm::mat4 transform = glm::identity<glm::mat4>());
+		void DrawCylinder(float radius, float halfHeight, glm::vec4 colour, glm::mat4 transform = glm::identity<glm::mat4>());
 
 		void PushToRenderer(Renderer&);
 	private:

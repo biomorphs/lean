@@ -216,6 +216,43 @@ namespace Engine
 		AddLines(v, c, 1);
 	}
 
+	void DebugRender::DrawCapsule(float radius, float halfHeight, glm::vec4 colour, glm::mat4 transform)
+	{
+		DrawCylinder(radius, halfHeight, colour, transform);
+		DrawSphere({ 0.0f,-halfHeight,0.0f }, radius, colour, transform);
+		DrawSphere({ 0.0f,halfHeight,0.0f }, radius, colour, transform);
+	}
+
+	void DebugRender::DrawCylinder(float radius, float halfHeight, glm::vec4 colour, glm::mat4 transform)
+	{
+		const int c_numVertices = 16;
+		const float c_thetaDelta = (2.0f * glm::pi<float>() / (float)c_numVertices);
+		for (int v = 0; v < c_numVertices; ++v)
+		{
+			const float thisTheta = -(glm::pi<float>() / 2.0f) + v * c_thetaDelta;
+			const float nextTheta = thisTheta + c_thetaDelta;
+			const float thisX = cosf(thisTheta) * radius;
+			const float thisZ = sinf(thisTheta) * radius;
+			const float nextX = cosf(nextTheta) * radius;
+			const float nextZ = sinf(nextTheta) * radius;
+
+			// bottom ring
+			glm::vec4 p0(thisX, -halfHeight, thisZ, 1.0f), p1(nextX, -halfHeight, nextZ, 1.0f);
+			p0 = transform * p0;
+			p1 = transform * p1;
+			DrawLine(glm::vec3(p0), glm::vec3(p1), colour);
+
+			// top ring
+			glm::vec4 p2(thisX, halfHeight, thisZ, 1.0f), p3(nextX, halfHeight, nextZ, 1.0f);
+			p2 = transform * p2;
+			p3 = transform * p3;
+			DrawLine(glm::vec3(p2), glm::vec3(p3), colour);
+
+			// vertical 
+			DrawLine(glm::vec3(p0), glm::vec3(p2), colour);
+		}
+	}
+
 	void DebugRender::DrawSphere(glm::vec3 center, float radius, glm::vec4 colour, glm::mat4 transform)
 	{
 		const int c_numVerticesPerSlice = 16;

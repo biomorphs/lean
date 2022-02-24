@@ -136,6 +136,8 @@ set(ENGINE_SOURCES
 	source/engine/physics_handle.cpp
 	source/engine/physics_system.h
 	source/engine/physics_system.cpp
+	source/engine/character_controller_system.h
+	source/engine/character_controller_system.cpp
 	source/engine/intersection_tests.h
 	source/engine/intersection_tests.cpp
 	source/engine/raycast_system.h
@@ -234,6 +236,8 @@ set(ENGINE_SOURCES
 	source/engine/components/component_material.cpp
 	source/engine/components/component_environment_settings.h
 	source/engine/components/component_environment_settings.cpp
+	source/engine/components/component_character_controller.h
+	source/engine/components/component_character_controller.cpp
 	)
 target_sources(Engine PRIVATE ${ENGINE_SOURCES})
 target_include_directories(Engine PRIVATE ${CommonIncludePaths})

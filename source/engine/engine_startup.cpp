@@ -14,6 +14,7 @@
 #include "sdf_mesh_system.h"
 #include "camera_system.h"
 #include "raycast_system.h"
+#include "character_controller_system.h"
 #include "entity/entity_system.h"
 #include "platform.h"
 #include "core/log.h"
@@ -50,6 +51,7 @@ namespace Engine
 		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
 		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
 		systemCreation();
+		sysManager.RegisterSystem("CharacterControllers", new CharacterControllerSystem());
 		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);
 		sysManager.RegisterSystem("Graphics", new GraphicsSystem);

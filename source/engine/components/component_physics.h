@@ -33,6 +33,14 @@ struct BoxCollider {
 	SERIALISED_CLASS();
 };
 
+struct CapsuleCollider {
+	glm::vec3 m_origin;
+	glm::vec3 m_pitchYawRoll;
+	float m_radius;
+	float m_halfHeight;
+	SERIALISED_CLASS();
+};
+
 class Physics
 {
 public:
@@ -78,6 +86,13 @@ public:
 	void AddBoxCollider(glm::vec3 offset, glm::vec3 dim) { m_boxColliders.push_back({ offset, dim }); }
 	BoxColliders& GetBoxColliders() { return m_boxColliders; }
 
+	using CapsuleColliders = std::vector<CapsuleCollider>;
+	void AddCapsuleCollider(glm::vec3 offset, glm::vec3 pitchYawRoll, float radius, float halfHeight)
+	{ 
+		m_capsuleColliders.push_back({offset, pitchYawRoll, radius, halfHeight});
+	}
+	CapsuleColliders& GetCapsuleColliders() { return m_capsuleColliders; }
+
 	void Rebuild() { m_needsRebuild = true; }
 	bool NeedsRebuild() { return m_needsRebuild; }
 	void SetNeedsRebuild(bool b) { m_needsRebuild = b; }
@@ -99,6 +114,7 @@ private:
 	PlaneColliders m_planeColliders;
 	SphereColliders m_sphereColliders;
 	BoxColliders m_boxColliders;
+	CapsuleColliders m_capsuleColliders;
 
 	Engine::PhysicsHandle<physx::PxRigidActor> m_actor;
 };

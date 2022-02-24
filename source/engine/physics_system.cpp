@@ -68,18 +68,18 @@ namespace Engine
 					SDE_PROF_EVENT("ApplyTransforms_AllComponents");
 					auto transforms = entities->GetWorld()->GetAllComponents<Transform>();
 					entities->GetWorld()->ForEachComponentAsync<Physics>([this, &transforms](Physics& p, EntityHandle e)
+					{
+						if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
 						{
-							if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
+							auto transform = transforms->Find(e);
+							if (transform)
 							{
-								auto transform = transforms->Find(e);
-								if (transform)
-								{
-									const auto& pose = p.GetActor()->getGlobalPose();
-									transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
-									transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
-								}
+								const auto& pose = p.GetActor()->getGlobalPose();
+								transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
+								transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
 							}
-						}, *m_physicsSystem->m_jobSystem, 400);
+						}
+					}, *m_physicsSystem->m_jobSystem, 400);
 				}
 			}
 			m_physicsSystem->m_hasTicked = false;
@@ -299,6 +299,18 @@ namespace Engine
 			shape->setLocalPose(physx::PxTransform(origin));
 			body->attachShape(*shape);
 		}
+		for (const auto& collider : p.GetCapsuleColliders())
+		{
+			physx::PxVec3 origin = { collider.m_origin.x, collider.m_origin.y, collider.m_origin.z };
+			// build local pose from params
+			// we need to rotate since physx capsules point down x axis
+			glm::quat localRotation = glm::quat(collider.m_pitchYawRoll);
+			physx::PxTransform localPose(origin, { localRotation.x, localRotation.y, localRotation.z, localRotation.w });
+			localPose = localPose * physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1)));
+			auto shape = m_physics->createShape(physx::PxCapsuleGeometry(collider.m_radius, collider.m_halfHeight), *material, true);
+			shape->setLocalPose(localPose);
+			body->attachShape(*shape);
+		}
 		if (!p.IsStatic())
 		{
 			physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(body), p.GetDensity());
@@ -328,6 +340,32 @@ namespace Engine
 			}
 		}
 		return {};
+	}
+
+	bool PhysicsSystem::SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance,
+		glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance)
+	{
+		physx::PxCapsuleGeometry capsuleGeom(radius, halfHeight);
+		physx::PxVec3 origin(pos.x, pos.y, pos.z);
+		physx::PxVec3 unitDir(direction.x, direction.y, direction.z);
+
+		// physx capsules are oriented on x axis, but we prefer y
+		physx::PxTransform capsulePose(origin, { rot.x, rot.y, rot.z, rot.w });
+		capsulePose = capsulePose * physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1)));
+
+		physx::PxSweepBuffer results;
+		auto flags = physx::PxHitFlag::eDEFAULT | physx::PxHitFlag::eMTD;	// mtd = depth of penetration
+		bool hitSomething = m_scene->sweep(capsuleGeom, capsulePose, unitDir, distance, results, flags);
+		
+		if (hitSomething && results.getNbAnyHits() > 0)
+		{
+			physx::PxVec3 hitPosPx = results.block.position;
+			physx::PxVec3 hitNormalPx = results.block.normal;
+			hitPos = { hitPosPx.x,hitPosPx.y,hitPosPx.z };
+			hitNormal = { hitNormalPx.x,hitNormalPx.y,hitNormalPx.z };
+			hitDistance = results.block.distance;
+		}
+		return hitSomething;
 	}
 
 	bool PhysicsSystem::Tick(float timeDelta)

@@ -40,6 +40,13 @@ SERIALISE_BEGIN(BoxCollider)
 	SERIALISE_PROPERTY("Origin", m_origin)
 SERIALISE_END()
 
+SERIALISE_BEGIN(CapsuleCollider)
+	SERIALISE_PROPERTY("Origin", m_origin)
+	SERIALISE_PROPERTY("PitchYawRoll", m_pitchYawRoll)
+	SERIALISE_PROPERTY("Radius", m_radius)
+	SERIALISE_PROPERTY("HalfHeight", m_halfHeight)
+SERIALISE_END()
+
 SERIALISE_BEGIN(Physics)
 	SERIALISE_PROPERTY("IsStatic", m_isStatic)
 	SERIALISE_PROPERTY("IsKinematic", m_isKinematic)
@@ -50,6 +57,7 @@ SERIALISE_BEGIN(Physics)
 	SERIALISE_PROPERTY("PlaneColliders", m_planeColliders)
 	SERIALISE_PROPERTY("SphereColliders", m_sphereColliders)
 	SERIALISE_PROPERTY("BoxColliders", m_boxColliders)
+	SERIALISE_PROPERTY("CapsuleColliders", m_capsuleColliders)
 	if (op == Engine::SerialiseType::Read)
 	{
 		SetNeedsRebuild(true);
@@ -81,6 +89,7 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 	auto fn = [&gui, &render, &world](ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& p = *static_cast<Physics::StorageType&>(cs).Find(e);
+		auto transform = world.GetComponent<Transform>(e);
 		p.SetStatic(gui.Checkbox("Static", p.IsStatic()));
 		if (!p.IsStatic())
 		{
@@ -90,6 +99,11 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 		p.SetStaticFriction(gui.DragFloat("Friction (Static)", p.GetStaticFriction(), 0.01f, 0.0f, 10.0f));
 		p.SetDynamicFriction(gui.DragFloat("Friction (Dynamic)", p.GetDynamicFriction(), 0.01f, 0.0f, 10.0f));
 		p.SetRestitution(gui.DragFloat("Restitution", p.GetRestitution(), 0.01f, 0.0f, 10.0f));
+
+		// ignore scale since we dont pass it to physx
+		glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
+		matrix = matrix * glm::toMat4(transform->GetOrientation());
+
 		if (gui.TreeNode("Colliders", true))
 		{
 			char text[256] = "";
@@ -112,14 +126,7 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 					it.m_origin = gui.DragVector("Origin", it.m_origin, 0.01f);
 					it.m_radius = gui.DragFloat("Radius", it.m_radius, 0.01f, 0.0f, 100000.0f);
 					gui.TreePop();
-					auto transform = world.GetComponent<Transform>(e);
-					if (transform)
-					{
-						// ignore scale since we dont pass it to physx
-						glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
-						matrix = matrix * glm::toMat4(transform->GetOrientation());
-						render.DrawSphere(it.m_origin, it.m_radius, { 0.0f,1.0f,1.0f,1.0f }, matrix);
-					}
+					render.DrawSphere(it.m_origin, it.m_radius, { 0.0f,1.0f,1.0f,1.0f }, matrix);
 				}
 			}
 			for (auto& it : p.GetBoxColliders())
@@ -130,16 +137,28 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 					it.m_origin = gui.DragVector("Origin", it.m_origin, 0.01f);
 					it.m_dimensions = gui.DragVector("Dimensions", it.m_dimensions, 0.01f, 0.0f, 100000.0f);
 					gui.TreePop();
-					auto transform = world.GetComponent<Transform>(e);
 					if (transform && transform->GetScale().length() != 0.0f)
 					{
 						auto bMin = it.m_origin - it.m_dimensions * 0.5f;
 						auto bMax = it.m_origin + it.m_dimensions * 0.5f;
-						// ignore scale since we dont pass it to physx
-						glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
-						matrix = matrix * glm::toMat4(transform->GetOrientation());
 						render.DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, matrix);
 					}
+				}
+			}
+			for (auto& it : p.GetCapsuleColliders())
+			{
+				sprintf(text, "Capsule %d", (int)(&it - p.GetCapsuleColliders().data()));
+				if (gui.TreeNode(text))
+				{
+					it.m_origin = gui.DragVector("Origin", it.m_origin, 0.01f);
+					it.m_pitchYawRoll = gui.DragVector("Rotation", it.m_pitchYawRoll, 0.01f);
+					it.m_halfHeight = gui.DragFloat("Half Height", it.m_halfHeight, 0.1f, 0.1f);
+					it.m_radius = gui.DragFloat("Radius", it.m_radius, 0.1f, 0.1f);
+					gui.TreePop();
+					
+					glm::quat q(it.m_pitchYawRoll);
+					glm::mat4 localTransform = glm::translate(it.m_origin) * glm::toMat4(q);
+					render.DrawCapsule(it.m_radius, it.m_halfHeight, { 0.0f,1.0f,1.0f,1.0f }, matrix * localTransform);
 				}
 			}
 			if (gui.Button("+ Plane"))
@@ -155,6 +174,10 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 			if (gui.Button("+ Box"))
 			{
 				p.AddBoxCollider({ 0,0,0 }, { 1,1,1 });
+			}
+			if (gui.Button("+ Capsule"))
+			{
+				p.AddCapsuleCollider({ 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, 1.0f, 1.0f);
 			}
 			gui.TreePop();
 			if (gui.Button("Rebuild"))
