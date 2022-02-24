@@ -88,8 +88,7 @@ namespace Render
 		void SetUniformValue(uint32_t uniformHandle, int32_t val);
 		void SetUniformValue(uint32_t uniformHandle, uint32_t val);
 		void MemoryBarrier(BarrierType m);
-		void SetSampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit);
-		void SetArraySampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit);
+		void SetSampler(uint32_t uniformHandle, uint64_t residentHandle);
 		void BindComputeImage(uint32_t bindIndex, uint32_t textureHandle, ComputeImageFormat f, ComputeImageAccess access, bool is3dOrArray=false);
 		void DispatchCompute(uint32_t groupsX, uint32_t groupsY, uint32_t groupsZ);
 		void BindShaderProgram(const ShaderProgram& program);

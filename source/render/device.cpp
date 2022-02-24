@@ -352,23 +352,10 @@ namespace Render
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void Device::SetArraySampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit)
+	void Device::SetSampler(uint32_t uniformHandle, uint64_t residentHandle)
 	{
 		assert(uniformHandle != -1);
-		assert(textureHandle != 0);
-
-		glBindTextureUnit(textureUnit, textureHandle);
-
-		glUniform1i(uniformHandle, textureUnit);
-	}
-
-	void Device::SetSampler(uint32_t uniformHandle, uint32_t textureHandle, uint32_t textureUnit)
-	{
-		assert(uniformHandle != -1);
-		assert(textureHandle != -1);
-
-		glBindTextureUnit(textureUnit, textureHandle);
-		glUniform1i(uniformHandle, textureUnit);
+		glUniformHandleui64ARB(uniformHandle, residentHandle);
 	}
 
 	void Device::SetUniformValue(uint32_t uniformHandle, const glm::mat4& matrix)

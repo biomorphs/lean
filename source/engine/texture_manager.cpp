@@ -128,6 +128,7 @@ namespace Engine
 			{
 				if(tex.m_texture != nullptr)
 				{
+					tex.m_texture->MakeResidentHandle();
 					m_textures[tex.m_destination.m_index].m_texture = std::move(tex.m_texture);
 					if (tex.m_onFinish != nullptr)
 					{
@@ -200,7 +201,7 @@ namespace Engine
 			Render::TextureSource ts((uint32_t)w, (uint32_t)h, format, { mip }, rawDataBuffer);
 			ts.SetGenerateMips(true);
 			auto newTex = std::make_unique<Render::Texture>();
-			if (newTex->Create(ts))
+			if (newTex->Create(ts, false))	// don't make textures resident here, do it on main thread
 			{
 				// Ensure any writes are shared with all contexts
 				Render::Device::FlushContext();

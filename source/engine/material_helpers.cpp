@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m)
+	void ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m)
 	{
 		SDE_PROF_EVENT();
 
@@ -16,7 +16,6 @@ namespace Engine
 		const auto& uniforms = m.GetUniforms();
 		uniforms.Apply(d, shader);
 
-		int textureUnit = 0;
 		const auto& samplers = m.GetSamplers();
 		for (const auto& s : samplers)
 		{
@@ -28,14 +27,13 @@ namespace Engine
 				const auto theTexture = s_tm->GetTexture({ texHandle });
 				if (theTexture)
 				{
-					d.SetSampler(uniformHandle, theTexture->GetHandle(), textureUnit++);
+					d.SetSampler(uniformHandle, theTexture->GetResidentHandle());
 				}
 			}
 		}
-		return textureUnit;
 	}
 
-	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, DefaultTextures* defaults, uint32_t textureUnit)
+	void ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, DefaultTextures* defaults)
 	{
 		SDE_PROF_EVENT();
 
@@ -54,7 +52,7 @@ namespace Engine
 				const auto theTexture = s_tm->GetTexture({ texHandle });
 				if (theTexture)
 				{
-					d.SetSampler(uniformHandle, theTexture->GetHandle(), textureUnit++);
+					d.SetSampler(uniformHandle, theTexture->GetResidentHandle());
 				}
 				else if(defaults)
 				{
@@ -65,12 +63,11 @@ namespace Engine
 						const auto defaultTexture = s_tm->GetTexture({ foundDefault->second });
 						if (defaultTexture != nullptr)
 						{
-							d.SetSampler(uniformHandle, defaultTexture->GetHandle(), textureUnit++);
+							d.SetSampler(uniformHandle, defaultTexture->GetResidentHandle());
 						}
 					}
 				}
 			}
 		}
-		return textureUnit;
 	}
 }

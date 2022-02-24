@@ -14,7 +14,6 @@ namespace Render
 namespace Engine
 {
 	using DefaultTextures = std::map<std::string, TextureHandle>;
-	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, DefaultTextures* defaults, uint32_t textureUnit);
-
-	uint32_t ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m);
+	void ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m, DefaultTextures* defaults);
+	void ApplyMaterial(Render::Device& d, Render::ShaderProgram& shader, const Render::Material& m);
 }

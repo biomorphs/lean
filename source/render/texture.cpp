@@ -7,9 +7,6 @@
 namespace Render
 {
 	Texture::Texture()
-		: m_handle(-1)
-		, m_componentCount(0)
-		, m_isArray(false)
 	{
 	}
 
@@ -318,7 +315,7 @@ namespace Render
 
 			glCompressedTextureSubImage2D(m_handle, m, 0, 0, w, h, glFormat, (GLsizei)size, mipData);
 		}
-		return true;
+		return m_handle != 0;
 	}
 
 	bool Texture::CreateArrayCompressedTexture2D(const std::vector<TextureSource>& src)
@@ -362,7 +359,7 @@ namespace Render
 		}
 		mipBuffer.clear();
 
-		return true;
+		return m_handle != 0;
 	}
 
 	bool Texture::ValidateSource(const std::vector<TextureSource>& src)
@@ -447,7 +444,17 @@ namespace Render
 		return true;
 	}
 
-	bool Texture::CreateCubemap(const TextureSource& src)
+	bool Texture::MakeResidentHandle()
+	{
+		SDE_PROF_EVENT();
+		SDE_RENDER_ASSERT(m_handle != -1);
+		SDE_RENDER_ASSERT(m_residentHandle == 0);
+		m_residentHandle = glGetTextureHandleARB(m_handle);
+		glMakeTextureHandleResidentARB(m_residentHandle);
+		return m_residentHandle != 0;
+	}
+
+	bool Texture::CreateCubemap(const TextureSource& src, bool makeResidentNow)
 	{
 		SDE_PROF_EVENT();
 		SDE_RENDER_ASSERT(m_handle == -1);
@@ -507,36 +514,43 @@ namespace Render
 			SDE_PROF_EVENT("GenerateMips");
 			glGenerateTextureMipmap(m_handle);
 		}
+
+		if (makeResidentNow)
+		{
+			return MakeResidentHandle();
+		}
 		return m_handle != 0;
 	}
 
-	bool Texture::Create(const TextureSource& src)
+	bool Texture::Create(const TextureSource& src, bool makeResidentNow)
 	{
 		SDE_PROF_EVENT();
 		SDE_RENDER_ASSERT(m_handle == -1);
 		m_isArray = false;
+		bool createdOk = false;
 
 		if (src.Is3D())
 		{
 			assert(!ShouldCreateCompressed(src.SourceFormat()));
-			return CreateSimpleUncompressedTexture3D(src);
+			createdOk = CreateSimpleUncompressedTexture3D(src);
+		}
+		else if (ShouldCreateCompressed(src.SourceFormat()))
+		{
+			createdOk = CreateSimpleCompressedTexture2D(src);
 		}
 		else
 		{
-			if (ShouldCreateCompressed(src.SourceFormat()))
-			{
-				return CreateSimpleCompressedTexture2D(src);
-			}
-			else
-			{
-				return CreateSimpleUncompressedTexture2D(src);
-			}
+			createdOk = CreateSimpleUncompressedTexture2D(src);
 		}
 
-		return false;
+		if (makeResidentNow)
+		{
+			return MakeResidentHandle();
+		}
+		return createdOk;
 	}
 
-	bool Texture::Create(const std::vector<TextureSource>& src)
+	bool Texture::Create(const std::vector<TextureSource>& src, bool makeResidentNow)
 	{
 		SDE_PROF_EVENT();
 		SDE_RENDER_ASSERT(m_handle == -1);
@@ -547,34 +561,41 @@ namespace Render
 			return false;
 		}
 
+		bool createdOk = false;
 		if (ShouldCreateCompressed(src[0].SourceFormat()))
 		{
 			if (src.size() == 1)
 			{
 				m_isArray = false;
-				return CreateSimpleCompressedTexture2D(src[0]);
+				createdOk = CreateSimpleCompressedTexture2D(src[0]);
 			}
 			else
 			{
 				m_isArray = true;
-				return CreateArrayCompressedTexture2D(src);
+				createdOk = CreateArrayCompressedTexture2D(src);
 			}
 		}
-		else
+		else if (src.size() == 1)
 		{
-			if (src.size() == 1)
-			{
-				m_isArray = false;
-				return CreateSimpleUncompressedTexture2D(src[0]);
-			}
+			m_isArray = false;
+			createdOk = CreateSimpleUncompressedTexture2D(src[0]);
 		}
 
-		return false;
+		if (makeResidentNow)
+		{
+			return MakeResidentHandle();
+		}
+		return createdOk;
 	}
 
 	void Texture::Destroy()
 	{
 		SDE_PROF_EVENT();
+		if (m_residentHandle != -1)
+		{
+			glMakeTextureHandleNonResidentARB(m_residentHandle);
+			m_residentHandle = -1;
+		}
 		if (m_handle != -1)
 		{
 			glDeleteTextures(1, &m_handle);

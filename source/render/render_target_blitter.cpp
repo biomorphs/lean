@@ -49,7 +49,7 @@ namespace Render
 		auto sampler = shader.GetUniformHandle("SourceTexture");
 		if (sampler != -1)
 		{
-			d.SetSampler(sampler, src.GetColourAttachment(0).GetHandle(), 0);
+			d.SetSampler(sampler, src.GetColourAttachment(0).GetResidentHandle());
 		}
 		for (const auto& chunk : m_quadMesh->GetChunks())
 		{
@@ -75,7 +75,7 @@ namespace Render
 		auto sampler = shader.GetUniformHandle("SourceTexture");
 		if (sampler != -1)
 		{
-			d.SetSampler(sampler, src.GetHandle(), 0);
+			d.SetSampler(sampler, src.GetResidentHandle());
 		}
 		for (const auto& chunk : m_quadMesh->GetChunks())
 		{

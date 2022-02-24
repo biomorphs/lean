@@ -434,7 +434,7 @@ namespace Engine
 					uint32_t uniformHandle = shader.GetUniformHandle(g_shadowSamplerNames[shadowMapIndex++].c_str());
 					if (uniformHandle != -1)
 					{
-						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
+						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetResidentHandle());
 					}
 				}
 				else if(cubeShadowMapIndex < c_maxShadowMaps)
@@ -442,7 +442,7 @@ namespace Engine
 					uint32_t uniformHandle = shader.GetUniformHandle(g_shadowCubeSamplerNames[cubeShadowMapIndex++].c_str());
 					if (uniformHandle != -1)
 					{
-						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetHandle(), textureUnit++);
+						d.SetSampler(uniformHandle, m_lights[l].m_shadowMap->GetDepthStencil()->GetResidentHandle());
 					}
 				}
 			}
@@ -453,7 +453,7 @@ namespace Engine
 			uint32_t uniformHandle = shader.GetUniformHandle(g_shadowSamplerNames[shadowMapIndex++].c_str());
 			if (uniformHandle != -1)
 			{
-				d.SetSampler(uniformHandle, 0, textureUnit++);
+				d.SetSampler(uniformHandle, 0);
 			}
 		}
 		for (int l = cubeShadowMapIndex; l < c_maxShadowMaps; ++l)
@@ -461,7 +461,7 @@ namespace Engine
 			uint32_t uniformHandle = shader.GetUniformHandle(g_shadowCubeSamplerNames[cubeShadowMapIndex++].c_str());
 			if (uniformHandle != -1)
 			{
-				d.SetSampler(uniformHandle, 0, textureUnit++);
+				d.SetSampler(uniformHandle, 0);
 			}
 		}
 
@@ -475,7 +475,6 @@ namespace Engine
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
 		const Render::Mesh* lastMeshUsed = nullptr;				// avoid binding the same vertex arrays
 		const Render::Material* lastInstanceMaterial = nullptr;	// avoid setting instance materials for the same mesh/shaders
-		uint32_t firstTextureUnit = 0;							// so we can bind shadows per shader instead of per mesh
 		while (firstInstance != list.m_instances.end())
 		{
 			// Batch by shader, mesh and instance material
@@ -504,23 +503,18 @@ namespace Engine
 					}
 					if (bindShadowmaps)
 					{
-						firstTextureUnit = BindShadowmaps(d, *theShader, 0);
-					}
-					else
-					{
-						firstTextureUnit = 0;
+						BindShadowmaps(d, *theShader, 0);
 					}
 					lastShaderUsed = theShader;
 				}
 
 				// apply mesh material uniforms and samplers
-				uint32_t textureUnit = firstTextureUnit;
-				textureUnit = ApplyMaterial(d, *theShader, theMesh->GetMaterial(), &g_defaultTextures, textureUnit);
+				ApplyMaterial(d, *theShader, theMesh->GetMaterial(), &g_defaultTextures);
 
 				// apply instance material uniforms and samplers (materials can be shared across instances!)
 				if (instanceMaterial != nullptr && instanceMaterial != lastInstanceMaterial)
 				{
-					ApplyMaterial(d, *theShader, *instanceMaterial, &g_defaultTextures, textureUnit);
+					ApplyMaterial(d, *theShader, *instanceMaterial, &g_defaultTextures);
 					lastInstanceMaterial = instanceMaterial;
 				}
 
@@ -734,7 +728,7 @@ namespace Engine
 			if (sampler != -1)
 			{
 				// force texture unit 1 since 0 is used by blitter
-				d.SetSampler(sampler, mainFb->GetColourAttachment(0).GetHandle(), 1);
+				d.SetSampler(sampler, mainFb->GetColourAttachment(0).GetResidentHandle());
 			}
 			m_targetBlitter.TargetToTarget(d, *m_bloomBlurBuffers[0], m_bloomBrightnessBuffer, *combineShader);
 		}

@@ -186,7 +186,7 @@ void SDFMeshSystem::FindVertices(WorkingSet& w, Render::ShaderProgram& shader, g
 	auto sampler = shader.GetUniformHandle("InputVolume");
 	if (sampler != -1)
 	{
-		device->SetSampler(sampler, w.m_volumeDataTexture->GetHandle(), 0);
+		device->SetSampler(sampler, w.m_volumeDataTexture->GetResidentHandle());
 	}
 	device->BindStorageBuffer(0, *w.m_workingVertexBuffer);
 	device->BindComputeImage(0, w.m_cellLookupTexture->GetHandle(), Render::ComputeImageFormat::R32UI, Render::ComputeImageAccess::WriteOnly, true);
@@ -208,7 +208,7 @@ void SDFMeshSystem::FindTriangles(WorkingSet& w, Render::ShaderProgram& shader, 
 	auto sampler = shader.GetUniformHandle("InputVolume");
 	if (sampler != -1)
 	{
-		device->SetSampler(sampler, w.m_volumeDataTexture->GetHandle(), 0);
+		device->SetSampler(sampler, w.m_volumeDataTexture->GetResidentHandle());
 	}
 	device->BindStorageBuffer(0, *w.m_workingIndexBuffer);
 	device->BindComputeImage(0, w.m_cellLookupTexture->GetHandle(), Render::ComputeImageFormat::R32UI, Render::ComputeImageAccess::ReadOnly, true);
