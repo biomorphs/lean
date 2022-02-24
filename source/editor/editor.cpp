@@ -9,12 +9,14 @@
 #include "engine/debug_render.h"
 #include "engine/shader_manager.h"
 #include "engine/file_picker_dialog.h"
+#include "engine/frustum.h"
 #include "engine/graphics_system.h"
 #include "engine/camera_system.h"
 #include "engine/input_system.h"
 #include "engine/intersection_tests.h"
 #include "entity/entity_system.h"
 #include "engine/render_system.h"
+#include "render/frame_buffer.h"
 #include "entity/component_storage.h"
 #include "commands/editor_close_cmd.h"
 #include "commands/editor_new_scene_cmd.h"
@@ -28,6 +30,7 @@
 #include "commands/editor_clone_selection_cmd.h"
 #include "engine/components/component_transform.h"
 #include "engine/components/component_model.h"
+#include "engine/components/component_light.h"
 #include "engine/serialisation.h"
 #include "render/camera.h"
 #include "render/window.h"
@@ -185,6 +188,9 @@ void Editor::UpdateMenubar()
 	auto& editMenu = menuBar.AddSubmenu(ICON_FK_CLIPBOARD " Edit");
 	editMenu.AddItem(ICON_FK_CROSSHAIRS " Grid Settings", [this]() {
 		m_showGridSettings = true;
+	});
+	editMenu.AddItem(ICON_FK_LIGHTBULB_O " Show Light Bounds ", [this]() {
+		m_showLightBounds = !m_showLightBounds;
 	});
 	if (m_commands.CanUndo())
 	{
@@ -456,6 +462,25 @@ bool Editor::Tick(float timeDelta)
 	DrawSelected();
 	UpdateGrid();
 	UpdateUndoRedo(timeDelta);
+
+	if (m_showLightBounds)
+	{
+		auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+		static auto lightIterator = m_entitySystem->GetWorld()->MakeIterator<Light, Transform>();
+		lightIterator.ForEach([this,graphics](Light& l, Transform& t, EntityHandle e) {
+			const glm::vec4 lightColour(l.GetColour(), 1.0f);
+			if (l.IsPointLight())
+			{
+				auto lightPosition = glm::vec3(t.GetWorldspaceMatrix()[3]);
+				graphics->DebugRenderer().DrawSphere(lightPosition, l.GetDistance(), lightColour);
+			}
+			else
+			{
+				Engine::Frustum f(l.GetShadowMatrix());
+				graphics->DebugRenderer().DrawFrustum(f, lightColour);
+			}
+		});
+	}
 
 	// todo
 	//m_transformWidget->Update(m_selectedEntities);

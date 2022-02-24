@@ -115,12 +115,10 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 					auto transform = world.GetComponent<Transform>(e);
 					if (transform)
 					{
-						auto bMin = it.m_origin - it.m_radius;
-						auto bMax = it.m_origin + it.m_radius;
 						// ignore scale since we dont pass it to physx
 						glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
 						matrix = matrix * glm::toMat4(transform->GetOrientation());
-						render.DrawBox(bMin, bMax, { 0.0f,1.0f,1.0f,1.0f }, matrix);
+						render.DrawSphere(it.m_origin, it.m_radius, { 0.0f,1.0f,1.0f,1.0f }, matrix);
 					}
 				}
 			}

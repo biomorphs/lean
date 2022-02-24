@@ -216,6 +216,49 @@ namespace Engine
 		AddLines(v, c, 1);
 	}
 
+	void DebugRender::DrawSphere(glm::vec3 center, float radius, glm::vec4 colour, glm::mat4 transform)
+	{
+		const int c_numVerticesPerSlice = 16;
+		const int c_numSlices = 16;
+		const float c_thetaDelta = (2.0f * glm::pi<float>() / (float)c_numVerticesPerSlice);	// 360 degrees per slice
+		const float c_sliceThetaDelta = glm::pi<float>() / (float)c_numSlices;	// -90 to 90 on vertical (top to bottom)
+		for (int slice = 0; slice < c_numSlices; ++slice)
+		{
+			const float sliceTheta = -(glm::pi<float>() / 2.0f) + slice * c_sliceThetaDelta;
+			const float nextSliceTheta = sliceTheta + c_sliceThetaDelta;
+			const float y = center.y + radius * sin(sliceTheta);
+			const float nextY = center.y + radius * sin(nextSliceTheta);
+			const float sliceRadius = radius * cosf(sliceTheta);
+			const float nextSliceRadius = radius* cosf(sliceTheta + c_sliceThetaDelta);
+			for (int vertex = 0; vertex < c_numVerticesPerSlice; ++vertex)
+			{
+				const float thisTheta = vertex * c_thetaDelta;
+				const float nextTheta = (vertex + 1) * c_thetaDelta;
+
+				const float cosThisTheta = cosf(thisTheta);
+				const float sinThisTheta = sinf(thisTheta);
+
+				// horizontal line first
+				const float thisX = center.x + cosThisTheta * sliceRadius;
+				const float thisZ = center.z + sinThisTheta * sliceRadius;
+				const float nextX = center.x + cosf(nextTheta) * sliceRadius;
+				const float nextZ = center.z + sinf(nextTheta) * sliceRadius;
+				glm::vec4 p0(thisX, y, thisZ, 1.0f), p1(nextX, y, nextZ, 1.0f);
+				p0 = transform * p0;
+				p1 = transform * p1;
+				DrawLine(glm::vec3(p0), glm::vec3(p1), colour);
+
+				// vertical line to next slice up
+				p1.x = center.x + cosThisTheta * nextSliceRadius;
+				p1.y = nextY;
+				p1.z = center.z + sinThisTheta * nextSliceRadius;
+				p1.w = 1.0f;
+				p1 = transform * p1;
+				DrawLine(glm::vec3(p0), glm::vec3(p1), colour);
+			}
+		}
+	}
+
 	void DebugRender::DrawBox(glm::vec3 bmin, glm::vec3 bmax, glm::vec4 colour, glm::mat4 boxTransform)
 	{
 		glm::vec4 v[] = {
