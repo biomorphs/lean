@@ -320,7 +320,7 @@ void Editor::DrawSelected()
 
 	if (selectedIDs.size() > 0)
 	{
-		m_entitySystem->ShowInspector(selectedIDs, true, "Selected Entities");
+		m_entitySystem->ShowInspector(selectedIDs, true, "Selected Entities", false);
 	}
 }
 

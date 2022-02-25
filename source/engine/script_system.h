@@ -23,6 +23,7 @@ namespace Engine
 		virtual ~ScriptSystem();
 
 		bool PreInit();
+		bool Initialise();
 		bool Tick(float timeDelta);
 		void PostShutdown();
 

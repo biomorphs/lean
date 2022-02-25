@@ -19,7 +19,7 @@ namespace Engine
 	struct TextureHandle
 	{
 		SERIALISED_CLASS();
-		uint32_t m_index = -1;
+		uint32_t m_index = -1u;
 		static TextureHandle Invalid() { return { (uint32_t)-1 }; };
 	};
 

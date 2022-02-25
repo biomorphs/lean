@@ -349,6 +349,18 @@ namespace Engine
 		return vv;
 	}
 
+	bool DebugGuiSystem::TextInputMultiline(const char* label, glm::vec2 boxSize, std::string& str)
+	{
+		char textBuffer[2048] = { '\0' };
+		strcpy_s(textBuffer, str.c_str());
+		if (ImGui::InputTextMultiline(label, textBuffer, sizeof(textBuffer), ImVec2(boxSize.x,boxSize.y)))
+		{
+			str = textBuffer;
+			return true;
+		}
+		return false;
+	}
+
 	bool DebugGuiSystem::TextInput(const char* label, std::string& str)
 	{
 		char textBuffer[1024] = { '\0' };
@@ -378,7 +390,7 @@ namespace Engine
 
 	void DebugGuiSystem::Text(const char* format, ...)
 	{
-		char buffer[1024];
+		char buffer[2048];
 		va_list args;
 		va_start(args, format);
 		vsprintf(buffer, format, args);

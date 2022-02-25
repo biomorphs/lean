@@ -180,6 +180,15 @@ COMPONENT_INSPECTOR_IMPL(Material, Engine::DebugGuiSystem& gui)
 				gui.TreePop();
 			}
 		}
+		static std::string newName = "";
+		gui.TextInput("Value Name", newName);
+		if (newName != "")
+		{
+			if (gui.Button("Add Float")) { m.SetFloat(newName.c_str(), 0.0f); newName = ""; }
+			if (gui.Button("Add Vector")) { m.SetVec4(newName.c_str(), glm::vec4(0.0f)); newName = ""; }
+			if (gui.Button("Add Int")) { m.SetInt32(newName.c_str(), 0); newName = ""; }
+			if (gui.Button("Add Sampler")) { m.SetSampler(newName.c_str(), {}); newName = ""; }
+		}
 	};
 	return fn;
 }

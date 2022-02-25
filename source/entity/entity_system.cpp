@@ -167,7 +167,7 @@ std::string EntitySystem::GetEntityNameWithTags(EntityHandle e) const
 	return text;
 }
 
-void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool expandAll, const char* titleText)
+void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool expandAll, const char* titleText, bool allowAddEntity)
 {
 	SDE_PROF_EVENT();
 	static std::string filterText = "";
@@ -227,7 +227,7 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 				m_debugGui->TreePop();
 			}
 		}
-		if (m_debugGui->Button("Add entity"))
+		if (allowAddEntity && m_debugGui->Button("Add entity"))
 		{
 			m_world->AddEntity();
 		}

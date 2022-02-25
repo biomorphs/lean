@@ -51,6 +51,7 @@ namespace Engine
 		void Text(const char* format, ...);
 		bool TextInput(const char* label, char* textBuffer, size_t bufferSize);
 		bool TextInput(const char* label, std::string& str);
+		bool TextInputMultiline(const char* label, glm::vec2 boxSize, std::string& str);
 		bool Button(const char* txt);
 		bool Selectable(const char* txt, bool selected = false);
 		void Separator();

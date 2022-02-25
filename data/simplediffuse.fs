@@ -143,13 +143,13 @@ void main()
 		discard;
 
 	vec3 finalColour = vec3(0.0);
-	vec3 specularTex = texture(SpecularTexture, vs_out_uv).rgb;
+	float specularTex = texture(SpecularTexture, vs_out_uv).r;
 
 	// transform normal map to world space
 	vec3 finalNormal = texture(NormalsTexture, vs_out_uv).rgb;
 	finalNormal = normalize(finalNormal * 2.0 - 1.0);   
 	finalNormal = normalize(vs_out_tbnMatrix * finalNormal);
-	finalNormal = normalize(vs_out_normal);	// fixme, tbn is wrong with transforms (non orthaganol?)
+	//finalNormal = normalize(vs_out_normal);	// fixme, tbn is wrong with transforms (non orthaganol?)
 
 	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
 	for(int i=0;i<LightCount;++i)

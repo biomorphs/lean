@@ -343,7 +343,7 @@ namespace Engine
 	}
 
 	bool PhysicsSystem::SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance,
-		glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance)
+		glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity)
 	{
 		physx::PxCapsuleGeometry capsuleGeom(radius, halfHeight);
 		physx::PxVec3 origin(pos.x, pos.y, pos.z);
@@ -364,6 +364,11 @@ namespace Engine
 			hitPos = { hitPosPx.x,hitPosPx.y,hitPosPx.z };
 			hitNormal = { hitNormalPx.x,hitNormalPx.y,hitNormalPx.z };
 			hitDistance = results.block.distance;
+			if (results.block.actor)
+			{
+				auto entityId = reinterpret_cast<uintptr_t>(results.block.actor->userData);
+				hitEntity = entityId;
+			}
 		}
 		return hitSomething;
 	}

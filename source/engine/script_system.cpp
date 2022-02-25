@@ -1,6 +1,9 @@
 #include "script_system.h"
+#include "system_manager.h"
 #include "core/file_io.h"
 #include "core/profiler.h"
+#include "components/component_script.h"
+#include "entity/entity_system.h"
 
 namespace Engine
 {
@@ -99,6 +102,14 @@ namespace Engine
 		return true;
 	}
 
+	bool ScriptSystem::Initialise()
+	{
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		entities->RegisterComponentType<Script>();
+		entities->RegisterInspector<Script>(Script::MakeInspector());
+		return true;
+	}
+
 	bool ScriptSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
@@ -107,6 +118,54 @@ namespace Engine
 			SDE_PROF_EVENT("CollectGarbage");
 			m_globalState->collect_garbage();
 		}
+
+		{
+			SDE_PROF_EVENT("RunScriptComponents");
+			auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			auto world = entities->GetWorld();
+			world->ForEachComponent<Script>([this](Script& s, EntityHandle e) {
+				if (s.NeedsCompile())
+				{
+					if (s.GetFunctionText().length() == 0)
+					{
+						s.SetCompiledFunction(nullptr);
+					}
+					else
+					{
+						sol::protected_function theFn;
+						try
+						{
+							theFn = m_globalState->script(s.GetFunctionText());
+							s.SetCompiledFunction(theFn);
+						}
+						catch (const sol::error& err)
+						{
+							std::string errorText = err.what();
+							SDE_LOG("Script Error: %s", errorText.c_str());
+							s.SetCompiledFunction(nullptr);
+						}
+					}
+				}
+				if (!s.NeedsCompile() && s.GetCompiledFunction().valid())
+				{
+					try
+					{
+						const auto& fn = s.GetCompiledFunction();
+						sol::protected_function_result result = fn(e);
+						if (!result.valid())
+						{
+							SDE_LOG("Script Error!");
+						}
+					}
+					catch (const sol::error& err)
+					{
+						std::string errorText = err.what();
+						SDE_LOG("Script Error: %s", errorText.c_str());
+					}
+				}
+			});
+		}
+
 		return true;
 	}
 

@@ -50,7 +50,7 @@ namespace Engine
 		UpdateEntities* MakeUpdater();
 		EntityHandle Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal);
 		bool SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance, 
-			glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance);
+			glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity);
 
 		void SetSimulationEnabled(bool enabled) { m_simEnabled = enabled; }
 

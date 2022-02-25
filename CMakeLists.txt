@@ -49,6 +49,8 @@ set(CommonCompilerOptions /WX /MP)
 
 add_library(Core STATIC)
 set(CORE_SOURCES
+	source/core/base64.h
+	source/core/base64.cpp
 	source/core/file_io.h
 	source/core/log.h
 	source/core/semaphore.h
@@ -216,6 +218,8 @@ set(ENGINE_SOURCES
 	source/engine/camera_system.cpp
 	source/engine/graphics_system.h
 	source/engine/graphics_system.cpp
+	source/engine/components/component_script.h
+	source/engine/components/component_script.cpp
 	source/engine/components/component_camera.h
 	source/engine/components/component_camera.cpp
 	source/engine/components/component_sdf_mesh.h

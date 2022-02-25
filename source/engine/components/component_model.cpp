@@ -1,4 +1,6 @@
 #include "component_model.h"
+#include "component_material.h"
+#include "entity/entity_system.h"
 #include "engine/debug_gui_system.h"
 #include "engine/model_manager.h"
 #include "engine/shader_manager.h"
@@ -23,6 +25,7 @@ COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui)
 	{
 		auto& m = *static_cast<Model::StorageType&>(cs).Find(e);
 		auto models = Engine::GetSystem<Engine::ModelManager>("Models");
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		std::string modelPath = models->GetModelPath(m.GetModel());
 		if (gui.Button(modelPath.c_str()))
 		{
@@ -51,6 +54,44 @@ COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui)
 		if (gui.ComboBox("Shader", shaderpaths, shaderIndex))
 		{
 			m.SetShader({ (uint32_t)(shaderIndex == (shaderpaths.size() - 1) ? (uint32_t)-1 : shaderIndex) });
+		}
+
+		std::string materialEntityName = m.GetMaterialEntity().GetID() != -1 ?
+			entities->GetEntityNameWithTags(m.GetMaterialEntity()) : "None";
+		materialEntityName = std::string("Material Entity: ") + materialEntityName;
+		static EntityHandle setMatEntityHandle;
+		if (gui.Button(materialEntityName.c_str()))
+		{
+			setMatEntityHandle = e;
+		}
+
+		if(setMatEntityHandle.GetID() != -1)
+		{
+			if (gui.BeginModalPopup("Select Material Entity"))
+			{
+				if (gui.Button("None"))
+				{
+					m.SetMaterialEntity({});
+					setMatEntityHandle = {};
+				}
+				if (gui.Button("Myself"))
+				{
+					m.SetMaterialEntity(e);
+					setMatEntityHandle = {};
+				}
+				entities->GetWorld()->ForEachComponent<Material>([entities, &gui, &m, &e](Material& mat, EntityHandle ent) {
+					if (e.GetID() != ent.GetID())
+					{
+						std::string entityName = entities->GetEntityNameWithTags(ent);
+						if (gui.Button(entityName.c_str()))
+						{
+							m.SetMaterialEntity(ent);
+							setMatEntityHandle = {};
+						}
+					}
+				});
+				gui.EndModalPopup();
+			}
 		}
 	};
 	return fn;
