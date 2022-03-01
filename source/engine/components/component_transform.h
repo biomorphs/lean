@@ -17,6 +17,7 @@ public:
 	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui, Engine::DebugRender& render);
 
 	void SetOrientation(glm::quat q) { m_orientation = glm::normalize(q); RebuildMatrix(); }
+	void SetRotationRadians(glm::vec3 r) { SetOrientation(glm::quat(r)); }
 	void SetRotationDegrees3(float x, float y, float z) { SetOrientation(glm::quat(glm::radians(glm::vec3(x, y, z)))); };
 	void SetRotationDegrees(glm::vec3 rotation) { SetOrientation(glm::quat(glm::radians(rotation))); }
 	void SetPosition(glm::vec3 p) { m_position = p; RebuildMatrix(); }
@@ -29,7 +30,7 @@ public:
 	glm::vec3 GetScale() const { return m_scale; }
 	glm::mat4 GetMatrix() const { return m_matrix; }
 	glm::mat4 GetWorldspaceMatrix();
-	void SetParent(ComponentHandle<Transform> parent) { m_parent = parent; }
+	void SetParent(EntityHandle parent);
 	ComponentHandle<Transform>& GetParent() { return m_parent; }
 	const ComponentHandle<Transform>& GetParent() const { return m_parent; }
 private:

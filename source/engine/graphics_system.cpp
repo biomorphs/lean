@@ -107,7 +107,7 @@ void GraphicsSystem::RegisterComponents()
 	m_entitySystem->RegisterInspector<SDFModel>(SDFModel::MakeInspector(*m_debugGui));
 
 	m_entitySystem->RegisterComponentType<EnvironmentSettings>();
-	m_entitySystem->RegisterInspector<EnvironmentSettings>(EnvironmentSettings::MakeInspector(*m_debugGui));
+	m_entitySystem->RegisterInspector<EnvironmentSettings>(EnvironmentSettings::MakeInspector());
 }
 
 void GraphicsSystem::RegisterScripts()

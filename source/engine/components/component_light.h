@@ -27,7 +27,7 @@ public:
 		Spot,
 	};
 	
-	void SetType(Type newType);
+	void SetType(int newType);
 	void SetDirectional();
 	void SetPointLight();
 	void SetSpotLight();
@@ -35,6 +35,8 @@ public:
 	void SetBrightness(float b) { m_brightness = b; }
 	void SetDistance(float d) { m_distance = d; }
 	void SetAttenuation(float a) { m_attenuation = a; }
+	void SetSpotInnerAngle(float inner) { m_spotAngles.x = inner; }
+	void SetSpotOuterAngle(float outer) { m_spotAngles.y = outer; }
 	void SetSpotAngles(float inner, float outer) { m_spotAngles = glm::vec2(inner, outer); }
 	void SetAmbient(float a) { m_ambient = a; }
 	void SetCastsShadows(bool c);

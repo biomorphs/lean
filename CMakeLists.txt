@@ -269,6 +269,9 @@ set(ENTITY_SOURCES
 	source/entity/component_storage.inl
 	source/entity/component_handle.h
 	source/entity/component_handle.inl
+	source/entity/component_inspector.h
+	source/entity/basic_inspector.h
+	source/entity/basic_inspector.cpp
 )
 target_sources(Entity PRIVATE ${ENTITY_SOURCES})
 target_include_directories(Entity PRIVATE ${CommonIncludePaths})

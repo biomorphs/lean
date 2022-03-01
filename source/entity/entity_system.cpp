@@ -6,6 +6,7 @@
 #include "engine/script_system.h"
 #include "engine/components/component_tags.h"
 #include "engine/tag.h"
+#include "basic_inspector.h"
 
 Engine::MenuBar g_entityMenu;
 bool g_showWindow = false;
@@ -172,6 +173,8 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 	SDE_PROF_EVENT();
 	static std::string filterText = "";
 
+	BasicInspector inspectComponent;
+
 	bool keepOpen = true;
 	m_debugGui->BeginWindow(keepOpen, titleText);
 	m_debugGui->TextInput("Tag Filter", filterText);
@@ -207,7 +210,7 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 						auto inspector = m_componentInspectors.find(cmp);
 						if (inspector != m_componentInspectors.end())
 						{
-							inspector->second(*m_world->GetStorage(cmp), entityID);
+							inspector->second(inspectComponent, *m_world->GetStorage(cmp), entityID);
 						}
 						m_debugGui->TreePop();
 					}

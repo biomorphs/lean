@@ -1,9 +1,7 @@
 #include "component_transform.h"
-#include "engine/debug_gui_system.h"
 #include "engine/debug_render.h"
-#include "engine/system_manager.h"
 #include "entity/entity_handle.h"
-#include "entity/entity_system.h"
+#include "entity/component_inspector.h"
 
 COMPONENT_SCRIPTS(Transform,
 	"SetPosition", &Transform::SetPos3,
@@ -25,6 +23,11 @@ SERIALISE_BEGIN(Transform)
 		RebuildMatrix();
 	}
 SERIALISE_END()
+
+void Transform::SetParent(EntityHandle parent)
+{
+	m_parent = parent;
+}
 
 void Transform::RebuildMatrix()
 {
@@ -74,43 +77,28 @@ bool HasParent(Transform* parent, Transform* child)
 COMPONENT_INSPECTOR_IMPL(Transform, Engine::DebugGuiSystem& gui, Engine::DebugRender& render)
 {
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
-	auto fn = [&gui, &render, entities](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui, &render, entities](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		static EntityHandle setParentEntity;
 		auto& t = *static_cast<Transform::StorageType&>(cs).Find(e);
-		t.SetPosition(gui.DragVector("Position", t.GetPosition(), 0.25f, -100000.0f, 100000.0f));
-		t.SetRotationDegrees(gui.DragVector("Rotation", t.GetRotationDegrees(), 0.1f));
-		t.SetScale(gui.DragVector("Scale", t.GetScale(), 0.05f, 0.0f));
-
-		std::string parentName = t.GetParent().GetEntity().GetID() != -1 ?
-			entities->GetEntityNameWithTags(t.GetParent().GetEntity()) : "No Parent";
-		if (gui.Button(parentName.c_str()))
-		{
-			setParentEntity = e;
-		}
-		if (setParentEntity == e)
-		{
-			if (gui.BeginModalPopup("Select Parent"))
+		i.Inspect("Position", t.GetPosition(), InspectFn(e, &Transform::SetPosition), 0.25f, -1000000.0f, 1000000.0f);
+		i.Inspect("Rotation", t.GetRotationRadians(), InspectFn(e, &Transform::SetRotationRadians), 0.1f);
+		i.Inspect("Scale", t.GetScale(), InspectFn(e, &Transform::SetScale), 0.1f, 0.0f);
+		i.Inspect("Parent", t.GetParent().GetEntity(), InspectFn(e, &Transform::SetParent), [&e, &t, entities](const EntityHandle& p) {
+			if (e.GetID() != p.GetID())
 			{
-				if (gui.Button("No Parent"))
+				auto tp = entities->GetWorld()->GetComponent<Transform>(p);
+				if (tp)
 				{
-					t.SetParent({});
-					setParentEntity = -1;
-				}
-				entities->GetWorld()->ForEachComponent<Transform>([entities, &gui, &t, &e](Transform& selParent, EntityHandle ent) {
-					if (e.GetID() != ent.GetID() && !HasParent(&t, &selParent))
+					// protect against loops
+					if (!HasParent(&t, tp))
 					{
-						std::string entityName = entities->GetEntityNameWithTags(ent);
-						if (gui.Button(entityName.c_str()))
-						{
-							t.SetParent({ ent });
-							setParentEntity = -1;
-						}
+						return true;
 					}
-				});
-				gui.EndModalPopup();
+				}
 			}
-		}
+			return false;
+		});
 
 		glm::vec4 p0 = glm::vec4(t.GetPosition(), 1.0f);
 		glm::mat4 mat = t.GetWorldspaceMatrix();

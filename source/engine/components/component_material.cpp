@@ -131,7 +131,7 @@ void Material::SetCastShadows(bool s)
 
 COMPONENT_INSPECTOR_IMPL(Material, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<StorageType&>(cs).Find(e);
 		auto& rmat = m.GetRenderMaterial();

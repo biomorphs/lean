@@ -17,7 +17,7 @@ SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(WalkableArea, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& a = *static_cast<StorageType&>(cs).Find(e);
 		auto bMin = gui.DragVector("Min. Bounds", a.GetBoundsMin());

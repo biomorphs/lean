@@ -4,6 +4,7 @@
 #include "engine/frustum.h"
 #include "engine/debug_render.h"
 #include "entity/entity_handle.h"
+#include "entity/component_inspector.h"
 
 COMPONENT_SCRIPTS(Light,
 	"SetPointLight", &Light::SetPointLight,
@@ -63,24 +64,24 @@ glm::mat4 Light::UpdateShadowMatrix(glm::vec3 position, glm::vec3 direction)
 	return m_shadowMatrix;
 }
 
-void Light::SetType(Type newType)
+void Light::SetType(int newType)
 {
-	m_type = newType;
+	m_type = static_cast<Light::Type>(newType);
 }
 
 void Light::SetSpotLight()
 {
-	SetType(Type::Spot);
+	SetType(static_cast<int>(Type::Spot));
 }
 
 void Light::SetDirectional()
 {
-	SetType(Type::Directional);
+	SetType(static_cast<int>(Type::Directional));
 }
 
 void Light::SetPointLight()
 {
-	SetType(Type::Point);
+	SetType(static_cast<int>(Type::Point));
 }
 
 void Light::SetCastsShadows(bool c)
@@ -90,38 +91,34 @@ void Light::SetCastsShadows(bool c)
 
 COMPONENT_INSPECTOR_IMPL(Light, Engine::DebugGuiSystem& gui, Engine::DebugRender& render)
 {
-	auto fn = [&gui, &render](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui, &render](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& l = *static_cast<Light::StorageType&>(cs).Find(e);
-		int typeIndex = static_cast<int>(l.GetLightType());
+		
 		const char* types[] = { "Directional", "Point", "Spot" };
-		if (gui.ComboBox("Type", types, 3, typeIndex))
-		{
-			l.SetType(static_cast<Light::Type>(typeIndex));
-		}
-		l.SetColour(glm::vec3(gui.ColourEdit("Colour", glm::vec4(l.GetColour(), 1.0f), false)));
-		l.SetBrightness(gui.DragFloat("Brightness", l.GetBrightness(), 0.001f, 0.0f, 10000.0f));
-		l.SetAmbient(gui.DragFloat("Ambient", l.GetAmbient(), 0.001f, 0.0f, 1.0f));
-		l.SetDistance(gui.DragFloat("Distance", l.GetDistance(), 0.1f, 0.0f, 3250.0f));
+		i.InspectEnum("Type", static_cast<int>(l.GetLightType()), InspectFn(e, &Light::SetType), types, 3);
+
+		i.InspectColour("Colour", l.GetColour(), InspectFn(e, &Light::SetColour));
+		i.Inspect("Brightness", l.GetBrightness(), InspectFn(e, &Light::SetBrightness), 0.001f, 0.0f, 10000.0f);
+		i.Inspect("Ambient", l.GetAmbient(), InspectFn(e, &Light::SetAmbient), 0.001f, 0.0f, 10000.0f);
+		i.Inspect("Distance", l.GetDistance(), InspectFn(e, &Light::SetDistance), 0.1f, 0.0f, 10000.0f);
 		if (l.GetLightType() != Light::Type::Directional)
 		{
-			l.SetAttenuation(gui.DragFloat("Attenuation", l.GetAttenuation(), 0.1f, 0.0001f, 1000.0f));
+			i.Inspect("Attenuation", l.GetAttenuation(), InspectFn(e, &Light::SetAttenuation), 0.1f, 0.0001f, 1000.0f);
 		}
 		if (l.GetLightType() == Light::Type::Spot)
 		{
-			auto angles = l.GetSpotAngles();
-			angles.y = gui.DragFloat("Outer Angle", angles.y, 0.01f, angles.x, 1.0f);
-			angles.x = gui.DragFloat("Inner Angle", angles.x, 0.01f, 0.0f, angles.y);
-			l.SetSpotAngles(angles.x, angles.y);
+			i.Inspect("Outer Angle", l.GetSpotAngles().y, InspectFn (e, &Light::SetSpotOuterAngle), 0.01f, l.GetSpotAngles().x, 1.0f);
+			i.Inspect("Inner Angle", l.GetSpotAngles().x, InspectFn(e, &Light::SetSpotInnerAngle), 0.01f, 0.0f, l.GetSpotAngles().y);
 		}
-		l.SetCastsShadows(gui.Checkbox("Cast Shadows", l.CastsShadows()));
+		i.Inspect("Cast Shadows", l.CastsShadows(), InspectFn(e, &Light::SetCastsShadows));
 		if (l.CastsShadows())
 		{
 			if (l.GetLightType() == Light::Type::Directional)
 			{
-				l.SetShadowOrthoScale(gui.DragFloat("Ortho Scale", l.GetShadowOrthoScale(), 0.1f, 0.1f, 10000000.0f));
+				i.Inspect("Ortho Scale", l.GetShadowOrthoScale(), InspectFn(e, &Light::SetShadowOrthoScale), 0.1f, 0.1f, 10000000.0f);
 			}
-			l.SetShadowBias(gui.DragFloat("Shadow Bias", l.GetShadowBias(), 0.001f, 0.0f, 10.0f));
+			i.Inspect("Shadow Bias", l.GetShadowBias(), InspectFn(e, &Light::SetShadowBias), 0.001f, 0.0f, 10.0f);
 			if (!l.IsPointLight() && l.GetShadowMap() != nullptr && !l.GetShadowMap()->IsCubemap())
 			{
 				gui.Image(*l.GetShadowMap()->GetDepthStencil(), glm::vec2(256.0f));

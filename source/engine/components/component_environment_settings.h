@@ -7,7 +7,7 @@ class EnvironmentSettings
 {
 public:
 	COMPONENT(EnvironmentSettings);
-	COMPONENT_INSPECTOR(Engine::DebugGuiSystem& gui);
+	COMPONENT_INSPECTOR();
 
 	inline void SetClearColour(glm::vec3 c) { m_clearColour = c; }
 	inline glm::vec3 GetClearColour() const { return m_clearColour; }

@@ -19,7 +19,7 @@ SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(SDFMesh, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<SDFMesh::StorageType&>(cs).Find(e);
 		auto bMin = m.GetBoundsMin();

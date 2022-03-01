@@ -21,7 +21,7 @@ SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<Model::StorageType&>(cs).Find(e);
 		auto models = Engine::GetSystem<Engine::ModelManager>("Models");

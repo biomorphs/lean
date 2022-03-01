@@ -86,7 +86,7 @@ void Physics::AddForce(glm::vec3 force)
 
 COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRender& render, World& world)
 {
-	auto fn = [&gui, &render, &world](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui, &render, &world](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& p = *static_cast<Physics::StorageType&>(cs).Find(e);
 		auto transform = world.GetComponent<Transform>(e);

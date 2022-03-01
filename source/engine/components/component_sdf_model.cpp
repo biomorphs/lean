@@ -105,7 +105,7 @@ void SDFModel::SetSampleScriptFunction(sol::protected_function fn)
 
 COMPONENT_INSPECTOR_IMPL(SDFModel, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& m = *static_cast<SDFModel::StorageType&>(cs).Find(e);
 		int typeIndex = static_cast<int>(m.GetMeshMode());

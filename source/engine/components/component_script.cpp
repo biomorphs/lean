@@ -24,7 +24,7 @@ SERIALISE_END()
 COMPONENT_INSPECTOR_IMPL(Script)
 {
 	auto gui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
-	auto fn = [gui](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& s = *static_cast<StorageType&>(cs).Find(e);
 		static EntityHandle editStringHandle;

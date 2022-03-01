@@ -28,7 +28,7 @@ namespace Engine
 	void CameraSystem::RegisterComponents()
 	{
 		m_entitySystem->RegisterComponentType<Camera>();
-		m_entitySystem->RegisterInspector<Camera>(Camera::MakeInspector(*m_debugGui));
+		m_entitySystem->RegisterInspector<Camera>(Camera::MakeInspector());
 	}
 
 	void CameraSystem::RegisterScripts()

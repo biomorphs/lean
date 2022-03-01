@@ -33,7 +33,7 @@ bool Tags::ContainsTag(const Engine::Tag& t) const
 
 COMPONENT_INSPECTOR_IMPL(Tags, Engine::DebugGuiSystem& gui)
 {
-	auto fn = [&gui](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [&gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& t = *static_cast<Tags::StorageType&>(cs).Find(e);
 		for (const auto it : t.AllTags())

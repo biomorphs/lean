@@ -45,7 +45,7 @@ void Creature::AddBehaviour(Engine::Tag state, Engine::Tag behaviour)
 
 COMPONENT_INSPECTOR_IMPL(Creature,Engine::DebugGuiSystem& dbg)
 {
-	auto fn = [&dbg](ComponentStorage& cs, const EntityHandle& e) {
+	auto fn = [&dbg](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e) {
 		auto& c = *static_cast<Creature::StorageType&>(cs).Find(e);
 		dbg.Text("State: ");
 		dbg.SameLine();

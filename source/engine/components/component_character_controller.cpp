@@ -6,7 +6,7 @@
 #include "entity/entity_handle.h"
 #include "entity/world.h"
 #include "engine/graphics_system.h"
-#include "entity/world.h"
+#include "entity/component_inspector.h"
 
 COMPONENT_SCRIPTS(CharacterController,
 	"GetRadius", &CharacterController::GetRadius,
@@ -28,7 +28,7 @@ SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(CharacterController)
 {
-	auto fn = [](ComponentStorage& cs, const EntityHandle& e)
+	auto fn = [](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& cc = *static_cast<CharacterController::StorageType&>(cs).Find(e);
 
@@ -37,11 +37,12 @@ COMPONENT_INSPECTOR_IMPL(CharacterController)
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 
-		gui->DragVector("Velocity", cc.GetCurrentVelocity());
-		cc.SetRadius(gui->DragFloat("Capsule Radius", cc.GetRadius(), 0.1f, 0.1f));
-		cc.SetHalfHeight(gui->DragFloat("Half Height", cc.GetHalfHeight(), 0.1f, 0.1f));
-		cc.SetVerticalOffset(gui->DragFloat("Vertical Offset", cc.GetVerticalOffset(), 0.1f));
+		gui->DragVector("Velocity", cc.GetCurrentVelocity());	// read only
+		i.Inspect("Capsule Radius", cc.GetRadius(), InspectFn(e, &CharacterController::SetRadius), 0.1f, 0.1f);
+		i.Inspect("Half Height", cc.GetHalfHeight(), InspectFn(e, &CharacterController::SetHalfHeight), 0.1f, 0.1f);
+		i.Inspect("Vertical Offset", cc.GetVerticalOffset(), InspectFn(e, &CharacterController::SetVerticalOffset), 0.1f);
 		
+		// draw the capsule in the world
 		glm::mat4 capsuleTransform = glm::identity<glm::mat4>();
 		auto transform = world->GetComponent<Transform>(e);
 		if (transform)
