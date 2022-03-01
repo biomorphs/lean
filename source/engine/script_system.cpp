@@ -43,10 +43,15 @@ namespace Engine
 			std::string scriptText;
 			if (Core::LoadTextFromFile(filename, scriptText))
 			{
-				result = m_globalState->script(scriptText.data());
+				result = m_globalState->script(scriptText.data(), [](lua_State*, sol::protected_function_result pfr) {
+					sol::error err = pfr;
+					SDE_LOG("Script error: %s", err.what());
+					return pfr;	// something went wrong!
+				});
+				return result.valid();
 			}
 
-			return true;
+			return false;
 		}
 		catch (const sol::error& err)
 		{
@@ -66,10 +71,14 @@ namespace Engine
 			std::string scriptText;
 			if (Core::LoadTextFromFile(filename, scriptText))
 			{
-				m_globalState->script(scriptText.data());
+				auto result = m_globalState->script(scriptText.data(), [](lua_State*, sol::protected_function_result pfr) {
+					sol::error err = pfr;
+					SDE_LOG("Script error: %s", err.what());
+					return pfr;	// something went wrong!
+				});
+				return result.valid();
 			}
-
-			return true;
+			return false;
 		}
 		catch (const sol::error& err)
 		{
@@ -82,8 +91,12 @@ namespace Engine
 	{
 		try 
 		{
-			m_globalState->script(scriptSource);
-			return true;
+			auto result = m_globalState->script(scriptSource, [](lua_State*, sol::protected_function_result pfr) {
+				sol::error err = pfr;
+				SDE_LOG("Script error: %s", err.what());
+				return pfr;	// something went wrong!
+			});
+			return result.valid();
 		}
 		catch (const sol::error& err) 
 		{
@@ -128,21 +141,28 @@ namespace Engine
 				{
 					if (s.GetFunctionText().length() == 0)
 					{
-						s.SetCompiledFunction(nullptr);
+						s.SetCompiledFunction({});
 					}
 					else
 					{
 						sol::protected_function theFn;
 						try
 						{
-							theFn = m_globalState->script(s.GetFunctionText());
-							s.SetCompiledFunction(theFn);
+							theFn = m_globalState->script(s.GetFunctionText(), [](lua_State*, sol::protected_function_result pfr) {
+								sol::error err = pfr;
+								SDE_LOG("Script error: %s", err.what());
+								return pfr;	// something went wrong!
+							});
+							if (theFn.valid())
+							{
+								s.SetCompiledFunction(theFn);
+							}
 						}
 						catch (const sol::error& err)
 						{
 							std::string errorText = err.what();
 							SDE_LOG("Script Error: %s", errorText.c_str());
-							s.SetCompiledFunction(nullptr);
+							s.SetCompiledFunction({});
 						}
 					}
 				}
@@ -154,6 +174,8 @@ namespace Engine
 						sol::protected_function_result result = fn(e);
 						if (!result.valid())
 						{
+							sol::error err = result;
+							SDE_LOG("Script error: %s", err.what());
 							SDE_LOG("Script Error!");
 						}
 					}

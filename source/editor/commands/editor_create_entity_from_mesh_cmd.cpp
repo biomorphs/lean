@@ -91,5 +91,14 @@ Command::Result EditorCreateEntityFromMeshCommand::Execute()
 		}
 	}
 
+	if (m_currentStatus == Command::Result::Waiting)
+	{
+		auto gui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+		bool keepShowing = true;
+		gui->BeginWindow(keepShowing, "Loading...", Engine::GuiWindowFlags::NoTitlebar);
+		gui->Text("Loading %s...", m_meshPath.c_str());
+		gui->EndWindow();
+	}
+
 	return m_currentStatus;
 }

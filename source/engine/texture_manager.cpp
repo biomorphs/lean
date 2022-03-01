@@ -126,7 +126,7 @@ namespace Engine
 			SDE_PROF_EVENT("CreateTextures");
 			for (auto& tex : loadedTextures)
 			{
-				if(tex.m_texture != nullptr)
+				if(tex.m_texture != nullptr && tex.m_texture->GetHandle() != -1)
 				{
 					tex.m_texture->MakeResidentHandle();
 					m_textures[tex.m_destination.m_index].m_texture = std::move(tex.m_texture);
@@ -134,6 +134,10 @@ namespace Engine
 					{
 						tex.m_onFinish(true, tex.m_destination);
 					}
+				}
+				else
+				{
+					SDE_LOG("Invalid texture handle for loaded texture!");
 				}
 			}
 		}
