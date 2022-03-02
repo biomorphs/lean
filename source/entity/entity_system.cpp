@@ -179,8 +179,8 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 		i = &basicInspector;
 	}
 
-	bool keepOpen = true;
-	m_debugGui->BeginWindow(keepOpen, titleText);
+	m_debugGui->BeginWindow(g_showWindow, titleText);
+	m_debugGui->ItemWidth(-50);
 	m_debugGui->TextInput("Tag Filter", filterText);
 	if (m_debugGui->TreeNode("All Entities", true))
 	{

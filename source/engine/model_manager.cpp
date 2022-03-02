@@ -6,6 +6,7 @@
 #include "job_system.h"
 #include "file_picker_dialog.h"
 #include "debug_gui_system.h"
+#include "debug_gui_menubar.h"
 #include "core/profiler.h"
 #include "core/thread.h"
 #include "engine/system_manager.h"
@@ -34,6 +35,13 @@ namespace Engine
 
 		static bool s_showWindow = false;
 		auto& tm = *Engine::GetSystem<Engine::TextureManager>("Textures");
+
+		Engine::MenuBar menuBar;
+		auto& fileMenu = menuBar.AddSubmenu(ICON_FK_PAINT_BRUSH " Assets");
+		fileMenu.AddItem("Model Manager", [this]() {
+			s_showWindow = !s_showWindow;
+			});
+		gui.MainMenuBar(menuBar);
 
 		if (s_showWindow)
 		{

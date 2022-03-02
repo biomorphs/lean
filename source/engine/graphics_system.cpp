@@ -388,8 +388,7 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 	{
 		const auto& fs = m_renderer->GetStats();
 		char statText[1024] = { '\0' };
-		bool forceOpen = true;
-		m_debugGui->BeginWindow(forceOpen, "Render Stats");
+		m_debugGui->BeginWindow(m_showStats, "Render Stats");
 		sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tTransparents: %zu (%zu visible)", fs.m_totalTransparentInstances, fs.m_renderedTransparentInstances);	m_debugGui->Text(statText);

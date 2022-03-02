@@ -176,28 +176,17 @@ void Editor::UpdateMenubar()
 
 	Engine::MenuBar menuBar;
 	auto& fileMenu = menuBar.AddSubmenu(ICON_FK_FILE_O " File");
+	fileMenu.AddItem("New Scene", [this]() {
+		m_commands.Push(std::make_unique<EditorNewSceneCommand>(m_debugGui, this));
+	});
+	fileMenu.AddItem("Save Scene", [this]() {
+		m_commands.Push(std::make_unique<EditorSaveSceneCommand>(m_debugGui, this, m_sceneFilepath));
+	});
 	fileMenu.AddItem("Exit", [this]() {
 		m_commands.Push(std::make_unique<EditorCloseCommand>(m_debugGui, this));
 	});
 
-	auto& scenesMenu = menuBar.AddSubmenu(ICON_FK_FILE_CODE_O " Scenes");
-	scenesMenu.AddItem("New Scene", [this]() {
-		m_commands.Push(std::make_unique<EditorNewSceneCommand>(m_debugGui, this));
-	});
-	scenesMenu.AddItem("Save Current Scene", [this]() {
-		m_commands.Push(std::make_unique<EditorSaveSceneCommand>(m_debugGui, this, m_sceneFilepath));
-	});
-	scenesMenu.AddItem("Import Scene", [this]() {
-		m_commands.Push(std::make_unique<EditorImportSceneCommand>(this));
-	});
-
 	auto& editMenu = menuBar.AddSubmenu(ICON_FK_CLIPBOARD " Edit");
-	editMenu.AddItem(ICON_FK_CROSSHAIRS " Grid Settings", [this]() {
-		m_showGridSettings = true;
-	});
-	editMenu.AddItem(ICON_FK_LIGHTBULB_O " Show Light Bounds ", [this]() {
-		m_showLightBounds = !m_showLightBounds;
-	});
 	if (m_commands.CanUndo())
 	{
 		editMenu.AddItem(ICON_FK_UNDO " Undo", [this]() {
@@ -223,6 +212,23 @@ void Editor::UpdateMenubar()
 		});
 	}
 
+	auto& scenesMenu = menuBar.AddSubmenu(ICON_FK_GLOBE " Scene");
+	scenesMenu.AddItem("Import Scene", [this]() {
+		m_commands.Push(std::make_unique<EditorImportSceneCommand>(this));
+	});
+
+	auto& settingsMenu = menuBar.AddSubmenu(ICON_FK_COG " Settings");
+	settingsMenu.AddItem(ICON_FK_CROSSHAIRS " Grid Settings", [this]() {
+		m_showGridSettings = true;
+	});
+	std::string showLightBoundsText = ICON_FK_LIGHTBULB_O " Show Light Bounds";
+	if (m_showLightBounds)
+	{
+		showLightBoundsText = ICON_FK_LIGHTBULB_O " Hide Light Bounds";
+	}
+	settingsMenu.AddItem(showLightBoundsText, [this]() {
+		m_showLightBounds = !m_showLightBounds;
+	});
 	m_debugGui->MainMenuBar(menuBar);
 
 	Engine::SubMenu rightClickBar;

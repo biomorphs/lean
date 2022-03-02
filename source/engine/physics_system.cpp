@@ -378,7 +378,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		Engine::MenuBar mainMenu;
-		auto& physicsMenu = mainMenu.AddSubmenu("Physics");
+		auto& physicsMenu = mainMenu.AddSubmenu(ICON_FK_CUBE " Physics");
 		physicsMenu.AddItem(m_simEnabled ? "Disable Simulation" : "Enable Simulation", [this]() {
 			m_simEnabled = !m_simEnabled;
 		});

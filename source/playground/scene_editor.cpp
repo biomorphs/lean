@@ -25,7 +25,6 @@ bool SceneEditor::Tick()
 			m_debugGui->Text("Scene Name");
 			sprintf_s(textBuffer, "%s", m_scene->Name().c_str());
 			m_debugGui->SameLine(100.0f);
-			m_debugGui->ItemWidth(200.0f);
 			m_debugGui->TextInput(" ", m_scene->Name());
 		}
 
@@ -34,7 +33,6 @@ bool SceneEditor::Tick()
 
 		m_debugGui->Text("Add Script");
 		m_debugGui->SameLine(100.0f);
-		m_debugGui->ItemWidth(165.0f);
 		sprintf_s(textBuffer, m_newScriptName.c_str());
 		if (m_debugGui->TextInput("", textBuffer, sizeof(textBuffer)))
 		{
