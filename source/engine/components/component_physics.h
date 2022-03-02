@@ -57,10 +57,10 @@ public:
 	void AddForce(glm::vec3 force);
 
 	bool IsStatic() { return m_isStatic; }
-	void SetStatic(bool s) { m_isStatic = s; }
+	void SetStatic(bool s) { m_isStatic = s; Rebuild(); }
 
 	bool IsKinematic() { return m_isKinematic; }
-	void SetKinematic(bool k) { m_isKinematic = k; }
+	void SetKinematic(bool k) { m_isKinematic = k; Rebuild(); }
 
 	float GetDensity() { return m_density; }
 	void SetDensity(float d) { m_density = d; }

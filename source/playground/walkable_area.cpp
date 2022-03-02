@@ -1,5 +1,6 @@
 #include "walkable_area.h"
 #include "entity/entity_handle.h"
+#include "entity/component_inspector.h"
 #include "engine/debug_gui_system.h"
 #include "core/random.h"
 
@@ -20,9 +21,9 @@ COMPONENT_INSPECTOR_IMPL(WalkableArea, Engine::DebugGuiSystem& gui)
 	auto fn = [&gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& a = *static_cast<StorageType&>(cs).Find(e);
-		auto bMin = gui.DragVector("Min. Bounds", a.GetBoundsMin());
-		auto bMax = gui.DragVector("Max. Bounds", a.GetBoundsMax());
-		a.SetBounds(bMin, bMax);
+		i.Inspect("Min. Bounds", a.GetBoundsMin(), InspectFn(e, &WalkableArea::SetBoundsMin));
+		i.Inspect("Max. Bounds", a.GetBoundsMax(), InspectFn(e, &WalkableArea::SetBoundsMax));
+
 		auto gridRes = a.GetGridResolution();
 		gridRes.x = gui.DragInt("Grid Res. X", gridRes.x, 1);
 		gridRes.y = gui.DragInt("Grid Res. Y", gridRes.y, 1);
@@ -42,7 +43,7 @@ COMPONENT_INSPECTOR_IMPL(WalkableArea, Engine::DebugGuiSystem& gui)
 					}
 					else if (Core::Random::GetInt(0, 100) < 50)
 					{
-						a.SetGridValue({ x,z }, Core::Random::GetFloat(bMin.y, bMax.y * 0.2f));
+						a.SetGridValue({ x,z }, Core::Random::GetFloat(a.GetBoundsMin().y, a.GetBoundsMax().y * 0.2f));
 					}
 				}
 			}

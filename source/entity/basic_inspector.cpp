@@ -19,7 +19,7 @@ bool BasicInspector::Inspect(const char* label, EntityHandle current, std::funct
 	}
 	if (selectingEntity)
 	{
-		std::string windowLabel = "Select " + std::string(label);
+		std::string windowLabel = "Select a " + std::string(label);
 		if (m_dbgGui->BeginModalPopup(windowLabel.c_str()))
 		{
 			if (m_dbgGui->Button("None"))

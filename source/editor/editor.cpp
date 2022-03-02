@@ -1,5 +1,6 @@
 #include "editor.h"
 #include "transform_widget.h"
+#include "editor_component_inspector.h"
 #include "core/log.h"
 #include "core/file_io.h"
 #include "engine/system_manager.h"
@@ -164,6 +165,11 @@ bool Editor::SaveScene(const char* fileName)
 	return result;
 }
 
+void Editor::PushCommand(std::unique_ptr<Command>&& cmdPtr)
+{
+	m_commands.Push(std::move(cmdPtr));
+}
+
 void Editor::UpdateMenubar()
 {
 	SDE_PROF_EVENT();
@@ -320,7 +326,8 @@ void Editor::DrawSelected()
 
 	if (selectedIDs.size() > 0)
 	{
-		m_entitySystem->ShowInspector(selectedIDs, true, "Selected Entities", false);
+		EditorComponentInspector myInspector;
+		m_entitySystem->ShowInspector(selectedIDs, true, "Selected Entities", false, &myInspector);
 	}
 }
 

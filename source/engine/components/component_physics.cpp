@@ -4,6 +4,7 @@
 #include "entity/entity_handle.h"
 #include "component_transform.h"
 #include "entity/world.h"
+#include "entity/component_inspector.h"
 #include <PxPhysicsAPI.h>
 
 COMPONENT_SCRIPTS(Physics,
@@ -89,23 +90,29 @@ COMPONENT_INSPECTOR_IMPL(Physics, Engine::DebugGuiSystem& gui, Engine::DebugRend
 	auto fn = [&gui, &render, &world](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& p = *static_cast<Physics::StorageType&>(cs).Find(e);
-		auto transform = world.GetComponent<Transform>(e);
-		p.SetStatic(gui.Checkbox("Static", p.IsStatic()));
+
+		i.Inspect("Static", p.IsStatic(), InspectFn(e, &Physics::SetStatic));
 		if (!p.IsStatic())
 		{
-			p.SetKinematic(gui.Checkbox("Kinematic", p.IsKinematic()));
+			i.Inspect("Kinematic", p.IsKinematic(), InspectFn(e, &Physics::SetKinematic));
 		}
-		p.SetDensity(gui.DragFloat("Density", p.GetDensity(), 0.01f, 0.0f, 100000.0f));
-		p.SetStaticFriction(gui.DragFloat("Friction (Static)", p.GetStaticFriction(), 0.01f, 0.0f, 10.0f));
-		p.SetDynamicFriction(gui.DragFloat("Friction (Dynamic)", p.GetDynamicFriction(), 0.01f, 0.0f, 10.0f));
-		p.SetRestitution(gui.DragFloat("Restitution", p.GetRestitution(), 0.01f, 0.0f, 10.0f));
 
-		// ignore scale since we dont pass it to physx
-		glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
-		matrix = matrix * glm::toMat4(transform->GetOrientation());
+		i.Inspect("Density", p.GetDensity(), InspectFn(e, &Physics::SetDensity), 0.01f, 0.0f, 100000.0f);
+		i.Inspect("Static Friction", p.GetStaticFriction(), InspectFn(e, &Physics::SetStaticFriction), 0.01f, 0.0f, 10.0f);
+		i.Inspect("Dynamic Friction", p.GetDynamicFriction(), InspectFn(e, &Physics::SetDynamicFriction), 0.01f, 0.0f, 10.0f);
+		i.Inspect("Restitution", p.GetRestitution(), InspectFn(e, &Physics::SetRestitution), 0.01f, 0.0f, 10.0f);
 
 		if (gui.TreeNode("Colliders", true))
 		{
+			auto transform = world.GetComponent<Transform>(e);
+			glm::mat4 matrix = glm::identity<glm::mat4>();
+			if (transform)
+			{
+				// ignore scale since we dont pass it to physx
+				matrix = glm::translate(glm::identity<glm::mat4>(), transform->GetPosition());
+				matrix = matrix * glm::toMat4(transform->GetOrientation());
+			}
+
 			char text[256] = "";
 			for (auto& it : p.GetPlaneColliders())
 			{

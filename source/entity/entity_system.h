@@ -26,7 +26,7 @@ public:
 	using InspectorFn = std::function<void(class ComponentInspector&, ComponentStorage&, EntityHandle)>;
 	template<class ComponentType> 
 	void RegisterInspector(InspectorFn fn);
-	void ShowInspector(const std::vector<uint32_t>& entities, bool expandAll=false, const char* titleText = "Entities", bool allowAddEntity=true);
+	void ShowInspector(const std::vector<uint32_t>& entities, bool expandAll=false, const char* titleText = "Entities", bool allowAddEntity=true, ComponentInspector* i=nullptr);
 
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();

@@ -12,6 +12,8 @@ public:
 	glm::vec3 GetBoundsMin() const { return m_boundsMin; }
 	glm::vec3 GetBoundsMax() const { return m_boundsMax; }
 	void SetBounds(glm::vec3 bMin, glm::vec3 bMax);
+	void SetBoundsMin(glm::vec3 bMin) { m_boundsMin = bMin; }
+	void SetBoundsMax(glm::vec3 bMax) { m_boundsMax = bMax; }
 	glm::ivec2 GetGridResolution() const { return m_gridResolution; }
 	void SetGridResolution(glm::ivec2 r);
 	void SetGridValue(glm::ivec2 pos, float value);

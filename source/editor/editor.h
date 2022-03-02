@@ -34,6 +34,8 @@ public:
 	void DeselectEntity(const EntityHandle h);
 	void DeselectAll();
 	void SelectAll();
+
+	void PushCommand(std::unique_ptr<Command>&& cmdPtr);
 private:
 	struct PossibleSelection
 	{

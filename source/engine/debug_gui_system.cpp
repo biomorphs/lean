@@ -239,7 +239,7 @@ namespace Engine
 		}
 
 		ImGui::OpenPopup(windowName);
-		bool ret = ImGui::BeginPopupModal(windowName, nullptr, windowFlags);
+		bool ret = ImGui::BeginPopupModal(windowName, nullptr, windowFlags | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
 		return ret;
 	}
 
@@ -318,6 +318,14 @@ namespace Engine
 	{
 		auto ff = f;
 		ImGui::DragFloat(label, &ff, step, min, max);
+		return ff;
+	}
+
+	float DebugGuiSystem::InputFloat(const char* label, float f, float step, float min, float max)
+	{
+		auto ff = f;
+		ImGui::InputFloat(label, &ff, step);
+		ff = glm::min(max, glm::max(ff, min));
 		return ff;
 	}
 

@@ -319,6 +319,8 @@ add_library(Editor STATIC)
 set(EDITOR_SOURCES
 	source/editor/editor.h
 	source/editor/editor.cpp
+	source/editor/editor_component_inspector.h
+	source/editor/editor_component_inspector.cpp
 	source/editor/transform_widget.h
 	source/editor/transform_widget.cpp
 	source/editor/command.h
@@ -344,6 +346,7 @@ set(EDITOR_SOURCES
 	source/editor/commands/editor_clone_selection_cmd.cpp
 	source/editor/commands/editor_select_entity_cmd.h
 	source/editor/commands/editor_select_entity_cmd.cpp
+	source/editor/commands/editor_set_value_cmd.h
 )
 
 target_sources(Editor PRIVATE ${EDITOR_SOURCES})

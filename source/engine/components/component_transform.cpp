@@ -85,16 +85,12 @@ COMPONENT_INSPECTOR_IMPL(Transform, Engine::DebugGuiSystem& gui, Engine::DebugRe
 		i.Inspect("Rotation", t.GetRotationRadians(), InspectFn(e, &Transform::SetRotationRadians), 0.1f);
 		i.Inspect("Scale", t.GetScale(), InspectFn(e, &Transform::SetScale), 0.1f, 0.0f);
 		i.Inspect("Parent", t.GetParent().GetEntity(), InspectFn(e, &Transform::SetParent), [&e, &t, entities](const EntityHandle& p) {
-			if (e.GetID() != p.GetID())
+			auto tp = entities->GetWorld()->GetComponent<Transform>(p);
+			if (tp)
 			{
-				auto tp = entities->GetWorld()->GetComponent<Transform>(p);
-				if (tp)
+				if (!HasParent(&t, tp))	// protect against loops
 				{
-					// protect against loops
-					if (!HasParent(&t, tp))
-					{
-						return true;
-					}
+					return true;
 				}
 			}
 			return false;
