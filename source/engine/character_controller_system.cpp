@@ -63,7 +63,7 @@ namespace Engine
 		auto world = entities->GetWorld();
 
 		Engine::MenuBar mainMenu;
-		auto& physicsMenu = mainMenu.AddSubmenu("Physics");
+		auto& physicsMenu = mainMenu.AddSubmenu(ICON_FK_CUBE " Physics");
 		auto& cctMenu = physicsMenu.AddSubmenu("Character Controllers");
 		cctMenu.AddItem(m_enableDebug ? "Disable Debug" : "Enable Debug", [this]() {
 			m_enableDebug = !m_enableDebug;
@@ -84,6 +84,7 @@ namespace Engine
 			glm::vec4 capsuleColour(0.0f, 0.2f, 0.2f, 1.0f);
 			glm::vec3 newPosition = t.GetPosition();
 			glm::vec3 currentVelocity = c.GetCurrentVelocity();
+			glm::vec3 up(0.0f, 1.0f, 0.0f);
 			if (currentVelocity.y < 0.0f)	// falling?
 			{
 				glm::vec3 hitPos, hitNormal;
@@ -95,7 +96,7 @@ namespace Engine
 					capsuleColour = { 0.0f,0.5f,0.5f,1.0f };
 					if (m_enableDebug)
 					{
-						graphics->DebugRenderer().DrawLine(hitPos, hitPos + hitNormal * 50.0f, { 1.0f,0.0f,0.0f,1.0f });
+						graphics->DebugRenderer().DrawLine(hitPos, hitPos + hitNormal * 50.0f, { 1.0f,1.0f,1.0f,1.0f });
 					}
 
 					if (hitDepth < 0.0f)
@@ -107,6 +108,13 @@ namespace Engine
 					}
 					else
 					{
+						const float epsilon = 0.001f;
+						if (hitDepth < epsilon)
+						{
+							// almost, or actually touching something
+							float slopeAngle = glm::dot(hitNormal, up);
+							//SDE_LOG("touching something, slope=%f", slopeAngle);
+						}
 						// we are about to hit something
 						currentVelocity.y = 0.0f;
 					}

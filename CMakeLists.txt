@@ -326,6 +326,8 @@ set(EDITOR_SOURCES
 	source/editor/command.h
 	source/editor/command_list.cpp
 	source/editor/command_list.h
+	source/editor/utils.h
+	source/editor/utils.cpp
 	source/editor/commands/editor_close_cmd.cpp
 	source/editor/commands/editor_close_cmd.h
 	source/editor/commands/editor_new_scene_cmd.cpp
@@ -347,6 +349,8 @@ set(EDITOR_SOURCES
 	source/editor/commands/editor_select_entity_cmd.h
 	source/editor/commands/editor_select_entity_cmd.cpp
 	source/editor/commands/editor_set_value_cmd.h
+	source/editor/commands/editor_set_entity_positions_cmd.h
+	source/editor/commands/editor_set_entity_positions_cmd.cpp
 )
 
 target_sources(Editor PRIVATE ${EDITOR_SOURCES})

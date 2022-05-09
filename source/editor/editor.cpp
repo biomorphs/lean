@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "utils.h"
 #include "transform_widget.h"
 #include "editor_component_inspector.h"
 #include "core/log.h"
@@ -229,6 +230,9 @@ void Editor::UpdateMenubar()
 	settingsMenu.AddItem(showLightBoundsText, [this]() {
 		m_showLightBounds = !m_showLightBounds;
 	});
+	settingsMenu.AddItem(ICON_FK_CODE "Show Command Lists", [this]() {
+		m_showCommandLists = true;
+	});
 	m_debugGui->MainMenuBar(menuBar);
 
 	Engine::SubMenu rightClickBar;
@@ -275,17 +279,10 @@ std::vector<Editor::PossibleSelection> Editor::FindSelectionCandidates()
 	std::vector<PossibleSelection> candidates;
 
 	// Find the raycast start/end pos from the mouse cursor
-	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
 	auto mm = Engine::GetSystem<Engine::ModelManager>("Models");
-	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
-	auto mainCam = Engine::GetSystem<Engine::CameraSystem>("Cameras")->MainCamera();
 
-	const glm::vec3 selectionRayStart = mainCam.Position();
-	const auto windowSize = glm::vec2(Engine::GetSystem<Engine::RenderSystem>("Render")->GetWindow()->GetSize());
-	const glm::vec2 cursorPos(input->GetMouseState().m_cursorX, windowSize.y - input->GetMouseState().m_cursorY);
-	glm::vec3 mouseWorldSpace = mainCam.WindowPositionToWorldSpace(cursorPos, windowSize);
-	const glm::vec3 lookDirWorldspace = glm::normalize(mouseWorldSpace - mainCam.Position());
-	const glm::vec3 selectionRayEnd = mainCam.Position() + lookDirWorldspace * 100000.0f;
+	glm::vec3 selectionRayStart, selectionRayEnd;
+	EditorUtils::MouseCursorToWorldspaceRay(100000.0f, selectionRayStart, selectionRayEnd);
 
 	static auto modelIterator = m_entitySystem->GetWorld()->MakeIterator<Model, Transform>();
 	modelIterator.ForEach([&](Model& m, Transform& t, EntityHandle h) {
@@ -476,6 +473,11 @@ bool Editor::Tick(float timeDelta)
 	UpdateGrid();
 	UpdateUndoRedo(timeDelta);
 
+	if (m_showCommandLists)
+	{
+		m_showCommandLists = m_commands.ShowWindow();
+	}
+
 	if (m_showLightBounds)
 	{
 		auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
@@ -495,7 +497,6 @@ bool Editor::Tick(float timeDelta)
 		});
 	}
 
-	// todo
 	//m_transformWidget->Update(m_selectedEntities);
 
 	m_commands.RunNext();

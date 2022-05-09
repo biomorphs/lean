@@ -46,8 +46,10 @@ namespace Engine
 		void SetWindowPosition(glm::vec2 p);
 		void SetWindowSize(glm::vec2 s);
 		void EndWindow();
-		void ItemWidth(float w);
+		void PushItemWidth(float w);
+		void PopItemWidth();
 		void SameLine(float xOffset = 0.0f, float spacing = -1.0f);
+		void AlignToNextControl();
 		void Text(const char* format, ...);
 		bool TextInput(const char* label, char* textBuffer, size_t bufferSize);
 		bool TextInput(const char* label, std::string& str);
@@ -64,6 +66,7 @@ namespace Engine
 		glm::vec3 ColourEdit(const char* label, glm::vec3 c);
 		float InputFloat(const char* label, float f, float step = 1.0f, float min = -FLT_MAX, float max = FLT_MAX);
 		float DragFloat(const char* label, float f, float step = 1.0f, float min = -FLT_MAX, float max = FLT_MAX);
+		int32_t InputInt(const char* label, int32_t f, int32_t step = 1, int32_t min = INT_MIN, int max = INT_MAX);
 		int32_t DragInt(const char* label, int32_t t, int32_t step = 1, int32_t min = INT_MIN, int32_t max = INT_MAX);
 		glm::vec4 DragVector(const char* label, glm::vec4 v, float step = 1.0f, float min = -FLT_MAX, float max = FLT_MAX);
 		glm::vec3 DragVector(const char* label, glm::vec3 v, float step = 1.0f, float min = -FLT_MAX, float max = FLT_MAX);

@@ -15,7 +15,7 @@ COMPONENT_SCRIPTS(Model,
 )
 
 SERIALISE_BEGIN(Model)
-	SERIALISE_PROPERTY("MaterialEntity", m_materialEntity)
+	SERIALISE_PROPERTY("MaterialEntity", m_material)
 	SERIALISE_PROPERTY("Shader", m_shader)
 	SERIALISE_PROPERTY("Model", m_model)
 SERIALISE_END()

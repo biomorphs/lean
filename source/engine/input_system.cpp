@@ -59,6 +59,7 @@ namespace Engine
 		{ SDLK_DOWN, KEY_DOWN },
 		{ SDLK_LCTRL, KEY_LCTRL },
 		{ SDLK_RCTRL, KEY_RCTRL },
+		{ SDLK_ESCAPE, KEY_ESCAPE }
 	};
 
 	const std::map<std::string, Key> c_keyStringMapping = {
@@ -106,7 +107,8 @@ namespace Engine
 		{"KEY_UP", Key::KEY_UP },
 		{"KEY_DOWN", Key::KEY_DOWN },
 		{"KEY_LCTRL", Key::KEY_LCTRL },
-		{"KEY_RCTRL", Key::KEY_RCTRL }
+		{"KEY_RCTRL", Key::KEY_RCTRL },
+		{"KEY_ESCAPE", Key::KEY_ESCAPE}
 	};
 
 	InputSystem::InputSystem()
@@ -263,7 +265,7 @@ namespace Engine
 
 		auto scripts = m_scripts->Globals()["Input"].get_or_create<sol::table>();
 		scripts["IsKeyPressed"] = [this](const char* keyStr) {
-			return IsKeyDown(keyStr);
+			return m_keysEnabled && IsKeyDown(keyStr);
 		};
 
 		return true;

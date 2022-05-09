@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/system.h"
+#include "engine/tag.h"
 #include "world.h"
 #include <memory>
 
@@ -35,6 +36,7 @@ public:
 	std::vector<uint32_t> SerialiseEntities(nlohmann::json& data, bool restoreIDsFromData=false);
 
 	std::string GetEntityNameWithTags(EntityHandle e) const;
+	EntityHandle GetFirstEntityWithTag(Engine::Tag tag);
 
 private:
 	std::map<ComponentType, InspectorFn> m_componentInspectors;

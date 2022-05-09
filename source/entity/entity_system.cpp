@@ -180,7 +180,6 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 	}
 
 	m_debugGui->BeginWindow(g_showWindow, titleText);
-	m_debugGui->ItemWidth(-50);
 	m_debugGui->TextInput("Tag Filter", filterText);
 	if (m_debugGui->TreeNode("All Entities", true))
 	{
@@ -243,6 +242,19 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 	m_debugGui->EndWindow();
 }
 
+EntityHandle EntitySystem::GetFirstEntityWithTag(Engine::Tag tag)
+{
+	// Todo, searches entire list each time, ForEachComponent needs early out support 
+	EntityHandle result;
+	m_world->ForEachComponent<Tags>([&result, &tag](Tags& tagCmp, EntityHandle e) {
+		if (!result.IsValid() && tagCmp.ContainsTag(tag))
+		{
+			result = e;
+		}
+	});
+	return result;
+}
+
 bool EntitySystem::PreInit()
 {
 	SDE_PROF_EVENT();
@@ -268,6 +280,9 @@ bool EntitySystem::PreInit()
 	auto world = scripts["World"].get_or_create<sol::table>();
 	world["AddEntity"] = [this]() { return m_world->AddEntity(); };
 	world["RemoveEntity"] = [this](EntityHandle e) { return m_world->RemoveEntity(e); };
+	world["GetFirstEntityWithTag"] = [this](Engine::Tag t) {
+		return GetFirstEntityWithTag(t);
+	};
 
 	return true;
 }

@@ -96,13 +96,13 @@ namespace Engine
 		if (!m_activeCamera.IsValid())
 		{
 			m_debugCamera->Update(m_inputSystem->ControllerState(0), timeDelta);
-			if (!m_debugGui->IsCapturingMouse())
+			if (!m_debugGui->IsCapturingMouse() && !m_debugGui->IsCapturingKeyboard())
 			{
-				m_debugCamera->Update(m_inputSystem->GetMouseState(), timeDelta);
-			}
-			if (!m_debugGui->IsCapturingKeyboard())
-			{
-				m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
+				if (m_inputSystem->GetKeyboardState().m_keyPressed[Engine::KEY_z])
+				{
+					m_debugCamera->Update(m_inputSystem->GetMouseState(), timeDelta);
+					m_debugCamera->Update(m_inputSystem->GetKeyboardState(), timeDelta);
+				}
 			}
 			m_debugCamera->ApplyToCamera(*m_mainRenderCamera);
 			m_mainRenderCamera->SetProjection(70.0f, aspectRatio, 0.1f, 8000.0f);

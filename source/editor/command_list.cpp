@@ -37,7 +37,7 @@ bool CommandList::CanUndo()
 	return m_undoStack.size() > 0 && !HasWork();
 }
 
-void CommandList::ShowWindow()
+bool CommandList::ShowWindow()
 {
 	bool keepOpen = true;
 	auto gui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
@@ -75,7 +75,9 @@ void CommandList::ShowWindow()
 		}
 
 		gui->EndWindow();
+		return true;
 	}
+	return false;
 }
 
 void CommandList::Push(std::unique_ptr<Command>&& cmdPtr)

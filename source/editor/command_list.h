@@ -7,7 +7,7 @@ class Command;
 class CommandList
 {
 public:
-	void ShowWindow();
+	bool ShowWindow();
 	
 	void Push(std::unique_ptr<Command>&& cmdPtr);
 	bool HasWork();

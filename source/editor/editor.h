@@ -63,6 +63,7 @@ private:
 	std::string m_sceneName = "";
 	std::string m_sceneFilepath = "";
 
+	bool m_showCommandLists = false;
 	bool m_showLightBounds = false;
 	bool m_showGridSettings = false;
 	float m_gridSize = 8.0f;

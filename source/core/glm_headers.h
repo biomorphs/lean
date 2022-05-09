@@ -24,6 +24,7 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/closest_point.hpp>
 
 #ifdef I_DISABLED_DEBUG
 #undef NDEBUG

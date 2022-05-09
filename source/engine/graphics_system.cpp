@@ -308,15 +308,8 @@ void GraphicsSystem::ProcessEntities()
 		modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
 			if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
 			{
-				Render::Material* instanceMaterial = nullptr;
-				if (m.GetMaterialEntity().GetID() != -1)
-				{
-					auto matComponent = materials->Find(m.GetMaterialEntity());
-					if (matComponent != nullptr)
-					{
-						instanceMaterial = &matComponent->GetRenderMaterial();
-					}
-				}
+				Material* cmpMat = m.GetMaterialComponent();
+				Render::Material* instanceMaterial = cmpMat ? &cmpMat->GetRenderMaterial() : nullptr;
 				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), instanceMaterial);
 			}
 		});

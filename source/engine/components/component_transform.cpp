@@ -9,6 +9,7 @@ COMPONENT_SCRIPTS(Transform,
 	"SetScale", &Transform::SetScale3,
 	"GetScale", &Transform::GetScale,
 	"GetPosition", &Transform::GetPosition,
+	"GetRotationRadians", &Transform::GetRotationRadians,
 	"GetRotationDegrees", &Transform::GetRotationDegrees,
 	"RotateEuler", &Transform::RotateEuler
 )
@@ -82,8 +83,8 @@ COMPONENT_INSPECTOR_IMPL(Transform, Engine::DebugGuiSystem& gui, Engine::DebugRe
 		static EntityHandle setParentEntity;
 		auto& t = *static_cast<Transform::StorageType&>(cs).Find(e);
 		i.Inspect("Position", t.GetPosition(), InspectFn(e, &Transform::SetPosition), 0.25f, -1000000.0f, 1000000.0f);
-		i.Inspect("Rotation", t.GetRotationRadians(), InspectFn(e, &Transform::SetRotationRadians), 0.1f);
-		i.Inspect("Scale", t.GetScale(), InspectFn(e, &Transform::SetScale), 0.1f, 0.0f);
+		i.Inspect("Rotation", t.GetRotationRadians(), InspectFn(e, &Transform::SetRotationRadians), 0.3927f);
+		i.Inspect("Scale", t.GetScale(), InspectFn(e, &Transform::SetScale), 0.5f, 0.0f);
 		i.Inspect("Parent", t.GetParent().GetEntity(), InspectFn(e, &Transform::SetParent), [&e, &t, entities](const EntityHandle& p) {
 			auto tp = entities->GetWorld()->GetComponent<Transform>(p);
 			if (tp)

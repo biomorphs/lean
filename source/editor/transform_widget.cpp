@@ -1,9 +1,15 @@
 #include "transform_widget.h"
+#include "utils.h"
+#include "editor.h"
 #include "engine/system_manager.h"
 #include "engine/components/component_transform.h"
 #include "entity/entity_system.h"
 #include "engine/graphics_system.h"
+#include "engine/input_system.h"
+#include "engine/debug_gui_system.h"
 #include "engine/debug_render.h"
+#include "engine/intersection_tests.h"
+#include "commands/editor_set_entity_positions_cmd.h"
 
 void TransformWidget::Reset(const std::vector<EntityHandle>& entities)
 {
@@ -13,12 +19,14 @@ void TransformWidget::Reset(const std::vector<EntityHandle>& entities)
 	auto esys = Engine::GetSystem<EntitySystem>("Entities");
 	auto world = esys->GetWorld();
 	glm::vec3 newPosition(0.0f, 0.0f, 0.0f);
+	m_trackedEntities.clear();
 	for (auto handle : entities)
 	{
 		auto transformCmp = world->GetComponent<Transform>(handle);
 		if (transformCmp)
 		{
-			newPosition = newPosition + transformCmp->GetPosition();
+			m_trackedEntities.push_back({ handle, glm::vec3(transformCmp->GetWorldspaceMatrix()[3]) });
+			newPosition = newPosition + glm::vec3(transformCmp->GetWorldspaceMatrix()[3]);
 		}
 	}
 	if (entities.size() > 0)
@@ -27,25 +35,47 @@ void TransformWidget::Reset(const std::vector<EntityHandle>& entities)
 	}
 
 	m_widgetTransform = glm::translate(newPosition);
-	glm::mat4 widgetInverse = glm::inverse(m_widgetTransform);
+	m_currentEntities = entities;
+}
 
-	m_trackedEntities.clear();
-
-	// now calculate transforms for each entity relative to the widget
-	for (auto it : entities)
+void TransformWidget::RestoreEntityTransforms()
+{
+	auto esys = Engine::GetSystem<EntitySystem>("Entities");
+	auto world = esys->GetWorld();
+	for (auto& it : m_trackedEntities)
 	{
-		auto transformCmp = world->GetComponent<Transform>(it);
+		auto transformCmp = world->GetComponent<Transform>(it.m_entity);
 		if (transformCmp)
 		{
-			m_trackedEntities.push_back({it, transformCmp->GetWorldspaceMatrix() * widgetInverse});
+			transformCmp->SetPosition(it.m_originalPosition);
 		}
 	}
-	m_currentEntities = entities;
+}
+
+void TransformWidget::CommitTranslation(glm::vec3 translation)
+{
+	auto editor = Engine::GetSystem<Editor>("Editor");
+	auto cmd = std::make_unique<EditorSetEntityPositionsCommand>();
+	for (auto it : m_trackedEntities)
+	{
+		cmd->AddEntity(it.m_entity, it.m_originalPosition, it.m_originalPosition + translation);
+	}
+	editor->PushCommand(std::move(cmd));
 }
 
 void TransformWidget::Update(const std::vector<EntityHandle>& entities)
 {
 	SDE_PROF_EVENT();
+
+	float widgetScale = 64.0f;	// todo - rescale based on screen space size
+	float barWidth = 1.0f;	// rescale from ss size
+
+	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+	auto input = Engine::GetSystem<Engine::InputSystem>("Input");
+	auto gui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+	auto esys = Engine::GetSystem<EntitySystem>("Entities");
+	auto world = esys->GetWorld();
+	auto& dbg = graphics->DebugRenderer();	// todo - need a debug render option with no depth read
 
 	if (entities != m_currentEntities)
 	{
@@ -54,24 +84,83 @@ void TransformWidget::Update(const std::vector<EntityHandle>& entities)
 
 	if (m_trackedEntities.size() > 0)
 	{
-		auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+		bool leftBtnDown = false;
+		if (!gui->IsCapturingMouse() && !gui->IsCapturingKeyboard())
+		{
+			leftBtnDown = input->GetMouseState().m_buttonState & Engine::MouseButtons::LeftButton;
+		}
 
 		glm::vec3 widgetPos = glm::vec3(m_widgetTransform[3]);
-		float widgetScale = 8.0f;	// todo - rescale based on screen space size
-		float barWidth = 0.25f;	// rescale from ss size
+		glm::vec3 mouseRayStartWs, mouseRayEndWs;
+		EditorUtils::MouseCursorToWorldspaceRay(1000.0f, mouseRayStartWs, mouseRayEndWs);
+		glm::mat4 widgetInverse = glm::inverse(m_widgetTransform);
+		glm::vec3 mouseRayStart = glm::vec3(widgetInverse * glm::vec4(mouseRayStartWs, 1.0f));
+		glm::vec3 mouseRayEnd = glm::vec3(widgetInverse * glm::vec4(mouseRayEndWs, 1.0f));
 
-		// todo - need a debug render option with no depth read
-		auto& dbg = graphics->DebugRenderer();
+		if (m_mouseBtnDownLastFrame)
+		{
+			glm::vec3 originalPos = glm::vec3(m_mouseDragStartTransform[3]);
+			glm::vec3 xAxis = glm::normalize(glm::mat3(m_mouseDragStartTransform) * glm::vec3(1.0f, 0.0f, 0.0f)) * 10000.0f;
+			glm::vec3 c0, c1;	// closest points from mouse ray to axis (one point per ray)
+			if (Engine::GetNearPointsBetweenLines(mouseRayStartWs, mouseRayEndWs, originalPos - xAxis, originalPos + xAxis, c0, c1))
+			{
+				dbg.DrawLine(c0, c1, { 1.0f,1.0f,0.0f,1.0f });
+				dbg.AddAxisAtPoint(glm::vec4(c1, 1.0f), 8.0f);
+				glm::vec3 translation = c1 - originalPos;
+				if (leftBtnDown)
+				{
+					m_widgetTransform = glm::translate(originalPos);
+					for (auto it : m_trackedEntities)
+					{
+						auto transformCmp = world->GetComponent<Transform>(it.m_entity);
+						if (transformCmp)
+						{
+							glm::vec3 newPos = it.m_originalPosition + translation;
+							transformCmp->SetPosition(newPos);	// todo - needs to be set worldspace position
+						}
+					}
+				}
+				else    // just let go of mouse
+				{
+					CommitTranslation(translation);
+					Reset(entities);
+				}
+			}
+		}
 
 		// x
-		dbg.DrawBox({ 0.0f, -barWidth / 2.0f, -barWidth / 2.0f }, { widgetScale, barWidth / 2.0f, barWidth / 2.0f }, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), m_widgetTransform);
+		glm::vec3 boxMin = { 0.0f, -barWidth / 2.0f, -barWidth / 2.0f };
+		glm::vec3 boxMax = { widgetScale, barWidth / 2.0f, barWidth / 2.0f };
+		glm::vec4 colour = { 1.0f, 0.0f, 0.0f, 1.0f };
+		float hitT = 0.0f;
+		if (Engine::RayIntersectsAABB(mouseRayStart, mouseRayEnd, boxMin, boxMax, hitT))
+		{
+			colour = { 1.0f,1.0f,1.0f,1.0f };
+			if (leftBtnDown && !m_mouseBtnDownLastFrame)
+			{
+				glm::vec3 xAxis = glm::normalize(glm::mat3(m_widgetTransform) * glm::vec3(1.0f, 0.0f, 0.0f)) * 10000.0f;
+				glm::vec3 c0, c1;	// closest points from mouse ray to axis (one point per ray)
+				if (Engine::GetNearPointsBetweenLines(mouseRayStartWs, mouseRayEndWs, widgetPos - xAxis, widgetPos + xAxis, c0, c1))
+				{
+					m_mouseDragStartTransform = m_widgetTransform;
+					m_mouseClickPosOnAxis = c1;
+				}
+			}
+		}
+		dbg.DrawBox(boxMin, boxMax, colour, m_widgetTransform);
 
 		// y
-		dbg.DrawBox({ -barWidth / 2.0f, 0.0f, -barWidth / 2.0f }, { barWidth / 2.0f, widgetScale, barWidth / 2.0f }, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), m_widgetTransform);
+		boxMin = { -barWidth / 2.0f, 0.0f, -barWidth / 2.0f };
+		boxMax = { barWidth / 2.0f, widgetScale, barWidth / 2.0f };
+		colour = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		dbg.DrawBox(boxMin, boxMax, colour, m_widgetTransform);
 		
 		// z
-		dbg.DrawBox({ -barWidth / 2.0f, -barWidth / 2.0f, 0.0f }, { barWidth / 2.0f, barWidth / 2.0f, widgetScale }, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_widgetTransform);
+		boxMin = { -barWidth / 2.0f, -barWidth / 2.0f, 0.0f };
+		boxMax = { barWidth / 2.0f, barWidth / 2.0f, widgetScale };
+		colour = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		dbg.DrawBox(boxMin, boxMax, colour, m_widgetTransform);
 
-		dbg.AddAxisAtPoint(glm::vec4(widgetPos,0.0f), widgetScale);
+		m_mouseBtnDownLastFrame = leftBtnDown;
 	}
 }

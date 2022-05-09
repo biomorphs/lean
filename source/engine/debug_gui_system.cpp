@@ -6,6 +6,7 @@
 #include "render_system.h"
 #include "event_system.h"
 #include "script_system.h"
+#include "input_system.h"
 #include "render/texture.h"
 #include "core/profiler.h"
 #include <imgui\imgui.h>
@@ -202,9 +203,14 @@ namespace Engine
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 
-	void DebugGuiSystem::ItemWidth(float w)
+	void DebugGuiSystem::PushItemWidth(float w)
 	{
 		ImGui::PushItemWidth(w);
+	}
+
+	void DebugGuiSystem::PopItemWidth()
+	{
+		ImGui::PopItemWidth();
 	}
 
 	void DebugGuiSystem::SameLine(float xOffset, float spacing)
@@ -321,6 +327,14 @@ namespace Engine
 		return ff;
 	}
 
+	int32_t DebugGuiSystem::InputInt(const char* label, int32_t f, int32_t step, int32_t min, int max)
+	{
+		auto ff = f;
+		ImGui::InputInt(label, &ff, step);
+		ff = glm::min(max, glm::max(ff, min));
+		return ff;
+	}
+
 	float DebugGuiSystem::InputFloat(const char* label, float f, float step, float min, float max)
 	{
 		auto ff = f;
@@ -359,7 +373,7 @@ namespace Engine
 
 	bool DebugGuiSystem::TextInputMultiline(const char* label, glm::vec2 boxSize, std::string& str)
 	{
-		char textBuffer[2048] = { '\0' };
+		char textBuffer[1024 * 16] = { '\0' };
 		strcpy_s(textBuffer, str.c_str());
 		if (ImGui::InputTextMultiline(label, textBuffer, sizeof(textBuffer), ImVec2(boxSize.x,boxSize.y)))
 		{
@@ -371,7 +385,7 @@ namespace Engine
 
 	bool DebugGuiSystem::TextInput(const char* label, std::string& str)
 	{
-		char textBuffer[1024] = { '\0' };
+		char textBuffer[1024 * 16] = { '\0' };
 		strcpy_s(textBuffer, str.c_str());
 		if (ImGui::InputText(label, textBuffer, sizeof(textBuffer)))
 		{
@@ -396,9 +410,14 @@ namespace Engine
 		return ImGui::Button(txt);
 	}
 
+	void DebugGuiSystem::AlignToNextControl()
+	{
+		ImGui::AlignTextToFramePadding();
+	}
+
 	void DebugGuiSystem::Text(const char* format, ...)
 	{
-		char buffer[2048];
+		char buffer[1024 * 16];
 		va_list args;
 		va_start(args, format);
 		vsprintf(buffer, format, args);
@@ -445,6 +464,12 @@ namespace Engine
 	bool DebugGuiSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
+
+		auto input = Engine::GetSystem<InputSystem>("Input");
+		if (input)
+		{
+			input->SetKeyboardEnabled(!IsCapturingKeyboard());
+		}
 
 		// Start next frame
 		m_imguiPass->NewFrame();

@@ -23,6 +23,7 @@ namespace Engine
 		const MouseRawState& GetMouseState() const { return m_mouseState; }
 		const KeyboardState& GetKeyboardState() const { return m_keysState;	}
 		bool IsKeyDown(const char* keyStr);
+		void SetKeyboardEnabled(bool enabled) { m_keysEnabled = enabled; }
 
 	private:
 		void UpdateControllerState();
@@ -42,5 +43,6 @@ namespace Engine
 		MouseRawState m_mouseState;
 		KeyboardState m_keysState;
 		ScriptSystem* m_scripts = nullptr;
+		bool m_keysEnabled = true;
 	};
 }

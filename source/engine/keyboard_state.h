@@ -51,6 +51,7 @@ namespace Engine
 		KEY_DOWN,
 		KEY_LCTRL,
 		KEY_RCTRL,
+		KEY_ESCAPE,
 		KEY_MAX
 	};
 	
