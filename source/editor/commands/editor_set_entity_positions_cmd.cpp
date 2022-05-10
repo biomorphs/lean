@@ -2,6 +2,7 @@
 #include "engine/system_manager.h"
 #include "entity/entity_system.h"
 #include "engine/components/component_transform.h"
+#include "engine/components/component_physics.h"
 
 Command::Result EditorSetEntityPositionsCommand::Redo()
 {
@@ -18,6 +19,11 @@ Command::Result EditorSetEntityPositionsCommand::Undo()
 		{
 			transform->SetPosition(ent.m_oldPos);
 		}
+		auto physics = entities->GetWorld()->GetComponent<Physics>(ent.m_entity);
+		if (physics)
+		{
+			physics->Rebuild();
+		}
 	}
 	return Command::Result::Succeeded;
 }
@@ -31,6 +37,11 @@ Command::Result EditorSetEntityPositionsCommand::Execute()
 		if (transform)
 		{
 			transform->SetPosition(ent.m_newPos);
+		}
+		auto physics = entities->GetWorld()->GetComponent<Physics>(ent.m_entity);
+		if (physics)
+		{
+			physics->Rebuild();
 		}
 	}
 	return Command::Result::Succeeded;

@@ -12,8 +12,9 @@ class Editor;
 class EditorImportSceneCommand : public Command
 {
 public:
-	EditorImportSceneCommand(Editor* editor)
+	EditorImportSceneCommand(Editor* editor, bool makeNewWorld)
 		: m_editor(editor)
+		, m_makeNewWorld(makeNewWorld)
 	{
 	}
 	virtual const char* GetName() { return "Import Scene"; }
@@ -22,4 +23,5 @@ public:
 
 private:
 	Editor* m_editor = nullptr;
+	bool m_makeNewWorld = false;
 };

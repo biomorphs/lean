@@ -21,18 +21,23 @@ void World::CollectGarbage()
 EntityHandle World::AddEntityFromHandle(EntityHandle id)
 {
 	SDE_PROF_EVENT();
-	if (id.GetID() > m_entityIDCounter)
-	{
-		return {};	// we will get an ID clash later
-	}
 	if (std::find(m_activeEntities.begin(), m_activeEntities.end(), id.GetID()) != m_activeEntities.end())
 	{
+		SDE_LOG("Entity '%d' already exists!", id.GetID());
 		return {};	// an entity already exists with that ID
 	}
 	if (std::find(m_pendingDelete.begin(), m_pendingDelete.end(), id.GetID()) != m_pendingDelete.end())
 	{
+		SDE_LOG("Entity '%d' already existed and is being destroyed!", id.GetID());
 		return {};	// the old entity didn't clean up fully yet
 	}
+	// for safety, reset m_entityIDCounter to the highest entity id that exists + 1
+	uint32_t maxFoundId = 0;
+	for (uint32_t id : m_activeEntities)
+	{
+		maxFoundId = std::max(id, maxFoundId);
+	}
+	m_entityIDCounter = maxFoundId + 1;
 	m_activeEntities.push_back(id.GetID());
 	return id;
 }
@@ -41,6 +46,16 @@ EntityHandle World::AddEntity()
 {
 	SDE_PROF_EVENT();
 	auto newId = m_entityIDCounter++;
+	if (std::find(m_activeEntities.begin(), m_activeEntities.end(), newId) != m_activeEntities.end())
+	{
+		SDE_LOG("Entity '%d' already exists!", newId);
+		return {};	// an entity already exists with that ID
+	}
+	if (std::find(m_pendingDelete.begin(), m_pendingDelete.end(), newId) != m_pendingDelete.end())
+	{
+		SDE_LOG("Entity '%d' already existed and is being destroyed!", newId);
+		return {};	// the old entity didn't clean up fully yet
+	}
 	m_activeEntities.push_back(newId);
 	return EntityHandle(newId);
 }

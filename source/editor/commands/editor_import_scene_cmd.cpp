@@ -9,7 +9,7 @@ Command::Result EditorImportSceneCommand::Execute()
 	std::string scenePath = Engine::ShowFilePicker("Import Scene", "", "Scene Files (.scn)\0*.scn\0");
 	if (scenePath != "")
 	{
-		return m_editor->ImportScene(scenePath.c_str()) ? Command::Result::Succeeded : Command::Result::Failed;
+		return m_editor->ImportScene(scenePath.c_str(), m_makeNewWorld) ? Command::Result::Succeeded : Command::Result::Failed;
 	}
 	return Command::Result::Failed;
 }

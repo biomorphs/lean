@@ -27,7 +27,7 @@ public:
 
 	void NewScene(const char* sceneName);
 	bool SaveScene(const char* fileName);
-	bool ImportScene(const char* fileName);
+	bool ImportScene(const char* fileName, bool makeNewWorld = false);
 
 	const std::vector<EntityHandle>& SelectedEntities() { return m_selectedEntities; }
 	void SelectEntity(const EntityHandle h);

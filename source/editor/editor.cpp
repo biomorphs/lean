@@ -123,7 +123,7 @@ bool Editor::PostInit()
 	return true;
 }
 
-bool Editor::ImportScene(const char* fileName)
+bool Editor::ImportScene(const char* fileName, bool makeNewWorld)
 {
 	SDE_PROF_EVENT();
 
@@ -143,7 +143,11 @@ bool Editor::ImportScene(const char* fileName)
 
 	Engine::FromJson("SceneName", m_sceneName, sceneJson);
 
-	m_entitySystem->SerialiseEntities(sceneJson);
+	if (makeNewWorld)
+	{
+		m_entitySystem->NewWorld();
+	}
+	m_entitySystem->SerialiseEntities(sceneJson, makeNewWorld);		// restore the old ids if making a new world
 
 	return true;
 }
@@ -180,6 +184,9 @@ void Editor::UpdateMenubar()
 	fileMenu.AddItem("New Scene", [this]() {
 		m_commands.Push(std::make_unique<EditorNewSceneCommand>(m_debugGui, this));
 	});
+	fileMenu.AddItem("Load Scene", [this]() {
+		m_commands.Push(std::make_unique<EditorImportSceneCommand>(this, true));
+	});
 	fileMenu.AddItem("Save Scene", [this]() {
 		m_commands.Push(std::make_unique<EditorSaveSceneCommand>(m_debugGui, this, m_sceneFilepath));
 	});
@@ -215,7 +222,7 @@ void Editor::UpdateMenubar()
 
 	auto& scenesMenu = menuBar.AddSubmenu(ICON_FK_GLOBE " Scene");
 	scenesMenu.AddItem("Import Scene", [this]() {
-		m_commands.Push(std::make_unique<EditorImportSceneCommand>(this));
+		m_commands.Push(std::make_unique<EditorImportSceneCommand>(this, false));
 	});
 
 	auto& settingsMenu = menuBar.AddSubmenu(ICON_FK_COG " Settings");
@@ -497,7 +504,7 @@ bool Editor::Tick(float timeDelta)
 		});
 	}
 
-	//m_transformWidget->Update(m_selectedEntities);
+	m_transformWidget->Update(m_selectedEntities);
 
 	m_commands.RunNext();
 

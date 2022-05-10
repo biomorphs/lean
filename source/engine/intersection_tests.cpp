@@ -4,6 +4,11 @@ namespace Engine
 {
 	bool GetNearPointsBetweenLines(glm::vec3 p0start, glm::vec3 p0end, glm::vec3 p1start, glm::vec3 p1end, glm::vec3& p0, glm::vec3& p1)
 	{
+		if (p0start == p1end || p1start == p1end)
+		{
+			return false;
+		}
+
 		// adapted from https://en.wikipedia.org/wiki/Skew_lines#Nearest_points
 		glm::vec3 dir0 = glm::normalize(p0start - p0end);
 		glm::vec3 dir1 = glm::normalize(p1start - p1end);

@@ -17,6 +17,6 @@ namespace Engine
 	private:
 		void RegisterScripts();
 		void RegisterComponents();
-		bool m_enableDebug = true;
+		bool m_enableDebug = false;
 	};
 }

@@ -22,39 +22,13 @@ namespace Engine
 
 		PhysicsHandle() = default;
 		inline explicit PhysicsHandle(T* ptr) { m_v = ptr; }
-		inline PhysicsHandle& operator=(T* ptr)
-		{
-			if (m_v)
-			{
-				m_v->release();
-			}
-			m_v = ptr;
-			return *this;
-		}
-		inline ~PhysicsHandle()
-		{
-			if (m_v)
-			{
-				m_v->release();
-			}
-		}
+		PhysicsHandle& operator=(T* ptr);
+		~PhysicsHandle();
 		PhysicsHandle(const PhysicsHandle& other) = delete;
 		inline PhysicsHandle& operator=(const PhysicsHandle& other) = delete;
-		inline PhysicsHandle(PhysicsHandle&& other)
-		{
-			m_v = other.m_v;
-			other.m_v = nullptr;
-		}
-		inline PhysicsHandle& operator=(PhysicsHandle&& other)
-		{
-			if (m_v)
-			{
-				m_v->release();
-			}
-			m_v = other.m_v;
-			other.m_v = nullptr;
-			return *this;
-		}
+		PhysicsHandle(PhysicsHandle&& other);
+		PhysicsHandle& operator=(PhysicsHandle&& other);
+
 		inline const T* Get() const { return m_v; }
 		inline T* Get() { return m_v; }
 		inline T* operator->()
