@@ -417,10 +417,11 @@ namespace Engine
 
 		m_materialCache.clear();
 		m_scene = nullptr;
-		m_physics = nullptr;
-		m_pvd = nullptr;
 		m_cudaManager = nullptr;
 		m_cooker = nullptr;
+		PxCloseExtensions();
+		m_physics = nullptr;
+		m_pvd = nullptr;
 		m_foundation = nullptr;
 	}
 }
