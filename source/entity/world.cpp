@@ -32,10 +32,10 @@ EntityHandle World::AddEntityFromHandle(EntityHandle id)
 		return {};	// the old entity didn't clean up fully yet
 	}
 	// for safety, reset m_entityIDCounter to the highest entity id that exists + 1
-	uint32_t maxFoundId = 0;
-	for (uint32_t id : m_activeEntities)
+	uint32_t maxFoundId = id.GetID();
+	for (uint32_t activeId : m_activeEntities)
 	{
-		maxFoundId = std::max(id, maxFoundId);
+		maxFoundId = std::max(activeId, maxFoundId);
 	}
 	m_entityIDCounter = maxFoundId + 1;
 	m_activeEntities.push_back(id.GetID());

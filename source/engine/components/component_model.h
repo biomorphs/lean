@@ -26,7 +26,6 @@ public:
 	Engine::ModelHandle GetModel() const { return m_model; }
 
 private:
-	// how do we serialise this?!
 	ComponentHandle<Material> m_material;
 	Engine::ShaderHandle m_shader;
 	Engine::ModelHandle m_model;
