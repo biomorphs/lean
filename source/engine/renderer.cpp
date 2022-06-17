@@ -522,7 +522,6 @@ namespace Engine
 				if (theMesh != lastMeshUsed)
 				{
 					m_frameStats.m_vertexArrayBinds++;
-					int instancingSlotIndex = theMesh->GetVertexArray().GetStreamCount();
 					d.BindVertexArray(theMesh->GetVertexArray());
 					lastMeshUsed = theMesh;
 				}
