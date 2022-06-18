@@ -16,6 +16,8 @@ namespace Render
 {
 	class Material;
 	class UniformBuffer;
+	class VertexArray;
+	class MeshChunk;
 }
 
 namespace Engine
@@ -80,6 +82,9 @@ namespace Engine
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
 		void RenderShadowmap(Render::Device& d, Light& l);
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
+		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns,
+			const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
+			const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
 		int PrepareOpaqueInstances(InstanceList& list);
 		int PrepareTransparentInstances(InstanceList& list);
 		int PrepareCulledShadowInstances(InstanceList& visibleInstances);

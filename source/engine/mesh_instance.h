@@ -8,6 +8,9 @@ namespace Render
 	class ShaderProgram;
 	class Mesh;
 	class Material;
+	class VertexArray;
+	class RenderBuffer;
+	class MeshChunk;
 }
 
 namespace Engine
@@ -27,7 +30,11 @@ namespace Engine
 		glm::vec3 m_aabbMin;	// used in culling
 		glm::vec3 m_aabbMax;
 		Render::ShaderProgram* m_shader;
-		const Render::Mesh* m_mesh;
-		const Render::Material* m_material;
+		const Render::VertexArray* m_va;
+		const Render::RenderBuffer* m_ib;
+		const Render::MeshChunk* m_chunks;
+		uint32_t m_chunkCount;
+		const Render::Material* m_meshMaterial;
+		const Render::Material* m_instanceMaterial;
 	};
 }

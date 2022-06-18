@@ -124,9 +124,8 @@ namespace Engine
 		m_camera = c;
 	}
 
-	__m128i ShadowCasterSortKey(const ShaderHandle& shader, const Render::Mesh& mesh)
+	__m128i ShadowCasterSortKey(const ShaderHandle& shader, const Render::VertexArray* va)
 	{
-		const Render::VertexArray* va = &mesh.GetVertexArray();
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
 		uint32_t ptrHigh = static_cast<uint32_t>((vaPtr & 0xffffffff00000000) >> 32);
@@ -135,9 +134,8 @@ namespace Engine
 		return result;
 	}
 
-	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::Mesh& mesh, const Render::Material* instanceMat)
+	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::Material* instanceMat)
 	{
-		const Render::VertexArray* va = &mesh.GetVertexArray();
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
 		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
@@ -185,11 +183,20 @@ namespace Engine
 		return less > greater;
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
+	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, 
+		const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
+		const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
 		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		const auto foundShader = sm->GetShader(shader);
-		list.m_instances.emplace_back(std::move(MeshInstance{ sortKey, trns, aabbMin, aabbMax, foundShader, &mesh, instanceMat }));
+		list.m_instances.emplace_back(std::move(MeshInstance{ sortKey, trns, aabbMin, aabbMax, foundShader, va, ib, chunks, chunkCount, meshMaterial, instanceMat }));
+	}
+
+	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
+	{
+		SubmitInstance(list, sortKey, trns, 
+			&mesh.GetVertexArray(), mesh.GetIndexBuffer().get(), &mesh.GetChunks()[0], mesh.GetChunks().size(), &mesh.GetMaterial(),
+			shader, aabbMin, aabbMax, instanceMat);
 	}
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat)
@@ -209,7 +216,7 @@ namespace Engine
 			auto shadowShader = sm->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				auto sortKey = ShadowCasterSortKey(shadowShader, mesh);
+				auto sortKey = ShadowCasterSortKey(shadowShader, &mesh.GetVertexArray());
 				SubmitInstance(m_allShadowCasterInstances, sortKey, transform, mesh, shadowShader, boundsMin, boundsMax);
 			}
 		}
@@ -222,7 +229,7 @@ namespace Engine
 		}
 		else
 		{
-			__m128i sortKey = OpaqueSortKey(shader, mesh, instanceMat);
+			__m128i sortKey = OpaqueSortKey(shader, &mesh.GetVertexArray(), instanceMat);
 			SubmitInstance(m_opaqueInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 		}
 	}
@@ -239,6 +246,8 @@ namespace Engine
 		const auto theModel = mm->GetModel(model);
 		const auto theShader = sm->GetShader(shader);
 		ShaderHandle shadowShader = ShaderHandle::Invalid();
+		//const Render::VertexArray* va = mm->GetVertexArray();
+		//const Render::RenderBuffer* ib = mm->GetIndexBuffer();
 
 		bool castShadow = true;
 		if (instanceMat != nullptr)
@@ -252,14 +261,29 @@ namespace Engine
 
 		if (theModel != nullptr && theShader != nullptr)
 		{
-			uint16_t meshPartIndex = 0;
+			//auto shadowSortKey = ShadowCasterSortKey(shadowShader, va);
+			//auto opaqueSortKey = OpaqueSortKey(shader, va, instanceMat);
+			//for (const auto& meshPart : theModel->MeshParts())
+			//{
+			//	const glm::mat4 instanceTransform = transform * meshPart.m_transform;
+			//	glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
+			//	if (castShadow && shadowShader.m_index != (uint32_t)-1)
+			//	{
+			//		SubmitInstance(m_allShadowCasterInstances, shadowSortKey, instanceTransform, 
+			//			va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), 
+			//			&meshPart.m_material, shadowShader, boundsMin, boundsMax, instanceMat);
+			//	}
+			//	SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
+			//		&meshPart.m_material, shadowShader, boundsMin, boundsMax, instanceMat);
+			//}
+
 			for (const auto& part : theModel->Parts())
 			{
 				const glm::mat4 instanceTransform = transform * part.m_transform;
 				glm::vec3 boundsMin = part.m_boundsMin, boundsMax = part.m_boundsMax;
 				if (castShadow && shadowShader.m_index != (uint32_t)-1)
 				{
-					auto sortKey = ShadowCasterSortKey(shadowShader, *part.m_mesh);
+					auto sortKey = ShadowCasterSortKey(shadowShader, &part.m_mesh->GetVertexArray());
 					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
 				}
 
@@ -277,7 +301,7 @@ namespace Engine
 				}
 				else
 				{
-					__m128i sortKey = OpaqueSortKey(shader, *part.m_mesh, instanceMat);
+					__m128i sortKey = OpaqueSortKey(shader, &part.m_mesh->GetVertexArray(), instanceMat);
 					SubmitInstance(m_opaqueInstances, sortKey, instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
 				}
 			}
@@ -475,17 +499,21 @@ namespace Engine
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
 		const Render::Mesh* lastMeshUsed = nullptr;				// avoid binding the same vertex arrays
 		const Render::Material* lastInstanceMaterial = nullptr;	// avoid setting instance materials for the same mesh/shaders
+		const Render::VertexArray* lastVAUsed = nullptr;
+		const Render::RenderBuffer* lastIBUsed = nullptr;
 		while (firstInstance != list.m_instances.end())
 		{
-			// Batch by shader, mesh and instance material
+			// Batch by shader, va/ib, mesh and instance material
 			auto lastMeshInstance = std::find_if(firstInstance, list.m_instances.end(), [firstInstance](const MeshInstance& m) -> bool {
-				return  m.m_mesh != firstInstance->m_mesh || m.m_shader != firstInstance->m_shader || firstInstance->m_material != m.m_material;
-				});
+				return  m.m_va != firstInstance->m_va || 
+					m.m_ib != firstInstance->m_ib || 
+					m.m_shader != firstInstance->m_shader || 
+					m.m_meshMaterial != firstInstance->m_meshMaterial ||
+					m.m_instanceMaterial != firstInstance->m_instanceMaterial;
+			});
 			auto instanceCount = (uint32_t)(lastMeshInstance - firstInstance);
-			const Render::Mesh* theMesh = firstInstance->m_mesh;
-			const Render::Material* instanceMaterial = firstInstance->m_material;
 			Render::ShaderProgram* theShader = firstInstance->m_shader;
-			if (theShader != nullptr && theMesh != nullptr)
+			if (theShader != nullptr)
 			{
 				m_frameStats.m_batchesDrawn++;
 
@@ -495,8 +523,8 @@ namespace Engine
 					m_frameStats.m_shaderBinds++;
 					d.BindShaderProgram(*theShader);
 					d.BindUniformBufferIndex(*theShader, "Globals", 0);
-					d.BindStorageBuffer(0, m_transforms);		// bind instancing data once per shader
 					d.SetUniforms(*theShader, m_globalsUniformBuffer, 0);
+					d.BindStorageBuffer(0, m_transforms);		// bind instancing data once per shader
 					if (uniforms != nullptr)
 					{
 						uniforms->Apply(d, *theShader);
@@ -505,43 +533,60 @@ namespace Engine
 					{
 						BindShadowmaps(d, *theShader, 0);
 					}
+
+					// shader change = reset everything
 					lastShaderUsed = theShader;
+					lastMeshUsed = nullptr;
+					lastInstanceMaterial = nullptr;
+					lastVAUsed = nullptr;
+					lastIBUsed = nullptr;
 				}
 
 				// apply mesh material uniforms and samplers
-				ApplyMaterial(d, *theShader, theMesh->GetMaterial(), &g_defaultTextures);
+				if (firstInstance->m_meshMaterial != nullptr)
+				{
+					ApplyMaterial(d, *theShader, *firstInstance->m_meshMaterial, &g_defaultTextures);
+				}
 
 				// apply instance material uniforms and samplers (materials can be shared across instances!)
+				auto instanceMaterial = firstInstance->m_instanceMaterial;
 				if (instanceMaterial != nullptr && instanceMaterial != lastInstanceMaterial)
 				{
 					ApplyMaterial(d, *theShader, *instanceMaterial, &g_defaultTextures);
 					lastInstanceMaterial = instanceMaterial;
 				}
 
-				// bind vertex array + instancing streams immediately after mesh vertex streams
-				if (theMesh != lastMeshUsed)
+				if (firstInstance->m_va != lastVAUsed)
 				{
 					m_frameStats.m_vertexArrayBinds++;
-					d.BindVertexArray(theMesh->GetVertexArray());
-					lastMeshUsed = theMesh;
+					d.BindVertexArray(*firstInstance->m_va);
+					lastVAUsed = firstInstance->m_va;
 				}
 
 				// draw the chunks
-				if (theMesh->GetIndexBuffer() != nullptr)
+				if (firstInstance->m_ib != nullptr)
 				{
-					d.BindIndexBuffer(*theMesh->GetIndexBuffer());
-					for (const auto& chunk : theMesh->GetChunks())
+					if (firstInstance->m_ib != lastIBUsed)
 					{
+						d.BindIndexBuffer(*firstInstance->m_ib);
+						lastIBUsed = firstInstance->m_ib;
+					}
+					
+					for(uint32_t c=0; c<firstInstance->m_chunkCount;++c)
+					{
+						const auto& chunk = firstInstance->m_chunks[c];
 						uint32_t firstIndex = (uint32_t)(firstInstance - list.m_instances.begin());
-						d.DrawPrimitivesInstancedIndexed(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount, instanceCount, firstIndex + baseIndex);
+						d.DrawPrimitivesInstancedIndexed(chunk.m_primitiveType,	chunk.m_firstVertex, chunk.m_vertexCount,
+							instanceCount, firstIndex + baseIndex);
 						m_frameStats.m_drawCalls++;
 						m_frameStats.m_totalVertices += (uint64_t)chunk.m_vertexCount * instanceCount;
 					}
 				}
 				else
 				{
-					for (const auto& chunk : theMesh->GetChunks())
+					for (uint32_t c = 0; c < firstInstance->m_chunkCount; ++c)
 					{
+						const auto& chunk = firstInstance->m_chunks[c];
 						uint32_t firstIndex = (uint32_t)(firstInstance - list.m_instances.begin());
 						d.DrawPrimitivesInstanced(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount, instanceCount, firstIndex + baseIndex);
 						m_frameStats.m_drawCalls++;

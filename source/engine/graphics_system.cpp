@@ -329,7 +329,10 @@ void GraphicsSystem::ProcessEntities()
 		static World::EntityIterator iterator = world->MakeIterator<Model, Transform>();
 		iterator.ForEach([this, models](Model& m, Transform& t, EntityHandle h) {
 			const auto renderModel = models->GetModel(m.GetModel());
-			DrawModelBounds(*renderModel, t.GetWorldspaceMatrix(), glm::vec4(1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			if (renderModel)
+			{
+				DrawModelBounds(*renderModel, t.GetWorldspaceMatrix(), glm::vec4(1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			}
 		});
 	}
 
