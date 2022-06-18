@@ -183,7 +183,7 @@ namespace Engine
 				aiProcess_Triangulate |
 				aiProcess_JoinIdenticalVertices |
 				aiProcess_SortByPType |
-				aiProcess_PreTransformVertices
+				0 //aiProcess_PreTransformVertices
 			);
 			if (!scene)
 			{

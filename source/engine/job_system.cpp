@@ -2,12 +2,13 @@
 #include "core/profiler.h"
 #include "core/thread.h"
 #include "SDL_cpuinfo.h"
+#include <atomic>
 #include <cassert>
 
 namespace Engine
 {
 	JobSystem::JobSystem()
-		: m_threadCount(8)
+		: m_threadCount(4)
 		, m_jobThreadTrigger(0)
 		, m_slowJobThreadTrigger(0)
 		, m_jobThreadStopRequested(0)
@@ -15,9 +16,8 @@ namespace Engine
 		int cpuCount = SDL_GetCPUCount();
 		if (cpuCount > 2)
 		{
-			m_threadCount = cpuCount - 1;
+			m_threadCount = std::max(1, (cpuCount / 2) - 1);
 		}
-		m_threadCount = 4;
 	}
 
 	JobSystem::~JobSystem()
@@ -152,5 +152,31 @@ namespace Engine
 		Job jobDesc(this, threadFn);
 		m_pendingJobs.PushJob(std::move(jobDesc));
 		m_jobThreadTrigger.Post();		// Trigger threads
+	}
+
+	void JobSystem::PushJobAndWait(Job::JobThreadFunction threadFn)
+	{
+		SDE_PROF_EVENT();
+
+		std::atomic<uint32_t> waitForFinish = 1;
+		auto wrappedJob = [&](void* userData)
+		{
+			threadFn(userData);
+			waitForFinish = 0;
+		};
+
+		Job jobDesc(this, wrappedJob);
+		m_pendingJobs.PushJob(std::move(jobDesc));
+		m_jobThreadTrigger.Post();		// Trigger threads
+
+		// wait for the results
+		{
+			SDE_PROF_STALL("WaitForResults");
+			while (waitForFinish > 0)
+			{
+				ProcessJobThisThread();
+				Core::Thread::Sleep(0);
+			}
+		}
 	}
 }

@@ -21,6 +21,7 @@ namespace Engine
 		void ProcessJobThisThread();
 		void PushSlowJob(Job::JobThreadFunction threadFn);
 		void PushJob(Job::JobThreadFunction threadFn);
+		void PushJobAndWait(Job::JobThreadFunction threadFn);
 		void SetThreadInitFn(std::function<void(uint32_t)> fn);
 		int32_t inline GetThreadCount() const { return m_threadCount; }
 

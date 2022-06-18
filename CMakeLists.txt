@@ -132,6 +132,8 @@ target_compile_options(ImguiLib PRIVATE ${CommonCompilerOptions})
 
 add_library(Engine STATIC)
 set(ENGINE_SOURCES
+	source/engine/new_render.h
+	source/engine/new_render.cpp
 	source/engine/material_helpers.h
 	source/engine/material_helpers.cpp
 	source/engine/physics_handle.h

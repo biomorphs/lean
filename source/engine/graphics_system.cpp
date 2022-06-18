@@ -26,6 +26,7 @@
 #include "engine/components/component_tags.h"
 #include "engine/components/component_material.h"
 #include "engine/components/component_environment_settings.h"
+#include "new_render.h"
 
 Engine::MenuBar g_graphicsMenu;
 bool g_enableShadowUpdate = true;
@@ -195,8 +196,10 @@ bool GraphicsSystem::Initialise()
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
 	//// add our renderer to the global passes
+	m_newRender = std::make_unique<Engine::NewRender>();
 	m_renderer = std::make_unique<Engine::Renderer>(m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
+	m_renderSystem->AddPass(*m_newRender);
 	m_debugRender = std::make_unique<Engine::DebugRender>();
 
 	RegisterComponents();
@@ -204,6 +207,7 @@ bool GraphicsSystem::Initialise()
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
 	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
+	gMenu.AddItem("Switch renderer", [this]() {m_useNewRender = !m_useNewRender; });
 
 	return true;
 }
@@ -293,6 +297,7 @@ void GraphicsSystem::ProcessEntities()
 	auto materials = world->GetAllComponents<Material>();
 
 	// submit all lights
+	if(!m_useNewRender)
 	{
 		SDE_PROF_EVENT("SubmitLights");
 		static auto lightIterator = world->MakeIterator<Light, Transform>();
@@ -302,6 +307,7 @@ void GraphicsSystem::ProcessEntities()
 	}
 
 	// submit all models
+	if (!m_useNewRender)
 	{
 		SDE_PROF_EVENT("SubmitEntities");
 		static auto modelIterator = world->MakeIterator<Model, Transform>();
@@ -352,7 +358,7 @@ void GraphicsSystem::ProcessEntities()
 				m.UpdateMesh(m_jobSystem);
 			}
 
-			if (m.GetMesh() && m.GetShader().m_index != -1)
+			if (!m_useNewRender && m.GetMesh() && m.GetShader().m_index != -1)
 			{
 				Render::Material* instanceMaterial = nullptr;
 				if (m.GetMaterialEntity().GetID() != -1)
@@ -368,9 +374,12 @@ void GraphicsSystem::ProcessEntities()
 		});
 	}
 
-	world->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
-		m_renderer->SetClearColour(glm::vec4(s.GetClearColour(),1.0f));
-	});
+	if (!m_useNewRender)
+	{
+		world->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
+			m_renderer->SetClearColour(glm::vec4(s.GetClearColour(), 1.0f));
+		});
+	}
 }
 
 void GraphicsSystem::ShowGui(int framesPerSecond)
@@ -382,6 +391,7 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		const auto& fs = m_renderer->GetStats();
 		char statText[1024] = { '\0' };
 		m_debugGui->BeginWindow(m_showStats, "Render Stats");
+		sprintf_s(statText, m_useNewRender ? "*** Using new renderer! ***" : "*** Using old renderer! ***");	m_debugGui->Text(statText);
 		sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tTransparents: %zu (%zu visible)", fs.m_totalTransparentInstances, fs.m_renderedTransparentInstances);	m_debugGui->Text(statText);
@@ -425,7 +435,14 @@ bool GraphicsSystem::Tick(float timeDelta)
 	ProcessEntities();
 	ShowGui(framesPerSecond);
 
-	m_debugRender->PushToRenderer(*m_renderer);
+	if (!m_useNewRender)
+	{
+		m_debugRender->PushToRenderer(*m_renderer);
+	}
+	else
+	{
+		m_newRender->Tick(timeDelta);
+	}
 
 	return true;
 }
@@ -437,4 +454,5 @@ void GraphicsSystem::Shutdown()
 	m_scriptSystem->Globals()["Graphics"] = nullptr;
 	m_debugRender = nullptr;
 	m_renderer = nullptr;
+	m_newRender = nullptr;
 }

@@ -260,7 +260,7 @@ namespace Engine
 				if (castShadow && shadowShader.m_index != (uint32_t)-1)
 				{
 					auto sortKey = ShadowCasterSortKey(shadowShader, *part.m_mesh);
-					SubmitInstance(m_allShadowCasterInstances, sortKey, transform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
+					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
 				}
 
 				bool isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
@@ -271,14 +271,14 @@ namespace Engine
 
 				if (isTransparent)
 				{
-					const float distanceToCamera = glm::length(glm::vec3(transform[3]) - m_camera.Position());
+					const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
 					__m128i sortKey = TransparentSortKey(shader, *part.m_mesh, instanceMat, distanceToCamera);
-					SubmitInstance(m_transparentInstances, sortKey, transform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
+					SubmitInstance(m_transparentInstances, sortKey, instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
 				}
 				else
 				{
 					__m128i sortKey = OpaqueSortKey(shader, *part.m_mesh, instanceMat);
-					SubmitInstance(m_opaqueInstances, sortKey, transform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
+					SubmitInstance(m_opaqueInstances, sortKey, instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
 				}
 			}
 		}

@@ -8,6 +8,7 @@
 #include "engine/input_system.h"
 #include "engine/debug_camera.h"
 #include "engine/renderer.h"
+#include "engine/new_render.h"
 #include "render/window.h"
 #include "render/camera.h"
 #include "core/profiler.h"
@@ -122,6 +123,7 @@ namespace Engine
 			}
 		}
 		m_graphics->Renderer().SetCamera(*m_mainRenderCamera);
+		m_graphics->NewRender().SetCamera(*m_mainRenderCamera);
 
 		return true;
 	}
