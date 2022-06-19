@@ -12,9 +12,14 @@
 #include "engine/system_manager.h"
 #include "render/device.h"
 #include "render/mesh.h"
+#include "render/render_buffer.h"
+#include "render/vertex_array.h"
 
 namespace Engine
 {
+	const uint32_t c_maxVertices = 1024 * 1024 * 16;
+	const uint32_t c_maxIndices = 1024 * 1024 * 64;
+
 	SERIALISE_BEGIN(ModelHandle)
 		static ModelManager* mm = GetSystem<ModelManager>("Models");
 		if (op == Engine::SerialiseType::Write)
@@ -60,15 +65,15 @@ namespace Engine
 					{
 						if (gui.TreeNode("Parts"))
 						{
-							auto& parts = m_models[t].m_renderModel->Parts();
+							auto& parts = m_models[t].m_renderModel->MeshParts();
 							for (auto& p : parts)
 							{
 								sprintf_s(text, "%d: (%3.1f,%3.1f,%3.1f) - (%3.1f,%3.1f,%3.1f)", (int)(&p - parts.data()),
 									p.m_boundsMin.x, p.m_boundsMin.y, p.m_boundsMin.z,
 									p.m_boundsMax.x, p.m_boundsMax.y, p.m_boundsMax.z);
-								if (p.m_mesh && gui.TreeNode(text))
+								if (gui.TreeNode(text))
 								{
-									auto& material = p.m_mesh->GetMaterial();
+									auto& material = p.m_material;
 									auto& uniforms = material.GetUniforms();
 									auto& samplers = material.GetSamplers();
 									for (auto& v : uniforms.FloatValues())
@@ -141,6 +146,10 @@ namespace Engine
 			Core::ScopedMutex guard(m_loadedModelsMutex);
 			m_loadedModels.clear();
 		}
+		// reset allocators
+		m_nextVertex = 0;
+		m_nextIndex = 0;
+
 		// now load the models again
 		auto currentModels = std::move(m_models);
 		for (int m = 0; m < currentModels.size(); ++m)
@@ -155,60 +164,27 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		auto& tm = *Engine::GetSystem<Engine::TextureManager>("Textures");
-		const auto meshCount = renderModel.Parts().size();
-		for (int index = 0; index < meshCount; ++index)
+		
+		int partCount = model.Meshes().size();
+		for (int p = 0; p < partCount; ++p)
 		{
-			if (renderModel.Parts()[index].m_mesh != nullptr)
-			{
-				const auto& mesh = model.Meshes()[index];
-				const auto& mat = mesh.Material();
+			const auto& mat = model.Meshes()[p].Material();
+			std::string diffusePath = mat.DiffuseMaps().size() > 0 ? mat.DiffuseMaps()[0] : "";
+			std::string normalPath = mat.NormalMaps().size() > 0 ? mat.NormalMaps()[0] : "";
+			std::string specPath = mat.SpecularMaps().size() > 0 ? mat.SpecularMaps()[0] : "";
 
-				// load textures and store in mesh material
-				std::string diffusePath = mat.DiffuseMaps().size() > 0 ? mat.DiffuseMaps()[0] : "";
-				std::string normalPath = mat.NormalMaps().size() > 0 ? mat.NormalMaps()[0] : "";
-				std::string specPath = mat.SpecularMaps().size() > 0 ? mat.SpecularMaps()[0] : "";
-				auto& material = renderModel.Parts()[index].m_mesh->GetMaterial();
-				// Set transparent flag based on diffuse texture
-				auto diffuseTexture = tm.LoadTexture(diffusePath.c_str(), [this, &tm, &renderModel, index](bool loaded, TextureHandle h) {
-					auto texture = tm.GetTexture(h);
-					if (texture != nullptr && texture->GetComponentCount() == 4 && renderModel.Parts()[index].m_mesh != nullptr)
-					{
-						renderModel.Parts()[index].m_mesh->GetMaterial().SetIsTransparent(true);
-					}
-				});
-				material.SetSampler("DiffuseTexture", diffuseTexture.m_index);
-				material.SetSampler("NormalsTexture", tm.LoadTexture(normalPath.c_str()).m_index);
-				material.SetSampler("SpecularTexture", tm.LoadTexture(specPath.c_str()).m_index);
+			auto diffuseTexture = tm.LoadTexture(diffusePath.c_str());
+			renderModel.MeshParts()[p].m_material.SetSampler("DiffuseTexture", diffuseTexture.m_index);
+			renderModel.MeshParts()[p].m_material.SetSampler("NormalsTexture", tm.LoadTexture(normalPath.c_str()).m_index);
+			renderModel.MeshParts()[p].m_material.SetSampler("SpecularTexture", tm.LoadTexture(specPath.c_str()).m_index);
 
-				// Create render resources that cannot be shared across contexts
-				renderModel.Parts()[index].m_mesh->GetVertexArray().Create();
-			}
+			auto& uniforms = renderModel.MeshParts()[p].m_material.GetUniforms();
+			auto packedSpecular = glm::vec4(mat.SpecularColour(), mat.ShininessStrength());
+			uniforms.SetValue("MeshDiffuseOpacity", glm::vec4(mat.DiffuseColour(), mat.Opacity()));
+			uniforms.SetValue("MeshSpecular", packedSpecular);
+			uniforms.SetValue("MeshShininess", mat.Shininess());
+			renderModel.MeshParts()[p].m_material.SetIsTransparent(mat.Opacity() != 1.0f);
 		}
-	}
-
-	std::unique_ptr<Model> ModelManager::CreateModel(Assets::Model& model, std::vector<std::unique_ptr<Render::Mesh>>& rendermeshes)
-	{
-		SDE_PROF_EVENT();
-		assert(model.Meshes().size() == rendermeshes.size());
-
-		auto resultModel = std::make_unique<Model>();
-		const auto meshCount = model.Meshes().size();
-		for (int index = 0; index < meshCount; ++index)
-		{
-			const auto& loadedMesh = model.Meshes()[index];
-			Model::Part newPart;
-			newPart.m_mesh = std::move(rendermeshes[index]);
-			newPart.m_transform = loadedMesh.Transform();
-			newPart.m_boundsMin = loadedMesh.BoundsMin();
-			newPart.m_boundsMax = loadedMesh.BoundsMax();
-			resultModel->Parts().push_back(std::move(newPart));
-		}
-		glm::vec3 aabbMin, aabbMax;
-		model.CalculateAABB(aabbMin, aabbMax);
-		resultModel->BoundsMin() = aabbMin;
-		resultModel->BoundsMax() = aabbMax;
-
-		return resultModel;
 	}
 
 	void ModelManager::ProcessLoadedModels()
@@ -236,51 +212,72 @@ namespace Engine
 		}
 	}
 
-	std::unique_ptr<Render::Mesh> ModelManager::CreateMeshPart(const Assets::ModelMesh& mesh)
+	uint32_t ModelManager::AllocateIndices(uint32_t count)
+	{
+		uint64_t newIndex = m_nextIndex.fetch_add(count);
+		return newIndex < c_maxIndices ? newIndex : -1;
+	}
+
+	uint32_t ModelManager::AllocateVertices(uint32_t count)
+	{
+		uint64_t newIndex = m_nextVertex.fetch_add(count);
+		return newIndex < c_maxVertices ? newIndex : -1;
+	}
+
+	std::unique_ptr<Model> ModelManager::CreateNewModel(const Assets::Model& model)
 	{
 		SDE_PROF_EVENT();
-		auto rmesh = std::make_unique<Render::Mesh>();
-		auto& streams = rmesh->GetStreams();
-		const auto verts = mesh.Vertices().size();
 
-		// we will add all vertex data to one big buffer!
-		streams.push_back({});
-		const auto vertexSize = sizeof(Engine::Assets::MeshVertex);
-		if (!streams[0].Create((void*)mesh.Vertices().data(), vertexSize * verts, Render::RenderBufferModification::Static))
+		// we want to reserve one large block of vertex + index space for the entire model
+		uint32_t totalIndices = 0, totalVertices = 0;
+		const auto meshCount = model.Meshes().size();
+		for (int index = 0; index < meshCount; ++index)
 		{
-			return nullptr;
+			totalIndices += model.Meshes()[index].Indices().size();
+			totalVertices += model.Meshes()[index].Vertices().size();
 		}
-
-		// upload indices
-		auto indexBuffer = std::make_unique<Render::RenderBuffer>();
-		if (!indexBuffer->Create((void*)mesh.Indices().data(), sizeof(uint32_t) * mesh.Indices().size(), Render::RenderBufferModification::Static))
+		const uint32_t indexBufferOffset = AllocateIndices(totalIndices);
+		const uint32_t vertexBufferOffset = AllocateVertices(totalVertices);
+		std::vector<uint32_t> indicesToUpload;	// upload all parts in one go
+		indicesToUpload.reserve(totalIndices);
+		std::vector<Assets::MeshVertex> verticesToUpload;
+		verticesToUpload.reserve(totalVertices);
+		uint32_t currentIndexOffset = indexBufferOffset;
+		uint32_t currentVertexOffset = vertexBufferOffset;
+		auto resultModel = std::make_unique<Model>();
+		for (int index = 0; index < meshCount; ++index)
 		{
-			return nullptr;
+			const auto& loadedMesh = model.Meshes()[index];
+			verticesToUpload.insert(verticesToUpload.end(), loadedMesh.Vertices().begin(), loadedMesh.Vertices().end());
+			for (const auto i : loadedMesh.Indices())
+			{
+				indicesToUpload.push_back(currentVertexOffset + i);
+			}
+			
+			Model::MeshPart newPart;
+			newPart.m_transform = loadedMesh.Transform();
+			newPart.m_boundsMin = loadedMesh.BoundsMin();
+			newPart.m_boundsMax = loadedMesh.BoundsMax();
+			Render::MeshChunk chunk { currentIndexOffset, (uint32_t)loadedMesh.Indices().size(), Render::PrimitiveType::Triangles };
+			newPart.m_chunks.push_back(chunk);
+			
+			resultModel->MeshParts().push_back(std::move(newPart));
+
+			currentIndexOffset += loadedMesh.Indices().size();
+			currentVertexOffset += loadedMesh.Vertices().size();
 		}
-		rmesh->GetIndexBuffer() = std::move(indexBuffer);
-
-		// Setup vertex array bindings (but dont create it here!)
-		auto& va = rmesh->GetVertexArray();
-		va.AddBuffer(0, &streams[0], Render::VertexDataType::Float, 3, 0, vertexSize);					// position
-		va.AddBuffer(1, &streams[0], Render::VertexDataType::Float, 3, sizeof(float) * 3, vertexSize);	// normal
-		va.AddBuffer(2, &streams[0], Render::VertexDataType::Float, 3, sizeof(float) * 6, vertexSize);	// tangents
-		va.AddBuffer(3, &streams[0], Render::VertexDataType::Float, 2, sizeof(float) * 9, vertexSize);	// uv
-
-		// Setup the per-mesh material uniforms (we can't load textures here though)
-		const auto& mat = mesh.Material();
-		auto& uniforms = rmesh->GetMaterial().GetUniforms();
-		auto packedSpecular = glm::vec4(mat.SpecularColour(), mat.ShininessStrength());
-		uniforms.SetValue("MeshDiffuseOpacity", glm::vec4(mat.DiffuseColour(), mat.Opacity()));
-		uniforms.SetValue("MeshSpecular", packedSpecular);
-		uniforms.SetValue("MeshShininess", mat.Shininess());
-		rmesh->GetMaterial().SetIsTransparent(mat.Opacity() != 1.0f);
-
-		rmesh->GetChunks().push_back({0, (uint32_t)mesh.Indices().size(), Render::PrimitiveType::Triangles});
-
+		m_globalIndexData->SetData(indexBufferOffset * sizeof(uint32_t), indicesToUpload.size() * sizeof(uint32_t), &indicesToUpload[0]);
+		m_globalVertexData->SetData(vertexBufferOffset * sizeof(Assets::MeshVertex), verticesToUpload.size() * sizeof(Assets::MeshVertex), &verticesToUpload[0]);
+	
 		// Ensure any writes are shared with all contexts
 		Render::Device::FlushContext();
 
-		return rmesh;
+		glm::vec3 aabbMin, aabbMax;
+		model.CalculateAABB(aabbMin, aabbMax);
+		resultModel->BoundsMin() = aabbMin;
+		resultModel->BoundsMax() = aabbMax;
+
+		return resultModel;
 	}
 
 	ModelHandle ModelManager::LoadModel(const char* path, std::function<void(bool, ModelHandle)> onFinish)
@@ -312,16 +309,10 @@ namespace Engine
 			auto loadedAsset = Assets::Model::Load(pathString.c_str());
 			if (loadedAsset != nullptr)
 			{
-				std::vector<std::unique_ptr<Render::Mesh>> renderMeshes;
-				for (const auto& part : loadedAsset->Meshes())
-				{
-					renderMeshes.push_back(CreateMeshPart(part));
-				}
-
-				auto theModel = CreateModel(*loadedAsset, renderMeshes);	// this does not create VAOs as they cannot be shared across contexts
+				auto testModel = CreateNewModel(*loadedAsset);
 				{
 					Core::ScopedMutex guard(m_loadedModelsMutex);
-					m_loadedModels.push_back({ std::move(loadedAsset), std::move(theModel), newHandle });
+					m_loadedModels.push_back({ std::move(loadedAsset), std::move(testModel), newHandle });
 				}
 			}
 			else if (onFinish != nullptr)
@@ -358,6 +349,26 @@ namespace Engine
 		}
 	}
 
+	bool ModelManager::PostInit()
+	{
+		m_globalIndexData = std::make_unique<Render::RenderBuffer>();
+		m_globalVertexData = std::make_unique<Render::RenderBuffer>();
+		m_globalVertexArray = std::make_unique<Render::VertexArray>();
+
+		const auto vertexSize = sizeof(Engine::Assets::MeshVertex);
+		m_globalIndexData->Create(c_maxIndices * sizeof(uint32_t), Render::RenderBufferModification::Dynamic);
+		m_globalVertexData->Create(c_maxVertices * vertexSize, Render::RenderBufferModification::Dynamic);
+
+		auto vertexBuffer = m_globalVertexData.get();
+		m_globalVertexArray->AddBuffer(0, vertexBuffer, Render::VertexDataType::Float, 3, 0, vertexSize);					// position
+		m_globalVertexArray->AddBuffer(1, vertexBuffer, Render::VertexDataType::Float, 3, sizeof(float) * 3, vertexSize);	// normal
+		m_globalVertexArray->AddBuffer(2, vertexBuffer, Render::VertexDataType::Float, 3, sizeof(float) * 6, vertexSize);	// tangents
+		m_globalVertexArray->AddBuffer(3, vertexBuffer, Render::VertexDataType::Float, 2, sizeof(float) * 9, vertexSize);	// uv
+		m_globalVertexArray->Create();
+
+		return true;
+	}
+
 	bool ModelManager::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
@@ -382,5 +393,9 @@ namespace Engine
 			m_loadedModels.clear();
 		}
 		m_models.clear();
+
+		m_globalVertexArray = nullptr;
+		m_globalVertexData = nullptr;
+		m_globalIndexData = nullptr;
 	}
 }

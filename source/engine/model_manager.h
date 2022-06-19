@@ -26,6 +26,10 @@ namespace Engine
 		std::string GetModelPath(const ModelHandle& h);
 		void ReloadAll();
 
+		Render::VertexArray* GetVertexArray() { return m_globalVertexArray.get(); }
+		Render::RenderBuffer* GetIndexBuffer() { return m_globalIndexData.get(); }
+
+		virtual bool PostInit();
 		virtual bool Tick(float timeDelta);
 		virtual void Shutdown();
 
@@ -45,8 +49,7 @@ namespace Engine
 			ModelHandle m_destinationHandle;
 			std::function<void(bool, ModelHandle)> m_onFinish;
 		};
-		std::unique_ptr<Render::Mesh> CreateMeshPart(const Assets::ModelMesh&);
-		std::unique_ptr<Model> CreateModel(Assets::Model& model, std::vector<std::unique_ptr<Render::Mesh>>& meshes);
+		std::unique_ptr<Model> CreateNewModel(const Assets::Model&);
 		void FinaliseModel(Assets::Model& model, Model& renderModel);
 
 		std::vector<ModelDesc> m_models;
@@ -54,5 +57,14 @@ namespace Engine
 		Core::Mutex m_loadedModelsMutex;
 		std::vector<ModelLoadResult> m_loadedModels;	// models to process after successful load
 		std::atomic<int32_t> m_inFlightModels = 0;
+
+		// all models are loaded into these buffers
+		uint32_t AllocateIndices(uint32_t count);
+		uint32_t AllocateVertices(uint32_t count);
+		std::unique_ptr<Render::VertexArray> m_globalVertexArray;
+		std::unique_ptr<Render::RenderBuffer> m_globalVertexData;
+		std::atomic<uint32_t> m_nextVertex = 0;
+		std::unique_ptr<Render::RenderBuffer> m_globalIndexData;
+		std::atomic<uint32_t> m_nextIndex = 0;
 	};
 }

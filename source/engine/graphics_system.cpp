@@ -217,7 +217,7 @@ void GraphicsSystem::DrawModelBounds(const Engine::Model& m, glm::mat4 transform
 	SDE_PROF_EVENT();
 	if (partsColour != glm::vec4(0.0f))
 	{
-		for (const auto& part : m.Parts())
+		for (const auto& part : m.MeshParts())
 		{
 			const auto bmin = part.m_boundsMin;
 			const auto bmax = part.m_boundsMax;

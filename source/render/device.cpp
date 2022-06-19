@@ -480,7 +480,9 @@ namespace Render
 		auto primitiveType = TranslatePrimitiveType(primitive);
 		assert(primitiveType != -1);
 
-		glDrawElementsInstancedBaseVertexBaseInstance(primitiveType, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount, indexStart, firstInstance);
+		// this is confusing as hell, but the 4th param is not a pointer, but an OFFSET into the element (index) buffer
+		const void* indexDataPtr = (void*)(indexStart * sizeof(uint32_t));
+		glDrawElementsInstancedBaseVertexBaseInstance(primitiveType, indexCount, GL_UNSIGNED_INT, indexDataPtr, instanceCount, 0, firstInstance);
 	}
 
 	void Device::DrawPrimitivesInstanced(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance)

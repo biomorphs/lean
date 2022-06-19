@@ -134,24 +134,27 @@ namespace Engine
 		return result;
 	}
 
-	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::Material* instanceMat)
+	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::Material& meshMat, const Render::Material* instanceMat)
 	{
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
 		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
 		
-		const void* matPtrVoid = static_cast<const void*>(instanceMat);
-		uintptr_t matPtr = reinterpret_cast<uintptr_t>(matPtrVoid);
-		uint32_t matPtrLow = static_cast<uint32_t>((matPtr & 0x00000000ffffffff));
+		const void* meshMatPtrVoid = static_cast<const void*>(&meshMat);
+		uintptr_t meshMatPtr = reinterpret_cast<uintptr_t>(meshMatPtrVoid);
+		uint32_t meshMatPtrLow = static_cast<uint32_t>((meshMatPtr & 0x00000000ffffffff));
+
+		const void* instPtrVoid = static_cast<const void*>(instanceMat);
+		uintptr_t instPtr = reinterpret_cast<uintptr_t>(instPtrVoid);
+		uint32_t instPtrLow = static_cast<uint32_t>((instPtr & 0x00000000ffffffff));
 		
-		__m128i result = _mm_set_epi32(shader.m_index, vaPtrLow, matPtrLow, 0);
+		__m128i result = _mm_set_epi32(shader.m_index, vaPtrLow, meshMatPtrLow, instPtrLow);
 
 		return result;
 	}
 
-	__m128i TransparentSortKey(const ShaderHandle& shader, const Render::Mesh& mesh, const Render::Material* instanceMat, float distanceToCamera)
+	__m128i TransparentSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::Material* instanceMat, float distanceToCamera)
 	{
-		const Render::VertexArray* va = &mesh.GetVertexArray();
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
 		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
@@ -224,12 +227,12 @@ namespace Engine
 		if (isTransparent)
 		{
 			const float distanceToCamera = glm::length(glm::vec3(transform[3]) - m_camera.Position());
-			__m128i sortKey = TransparentSortKey(shader, mesh, instanceMat, distanceToCamera);
+			__m128i sortKey = TransparentSortKey(shader, &mesh.GetVertexArray(), instanceMat, distanceToCamera);
 			SubmitInstance(m_transparentInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 		}
 		else
 		{
-			__m128i sortKey = OpaqueSortKey(shader, &mesh.GetVertexArray(), instanceMat);
+			__m128i sortKey = OpaqueSortKey(shader, &mesh.GetVertexArray(), mesh.GetMaterial(), instanceMat);
 			SubmitInstance(m_opaqueInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 		}
 	}
@@ -245,64 +248,48 @@ namespace Engine
 		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		const auto theModel = mm->GetModel(model);
 		const auto theShader = sm->GetShader(shader);
-		ShaderHandle shadowShader = ShaderHandle::Invalid();
-		//const Render::VertexArray* va = mm->GetVertexArray();
-		//const Render::RenderBuffer* ib = mm->GetIndexBuffer();
-
-		bool castShadow = true;
-		if (instanceMat != nullptr)
-		{
-			castShadow &= instanceMat->GetCastsShadows();
-		}
-		if (castShadow)
-		{
-			shadowShader = sm->GetShadowsShader(shader);
-		}
 
 		if (theModel != nullptr && theShader != nullptr)
 		{
-			//auto shadowSortKey = ShadowCasterSortKey(shadowShader, va);
-			//auto opaqueSortKey = OpaqueSortKey(shader, va, instanceMat);
-			//for (const auto& meshPart : theModel->MeshParts())
-			//{
-			//	const glm::mat4 instanceTransform = transform * meshPart.m_transform;
-			//	glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
-			//	if (castShadow && shadowShader.m_index != (uint32_t)-1)
-			//	{
-			//		SubmitInstance(m_allShadowCasterInstances, shadowSortKey, instanceTransform, 
-			//			va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), 
-			//			&meshPart.m_material, shadowShader, boundsMin, boundsMax, instanceMat);
-			//	}
-			//	SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
-			//		&meshPart.m_material, shadowShader, boundsMin, boundsMax, instanceMat);
-			//}
-
-			for (const auto& part : theModel->Parts())
+			ShaderHandle shadowShader = ShaderHandle::Invalid();
+			bool modelCastsShadow = instanceMat ? instanceMat->GetCastsShadows() : true;
+			if (modelCastsShadow)
 			{
-				const glm::mat4 instanceTransform = transform * part.m_transform;
-				glm::vec3 boundsMin = part.m_boundsMin, boundsMax = part.m_boundsMax;
-				if (castShadow && shadowShader.m_index != (uint32_t)-1)
+				shadowShader = sm->GetShadowsShader(shader);
+			}
+
+			const Render::VertexArray* va = mm->GetVertexArray();
+			const Render::RenderBuffer* ib = mm->GetIndexBuffer();
+			for (const auto& meshPart : theModel->MeshParts())
+			{
+				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
+				glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
+
+				if (modelCastsShadow && meshPart.m_material.GetCastsShadows() && shadowShader.m_index != (uint32_t)-1)
 				{
-					auto sortKey = ShadowCasterSortKey(shadowShader, &part.m_mesh->GetVertexArray());
-					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform, *part.m_mesh, shadowShader, boundsMin, boundsMax);
+					auto shadowSortKey = ShadowCasterSortKey(shadowShader, va);
+					SubmitInstance(m_allShadowCasterInstances, shadowSortKey, instanceTransform, 
+						va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), 
+						&meshPart.m_material, shadowShader, boundsMin, boundsMax, instanceMat);
 				}
 
-				bool isTransparent = part.m_mesh->GetMaterial().GetIsTransparent();
+				bool isTransparent = meshPart.m_material.GetIsTransparent();
 				if (instanceMat != nullptr)
 				{
 					isTransparent |= instanceMat->GetIsTransparent();
 				}
-
 				if (isTransparent)
 				{
 					const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
-					__m128i sortKey = TransparentSortKey(shader, *part.m_mesh, instanceMat, distanceToCamera);
-					SubmitInstance(m_transparentInstances, sortKey, instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
+					auto sortKey = TransparentSortKey(shader, va, instanceMat, distanceToCamera);
+					SubmitInstance(m_opaqueInstances, sortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
+						&meshPart.m_material, shader, boundsMin, boundsMax, instanceMat);
 				}
 				else
 				{
-					__m128i sortKey = OpaqueSortKey(shader, &part.m_mesh->GetVertexArray(), instanceMat);
-					SubmitInstance(m_opaqueInstances, sortKey, instanceTransform, *part.m_mesh, shader, boundsMin, boundsMax, instanceMat);
+					auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_material, instanceMat);
+					SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
+						&meshPart.m_material, shader, boundsMin, boundsMax, instanceMat);
 				}
 			}
 		}
@@ -497,7 +484,6 @@ namespace Engine
 		SDE_PROF_EVENT();
 		auto firstInstance = list.m_instances.begin();
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
-		const Render::Mesh* lastMeshUsed = nullptr;				// avoid binding the same vertex arrays
 		const Render::Material* lastInstanceMaterial = nullptr;	// avoid setting instance materials for the same mesh/shaders
 		const Render::VertexArray* lastVAUsed = nullptr;
 		const Render::RenderBuffer* lastIBUsed = nullptr;
@@ -536,10 +522,7 @@ namespace Engine
 
 					// shader change = reset everything
 					lastShaderUsed = theShader;
-					lastMeshUsed = nullptr;
 					lastInstanceMaterial = nullptr;
-					lastVAUsed = nullptr;
-					lastIBUsed = nullptr;
 				}
 
 				// apply mesh material uniforms and samplers

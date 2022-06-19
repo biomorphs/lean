@@ -20,7 +20,7 @@ namespace Engine
 			};
 		}
 
-		void Model::CalculateAABB(glm::vec3& minb, glm::vec3& maxb)
+		void Model::CalculateAABB(glm::vec3& minb, glm::vec3& maxb) const
 		{
 			glm::vec3 boundsMin(FLT_MAX), boundsMax(-FLT_MAX);
 			for (const auto& m : m_meshes)
@@ -181,7 +181,10 @@ namespace Engine
 				aiProcess_Triangulate |
 				aiProcess_JoinIdenticalVertices |
 				aiProcess_SortByPType |
-				0
+				aiProcess_ValidateDataStructure | 
+				aiProcess_OptimizeMeshes |
+				aiProcess_RemoveRedundantMaterials
+				// aiProcess_PreTransformVertices // useful for static meshes
 			);
 			if (!scene)
 			{

@@ -9,9 +9,9 @@
 
 const uint32_t c_maxInstances = 100000;
 
-uint64_t MakeSortKey(const Engine::ShaderHandle& shader, const Render::VertexArray& va)
+uint64_t MakeSortKey(const Engine::ShaderHandle& shader, const Render::VertexArray* va)
 {
-	const void* vaPtrVoid = static_cast<const void*>(&va);
+	const void* vaPtrVoid = static_cast<const void*>(va);
 	const uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
 	const uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
 	return (uint64_t)shader.m_index << 32 | (uint64_t)vaPtrLow;
@@ -153,6 +153,7 @@ namespace Engine
 			auto world = entities->GetWorld();
 			auto mm = Engine::GetSystem<ModelManager>("Models");
 			auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+			const Render::VertexArray* va = mm->GetVertexArray();
 			static auto modelIterator = world->MakeIterator<::Model, Transform>();
 			modelIterator.ForEach([&](::Model& m, Transform& t, EntityHandle h) {
 				const auto theModel = mm->GetModel(m.GetModel());
@@ -160,12 +161,11 @@ namespace Engine
 				if (theModel && theShader)
 				{
 					const auto entityTransform = t.GetWorldspaceMatrix();
-					for (const auto& p : theModel->Parts())
+					for (const auto& p : theModel->MeshParts())
 					{
 						const auto partTransform = entityTransform * p.m_transform;
-						const Render::VertexArray* va = &p.m_mesh->GetVertexArray();	// va should be per *model*, not per part!
-						const uint64_t sortKey = MakeSortKey(m.GetShader(), p.m_mesh->GetVertexArray());
-						rid.PushInstance(sortKey, va, theShader, &p.m_mesh->GetChunks()[0], p.m_mesh->GetChunks().size(), partTransform, p.m_boundsMin, p.m_boundsMax);
+						const uint64_t sortKey = MakeSortKey(m.GetShader(), va);
+						rid.PushInstance(sortKey, va, theShader, &p.m_chunks[0], p.m_chunks.size(), partTransform, p.m_boundsMin, p.m_boundsMax);
 					}
 				}
 			});
