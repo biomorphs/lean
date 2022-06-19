@@ -96,11 +96,11 @@ namespace Engine
 			const glm::vec3& BoundsMax() const { return m_boundsMax; }
 
 		private:
-			std::vector<MeshVertex> m_vertices;
+			std::vector<MeshVertex> m_vertices;	// verts are in mesh space
 			std::vector<uint32_t> m_indices;
 			MeshMaterial m_material;
 			glm::mat4 m_transform;
-			glm::vec3 m_boundsMin;
+			glm::vec3 m_boundsMin;		// bounds are in mesh space
 			glm::vec3 m_boundsMax;
 		};
 

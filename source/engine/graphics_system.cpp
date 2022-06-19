@@ -221,7 +221,7 @@ void GraphicsSystem::DrawModelBounds(const Engine::Model& m, glm::mat4 transform
 		{
 			const auto bmin = part.m_boundsMin;
 			const auto bmax = part.m_boundsMax;
-			m_debugRender->DrawBox(bmin, bmax, partsColour, transform);
+			m_debugRender->DrawBox(bmin, bmax, partsColour, transform * part.m_transform);
 		}
 	}
 	m_debugRender->DrawBox(m.BoundsMin(), m.BoundsMax(), mainColour, transform);

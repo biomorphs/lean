@@ -85,8 +85,6 @@ namespace Engine
 				boundsMax = glm::max(boundsMax, pos);
 				vertices.push_back(newVertex);
 			}
-			boundsMin = glm::vec3(transform * glm::vec4(boundsMin, 1.0f));
-			boundsMax = glm::vec3(transform * glm::vec4(boundsMax, 1.0f));
 			newMesh.BoundsMin() = boundsMin;
 			newMesh.BoundsMax() = boundsMax;
 
@@ -183,7 +181,7 @@ namespace Engine
 				aiProcess_Triangulate |
 				aiProcess_JoinIdenticalVertices |
 				aiProcess_SortByPType |
-				aiProcess_PreTransformVertices
+				0
 			);
 			if (!scene)
 			{
