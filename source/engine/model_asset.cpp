@@ -184,7 +184,7 @@ namespace Engine
 				aiProcess_ValidateDataStructure | 
 				aiProcess_OptimizeMeshes |
 				aiProcess_RemoveRedundantMaterials
-				// aiProcess_PreTransformVertices // useful for static meshes
+				//| aiProcess_PreTransformVertices // useful for static meshes
 			);
 			if (!scene)
 			{

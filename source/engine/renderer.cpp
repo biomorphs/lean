@@ -162,9 +162,14 @@ namespace Engine
 		const void* matPtrVoid = static_cast<const void*>(instanceMat);
 		uintptr_t matPtr = reinterpret_cast<uintptr_t>(matPtrVoid);
 		uint32_t matPtrLow = static_cast<uint32_t>((matPtr & 0x00000000ffffffff));
+		
+		const void* instPtrVoid = static_cast<const void*>(instanceMat);
+		uintptr_t instPtr = reinterpret_cast<uintptr_t>(instPtrVoid);
+		uint32_t instPtrLow = static_cast<uint32_t>((instPtr & 0x00000000ffffffff));
+		uint32_t materialsCombined = matPtrLow ^ instPtrLow;	// is there a better way?
 
 		uint32_t distanceToCameraAsInt = static_cast<uint32_t>(distanceToCamera * 100.0f);
-		__m128i result = _mm_set_epi32(distanceToCameraAsInt, shader.m_index, vaPtrLow, matPtrLow);
+		__m128i result = _mm_set_epi32(distanceToCameraAsInt, shader.m_index, vaPtrLow, materialsCombined);
 
 		return result;
 	}
@@ -219,7 +224,7 @@ namespace Engine
 			auto shadowShader = sm->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				auto sortKey = ShadowCasterSortKey(shadowShader, &mesh.GetVertexArray());
+				auto sortKey = OpaqueSortKey(shadowShader, &mesh.GetVertexArray(), mesh.GetMaterial(), instanceMat);
 				SubmitInstance(m_allShadowCasterInstances, sortKey, transform, mesh, shadowShader, boundsMin, boundsMax);
 			}
 		}
@@ -267,8 +272,8 @@ namespace Engine
 
 				if (modelCastsShadow && meshPart.m_material.GetCastsShadows() && shadowShader.m_index != (uint32_t)-1)
 				{
-					auto shadowSortKey = ShadowCasterSortKey(shadowShader, va);
-					SubmitInstance(m_allShadowCasterInstances, shadowSortKey, instanceTransform, 
+					auto sortKey = OpaqueSortKey(shadowShader, va, meshPart.m_material, instanceMat);
+					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform,
 						va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), 
 						&meshPart.m_material, shadowShader, boundsMin, boundsMax, instanceMat);
 				}
@@ -282,7 +287,7 @@ namespace Engine
 				{
 					const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
 					auto sortKey = TransparentSortKey(shader, va, instanceMat, distanceToCamera);
-					SubmitInstance(m_opaqueInstances, sortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
+					SubmitInstance(m_transparentInstances, sortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
 						&meshPart.m_material, shader, boundsMin, boundsMax, instanceMat);
 				}
 				else
