@@ -69,6 +69,8 @@ namespace Engine
 		float GetBloomMultiplier() { return m_bloomMultiplier; }
 		void SetBloomMultiplier(float t) { m_bloomMultiplier = t; }
 		bool IsCullingEnabled() { return m_cullingEnabled; }
+		void SetUseOldCulling(bool t) { m_useOldCulling = t; }
+		bool GetUseOldCulling() { return m_useOldCulling; }
 		void SetCullingEnabled(bool b) { m_cullingEnabled = b; }
 		void SetWireframeMode(bool m) { m_showWireframe = m; }
 		bool GetWireframeMode() { return m_showWireframe; }
@@ -97,15 +99,20 @@ namespace Engine
 		// cull one source list into multiple result lists each with a different frustum
 		void CullInstances(const InstanceList& srcInstances, InstanceList* results, const class Frustum* frustums, int listCount=1);
 
+		using OnFindVisibleComplete = std::function<void()>;
+		void FindVisibleInstancesAsync(const Frustum& f, const std::vector<MeshInstance>& src, std::vector<MeshInstance>& result, OnFindVisibleComplete onComplete);
+
 		FrameStats m_frameStats;
 		float m_hdrExposure = 1.0f;
 		std::vector<Light> m_lights;
 		InstanceList m_opaqueInstances;
 		InstanceList m_transparentInstances;
 		InstanceList m_allShadowCasterInstances;
+		InstanceList m_visibleOpaqueInstances;
 		Render::RenderBuffer m_transforms;	// global instance transforms
 		int m_nextInstance = 0;				// index into buffers above
 		bool m_cullingEnabled = true;
+		bool m_useOldCulling = true;
 		bool m_showWireframe = false;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		JobSystem* m_jobSystem = nullptr;

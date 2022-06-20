@@ -359,13 +359,19 @@ namespace Engine
 	int Renderer::PopulateInstanceBuffers(InstanceList& list)
 	{
 		SDE_PROF_EVENT();
-		//static to avoid constant allocations
-		static std::vector<glm::mat4> instanceTransforms;
-		instanceTransforms.reserve(list.m_instances.size());
-		instanceTransforms.clear();
-		for (const auto& c : list.m_instances)
+
+		std::vector<glm::mat4> instanceTransforms;
 		{
-			instanceTransforms.push_back(c.m_transform);
+			SDE_PROF_EVENT("Reserve");
+			instanceTransforms.reserve(list.m_instances.size());
+		}
+
+		{
+			SDE_PROF_EVENT("Copy");
+			for (const auto& c : list.m_instances)
+			{
+				instanceTransforms.emplace_back(c.m_transform);
+			}
 		}
 
 		// copy the instance buffers to gpu
@@ -649,6 +655,73 @@ namespace Engine
 		}
 	}
 
+	void Renderer::FindVisibleInstancesAsync(const Frustum& f, const std::vector<MeshInstance>& src, std::vector<MeshInstance>& result, OnFindVisibleComplete onComplete)
+	{
+		SDE_PROF_EVENT();
+
+		auto jobs = Engine::GetSystem<JobSystem>("Jobs");
+		const uint32_t partsPerJob = 2000;
+		const uint32_t jobCount = src.size() / partsPerJob;
+		if (jobCount == 0)
+		{
+			onComplete();
+			return;
+		}
+		struct JobData
+		{
+			std::atomic<uint32_t> m_jobsRemaining = 0;
+			std::atomic<uint32_t> m_count = 0;
+		};
+		JobData* jobData = new JobData();
+		{
+			SDE_PROF_EVENT("Resize results array");
+			result.resize(src.size());
+		}
+		
+		for (uint32_t p = 0; p < src.size(); p += partsPerJob)
+		{
+			jobData->m_jobsRemaining++;
+			auto cullPartsJob = [jobData, &src, &result, p, partsPerJob, f, onComplete](void*) {
+				SDE_PROF_EVENT("Cull instances");
+				uint32_t firstIndex = p;
+				uint32_t lastIndex = std::min((uint32_t)src.size(), firstIndex + partsPerJob);
+				std::vector<MeshInstance> localResults;	// collect results for this job
+				localResults.reserve(partsPerJob);
+				for (uint32_t id = firstIndex; id < lastIndex; ++id)
+				{
+					const auto& theInstance = src[id];
+					if (f.IsBoxVisible(theInstance.m_aabbMin, theInstance.m_aabbMax, theInstance.m_transform))
+					{
+						localResults.emplace_back(theInstance);
+					}
+				}
+				if (localResults.size() > 0)	// copy the results to the main list
+				{
+					SDE_PROF_EVENT("Push results");
+					uint64_t offset = jobData->m_count.fetch_add(localResults.size());
+					for (int r = 0; r < localResults.size(); ++r)
+					{
+						result[offset + r] = localResults[r];
+					}
+				}
+				if (jobData->m_jobsRemaining.fetch_sub(1) == 1)		// this was the last culling job, time to sort!
+				{
+					result.resize(jobData->m_count);
+					SDE_PROF_EVENT("SortResults");
+					{
+						std::sort(result.begin(), result.end(),
+							[](const MeshInstance& s1, const MeshInstance& s2) {
+								return SortKeyLessThan(s1.m_sortKey, s2.m_sortKey);
+							});
+					}
+					onComplete();
+					delete jobData;
+				}
+			};
+			jobs->PushJob(cullPartsJob);
+		}
+	}
+
 	void Renderer::RenderAll(Render::Device& d)
 	{
 		SDE_PROF_EVENT();
@@ -656,6 +729,27 @@ namespace Engine
 		m_frameStats = {};
 		m_frameStats.m_instancesSubmitted = totalInstances;
 		m_frameStats.m_activeLights = std::min(m_lights.size(), c_maxLights);
+
+		static InstanceList visibleOpaques, visibleTransparents;
+		std::atomic<bool> opaquesReady = false, transparentsReady = false;
+		
+		if(!m_useOldCulling)
+		{
+			SDE_PROF_EVENT("BeginCulling");
+
+			visibleOpaques.m_instances.reserve(m_opaqueInstances.m_instances.size());
+			visibleTransparents.m_instances.reserve(m_transparentInstances.m_instances.size());
+			visibleOpaques.m_instances.resize(0);
+			visibleTransparents.m_instances.resize(0);
+
+			Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
+			FindVisibleInstancesAsync(viewFrustum, m_opaqueInstances.m_instances, visibleOpaques.m_instances, [&opaquesReady]() {
+				opaquesReady = true;
+			});
+			FindVisibleInstancesAsync(viewFrustum, m_transparentInstances.m_instances, visibleTransparents.m_instances, [&transparentsReady]() {
+				transparentsReady = true;
+			});
+		}
 
 		{
 			SDE_PROF_EVENT("Clear main framebuffer");
@@ -680,27 +774,48 @@ namespace Engine
 
 		// lighting to main frame buffer
 		{
-			d.SetWireframeDrawing(m_showWireframe);
 			SDE_PROF_EVENT("RenderMainBuffer");
-			d.DrawToFramebuffer(m_mainFramebuffer);
-			d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
 
 			// render opaques
-			m_frameStats.m_totalOpaqueInstances = m_opaqueInstances.m_instances.size();
-			int baseIndex = PrepareOpaqueInstances(m_opaqueInstances);
+			d.SetWireframeDrawing(m_showWireframe);
+			d.DrawToFramebuffer(m_mainFramebuffer);
+			d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
 			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 			d.SetBlending(false);				// no blending for opaques
 			d.SetScissorEnabled(false);			// (don't) scissor me timbers
-			DrawInstances(d, m_opaqueInstances, baseIndex, true);
-			m_frameStats.m_renderedOpaqueInstances = m_opaqueInstances.m_instances.size();
+
+			if (!m_useOldCulling)
+			{
+				SDE_PROF_EVENT("Wait for opaques");
+				while (!opaquesReady)
+				{
+					m_jobSystem->ProcessJobThisThread();
+				}
+			}
+
+			m_frameStats.m_totalOpaqueInstances = m_opaqueInstances.m_instances.size();
+			int baseIndex = m_useOldCulling ? PrepareOpaqueInstances(m_opaqueInstances) : PopulateInstanceBuffers(visibleOpaques);
+			DrawInstances(d, m_useOldCulling ? m_opaqueInstances : visibleOpaques, baseIndex, true);
+			m_frameStats.m_renderedOpaqueInstances = m_useOldCulling ? m_opaqueInstances.m_instances.size() : visibleOpaques.m_instances.size();
 
 			// render transparents
-			m_frameStats.m_totalTransparentInstances = m_transparentInstances.m_instances.size();
-			baseIndex = PrepareTransparentInstances(m_transparentInstances);
 			d.SetDepthState(true, false);		// enable z-test, disable write
 			d.SetBlending(true);
-			DrawInstances(d, m_transparentInstances, baseIndex, true);
-			m_frameStats.m_renderedTransparentInstances = m_transparentInstances.m_instances.size();
+
+			if (!m_useOldCulling)
+			{
+				SDE_PROF_EVENT("Wait for transparents");
+				while (!transparentsReady)
+				{
+					m_jobSystem->ProcessJobThisThread();
+				}
+			}
+
+			m_frameStats.m_totalTransparentInstances = m_transparentInstances.m_instances.size();
+			baseIndex = m_useOldCulling ? PrepareTransparentInstances(m_transparentInstances) : PopulateInstanceBuffers(visibleTransparents);
+			DrawInstances(d, m_useOldCulling ? m_transparentInstances : visibleTransparents, baseIndex, true);
+			m_frameStats.m_renderedTransparentInstances = m_useOldCulling ? m_transparentInstances.m_instances.size() : visibleTransparents.m_instances.size();
+
 			if (m_showWireframe)
 			{
 				d.SetWireframeDrawing(false);

@@ -229,16 +229,11 @@ void Editor::UpdateMenubar()
 	settingsMenu.AddItem(ICON_FK_CROSSHAIRS " Grid Settings", [this]() {
 		m_showGridSettings = true;
 	});
-	std::string showLightBoundsText = ICON_FK_LIGHTBULB_O " Show Light Bounds";
-	if (m_showLightBounds)
-	{
-		showLightBoundsText = ICON_FK_LIGHTBULB_O " Hide Light Bounds";
-	}
-	settingsMenu.AddItem(showLightBoundsText, [this]() {
+	settingsMenu.AddItem(ICON_FK_LIGHTBULB_O " Toggle Light Bounds", [this]() {
 		m_showLightBounds = !m_showLightBounds;
 	});
 	settingsMenu.AddItem(ICON_FK_CODE "Show Command Lists", [this]() {
-		m_showCommandLists = true;
+		m_showCommandLists = !m_showCommandLists;
 	});
 	m_debugGui->MainMenuBar(menuBar);
 

@@ -79,6 +79,8 @@ private:
 template<class Cmp1, class Cmp2>
 void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, EntityHandle)> fn)
 {
+	SDE_PROF_EVENT();
+
 	const uint64_t currentGen1 = m_world->GetStorage(Cmp1::GetType())->GetGeneration();
 	const uint64_t currentGen2 = m_world->GetStorage(Cmp2::GetType())->GetGeneration();
 	const bool listsDirty = m_lastGeneration1 != currentGen1 || m_lastGeneration2 != currentGen2;
@@ -127,6 +129,7 @@ void World::RegisterComponentType()
 template<class ComponentType>
 void World::ForEachComponentAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& jsys, int32_t componentsPerJob)
 {
+	SDE_PROF_EVENT();
 	auto foundStorage = m_components.find(ComponentType::GetType());
 	if (foundStorage != m_components.end())
 	{
@@ -137,6 +140,7 @@ void World::ForEachComponentAsync(std::function<void(ComponentType&, EntityHandl
 template<class ComponentType>
 void World::ForEachComponent(std::function<void(ComponentType&, EntityHandle)> fn)
 {
+	SDE_PROF_EVENT();
 	auto foundStorage = m_components.find(ComponentType::GetType());
 	if (foundStorage != m_components.end())
 	{
