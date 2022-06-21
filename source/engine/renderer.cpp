@@ -124,22 +124,35 @@ namespace Engine
 		m_camera = c;
 	}
 
-	__m128i ShadowCasterSortKey(const ShaderHandle& shader, const Render::VertexArray* va)
+	__m128i ShadowCasterSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::MeshChunk* chunks, const Render::Material& meshMat)
 	{
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
-		uint32_t ptrHigh = static_cast<uint32_t>((vaPtr & 0xffffffff00000000) >> 32);
-		uint32_t ptrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
-		__m128i result = _mm_set_epi32(shader.m_index, 0, ptrHigh, ptrLow);
+		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
+
+		const void* chunkPtrVoid = static_cast<const void*>(chunks);
+		uintptr_t chunkPtr = reinterpret_cast<uintptr_t>(chunkPtrVoid);
+		uint32_t chunkPtrLow = static_cast<uint32_t>((chunkPtr & 0x00000000ffffffff));
+
+		const void* meshMatPtrVoid = static_cast<const void*>(&meshMat);
+		uintptr_t meshMatPtr = reinterpret_cast<uintptr_t>(meshMatPtrVoid);
+		uint32_t meshMatPtrLow = static_cast<uint32_t>((meshMatPtr & 0x00000000ffffffff));
+
+		__m128i result = _mm_set_epi32(shader.m_index, vaPtrLow, chunkPtrLow, meshMatPtrLow);
+
 		return result;
 	}
 
-	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::Material& meshMat, const Render::Material* instanceMat)
+	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::MeshChunk* chunks, const Render::Material& meshMat, const Render::Material* instanceMat)
 	{
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
 		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
 		
+		const void* chunkPtrVoid = static_cast<const void*>(chunks);
+		uintptr_t chunkPtr = reinterpret_cast<uintptr_t>(chunkPtrVoid);
+		uint32_t chunkPtrLow = static_cast<uint32_t>((chunkPtr & 0x00000000ffffffff));
+
 		const void* meshMatPtrVoid = static_cast<const void*>(&meshMat);
 		uintptr_t meshMatPtr = reinterpret_cast<uintptr_t>(meshMatPtrVoid);
 		uint32_t meshMatPtrLow = static_cast<uint32_t>((meshMatPtr & 0x00000000ffffffff));
@@ -147,17 +160,24 @@ namespace Engine
 		const void* instPtrVoid = static_cast<const void*>(instanceMat);
 		uintptr_t instPtr = reinterpret_cast<uintptr_t>(instPtrVoid);
 		uint32_t instPtrLow = static_cast<uint32_t>((instPtr & 0x00000000ffffffff));
+
+		uint32_t materialsCombined = meshMatPtrLow ^ instPtrLow;	// is there a better way?
 		
-		__m128i result = _mm_set_epi32(shader.m_index, vaPtrLow, meshMatPtrLow, instPtrLow);
+		__m128i result = _mm_set_epi32(shader.m_index, vaPtrLow, chunkPtrLow, materialsCombined);
 
 		return result;
 	}
 
-	__m128i TransparentSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::Material* instanceMat, float distanceToCamera)
+	__m128i TransparentSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::MeshChunk* chunks, const Render::Material* instanceMat, float distanceToCamera)
 	{
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
 		uint32_t vaPtrLow = static_cast<uint32_t>((vaPtr & 0x00000000ffffffff));
+
+		const void* chunkPtrVoid = static_cast<const void*>(chunks);
+		uintptr_t chunkPtr = reinterpret_cast<uintptr_t>(chunkPtrVoid);
+		uint32_t chunkPtrLow = static_cast<uint32_t>((chunkPtr & 0x00000000ffffffff));
+		uint32_t vaChunkCombined = vaPtrLow ^ chunkPtrLow;
 
 		const void* matPtrVoid = static_cast<const void*>(instanceMat);
 		uintptr_t matPtr = reinterpret_cast<uintptr_t>(matPtrVoid);
@@ -169,7 +189,7 @@ namespace Engine
 		uint32_t materialsCombined = matPtrLow ^ instPtrLow;	// is there a better way?
 
 		uint32_t distanceToCameraAsInt = static_cast<uint32_t>(distanceToCamera * 100.0f);
-		__m128i result = _mm_set_epi32(distanceToCameraAsInt, shader.m_index, vaPtrLow, materialsCombined);
+		__m128i result = _mm_set_epi32(distanceToCameraAsInt, shader.m_index, vaChunkCombined, materialsCombined);
 
 		return result;
 	}
@@ -224,7 +244,7 @@ namespace Engine
 			auto shadowShader = sm->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				auto sortKey = OpaqueSortKey(shadowShader, &mesh.GetVertexArray(), mesh.GetMaterial(), instanceMat);
+				auto sortKey = ShadowCasterSortKey(shadowShader, &mesh.GetVertexArray(), mesh.GetChunks().data(), mesh.GetMaterial());
 				SubmitInstance(m_allShadowCasterInstances, sortKey, transform, mesh, shadowShader, boundsMin, boundsMax);
 			}
 		}
@@ -232,12 +252,12 @@ namespace Engine
 		if (isTransparent)
 		{
 			const float distanceToCamera = glm::length(glm::vec3(transform[3]) - m_camera.Position());
-			__m128i sortKey = TransparentSortKey(shader, &mesh.GetVertexArray(), instanceMat, distanceToCamera);
+			__m128i sortKey = TransparentSortKey(shader, &mesh.GetVertexArray(), mesh.GetChunks().data(), instanceMat, distanceToCamera);
 			SubmitInstance(m_transparentInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 		}
 		else
 		{
-			__m128i sortKey = OpaqueSortKey(shader, &mesh.GetVertexArray(), mesh.GetMaterial(), instanceMat);
+			__m128i sortKey = OpaqueSortKey(shader, &mesh.GetVertexArray(), mesh.GetChunks().data(), mesh.GetMaterial(), instanceMat);
 			SubmitInstance(m_opaqueInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 		}
 	}
@@ -272,10 +292,10 @@ namespace Engine
 
 				if (modelCastsShadow && meshPart.m_material.GetCastsShadows() && shadowShader.m_index != (uint32_t)-1)
 				{
-					auto sortKey = OpaqueSortKey(shadowShader, va, meshPart.m_material, instanceMat);
+					auto sortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), meshPart.m_material);
 					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform,
 						va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), 
-						&meshPart.m_material, shadowShader, boundsMin, boundsMax, instanceMat);
+						&meshPart.m_material, shadowShader, boundsMin, boundsMax);
 				}
 
 				bool isTransparent = meshPart.m_material.GetIsTransparent();
@@ -286,13 +306,13 @@ namespace Engine
 				if (isTransparent)
 				{
 					const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
-					auto sortKey = TransparentSortKey(shader, va, instanceMat, distanceToCamera);
+					auto sortKey = TransparentSortKey(shader, va, meshPart.m_chunks.data(), instanceMat, distanceToCamera);
 					SubmitInstance(m_transparentInstances, sortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
 						&meshPart.m_material, shader, boundsMin, boundsMax, instanceMat);
 				}
 				else
 				{
-					auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_material, instanceMat);
+					auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_chunks.data(), meshPart.m_material, instanceMat);
 					SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
 						&meshPart.m_material, shader, boundsMin, boundsMax, instanceMat);
 				}
@@ -500,11 +520,12 @@ namespace Engine
 		const Render::RenderBuffer* lastIBUsed = nullptr;
 		while (firstInstance != list.m_instances.end())
 		{
-			// Batch by shader, va/ib, mesh and instance material
+			// Batch by shader, va/ib, chunks and materials
 			auto lastMeshInstance = std::find_if(firstInstance, list.m_instances.end(), [firstInstance](const MeshInstance& m) -> bool {
-				return  m.m_va != firstInstance->m_va || 
-					m.m_ib != firstInstance->m_ib || 
-					m.m_shader != firstInstance->m_shader || 
+				return  m.m_va != firstInstance->m_va ||
+					m.m_ib != firstInstance->m_ib ||
+					m.m_chunks != firstInstance->m_chunks ||
+					m.m_shader != firstInstance->m_shader ||
 					m.m_meshMaterial != firstInstance->m_meshMaterial ||
 					m.m_instanceMaterial != firstInstance->m_instanceMaterial;
 			});
