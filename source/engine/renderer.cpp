@@ -70,7 +70,7 @@ namespace Engine
 		m_tonemapShader = sm->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
-			m_transforms.Create(c_maxInstances * sizeof(glm::mat4), Render::RenderBufferModification::Dynamic, true);
+			m_perInstanceData.Create(c_maxInstances * sizeof(PerInstanceData), Render::RenderBufferModification::Dynamic, true);
 			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferModification::Dynamic, true);
 			m_opaqueInstances.m_instances.reserve(c_maxInstances);
 			m_transparentInstances.m_instances.reserve(c_maxInstances);
@@ -124,7 +124,7 @@ namespace Engine
 		m_camera = c;
 	}
 
-	__m128i ShadowCasterSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::MeshChunk* chunks, const Render::Material& meshMat)
+	__m128i ShadowCasterSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::MeshChunk* chunks, const Render::Material* meshMat)
 	{
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
@@ -143,7 +143,7 @@ namespace Engine
 		return result;
 	}
 
-	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::MeshChunk* chunks, const Render::Material& meshMat, const Render::Material* instanceMat)
+	__m128i OpaqueSortKey(const ShaderHandle& shader, const Render::VertexArray* va, const Render::MeshChunk* chunks, const Render::Material* meshMat, const Render::Material* instanceMat)
 	{
 		const void* vaPtrVoid = static_cast<const void*>(va);
 		uintptr_t vaPtr = reinterpret_cast<uintptr_t>(vaPtrVoid);
@@ -211,13 +211,22 @@ namespace Engine
 		return less > greater;
 	}
 
+	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const glm::vec3& aabbMin, const glm::vec3& aabbMax,
+		const struct ShaderHandle& shader, const Render::VertexArray* va, const Render::RenderBuffer* ib,
+		const Render::MeshChunk* chunks, uint32_t chunkCount, const PerInstanceData& pid)
+	{
+		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+		const auto foundShader = sm->GetShader(shader);
+		list.m_instances.emplace_back(RenderInstance{ sortKey, trns, aabbMin, aabbMax, foundShader, va, ib, chunks, chunkCount, nullptr, nullptr, pid });
+	}
+
 	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, 
 		const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
 		const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
 		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		const auto foundShader = sm->GetShader(shader);
-		list.m_instances.emplace_back(std::move(MeshInstance{ sortKey, trns, aabbMin, aabbMax, foundShader, va, ib, chunks, chunkCount, meshMaterial, instanceMat }));
+		list.m_instances.emplace_back(RenderInstance{ sortKey, trns, aabbMin, aabbMax, foundShader, va, ib, chunks, chunkCount, meshMaterial, instanceMat, {} });
 	}
 
 	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
@@ -244,7 +253,7 @@ namespace Engine
 			auto shadowShader = sm->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
-				auto sortKey = ShadowCasterSortKey(shadowShader, &mesh.GetVertexArray(), mesh.GetChunks().data(), mesh.GetMaterial());
+				auto sortKey = ShadowCasterSortKey(shadowShader, &mesh.GetVertexArray(), mesh.GetChunks().data(), &mesh.GetMaterial());
 				SubmitInstance(m_allShadowCasterInstances, sortKey, transform, mesh, shadowShader, boundsMin, boundsMax);
 			}
 		}
@@ -257,7 +266,7 @@ namespace Engine
 		}
 		else
 		{
-			__m128i sortKey = OpaqueSortKey(shader, &mesh.GetVertexArray(), mesh.GetChunks().data(), mesh.GetMaterial(), instanceMat);
+			__m128i sortKey = OpaqueSortKey(shader, &mesh.GetVertexArray(), mesh.GetChunks().data(), &mesh.GetMaterial(), instanceMat);
 			SubmitInstance(m_opaqueInstances, sortKey, transform, mesh, shader, boundsMin, boundsMax, instanceMat);
 		}
 	}
@@ -265,6 +274,62 @@ namespace Engine
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat)
 	{
 		SubmitInstance(transform, mesh, shader, { -FLT_MAX, -FLT_MAX, -FLT_MAX }, { FLT_MAX, FLT_MAX, FLT_MAX }, instanceMat);
+	}
+
+	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader)
+	{
+		static ModelManager* mm = Engine::GetSystem<ModelManager>("Models");
+		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
+		static auto tm = Engine::GetSystem<Engine::TextureManager>("Textures");
+		static uint64_t defaultDiffuse = tm->GetTexture(g_defaultTextures["DiffuseTexture"])->GetResidentHandle();
+		static uint64_t defaultSpecular = tm->GetTexture(g_defaultTextures["SpecularTexture"])->GetResidentHandle();
+		static uint64_t defaultNormal = tm->GetTexture(g_defaultTextures["NormalsTexture"])->GetResidentHandle();
+		const auto theModel = mm->GetModel(model);
+		const auto theShader = sm->GetShader(shader);
+		if (theModel != nullptr && theShader != nullptr)
+		{
+			ShaderHandle shadowShader = sm->GetShadowsShader(shader);
+			const Render::VertexArray* va = mm->GetVertexArray();
+			const Render::RenderBuffer* ib = mm->GetIndexBuffer();
+			for (const auto& meshPart : theModel->MeshParts())
+			{
+				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
+				glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
+
+				auto diffuse = tm->GetTexture(meshPart.m_drawData.m_diffuseTexture);
+				auto normal = tm->GetTexture(meshPart.m_drawData.m_normalsTexture);
+				auto specular = tm->GetTexture(meshPart.m_drawData.m_specularTexture);
+
+				PerInstanceData pid;	// it may be better to defer getting the texture handles until post-culling?
+				pid.m_diffuseOpacity = meshPart.m_drawData.m_diffuseOpacity;
+				pid.m_specular = meshPart.m_drawData.m_specular;
+				pid.m_shininess = meshPart.m_drawData.m_shininess;
+				pid.m_diffuseTexture = diffuse ? diffuse->GetResidentHandle() : defaultDiffuse;
+				pid.m_normalsTexture = normal ? normal->GetResidentHandle() : defaultNormal;
+				pid.m_specularTexture = specular ? specular->GetResidentHandle() : defaultSpecular;
+
+				if (meshPart.m_material.GetCastsShadows() && shadowShader.m_index != (uint32_t)-1)
+				{
+					auto sortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), nullptr);
+					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform, boundsMin, boundsMax,
+						shadowShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+				}
+
+				if (meshPart.m_material.GetIsTransparent())
+				{
+					const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
+					auto sortKey = TransparentSortKey(shader, va, meshPart.m_chunks.data(), nullptr, distanceToCamera);
+					SubmitInstance(m_transparentInstances, sortKey, instanceTransform, boundsMin, boundsMax,
+						shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+				}
+				else
+				{
+					auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_chunks.data(), nullptr, nullptr);
+					SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, boundsMin, boundsMax,
+						shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+				}
+			}
+		}
 	}
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat)
@@ -292,7 +357,7 @@ namespace Engine
 
 				if (modelCastsShadow && meshPart.m_material.GetCastsShadows() && shadowShader.m_index != (uint32_t)-1)
 				{
-					auto sortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), meshPart.m_material);
+					auto sortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), &meshPart.m_material);
 					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform,
 						va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), 
 						&meshPart.m_material, shadowShader, boundsMin, boundsMax);
@@ -312,7 +377,7 @@ namespace Engine
 				}
 				else
 				{
-					auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_chunks.data(), meshPart.m_material, instanceMat);
+					auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_chunks.data(), &meshPart.m_material, instanceMat);
 					SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(),
 						&meshPart.m_material, shader, boundsMin, boundsMax, instanceMat);
 				}
@@ -380,17 +445,22 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		std::vector<glm::mat4> instanceTransforms;
+		struct RenderPerInstanceData {
+			glm::mat4 m_transform;
+			PerInstanceData m_data;
+		};
+
+		std::vector<RenderPerInstanceData> instanceData;
 		{
 			SDE_PROF_EVENT("Reserve");
-			instanceTransforms.reserve(list.m_instances.size());
+			instanceData.reserve(list.m_instances.size());
 		}
 
 		{
 			SDE_PROF_EVENT("Copy");
 			for (const auto& c : list.m_instances)
 			{
-				instanceTransforms.emplace_back(c.m_transform);
+				instanceData.emplace_back(RenderPerInstanceData{ c.m_transform, c.m_pid });
 			}
 		}
 
@@ -398,7 +468,7 @@ namespace Engine
 		int instanceIndex = -1;
 		if (list.m_instances.size() > 0 && m_nextInstance + list.m_instances.size() < c_maxInstances)
 		{
-			m_transforms.SetData(m_nextInstance * sizeof(glm::mat4), instanceTransforms.size() * sizeof(glm::mat4), instanceTransforms.data());
+			m_perInstanceData.SetData(m_nextInstance * sizeof(RenderPerInstanceData), instanceData.size() * sizeof(RenderPerInstanceData), instanceData.data());
 			instanceIndex = m_nextInstance;
 			m_nextInstance += list.m_instances.size();
 		}
@@ -521,7 +591,7 @@ namespace Engine
 		while (firstInstance != list.m_instances.end())
 		{
 			// Batch by shader, va/ib, chunks and materials
-			auto lastMeshInstance = std::find_if(firstInstance, list.m_instances.end(), [firstInstance](const MeshInstance& m) -> bool {
+			auto lastMeshInstance = std::find_if(firstInstance, list.m_instances.end(), [firstInstance](const RenderInstance& m) -> bool {
 				return  m.m_va != firstInstance->m_va ||
 					m.m_ib != firstInstance->m_ib ||
 					m.m_chunks != firstInstance->m_chunks ||
@@ -542,7 +612,7 @@ namespace Engine
 					d.BindShaderProgram(*theShader);
 					d.BindUniformBufferIndex(*theShader, "Globals", 0);
 					d.SetUniforms(*theShader, m_globalsUniformBuffer, 0);
-					d.BindStorageBuffer(0, m_transforms);		// bind instancing data once per shader
+					d.BindStorageBuffer(0, m_perInstanceData);		// bind instancing data once per shader
 					if (uniforms != nullptr)
 					{
 						uniforms->Apply(d, *theShader);
@@ -676,7 +746,7 @@ namespace Engine
 		}
 	}
 
-	void Renderer::FindVisibleInstancesAsync(const Frustum& f, const std::vector<MeshInstance>& src, std::vector<MeshInstance>& result, OnFindVisibleComplete onComplete)
+	void Renderer::FindVisibleInstancesAsync(const Frustum& f, const std::vector<RenderInstance>& src, std::vector<RenderInstance>& result, OnFindVisibleComplete onComplete)
 	{
 		SDE_PROF_EVENT();
 
@@ -706,7 +776,7 @@ namespace Engine
 				SDE_PROF_EVENT("Cull instances");
 				uint32_t firstIndex = p;
 				uint32_t lastIndex = std::min((uint32_t)src.size(), firstIndex + partsPerJob);
-				std::vector<MeshInstance> localResults;	// collect results for this job
+				std::vector<RenderInstance> localResults;	// collect results for this job
 				localResults.reserve(partsPerJob);
 				for (uint32_t id = firstIndex; id < lastIndex; ++id)
 				{
@@ -731,7 +801,7 @@ namespace Engine
 					SDE_PROF_EVENT("SortResults");
 					{
 						std::sort(result.begin(), result.end(),
-							[](const MeshInstance& s1, const MeshInstance& s2) {
+							[](const RenderInstance& s1, const RenderInstance& s2) {
 								return SortKeyLessThan(s1.m_sortKey, s2.m_sortKey);
 							});
 					}
@@ -917,9 +987,12 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
-		std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2){
-			return SortKeyLessThan(q1.m_sortKey, q2.m_sortKey);
-		});
+		{
+			SDE_PROF_EVENT("Sort");
+			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const RenderInstance& q1, const RenderInstance& q2) {
+				return SortKeyLessThan(q1.m_sortKey, q2.m_sortKey);
+			});
+		}
 		
 		return PopulateInstanceBuffers(visibleInstances);
 	}
@@ -957,7 +1030,7 @@ namespace Engine
 		}
 		{
 			SDE_PROF_EVENT("Sort");
-			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2) {
+			std::sort(visibleInstances.m_instances.begin(), visibleInstances.m_instances.end(), [](const RenderInstance& q1, const RenderInstance& q2) {
 				return SortKeyLessThan(q1.m_sortKey, q2.m_sortKey);
 			});
 		}
@@ -980,7 +1053,7 @@ namespace Engine
 		}
 		{
 			SDE_PROF_EVENT("Sort");
-			std::sort(allVisibleInstances.m_instances.begin(), allVisibleInstances.m_instances.end(), [](const MeshInstance& q1, const MeshInstance& q2){
+			std::sort(allVisibleInstances.m_instances.begin(), allVisibleInstances.m_instances.end(), [](const RenderInstance& q1, const RenderInstance& q2){
 				return SortKeyLessThan(q1.m_sortKey, q2.m_sortKey);
 			});
 		}

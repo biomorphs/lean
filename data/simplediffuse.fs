@@ -1,19 +1,13 @@
-#version 430 
+#version 460 
+#extension GL_ARB_bindless_texture : enable
 #pragma sde include "shared.fs"
 
 in vec3 vs_out_normal;
 in vec2 vs_out_uv;
 in vec3 vs_out_position;
 in mat3 vs_out_tbnMatrix;
+flat in uint vs_out_instanceID;
 out vec4 fs_out_colour;
-
-uniform vec4 MeshDiffuseOpacity;
-uniform vec4 MeshSpecular;	//r,g,b,strength
-uniform float MeshShininess;
-
-uniform sampler2D DiffuseTexture;
-uniform sampler2D NormalsTexture;
-uniform sampler2D SpecularTexture;
 
 uniform sampler2D ShadowMaps[16];
 uniform samplerCube ShadowCubeMaps[16];
@@ -138,20 +132,20 @@ vec3 CalculateDirection(int i)
 void main()
 {
 	// early out if we can
-	vec4 diffuseTex = srgbToLinear(texture(DiffuseTexture, vs_out_uv));	
-	if(diffuseTex.a == 0.0 || MeshDiffuseOpacity.a == 0.0)
+	vec4 diffuseOpacity = instance_data[vs_out_instanceID].m_diffuseOpacity;
+	vec4 diffuseTex = srgbToLinear(texture(sampler2D(instance_data[vs_out_instanceID].m_diffuseTexture), vs_out_uv));	
+	if(diffuseTex.a < 0.5 || diffuseOpacity.a == 0.0)
 		discard;
-
-	vec3 finalColour = vec3(0.0);
-	float specularTex = texture(SpecularTexture, vs_out_uv).r;
+	
+	vec4 meshSpecular = instance_data[vs_out_instanceID].m_specular;
+	float specularTex = texture(sampler2D(instance_data[vs_out_instanceID].m_specularTexture), vs_out_uv).r;
 
 	// transform normal map to world space
-	vec3 finalNormal = texture(NormalsTexture, vs_out_uv).rgb;
+	vec3 finalNormal = texture(sampler2D(instance_data[vs_out_instanceID].m_normalsTexture), vs_out_uv).rgb;
 	finalNormal = normalize(finalNormal * 2.0 - 1.0);   
 	finalNormal = normalize(vs_out_tbnMatrix * finalNormal);
-	//finalNormal = normalize(vs_out_normal);	// fixme, tbn is wrong with transforms (non orthaganol?)
-
 	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
+	vec3 finalColour = vec3(0.0);
 	for(int i=0;i<LightCount;++i)
 	{
 		vec3 lightDir = CalculateDirection(i);
@@ -164,7 +158,7 @@ void main()
 				shadow = CalculateShadow(i, finalNormal);
 			}
 			
-			vec3 matColour = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb;
+			vec3 matColour = diffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb;
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
@@ -175,12 +169,12 @@ void main()
 
 			// specular light (blinn phong)
 			vec3 specular = vec3(0.0);
-			if(MeshSpecular.a > 0.0)
+			if(meshSpecular.a > 0.0)
 			{
 				vec3 halfwayDir = normalize(lightDir + viewDir);  
-				float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), max(MeshShininess,0.000000001));
-				vec3 specularColour = MeshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
-				specular = MeshSpecular.a * specFactor * specularColour * specularTex; 
+				float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), max(instance_data[vs_out_instanceID].m_shininess.r,0.000000001));
+				vec3 specularColour = meshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
+				specular = meshSpecular.a * specFactor * specularColour * specularTex; 
 			}
 			
 			vec3 diffuseSpec = (1.0-shadow) * (diffuse + specular);
@@ -189,5 +183,5 @@ void main()
 	}
 	
 	// apply exposure here, assuming next pass is postfx
-	fs_out_colour = vec4(finalColour * HDRExposure,MeshDiffuseOpacity.a * diffuseTex.a);
+	fs_out_colour = vec4(finalColour * HDRExposure, diffuseOpacity.a * diffuseTex.a);
 }

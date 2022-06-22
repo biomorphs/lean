@@ -1,5 +1,4 @@
-// smol renderer shared fragment shader data
-
+#pragma sde include "per_instance_data.h"
 #pragma sde include "global_uniforms.h"
 
 // utility functions

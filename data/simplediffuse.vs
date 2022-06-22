@@ -7,11 +7,13 @@ out vec3 vs_out_normal;
 out vec2 vs_out_uv;
 out vec3 vs_out_position;
 out mat3 vs_out_tbnMatrix;
+flat out uint vs_out_instanceID;
 
 void main()
 {
 	vec4 pos = vec4(vs_in_position,1);
-	mat4 instanceTransform = instance_transforms[gl_BaseInstance + gl_InstanceID];
+	vs_out_instanceID = gl_BaseInstance + gl_InstanceID;
+	mat4 instanceTransform = instance_data[gl_BaseInstance + gl_InstanceID].m_transform;
 	vec4 worldSpacePos = instanceTransform * pos;
 	vec4 viewSpacePos = ProjectionViewMatrix * worldSpacePos; 
 	vs_out_normal = normalize(mat3(transpose(inverse(instanceTransform))) * vs_in_normal); 

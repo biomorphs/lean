@@ -29,7 +29,7 @@ namespace Engine
 		Render::VertexArray* GetVertexArray() { return m_globalVertexArray.get(); }
 		Render::RenderBuffer* GetIndexBuffer() { return m_globalIndexData.get(); }
 
-		virtual bool PostInit();
+		virtual bool Initialise();
 		virtual bool Tick(float timeDelta);
 		virtual void Shutdown();
 

@@ -316,7 +316,7 @@ void GraphicsSystem::ProcessEntities()
 			{
 				Material* cmpMat = m.GetMaterialComponent();
 				Render::Material* instanceMaterial = cmpMat ? &cmpMat->GetRenderMaterial() : nullptr;
-				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), instanceMaterial);
+				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
 			}
 		});
 	}

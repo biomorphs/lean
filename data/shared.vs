@@ -1,18 +1,11 @@
-// smol renderer shared vertex shader data
+#pragma sde include "per_instance_data.h"
+#pragma sde include "global_uniforms.h"
 
-// Per-instance data
-layout(std430, binding = 0) buffer vs_instance_data
-{
-    mat4 instance_transforms[];
-};
-
-// Shared mesh layout
+// model mesh layout
 layout(location = 0) in vec3 vs_in_position;
 layout(location = 1) in vec3 vs_in_normal;
 layout(location = 2) in vec3 vs_in_tangent;
 layout(location = 3) in vec2 vs_in_uv;
-
-#pragma sde include "global_uniforms.h"
 
 mat3 CalculateTBN(mat4 modelMat, vec3 tangent, vec3 normal)
 {

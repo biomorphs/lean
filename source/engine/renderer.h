@@ -30,12 +30,27 @@ namespace Engine
 		Renderer(JobSystem* js, glm::ivec2 windowSize);
 		virtual ~Renderer() = default;
 
+		struct PerInstanceData	
+		{
+			glm::vec4 m_diffuseOpacity;
+			glm::vec4 m_specular;	//r,g,b,strength
+			glm::vec4 m_shininess;	// add more stuff here!
+			uint64_t m_diffuseTexture;
+			uint64_t m_normalsTexture;
+			uint64_t m_specularTexture;
+		};
+
 		void Reset();
 		void RenderAll(Render::Device&);
 		void SetCamera(const Render::Camera& c);
+
+		// Note the most optimal way to draw a LOT of different meshes is via PerInstanceData
+		// Treat the per-mesh/per-instance materials as PUSH constants that force a pipeline switch!
+		//	(i.e. they are really useful for general use, but use PerInstanceData if you generate a lot of material switches)
 		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat = nullptr);
-		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat = nullptr);
+		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat);
+		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation,
 					  Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
@@ -75,9 +90,10 @@ namespace Engine
 		void SetWireframeMode(bool m) { m_showWireframe = m; }
 		bool GetWireframeMode() { return m_showWireframe; }
 	private:
+		using RenderInstance = MeshInstance<PerInstanceData>;
 		struct InstanceList
 		{
-			std::vector<MeshInstance> m_instances;
+			std::vector<RenderInstance> m_instances;
 		};
 		using ShadowShaders = std::unordered_map<uint32_t, ShaderHandle>;
 
@@ -87,6 +103,9 @@ namespace Engine
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns,
 			const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
 			const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
+		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const glm::vec3& aabbMin, const glm::vec3& aabbMax,
+			const struct ShaderHandle& shader, const Render::VertexArray* va, const Render::RenderBuffer* ib, 
+			const Render::MeshChunk* chunks, uint32_t chunkCount, const PerInstanceData& pid);
 		int PrepareOpaqueInstances(InstanceList& list);
 		int PrepareTransparentInstances(InstanceList& list);
 		int PrepareCulledShadowInstances(InstanceList& visibleInstances);
@@ -100,7 +119,7 @@ namespace Engine
 		void CullInstances(const InstanceList& srcInstances, InstanceList* results, const class Frustum* frustums, int listCount=1);
 
 		using OnFindVisibleComplete = std::function<void()>;
-		void FindVisibleInstancesAsync(const Frustum& f, const std::vector<MeshInstance>& src, std::vector<MeshInstance>& result, OnFindVisibleComplete onComplete);
+		void FindVisibleInstancesAsync(const Frustum& f, const std::vector<RenderInstance>& src, std::vector<RenderInstance>& result, OnFindVisibleComplete onComplete);
 
 		FrameStats m_frameStats;
 		float m_hdrExposure = 1.0f;
@@ -109,7 +128,7 @@ namespace Engine
 		InstanceList m_transparentInstances;
 		InstanceList m_allShadowCasterInstances;
 		InstanceList m_visibleOpaqueInstances;
-		Render::RenderBuffer m_transforms;	// global instance transforms
+		Render::RenderBuffer m_perInstanceData;	// global instance data
 		int m_nextInstance = 0;				// index into buffers above
 		bool m_cullingEnabled = true;
 		bool m_useOldCulling = true;

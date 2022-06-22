@@ -173,17 +173,15 @@ namespace Engine
 			std::string normalPath = mat.NormalMaps().size() > 0 ? mat.NormalMaps()[0] : "";
 			std::string specPath = mat.SpecularMaps().size() > 0 ? mat.SpecularMaps()[0] : "";
 
-			auto diffuseTexture = tm.LoadTexture(diffusePath.c_str());
-			renderModel.MeshParts()[p].m_material.SetSampler("DiffuseTexture", diffuseTexture.m_index);
-			renderModel.MeshParts()[p].m_material.SetSampler("NormalsTexture", tm.LoadTexture(normalPath.c_str()).m_index);
-			renderModel.MeshParts()[p].m_material.SetSampler("SpecularTexture", tm.LoadTexture(specPath.c_str()).m_index);
-
-			auto& uniforms = renderModel.MeshParts()[p].m_material.GetUniforms();
 			auto packedSpecular = glm::vec4(mat.SpecularColour(), mat.ShininessStrength());
-			uniforms.SetValue("MeshDiffuseOpacity", glm::vec4(mat.DiffuseColour(), mat.Opacity()));
-			uniforms.SetValue("MeshSpecular", packedSpecular);
-			uniforms.SetValue("MeshShininess", mat.Shininess());
-			renderModel.MeshParts()[p].m_material.SetIsTransparent(mat.Opacity() != 1.0f);
+
+			auto& dd = renderModel.MeshParts()[p].m_drawData;
+			dd.m_diffuseOpacity = glm::vec4(mat.DiffuseColour(), mat.Opacity());
+			dd.m_specular = packedSpecular;
+			dd.m_shininess.r = mat.Shininess();
+			dd.m_diffuseTexture = tm.LoadTexture(diffusePath.c_str());
+			dd.m_normalsTexture = tm.LoadTexture(normalPath.c_str());
+			dd.m_specularTexture = tm.LoadTexture(specPath.c_str());
 		}
 	}
 
@@ -349,7 +347,7 @@ namespace Engine
 		}
 	}
 
-	bool ModelManager::PostInit()
+	bool ModelManager::Initialise()
 	{
 		m_globalIndexData = std::make_unique<Render::RenderBuffer>();
 		m_globalVertexData = std::make_unique<Render::RenderBuffer>();

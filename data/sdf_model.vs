@@ -1,10 +1,6 @@
 #version 460
 
-// Per-instance data
-layout(std430, binding = 0) buffer vs_instance_data
-{
-    mat4 instance_transforms[];
-};
+#pragma sde include "per_instance_data.h"
 
 layout(location = 0) in vec3 vs_in_position;
 layout(location = 1) in vec3 vs_in_normal;
@@ -18,7 +14,7 @@ out float vs_out_ao;
 
 void main()
 {
-	mat4 instanceTransform = instance_transforms[gl_BaseInstance + gl_InstanceID];
+	mat4 instanceTransform = instance_data[gl_BaseInstance + gl_InstanceID].m_transform;
 	vec4 pos = vec4(vs_in_position,1);
 	vec4 worldSpacePos = instanceTransform * pos;
 	vec4 viewSpacePos = ProjectionViewMatrix * worldSpacePos; 

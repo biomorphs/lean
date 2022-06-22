@@ -3,15 +3,15 @@
 
 in vec3 vs_out_position;
 in vec2 vs_out_uv;
+flat in uint vs_out_instanceID;
 
 uniform int ShadowLightIndex;
-uniform sampler2D DiffuseTexture;
-uniform vec4 MeshDiffuseOpacity;
 
 void main()
 {
-	vec4 diffuseTex = texture(DiffuseTexture, vs_out_uv);	
-	if(diffuseTex.a < 0.5 || MeshDiffuseOpacity.a == 0.0)
+	vec4 diffuseOpacity = instance_data[vs_out_instanceID].m_diffuseOpacity;
+	vec4 diffuseTex = texture(sampler2D(instance_data[vs_out_instanceID].m_diffuseTexture), vs_out_uv);	
+	if(diffuseTex.a < 0.5 || diffuseOpacity.a == 0.0)
 		discard;
 
 	if(Lights[ShadowLightIndex].Position.w == 0.0 || Lights[ShadowLightIndex].Position.w == 2.0)

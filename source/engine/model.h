@@ -30,7 +30,16 @@ namespace Engine
 			glm::mat4 m_transform;
 			glm::vec3 m_boundsMin;
 			glm::vec3 m_boundsMax;
-			Render::Material m_material;
+			Render::Material m_material;				// 'push' constants, use these sparingly if you draw a lot!
+			struct DrawData {
+				glm::vec4 m_diffuseOpacity = { 1.0f,1.0f,1.0f,1.0f };
+				glm::vec4 m_specular = { 1.0f, 1.0f, 1.0f, 1.0f };	//r,g,b,strength
+				glm::vec4 m_shininess;
+				TextureHandle m_diffuseTexture;
+				TextureHandle m_normalsTexture;
+				TextureHandle m_specularTexture;
+			};
+			DrawData m_drawData;						// fast per-instance data
 			std::vector<Render::MeshChunk> m_chunks;	// draw calls indexing into global buffers
 		};
 		const std::vector<MeshPart>& MeshParts() const { return m_meshParts; }
