@@ -63,6 +63,7 @@ namespace Engine
 		sysManager.RegisterSystem("Shaders", new ShaderManager);
 		sysManager.RegisterSystem("Render", render);
 		sysManager.RegisterSystem("RenderPresent", render->MakePresenter());
+		sysManager.RegisterSystem("ShaderHotreload", new ShaderManager::HotReloader);
 
 		// Run the engine
 		SDE_LOGC(Engine, "Initialising systems...");

@@ -31,11 +31,20 @@ namespace Engine
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 		ShaderHandle GetShadowsShader(ShaderHandle lightingShader);
 
+		class HotReloader : public System
+		{
+		public:
+			bool Tick(float timeDelta);
+		};
+
+		virtual bool Tick(float timeDelta);
 		virtual void Shutdown();
 
-		void ReloadAll();
+		void ReloadAll() { m_shouldReloadAll = true; }
 
 	private:
+		void DoReloadAll();
+		bool ShowGui();
 		struct ShaderDesc {
 			std::unique_ptr<Render::ShaderProgram> m_shader;
 			std::string m_name;
@@ -44,5 +53,6 @@ namespace Engine
 		};
 		std::vector<ShaderDesc> m_shaders;
 		robin_hood::unordered_map<uint32_t, ShaderHandle> m_shadowShaders;	// map of lighting shader handle index -> shadow shader
+		bool m_shouldReloadAll = false;
 	};
 }

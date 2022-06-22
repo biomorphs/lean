@@ -1,5 +1,7 @@
 #include "shader_manager.h"
 #include "system_manager.h"
+#include "debug_gui_system.h"
+#include "debug_gui_menubar.h"
 #include "render/shader_program.h"
 #include "render/shader_binary.h"
 #include "core/profiler.h"
@@ -71,7 +73,7 @@ namespace Engine
 		return results;
 	}
 
-	void ShaderManager::ReloadAll()
+	void ShaderManager::DoReloadAll()
 	{
 		SDE_PROF_EVENT();
 		auto currentShaders = std::move(m_shaders);
@@ -91,6 +93,17 @@ namespace Engine
 				m_shaders.emplace_back(std::move(s));
 			}
 		}
+	}
+
+	bool ShaderManager::HotReloader::Tick(float timeDelta)
+	{
+		ShaderManager* sm = GetSystem<ShaderManager>("Shaders");
+		if (sm->m_shouldReloadAll)
+		{
+			sm->DoReloadAll();
+			sm->m_shouldReloadAll = false;
+		}
+		return true;
 	}
 
 	ShaderHandle ShaderManager::LoadComputeShader(const char* name, const char* path, const CustomDefines& customDefines)
@@ -242,6 +255,71 @@ namespace Engine
 		{
 			return nullptr;
 		}
+	}
+
+	bool ShaderManager::ShowGui()
+	{
+		static bool s_showWindow = false;
+
+		DebugGuiSystem& gui = *GetSystem<DebugGuiSystem>("DebugGui");
+
+		Engine::MenuBar menuBar;
+		auto& fileMenu = menuBar.AddSubmenu(ICON_FK_PAINT_BRUSH " Assets");
+		fileMenu.AddItem("Shader Manager", [this]() {
+			s_showWindow = !s_showWindow;
+			});
+		gui.MainMenuBar(menuBar);
+
+		if (s_showWindow && gui.BeginWindow(s_showWindow, "Shader Manager"))
+		{
+			if (gui.Button("Reload all"))
+			{
+				ReloadAll();
+			}
+			char text[1024] = { '\0' };
+			if (gui.BeginListbox("Loaded shaders"))
+			{
+				for (const auto& s : m_shaders)
+				{
+					sprintf_s(text, "%s: %s%s%s (gl handle %d)", 
+						s.m_name.c_str(), 
+						s.m_vsPath.c_str(), 
+						s.m_fsPath.size() > 0 ? " / " : "", 
+						s.m_fsPath.c_str(),
+						s.m_shader ? s.m_shader->GetHandle() : -1);
+					gui.Text(text);
+				}
+				gui.EndListbox();
+			}
+			if (gui.BeginListbox("Shadow shaders"))
+			{
+				for (const auto& s : m_shadowShaders)
+				{
+					std::string shaderName = "unknown (-1)";
+					std::string shadowName = "unknown (-1)";
+					if (s.first >= 0 && s.first < m_shaders.size())
+					{
+						shaderName = m_shaders[s.first].m_name;
+					}
+					if (s.second.m_index >= 0 && s.second.m_index < m_shaders.size())
+					{
+						shadowName = m_shaders[s.second.m_index].m_name;
+					}
+					sprintf_s(text, "%s: %s", shaderName.c_str(), shadowName.c_str());
+					gui.Text(text);
+				}
+				gui.EndListbox();
+			}
+			gui.EndWindow();
+		}
+
+		return s_showWindow;
+	}
+
+	bool ShaderManager::Tick(float timeDelta)
+	{
+		ShowGui();
+		return true;
 	}
 
 	void ShaderManager::Shutdown()
