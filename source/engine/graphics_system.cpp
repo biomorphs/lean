@@ -188,7 +188,7 @@ bool GraphicsSystem::PreInit()
 	return true;
 }
 
-bool GraphicsSystem::Initialise()
+bool GraphicsSystem::PostInit()
 {
 	SDE_PROF_EVENT();
 

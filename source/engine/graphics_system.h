@@ -27,7 +27,7 @@ public:
 	GraphicsSystem();
 	virtual ~GraphicsSystem();
 	virtual bool PreInit();
-	virtual bool Initialise();
+	virtual bool PostInit();
 	virtual bool Tick(float timeDelta);
 	virtual void Shutdown();
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
