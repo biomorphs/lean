@@ -56,12 +56,12 @@ namespace Engine
 		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);
 		sysManager.RegisterSystem("Graphics", new GraphicsSystem);
 		sysManager.RegisterSystem("Raycasts", raycaster);
-		sysManager.RegisterSystem("Physics", physics);
 		sysManager.RegisterSystem("Cameras", new CameraSystem);
 		sysManager.RegisterSystem("Textures", new TextureManager);
 		sysManager.RegisterSystem("Models", new ModelManager);
 		sysManager.RegisterSystem("Shaders", new ShaderManager);
 		sysManager.RegisterSystem("Render", render);
+		sysManager.RegisterSystem("Physics", physics);
 		sysManager.RegisterSystem("RenderPresent", render->MakePresenter());
 		sysManager.RegisterSystem("ShaderHotreload", new ShaderManager::HotReloader);
 

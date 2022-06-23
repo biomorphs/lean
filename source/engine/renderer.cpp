@@ -441,7 +441,7 @@ namespace Engine
 		m_lights.push_back(newLight);
 	}
 
-	int Renderer::PopulateInstanceBuffers(InstanceList& list)
+	int Renderer::PopulateInstanceBuffers(InstanceList& list, size_t instanceCount)
 	{
 		SDE_PROF_EVENT();
 
@@ -450,27 +450,33 @@ namespace Engine
 			PerInstanceData m_data;
 		};
 
+		if (instanceCount == -1)
+		{
+			instanceCount = list.m_instances.size();
+		}
+		assert(instanceCount <= list.m_instances.size());
+
 		std::vector<RenderPerInstanceData> instanceData;
 		{
 			SDE_PROF_EVENT("Reserve");
-			instanceData.reserve(list.m_instances.size());
+			instanceData.reserve(instanceCount);
 		}
 
 		{
 			SDE_PROF_EVENT("Copy");
-			for (const auto& c : list.m_instances)
+			for (int c=0;c<instanceCount;++c)
 			{
-				instanceData.emplace_back(RenderPerInstanceData{ c.m_transform, c.m_pid });
+				instanceData.emplace_back(RenderPerInstanceData{ list.m_instances[c].m_transform, list.m_instances[c].m_pid });
 			}
 		}
 
 		// copy the instance buffers to gpu
 		int instanceIndex = -1;
-		if (list.m_instances.size() > 0 && m_nextInstance + list.m_instances.size() < c_maxInstances)
+		if (instanceData.size() > 0 && m_nextInstance + instanceCount < c_maxInstances)
 		{
 			m_perInstanceData.SetData(m_nextInstance * sizeof(RenderPerInstanceData), instanceData.size() * sizeof(RenderPerInstanceData), instanceData.data());
 			instanceIndex = m_nextInstance;
-			m_nextInstance += list.m_instances.size();
+			m_nextInstance += instanceCount;
 		}
 		return instanceIndex;
 	}
@@ -580,21 +586,29 @@ namespace Engine
 		return textureUnit;
 	}
 
-	void Renderer::DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps, Render::UniformBuffer* uniforms)
+	void Renderer::DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps, Render::UniformBuffer* uniforms, size_t drawCount)
 	{
 		SDE_PROF_EVENT();
 		auto firstInstance = list.m_instances.begin();
+		auto finalInstance = list.m_instances.end();
+		if (drawCount != -1)
+		{
+			assert(drawCount <= list.m_instances.size());
+			finalInstance = list.m_instances.begin() + drawCount;
+		}
+
 		const Render::ShaderProgram* lastShaderUsed = nullptr;	// avoid setting the same shader
 		const Render::Material* lastInstanceMaterial = nullptr;	// avoid setting instance materials for the same mesh/shaders
 		const Render::VertexArray* lastVAUsed = nullptr;
 		const Render::RenderBuffer* lastIBUsed = nullptr;
-		while (firstInstance != list.m_instances.end())
+		while (firstInstance != finalInstance)
 		{
 			// Batch by shader, va/ib, chunks and materials
-			auto lastMeshInstance = std::find_if(firstInstance, list.m_instances.end(), [firstInstance](const RenderInstance& m) -> bool {
+			auto lastMeshInstance = std::find_if(firstInstance, finalInstance, [firstInstance](const RenderInstance& m) -> bool {
 				return  m.m_va != firstInstance->m_va ||
 					m.m_ib != firstInstance->m_ib ||
 					m.m_chunks != firstInstance->m_chunks ||
+					m.m_chunks[0].m_primitiveType != firstInstance->m_chunks[0].m_primitiveType ||
 					m.m_shader != firstInstance->m_shader ||
 					m.m_meshMaterial != firstInstance->m_meshMaterial ||
 					m.m_instanceMaterial != firstInstance->m_instanceMaterial;
@@ -751,11 +765,11 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		auto jobs = Engine::GetSystem<JobSystem>("Jobs");
-		const uint32_t partsPerJob = 2000;
-		const uint32_t jobCount = src.size() / partsPerJob;
-		if (jobCount == 0)
+		const uint32_t partsPerJob = 1000;
+		const uint32_t jobCount = src.size() < partsPerJob ? 1 : src.size() / partsPerJob;
+		if (src.size() == 0)
 		{
-			onComplete();
+			onComplete(0);
 			return;
 		}
 		struct JobData
@@ -764,14 +778,14 @@ namespace Engine
 			std::atomic<uint32_t> m_count = 0;
 		};
 		JobData* jobData = new JobData();
+		if(result.size() < src.size())
 		{
 			SDE_PROF_EVENT("Resize results array");
 			result.resize(src.size());
 		}
-		
+		jobData->m_jobsRemaining = ceilf((float)src.size() / partsPerJob);
 		for (uint32_t p = 0; p < src.size(); p += partsPerJob)
 		{
-			jobData->m_jobsRemaining++;
 			auto cullPartsJob = [jobData, &src, &result, p, partsPerJob, f, onComplete](void*) {
 				SDE_PROF_EVENT("Cull instances");
 				uint32_t firstIndex = p;
@@ -797,19 +811,73 @@ namespace Engine
 				}
 				if (jobData->m_jobsRemaining.fetch_sub(1) == 1)		// this was the last culling job, time to sort!
 				{
-					result.resize(jobData->m_count);
 					SDE_PROF_EVENT("SortResults");
 					{
-						std::sort(result.begin(), result.end(),
+						std::sort(result.begin(), result.begin() + jobData->m_count,
 							[](const RenderInstance& s1, const RenderInstance& s2) {
 								return SortKeyLessThan(s1.m_sortKey, s2.m_sortKey);
 							});
 					}
-					onComplete();
+					onComplete(jobData->m_count);
 					delete jobData;
 				}
 			};
 			jobs->PushJob(cullPartsJob);
+		}
+	}
+
+	int Renderer::RenderShadowmap(Render::Device& d, Light& l, const std::vector<std::unique_ptr<InstanceList>>& visibleInstances, const std::vector<size_t>& counts, int instanceListStartIndex)
+	{
+		SDE_PROF_EVENT();
+		m_frameStats.m_shadowMapUpdates++;
+		if (l.m_position.w == 0.0f || l.m_position.w == 2.0f)		// directional / spot
+		{
+			auto& instances = *visibleInstances[instanceListStartIndex];
+			int baseIndex = PopulateInstanceBuffers(instances, counts[instanceListStartIndex]);
+			Render::UniformBuffer lightMatUniforms;
+			lightMatUniforms.SetValue("ShadowLightSpaceMatrix", l.m_lightspaceMatrix);
+			lightMatUniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
+			d.DrawToFramebuffer(*l.m_shadowMap);
+			d.SetViewport(glm::ivec2(0, 0), l.m_shadowMap->Dimensions());
+			d.ClearFramebufferDepth(*l.m_shadowMap, FLT_MAX);
+			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
+			d.SetBlending(false);
+			d.SetScissorEnabled(false);
+			DrawInstances(d, instances, baseIndex, false, &lightMatUniforms, counts[instanceListStartIndex]);
+			m_frameStats.m_totalShadowInstances += m_allShadowCasterInstances.m_instances.size();
+			m_frameStats.m_renderedShadowInstances += counts[instanceListStartIndex];
+			return instanceListStartIndex + 1;
+		}
+		else
+		{
+			Render::UniformBuffer uniforms;
+			const auto pos3 = glm::vec3(l.m_position);
+			const glm::mat4 shadowTransforms[] = {
+				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)),
+				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)),
+				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
+				l.m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
+			};
+			Frustum shadowFrustums[6];
+			for (uint32_t cubeFace = 0; cubeFace < 6; ++cubeFace)
+			{
+				auto& instances = *visibleInstances[instanceListStartIndex + cubeFace];
+				int baseIndex = PopulateInstanceBuffers(instances, counts[instanceListStartIndex + cubeFace]);
+				d.DrawToFramebuffer(*l.m_shadowMap, cubeFace);
+				d.ClearFramebufferDepth(*l.m_shadowMap, FLT_MAX);
+				d.SetViewport(glm::ivec2(0, 0), l.m_shadowMap->Dimensions());
+				d.SetBackfaceCulling(true, true);	// backface culling, ccw order
+				d.SetBlending(false);
+				d.SetScissorEnabled(false);
+				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
+				uniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
+				DrawInstances(d, instances, baseIndex, false, &uniforms, counts[instanceListStartIndex + cubeFace]);
+				m_frameStats.m_totalShadowInstances += m_allShadowCasterInstances.m_instances.size();
+				m_frameStats.m_renderedShadowInstances += counts[instanceListStartIndex + cubeFace];
+			}
+			return instanceListStartIndex + 6;
 		}
 	}
 
@@ -822,22 +890,82 @@ namespace Engine
 		m_frameStats.m_activeLights = std::min(m_lights.size(), c_maxLights);
 
 		static InstanceList visibleOpaques, visibleTransparents;
+		static std::vector<std::unique_ptr<InstanceList>> visibleShadowCasters;
+		uint64_t foundOpaques = -1, foundTransparents = -1;
+		static std::vector<size_t> foundShadowCasters;
 		std::atomic<bool> opaquesReady = false, transparentsReady = false;
-		
+		std::atomic<int> shadowsInFlight = 0;
+
 		if(!m_useOldCulling)
 		{
 			SDE_PROF_EVENT("BeginCulling");
 
+			// Kick off the shadow caster culling first, we need the results asap!
+			int shadowCasterListId = 0;	// tracks the current result list to write to
+			for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
+			{
+				if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
+				{
+					while(visibleShadowCasters.size() < shadowCasterListId + 1)
+					{
+						auto newInstanceList = std::make_unique<InstanceList>();
+						newInstanceList->m_instances.reserve(m_allShadowCasterInstances.m_instances.size());
+						visibleShadowCasters.emplace_back(std::move(newInstanceList));
+						foundShadowCasters.emplace_back(0);
+					}
+					if (m_lights[l].m_position.w == 0.0f || m_lights[l].m_position.w == 2.0f)		// directional / spot
+					{
+						++shadowsInFlight;
+						Frustum shadowFrustum(m_lights[l].m_lightspaceMatrix);
+						FindVisibleInstancesAsync(shadowFrustum, m_allShadowCasterInstances.m_instances,
+							visibleShadowCasters[shadowCasterListId]->m_instances, [shadowCasterListId, &shadowsInFlight](size_t count) {
+								foundShadowCasters[shadowCasterListId] = count;
+								--shadowsInFlight;
+						});
+						shadowCasterListId++;
+					}
+					else
+					{
+						while (visibleShadowCasters.size() < shadowCasterListId + 6)
+						{
+							auto newInstanceList = std::make_unique<InstanceList>();
+							newInstanceList->m_instances.reserve(m_allShadowCasterInstances.m_instances.size());
+							visibleShadowCasters.emplace_back(std::move(newInstanceList));
+							foundShadowCasters.emplace_back(0);
+						}
+						const auto pos3 = glm::vec3(m_lights[l].m_position);
+						const glm::mat4 shadowTransforms[] = {
+							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)),
+							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)),
+							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
+							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
+						};
+						for (int cubeSide = 0; cubeSide < 6; ++cubeSide)
+						{
+							Frustum shadowFrustum(shadowTransforms[cubeSide]);
+							++shadowsInFlight;
+							FindVisibleInstancesAsync(shadowFrustum, m_allShadowCasterInstances.m_instances,
+								visibleShadowCasters[shadowCasterListId]->m_instances, [shadowCasterListId, &shadowsInFlight](size_t count) {
+									foundShadowCasters[shadowCasterListId] = count;
+									--shadowsInFlight;
+								});
+							shadowCasterListId++;
+						}
+					}
+				}
+			}
+
 			visibleOpaques.m_instances.reserve(m_opaqueInstances.m_instances.size());
 			visibleTransparents.m_instances.reserve(m_transparentInstances.m_instances.size());
-			visibleOpaques.m_instances.resize(0);
-			visibleTransparents.m_instances.resize(0);
-
 			Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
-			FindVisibleInstancesAsync(viewFrustum, m_opaqueInstances.m_instances, visibleOpaques.m_instances, [&opaquesReady]() {
+			FindVisibleInstancesAsync(viewFrustum, m_opaqueInstances.m_instances, visibleOpaques.m_instances, [&](size_t resultCount) {
+				foundOpaques = resultCount;
 				opaquesReady = true;
 			});
-			FindVisibleInstancesAsync(viewFrustum, m_transparentInstances.m_instances, visibleTransparents.m_instances, [&transparentsReady]() {
+			FindVisibleInstancesAsync(viewFrustum, m_transparentInstances.m_instances, visibleTransparents.m_instances, [&](size_t resultCount) {
+				foundTransparents = resultCount;
 				transparentsReady = true;
 			});
 		}
@@ -855,11 +983,30 @@ namespace Engine
 		const auto viewMat = m_camera.ViewMatrix();
 		UpdateGlobals(projectionMat, viewMat);
 
-		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
+		if (!m_useOldCulling)
 		{
-			if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
+			SDE_PROF_EVENT("Wait for shadow lists");
+			while (shadowsInFlight > 0)
 			{
-				RenderShadowmap(d, m_lights[l]);
+				Core::Thread::Sleep(0);
+			}
+			int startIndex = 0;
+			for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
+			{
+				if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
+				{
+					startIndex = RenderShadowmap(d, m_lights[l], visibleShadowCasters, foundShadowCasters, startIndex);
+				}
+			}
+		}
+		else
+		{
+			for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
+			{
+				if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
+				{
+					RenderShadowmap(d, m_lights[l]);
+				}
 			}
 		}
 
@@ -885,9 +1032,9 @@ namespace Engine
 			}
 
 			m_frameStats.m_totalOpaqueInstances = m_opaqueInstances.m_instances.size();
-			int baseIndex = m_useOldCulling ? PrepareOpaqueInstances(m_opaqueInstances) : PopulateInstanceBuffers(visibleOpaques);
-			DrawInstances(d, m_useOldCulling ? m_opaqueInstances : visibleOpaques, baseIndex, true);
-			m_frameStats.m_renderedOpaqueInstances = m_useOldCulling ? m_opaqueInstances.m_instances.size() : visibleOpaques.m_instances.size();
+			int baseIndex = m_useOldCulling ? PrepareOpaqueInstances(m_opaqueInstances) : PopulateInstanceBuffers(visibleOpaques, foundOpaques);
+			DrawInstances(d, m_useOldCulling ? m_opaqueInstances : visibleOpaques, baseIndex, true, nullptr, foundOpaques);
+			m_frameStats.m_renderedOpaqueInstances = m_useOldCulling ? m_opaqueInstances.m_instances.size() : foundOpaques;
 
 			// render transparents
 			d.SetDepthState(true, false);		// enable z-test, disable write
@@ -903,9 +1050,9 @@ namespace Engine
 			}
 
 			m_frameStats.m_totalTransparentInstances = m_transparentInstances.m_instances.size();
-			baseIndex = m_useOldCulling ? PrepareTransparentInstances(m_transparentInstances) : PopulateInstanceBuffers(visibleTransparents);
-			DrawInstances(d, m_useOldCulling ? m_transparentInstances : visibleTransparents, baseIndex, true);
-			m_frameStats.m_renderedTransparentInstances = m_useOldCulling ? m_transparentInstances.m_instances.size() : visibleTransparents.m_instances.size();
+			baseIndex = m_useOldCulling ? PrepareTransparentInstances(m_transparentInstances) : PopulateInstanceBuffers(visibleTransparents, foundTransparents);
+			DrawInstances(d, m_useOldCulling ? m_transparentInstances : visibleTransparents, baseIndex, true, nullptr, foundTransparents);
+			m_frameStats.m_renderedTransparentInstances = m_useOldCulling ? m_transparentInstances.m_instances.size() : foundTransparents;
 
 			if (m_showWireframe)
 			{

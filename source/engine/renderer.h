@@ -98,6 +98,7 @@ namespace Engine
 		using ShadowShaders = std::unordered_map<uint32_t, ShaderHandle>;
 
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
+		int RenderShadowmap(Render::Device& d, Light& l, const std::vector<std::unique_ptr<InstanceList>>& visibleInstances, const std::vector<size_t>& counts, int instanceListStartIndex);
 		void RenderShadowmap(Render::Device& d, Light& l);
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns,
@@ -110,15 +111,15 @@ namespace Engine
 		int PrepareTransparentInstances(InstanceList& list);
 		int PrepareCulledShadowInstances(InstanceList& visibleInstances);
 		int PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
-		int PopulateInstanceBuffers(InstanceList& list);	// returns offset to start of index data in global gpu buffers
-		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr);
+		int PopulateInstanceBuffers(InstanceList& list, size_t instanceCount = -1);	// returns offset to start of index data in global gpu buffers
+		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr, size_t drawCount=-1);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 		void CullLights();
 
 		// cull one source list into multiple result lists each with a different frustum
 		void CullInstances(const InstanceList& srcInstances, InstanceList* results, const class Frustum* frustums, int listCount=1);
 
-		using OnFindVisibleComplete = std::function<void()>;
+		using OnFindVisibleComplete = std::function<void(size_t)>;	// param = num. results found (note the result vector is NOT resized!)
 		void FindVisibleInstancesAsync(const Frustum& f, const std::vector<RenderInstance>& src, std::vector<RenderInstance>& result, OnFindVisibleComplete onComplete);
 
 		FrameStats m_frameStats;
@@ -127,7 +128,6 @@ namespace Engine
 		InstanceList m_opaqueInstances;
 		InstanceList m_transparentInstances;
 		InstanceList m_allShadowCasterInstances;
-		InstanceList m_visibleOpaqueInstances;
 		Render::RenderBuffer m_perInstanceData;	// global instance data
 		int m_nextInstance = 0;				// index into buffers above
 		bool m_cullingEnabled = true;
