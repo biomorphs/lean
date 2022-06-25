@@ -42,12 +42,23 @@ namespace Engine
 		class UpdateEntities : public System
 		{
 		public:
-			UpdateEntities(PhysicsSystem* p);
+			UpdateEntities(PhysicsSystem* p) : m_physicsSystem(p) {}
 			bool Tick(float timeDelta);
 		private:
 			PhysicsSystem* m_physicsSystem = nullptr;
 		};
+
+		class GuiTick : public System
+		{
+		public:
+			GuiTick(PhysicsSystem* p) : m_physicsSystem(p) {}
+			bool Tick(float timeDelta);
+		private:
+			PhysicsSystem* m_physicsSystem = nullptr;
+		};
+
 		UpdateEntities* MakeUpdater();
+		GuiTick* MakeGuiTick();
 		EntityHandle Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal);
 		bool SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance, 
 			glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity);
@@ -57,6 +68,7 @@ namespace Engine
 	private:
 		void RebuildActor(Physics& p, EntityHandle& e);
 		physx::PxMaterial* GetOrCreateMaterial(Physics&);
+		void UpdateGui();
 
 		class JobDispatcher;
 		JobSystem* m_jobSystem = nullptr;

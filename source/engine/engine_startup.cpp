@@ -60,6 +60,7 @@ namespace Engine
 		sysManager.RegisterSystem("Textures", new TextureManager);
 		sysManager.RegisterSystem("Models", new ModelManager);
 		sysManager.RegisterSystem("Shaders", new ShaderManager);
+		sysManager.RegisterSystem("PhysicsGui", physics->MakeGuiTick());
 		sysManager.RegisterSystem("Render", render);
 		sysManager.RegisterSystem("Physics", physics);
 		sysManager.RegisterSystem("RenderPresent", render->MakePresenter());

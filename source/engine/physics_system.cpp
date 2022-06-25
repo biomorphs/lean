@@ -19,9 +19,10 @@
 
 namespace Engine
 {
-	PhysicsSystem::UpdateEntities::UpdateEntities(PhysicsSystem* physics)
-		: m_physicsSystem(physics)
+	bool PhysicsSystem::GuiTick::Tick(float timeDelta)
 	{
+		m_physicsSystem->UpdateGui();
+		return true;
 	}
 
 	bool PhysicsSystem::UpdateEntities::Tick(float timeDelta)
@@ -158,6 +159,11 @@ namespace Engine
 
 	PhysicsSystem::~PhysicsSystem()
 	{
+	}
+
+	PhysicsSystem::GuiTick* PhysicsSystem::MakeGuiTick()
+	{
+		return new GuiTick(this);
 	}
 
 	PhysicsSystem::UpdateEntities* PhysicsSystem::MakeUpdater()
@@ -373,16 +379,19 @@ namespace Engine
 		return hitSomething;
 	}
 
-	bool PhysicsSystem::Tick(float timeDelta)
+	void PhysicsSystem::UpdateGui()
 	{
-		SDE_PROF_EVENT();
-
 		Engine::MenuBar mainMenu;
 		auto& physicsMenu = mainMenu.AddSubmenu(ICON_FK_CUBE " Physics");
 		physicsMenu.AddItem(m_simEnabled ? "Disable Simulation" : "Enable Simulation", [this]() {
 			m_simEnabled = !m_simEnabled;
-		});
+			});
 		m_debugGuiSystem->MainMenuBar(mainMenu);
+	}
+
+	bool PhysicsSystem::Tick(float timeDelta)
+	{
+		SDE_PROF_EVENT();
 
 		m_entitySystem->GetWorld()->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
 			auto currentGravity = m_scene->getGravity();
