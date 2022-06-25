@@ -22,6 +22,7 @@
 namespace Engine
 {
 	const uint64_t c_maxInstances = 1024 * 256;		// this needs to include all passes/shadowmap updates
+	const uint64_t c_maxDrawCalls = c_maxInstances;
 	const uint64_t c_maxLights = 256;
 	const uint32_t c_maxShadowMaps = 16;
 	const int32_t c_bloomBufferSizeDivider = 2;	// windowsize/divider
@@ -72,6 +73,7 @@ namespace Engine
 			SDE_PROF_EVENT("Create Buffers");
 			m_perInstanceData.Create(c_maxInstances * sizeof(PerInstanceData), Render::RenderBufferModification::Dynamic, true);
 			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferModification::Dynamic, true);
+			m_drawIndirectBuffer.Create(c_maxDrawCalls * sizeof(Render::DrawIndirectIndexedParams), Render::RenderBufferModification::Dynamic, true);
 			m_opaqueInstances.m_instances.reserve(c_maxInstances);
 			m_transparentInstances.m_instances.reserve(c_maxInstances);
 			m_allShadowCasterInstances.m_instances.reserve(c_maxInstances);
@@ -117,6 +119,7 @@ namespace Engine
 		m_allShadowCasterInstances.m_instances.clear();
 		m_lights.clear();
 		m_nextInstance = 0;
+		m_nextDrawCall = 0;
 	}
 
 	void Renderer::SetCamera(const Render::Camera& c)
@@ -586,6 +589,142 @@ namespace Engine
 		return textureUnit;
 	}
 
+	void Renderer::PrepareDrawBuckets(const InstanceList& list, int baseIndex, size_t drawCount, std::vector<DrawBucket>& buckets)
+	{
+		SDE_PROF_EVENT();
+		auto firstInstance = list.m_instances.begin();
+		auto finalInstance = list.m_instances.end();
+		if (drawCount != -1)
+		{
+			assert(drawCount <= list.m_instances.size());
+			finalInstance = list.m_instances.begin() + drawCount;
+		}
+		static std::vector<Render::DrawIndirectIndexedParams> tmpDrawList;
+		tmpDrawList.reserve(c_maxInstances);
+		tmpDrawList.resize(0);
+		int drawUploadIndex = m_nextDrawCall;	// upload the entire buffer in one
+		while (firstInstance != finalInstance)
+		{
+			// Batch by shader, va/ib, primitive type and material (essentially any kind of 'pipeline' change)
+			// This only works if the lists are correctly sorted!
+			auto lastMeshInstance = std::find_if(firstInstance, finalInstance, [firstInstance](const RenderInstance& m) -> bool {
+			return  m.m_va != firstInstance->m_va ||
+				m.m_ib != firstInstance->m_ib ||
+				m.m_chunks[0].m_primitiveType != firstInstance->m_chunks[0].m_primitiveType ||
+				m.m_shader != firstInstance->m_shader ||
+				m.m_meshMaterial != firstInstance->m_meshMaterial ||
+				m.m_instanceMaterial != firstInstance->m_instanceMaterial;
+			});
+			const auto instanceCount = (uint32_t)(lastMeshInstance - firstInstance);
+			if (instanceCount == 0)
+			{
+				continue;
+			}
+			DrawBucket newBucket;
+			newBucket.m_shader = firstInstance->m_shader;
+			newBucket.m_va = firstInstance->m_va;
+			newBucket.m_ib = firstInstance->m_ib;
+			newBucket.m_meshMaterial = firstInstance->m_meshMaterial;
+			newBucket.m_instanceMaterial = firstInstance->m_meshMaterial;
+			newBucket.m_primitiveType = (uint32_t)firstInstance->m_chunks[0].m_primitiveType;	// danger, no error checks here!
+			newBucket.m_drawCount = 0;
+			newBucket.m_firstDrawIndex = m_nextDrawCall;
+			
+			// now find all chunks that can go in this bucket
+			const uint32_t firstInstanceIndex = (uint32_t)(firstInstance - list.m_instances.begin());
+			if (firstInstance->m_ib != nullptr)
+			{
+				int drawCallCount = 0;
+				for (auto drawStart = firstInstance; drawStart != lastMeshInstance; ++drawStart)
+				{
+					for (int c = 0; c < drawStart->m_chunkCount; ++c)
+					{
+						Render::DrawIndirectIndexedParams ip;
+						ip.m_indexCount = drawStart->m_chunks[c].m_vertexCount;
+						ip.m_instanceCount = 1;		// todo - we can (and should) do chunk instancing
+						ip.m_firstIndex = drawStart->m_chunks[c].m_firstVertex;
+						ip.m_baseVertex = 0;
+						ip.m_baseInstance = firstInstanceIndex + baseIndex + drawCallCount;
+						tmpDrawList.emplace_back(ip);
+						++drawCallCount;
+					}
+				}
+				newBucket.m_drawCount = drawCallCount;
+			}
+			else
+			{
+				assert("Todo");
+			}
+			buckets.emplace_back(newBucket);
+			assert(m_nextDrawCall + newBucket.m_drawCount < c_maxDrawCalls);
+			m_nextDrawCall += newBucket.m_drawCount;
+			firstInstance = lastMeshInstance;
+		}
+		if (tmpDrawList.size() > 0 && drawUploadIndex + tmpDrawList.size() < m_nextDrawCall + c_maxInstances)
+		{
+			SDE_PROF_EVENT("Upload draw calls");
+			m_drawIndirectBuffer.SetData(drawUploadIndex * sizeof(Render::DrawIndirectIndexedParams),
+				tmpDrawList.size() * sizeof(Render::DrawIndirectIndexedParams), tmpDrawList.data());
+		}
+	}
+
+	void Renderer::DrawBuckets(Render::Device& d, const std::vector<DrawBucket>& buckets, bool bindShadowmaps, Render::UniformBuffer* uniforms)
+	{
+		SDE_PROF_EVENT();
+		const Render::ShaderProgram* lastShaderUsed = nullptr;
+		const Render::VertexArray* lastVAUsed = nullptr;
+		const Render::RenderBuffer* lastIBUsed = nullptr;
+		const Render::Material* lastMeshMaterial = nullptr;
+		const Render::Material* lastInstanceMaterial = nullptr;
+		for (const auto& b : buckets)
+		{
+			m_frameStats.m_batchesDrawn++;
+			if (b.m_shader != lastShaderUsed)
+			{
+				m_frameStats.m_shaderBinds++;
+				d.BindShaderProgram(*b.m_shader);
+				d.BindUniformBufferIndex(*b.m_shader, "Globals", 0);
+				d.SetUniforms(*b.m_shader, m_globalsUniformBuffer, 0);
+				d.BindStorageBuffer(0, m_perInstanceData);		// bind instancing data once per shader
+				d.BindDrawIndirectBuffer(m_drawIndirectBuffer);
+				if (uniforms != nullptr)
+				{
+					uniforms->Apply(d, *b.m_shader);
+				}
+				if (bindShadowmaps)
+				{
+					BindShadowmaps(d, *b.m_shader, 0);
+				}
+				lastShaderUsed = b.m_shader;
+			}
+			if (b.m_meshMaterial != nullptr && b.m_meshMaterial != lastMeshMaterial)
+			{
+				ApplyMaterial(d, *b.m_shader, *b.m_meshMaterial, &g_defaultTextures);
+			}
+			if (b.m_instanceMaterial != nullptr && b.m_instanceMaterial != lastInstanceMaterial)
+			{
+				ApplyMaterial(d, *b.m_shader, *b.m_instanceMaterial, &g_defaultTextures);
+				lastInstanceMaterial = b.m_instanceMaterial;
+			}
+			if (b.m_va != lastVAUsed)
+			{
+				m_frameStats.m_vertexArrayBinds++;
+				d.BindVertexArray(*b.m_va);
+				lastVAUsed = b.m_va;
+			}
+			if (b.m_ib != nullptr)
+			{
+				if (b.m_ib != lastIBUsed)
+				{
+					d.BindIndexBuffer(*b.m_ib);
+					lastIBUsed = b.m_ib;
+				}
+			}
+			m_frameStats.m_drawCalls++;
+			d.DrawPrimitivesIndirectIndexed((Render::PrimitiveType)b.m_primitiveType, b.m_firstDrawIndex, b.m_drawCount);
+		}
+	}
+
 	void Renderer::DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps, Render::UniformBuffer* uniforms, size_t drawCount)
 	{
 		SDE_PROF_EVENT();
@@ -765,7 +904,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		auto jobs = Engine::GetSystem<JobSystem>("Jobs");
-		const uint32_t partsPerJob = 1000;
+		const uint32_t partsPerJob = 2000;
 		const uint32_t jobCount = src.size() < partsPerJob ? 1 : src.size() / partsPerJob;
 		if (src.size() == 0)
 		{
@@ -843,7 +982,18 @@ namespace Engine
 			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 			d.SetBlending(false);
 			d.SetScissorEnabled(false);
-			DrawInstances(d, instances, baseIndex, false, &lightMatUniforms, counts[instanceListStartIndex]);
+			if (m_useDrawIndirect)
+			{
+				static std::vector<DrawBucket> drawBuckets;
+				drawBuckets.reserve(2000);
+				drawBuckets.resize(0);
+				PrepareDrawBuckets(instances, baseIndex, counts[instanceListStartIndex], drawBuckets);
+				DrawBuckets(d, drawBuckets, false, &lightMatUniforms);
+			}
+			else
+			{
+				DrawInstances(d, instances, baseIndex, false, &lightMatUniforms, counts[instanceListStartIndex]);
+			}
 			m_frameStats.m_totalShadowInstances += m_allShadowCasterInstances.m_instances.size();
 			m_frameStats.m_renderedShadowInstances += counts[instanceListStartIndex];
 			return instanceListStartIndex + 1;
@@ -873,7 +1023,18 @@ namespace Engine
 				d.SetScissorEnabled(false);
 				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
 				uniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
-				DrawInstances(d, instances, baseIndex, false, &uniforms, counts[instanceListStartIndex + cubeFace]);
+				if (m_useDrawIndirect)
+				{
+					static std::vector<DrawBucket> drawBuckets;
+					drawBuckets.reserve(2000);
+					drawBuckets.resize(0);
+					PrepareDrawBuckets(instances, baseIndex, counts[instanceListStartIndex + cubeFace], drawBuckets);
+					DrawBuckets(d, drawBuckets, false, &uniforms);
+				}
+				else
+				{
+					DrawInstances(d, instances, baseIndex, false, &uniforms, counts[instanceListStartIndex + cubeFace]);
+				}
 				m_frameStats.m_totalShadowInstances += m_allShadowCasterInstances.m_instances.size();
 				m_frameStats.m_renderedShadowInstances += counts[instanceListStartIndex + cubeFace];
 			}
@@ -985,10 +1146,12 @@ namespace Engine
 
 		if (!m_useOldCulling)
 		{
-			SDE_PROF_EVENT("Wait for shadow lists");
-			while (shadowsInFlight > 0)
 			{
-				Core::Thread::Sleep(0);
+				SDE_PROF_EVENT("Wait for shadow lists");
+				while (shadowsInFlight > 0)
+				{
+					Core::Thread::Sleep(0);
+				}
 			}
 			int startIndex = 0;
 			for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
@@ -1032,8 +1195,19 @@ namespace Engine
 			}
 
 			m_frameStats.m_totalOpaqueInstances = m_opaqueInstances.m_instances.size();
-			int baseIndex = m_useOldCulling ? PrepareOpaqueInstances(m_opaqueInstances) : PopulateInstanceBuffers(visibleOpaques, foundOpaques);
-			DrawInstances(d, m_useOldCulling ? m_opaqueInstances : visibleOpaques, baseIndex, true, nullptr, foundOpaques);
+			int baseInstance = m_useOldCulling ? PrepareOpaqueInstances(m_opaqueInstances) : PopulateInstanceBuffers(visibleOpaques, foundOpaques);
+			if (m_useDrawIndirect)
+			{
+				static std::vector<DrawBucket> drawBuckets;
+				drawBuckets.reserve(2000);
+				drawBuckets.resize(0);	
+				PrepareDrawBuckets(visibleOpaques, baseInstance, foundOpaques, drawBuckets);
+				DrawBuckets(d, drawBuckets, true, nullptr);
+			}
+			else
+			{
+				DrawInstances(d, m_useOldCulling ? m_opaqueInstances : visibleOpaques, baseInstance, true, nullptr, foundOpaques);
+			}
 			m_frameStats.m_renderedOpaqueInstances = m_useOldCulling ? m_opaqueInstances.m_instances.size() : foundOpaques;
 
 			// render transparents
@@ -1050,8 +1224,19 @@ namespace Engine
 			}
 
 			m_frameStats.m_totalTransparentInstances = m_transparentInstances.m_instances.size();
-			baseIndex = m_useOldCulling ? PrepareTransparentInstances(m_transparentInstances) : PopulateInstanceBuffers(visibleTransparents, foundTransparents);
-			DrawInstances(d, m_useOldCulling ? m_transparentInstances : visibleTransparents, baseIndex, true, nullptr, foundTransparents);
+			baseInstance = m_useOldCulling ? PrepareTransparentInstances(m_transparentInstances) : PopulateInstanceBuffers(visibleTransparents, foundTransparents);
+			if (m_useDrawIndirect)
+			{
+				static std::vector<DrawBucket> drawBuckets;
+				drawBuckets.reserve(2000);
+				drawBuckets.resize(0);
+				PrepareDrawBuckets(visibleTransparents, baseInstance, foundTransparents, drawBuckets);
+				DrawBuckets(d, drawBuckets, true, nullptr);
+			}
+			else
+			{
+				DrawInstances(d, m_useOldCulling ? m_transparentInstances : visibleTransparents, baseInstance, true, nullptr, foundTransparents);
+			}
 			m_frameStats.m_renderedTransparentInstances = m_useOldCulling ? m_transparentInstances.m_instances.size() : foundTransparents;
 
 			if (m_showWireframe)

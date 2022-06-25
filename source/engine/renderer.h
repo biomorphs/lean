@@ -86,6 +86,8 @@ namespace Engine
 		bool IsCullingEnabled() { return m_cullingEnabled; }
 		void SetUseOldCulling(bool t) { m_useOldCulling = t; }
 		bool GetUseOldCulling() { return m_useOldCulling; }
+		void SetUseDrawIndirect(bool t) { m_useDrawIndirect = t; }
+		bool GetUseDrawIndirect() { return m_useDrawIndirect; }
 		void SetCullingEnabled(bool b) { m_cullingEnabled = b; }
 		void SetWireframeMode(bool m) { m_showWireframe = m; }
 		bool GetWireframeMode() { return m_showWireframe; }
@@ -96,6 +98,18 @@ namespace Engine
 			std::vector<RenderInstance> m_instances;
 		};
 		using ShadowShaders = std::unordered_map<uint32_t, ShaderHandle>;
+
+		struct DrawBucket
+		{
+			Render::ShaderProgram* m_shader;
+			const Render::VertexArray* m_va;
+			const Render::RenderBuffer* m_ib;
+			const Render::Material* m_meshMaterial;
+			const Render::Material* m_instanceMaterial;
+			uint32_t m_primitiveType;	// Render::PrimitiveType
+			int m_firstDrawIndex;
+			int m_drawCount;
+		};
 
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
 		int RenderShadowmap(Render::Device& d, Light& l, const std::vector<std::unique_ptr<InstanceList>>& visibleInstances, const std::vector<size_t>& counts, int instanceListStartIndex);
@@ -113,6 +127,8 @@ namespace Engine
 		int PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
 		int PopulateInstanceBuffers(InstanceList& list, size_t instanceCount = -1);	// returns offset to start of index data in global gpu buffers
 		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr, size_t drawCount=-1);
+		void PrepareDrawBuckets(const InstanceList& list, int baseIndex, size_t drawCount, std::vector<DrawBucket>& buckets);
+		void DrawBuckets(Render::Device& d, const std::vector<DrawBucket>& buckets, bool bindShadowmaps, Render::UniformBuffer* uniforms);
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 		void CullLights();
 
@@ -129,9 +145,12 @@ namespace Engine
 		InstanceList m_transparentInstances;
 		InstanceList m_allShadowCasterInstances;
 		Render::RenderBuffer m_perInstanceData;	// global instance data
+		Render::RenderBuffer m_drawIndirectBuffer;
 		int m_nextInstance = 0;				// index into buffers above
+		int m_nextDrawCall = 0;
 		bool m_cullingEnabled = true;
 		bool m_useOldCulling = true;
+		bool m_useDrawIndirect = false;
 		bool m_showWireframe = false;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		JobSystem* m_jobSystem = nullptr;

@@ -461,6 +461,12 @@ namespace Render
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
+	void Device::BindDrawIndirectBuffer(const RenderBuffer& buffer)
+	{
+		assert(buffer.GetHandle() != 0);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.GetHandle());
+	}
+
 	void Device::BindIndexBuffer(const RenderBuffer& buffer)
 	{
 		assert(buffer.GetHandle() != 0);
@@ -471,6 +477,16 @@ namespace Render
 	{
 		assert(srcArray.GetHandle() != 0);
 		glBindVertexArray(srcArray.GetHandle());
+	}
+
+	void Device::DrawPrimitivesIndirectIndexed(PrimitiveType primitive, uint32_t startDrawCall, uint32_t drawCount)
+	{
+		SDE_PROF_EVENT();
+
+		auto primitiveType = TranslatePrimitiveType(primitive);
+		assert(primitiveType != -1);
+		const void* offsetPtr = (void*)(startDrawCall * sizeof(DrawIndirectIndexedParams));
+		glMultiDrawElementsIndirect(primitiveType, GL_UNSIGNED_INT, offsetPtr, drawCount, 0);
 	}
 
 	void Device::DrawPrimitivesInstancedIndexed(PrimitiveType primitive, uint32_t indexStart, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance)

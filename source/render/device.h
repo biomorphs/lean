@@ -54,6 +54,17 @@ namespace Render
 		Error
 	};
 
+	// Indirect rendering (allows us to batch draw calls!)
+	// Build a RenderBuffer and pass it to DrawIndirect
+	struct DrawIndirectIndexedParams
+	{
+		uint32_t m_indexCount;
+		uint32_t m_instanceCount;
+		uint32_t m_firstIndex;
+		int m_baseVertex;
+		uint32_t m_baseInstance;
+	};
+
 	// This represents the GL context for a window
 	class Device
 	{
@@ -96,6 +107,8 @@ namespace Render
 		void BindIndexBuffer(const RenderBuffer& buffer);
 		void BindInstanceBuffer(const RenderBuffer& buffer, int vertexLayoutSlot, int components, size_t offset = 0, size_t vectorCount=1);
 		void BindStorageBuffer(uint32_t ssboBindingIndex, const RenderBuffer& ssbo);	// like uniforms, but writeable!
+		void BindDrawIndirectBuffer(const RenderBuffer& buffer);
+		void DrawPrimitivesIndirectIndexed(PrimitiveType primitive, uint32_t startDrawCall, uint32_t drawCount);
 		void DrawPrimitives(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount);
 		void DrawPrimitivesInstancedIndexed(PrimitiveType primitive, uint32_t indexStart, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance = 0);
 		void DrawPrimitivesInstanced(PrimitiveType primitive, uint32_t vertexStart, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance=0);
