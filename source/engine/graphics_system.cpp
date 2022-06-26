@@ -395,7 +395,6 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		char statText[1024] = { '\0' };
 		m_debugGui->BeginWindow(m_showStats, "Render Stats");
 		sprintf_s(statText, m_useNewRender ? "*** Using new renderer! ***" : "*** Using old renderer! ***");	m_debugGui->Text(statText);
-		m_renderer->SetUseOldCulling(m_debugGui->Checkbox("Use old culling", m_renderer->GetUseOldCulling()));
 		m_renderer->SetUseDrawIndirect(m_debugGui->Checkbox("Use draw indirect", m_renderer->GetUseDrawIndirect()));
 		sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);

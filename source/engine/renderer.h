@@ -23,6 +23,7 @@ namespace Render
 namespace Engine
 {
 	class JobSystem;
+	class Frustum;
 
 	class Renderer : public Render::RenderPass
 	{
@@ -84,19 +85,43 @@ namespace Engine
 		float GetBloomMultiplier() { return m_bloomMultiplier; }
 		void SetBloomMultiplier(float t) { m_bloomMultiplier = t; }
 		bool IsCullingEnabled() { return m_cullingEnabled; }
-		void SetUseOldCulling(bool t) { m_useOldCulling = t; }
-		bool GetUseOldCulling() { return m_useOldCulling; }
 		void SetUseDrawIndirect(bool t) { m_useDrawIndirect = t; }
 		bool GetUseDrawIndirect() { return m_useDrawIndirect; }
 		void SetCullingEnabled(bool b) { m_cullingEnabled = b; }
 		void SetWireframeMode(bool m) { m_showWireframe = m; }
 		bool GetWireframeMode() { return m_showWireframe; }
 	private:
-		using RenderInstance = MeshInstance<PerInstanceData>;
 		struct InstanceList
 		{
-			std::vector<RenderInstance> m_instances;
+			struct TransformBounds {
+				glm::mat4 m_transform;
+				glm::vec3 m_aabbMin;
+				glm::vec3 m_aabbMax;
+			};
+			struct DrawData {
+				Render::ShaderProgram* m_shader;
+				const Render::VertexArray* m_va;
+				const Render::RenderBuffer* m_ib;
+				const Render::Material* m_meshMaterial;
+				const Render::Material* m_instanceMaterial;
+				const Render::MeshChunk* m_chunks;
+				uint32_t m_chunkCount;
+			};
+			struct Entry {
+				__m128i m_sortKey;
+				uint64_t m_dataIndex;
+				uint64_t m_padding;
+			};
+			std::vector<TransformBounds> m_transformBounds;
+			std::vector<DrawData> m_drawData;
+			std::vector<PerInstanceData> m_perInstanceData;
+			std::vector<Entry> m_entries;
+			
+			void Reserve(size_t count);
+			void Resize(size_t count);
+			void Reset();
 		};
+		using EntryList = std::vector<InstanceList::Entry>;
 		using ShadowShaders = std::unordered_map<uint32_t, ShaderHandle>;
 
 		struct DrawBucket
@@ -112,8 +137,8 @@ namespace Engine
 		};
 
 		uint32_t BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit);
-		int RenderShadowmap(Render::Device& d, Light& l, const std::vector<std::unique_ptr<InstanceList>>& visibleInstances, const std::vector<size_t>& counts, int instanceListStartIndex);
-		void RenderShadowmap(Render::Device& d, Light& l);
+		int RenderShadowmap(Render::Device& d, Light& l, const std::vector<std::unique_ptr<EntryList>>& visibleInstances, int instanceListStartIndex);
+
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns,
 			const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
@@ -121,22 +146,17 @@ namespace Engine
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const glm::vec3& aabbMin, const glm::vec3& aabbMax,
 			const struct ShaderHandle& shader, const Render::VertexArray* va, const Render::RenderBuffer* ib, 
 			const Render::MeshChunk* chunks, uint32_t chunkCount, const PerInstanceData& pid);
-		int PrepareOpaqueInstances(InstanceList& list);
-		int PrepareTransparentInstances(InstanceList& list);
-		int PrepareCulledShadowInstances(InstanceList& visibleInstances);
-		int PrepareShadowInstances(glm::mat4 lightViewProj, InstanceList& visibleInstances);
-		int PopulateInstanceBuffers(InstanceList& list, size_t instanceCount = -1);	// returns offset to start of index data in global gpu buffers
-		void DrawInstances(Render::Device& d, const InstanceList& list, int baseIndex, bool bindShadowmaps=false, Render::UniformBuffer* uniforms = nullptr, size_t drawCount=-1);
-		void PrepareDrawBuckets(const InstanceList& list, int baseIndex, size_t drawCount, std::vector<DrawBucket>& buckets);
+
+		int PopulateInstanceBuffers(InstanceList& list, const EntryList& entries);	// returns offset to start of index data in global gpu buffers
+		void PrepareDrawBuckets(const InstanceList& list, const EntryList& entries, int baseIndex, std::vector<DrawBucket>& buckets);
 		void DrawBuckets(Render::Device& d, const std::vector<DrawBucket>& buckets, bool bindShadowmaps, Render::UniformBuffer* uniforms);
+		void DrawInstances(Render::Device& d, const InstanceList& list, const EntryList& entries, int baseIndex, bool bindShadowmaps = false, Render::UniformBuffer* uniforms = nullptr);
+
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 		void CullLights();
 
-		// cull one source list into multiple result lists each with a different frustum
-		void CullInstances(const InstanceList& srcInstances, InstanceList* results, const class Frustum* frustums, int listCount=1);
-
 		using OnFindVisibleComplete = std::function<void(size_t)>;	// param = num. results found (note the result vector is NOT resized!)
-		void FindVisibleInstancesAsync(const Frustum& f, const std::vector<RenderInstance>& src, std::vector<RenderInstance>& result, OnFindVisibleComplete onComplete);
+		void FindVisibleInstancesAsync(const Frustum& f, const InstanceList& src, EntryList& result, OnFindVisibleComplete onComplete);
 
 		FrameStats m_frameStats;
 		float m_hdrExposure = 1.0f;
@@ -149,7 +169,6 @@ namespace Engine
 		int m_nextInstance = 0;				// index into buffers above
 		int m_nextDrawCall = 0;
 		bool m_cullingEnabled = true;
-		bool m_useOldCulling = true;
 		bool m_useDrawIndirect = false;
 		bool m_showWireframe = false;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
