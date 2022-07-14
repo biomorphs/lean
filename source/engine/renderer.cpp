@@ -92,16 +92,18 @@ namespace Engine
 		, m_bloomBrightnessBuffer(windowSize)
 	{
 		SDE_PROF_EVENT();
-		auto tm = Engine::GetSystem<Engine::TextureManager>("Textures");
-		auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-		g_defaultTextures["DiffuseTexture"] = tm->LoadTexture("white.bmp");
-		g_defaultTextures["NormalsTexture"] = tm->LoadTexture("default_normalmap.png");
-		g_defaultTextures["SpecularTexture"] = tm->LoadTexture("white.bmp");
-		m_blitShader = sm->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
-		m_bloomBrightnessShader = sm->LoadShader("BloomBrightness", "basic_blit.vs", "bloom_brightness.fs");
-		m_bloomBlurShader = sm->LoadShader("BloomBlur", "basic_blit.vs", "bloom_blur.fs");
-		m_bloomCombineShader = sm->LoadShader("BloomCombine", "basic_blit.vs", "bloom_combine.fs");
-		m_tonemapShader = sm->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
+		m_modelManager = GetSystem<ModelManager>("Models");
+		m_textureManager = Engine::GetSystem<TextureManager>("Textures");
+		m_shaderManager = Engine::GetSystem<ShaderManager>("Shaders");
+		g_defaultTextures["DiffuseTexture"] = m_textureManager->LoadTexture("white.bmp");
+		g_defaultTextures["NormalsTexture"] = m_textureManager->LoadTexture("default_normalmap.png");
+		g_defaultTextures["SpecularTexture"] = m_textureManager->LoadTexture("white.bmp");
+
+		m_blitShader = m_shaderManager->LoadShader("Basic Blit", "basic_blit.vs", "basic_blit.fs");
+		m_bloomBrightnessShader = m_shaderManager->LoadShader("BloomBrightness", "basic_blit.vs", "bloom_brightness.fs");
+		m_bloomBlurShader = m_shaderManager->LoadShader("BloomBlur", "basic_blit.vs", "bloom_blur.fs");
+		m_bloomCombineShader = m_shaderManager->LoadShader("BloomCombine", "basic_blit.vs", "bloom_combine.fs");
+		m_tonemapShader = m_shaderManager->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
 			m_perInstanceData.Create(c_maxInstances * sizeof(RenderPerInstanceData), Render::RenderBufferModification::Dynamic, true);
@@ -153,6 +155,12 @@ namespace Engine
 		m_lights.clear();
 		m_nextInstance = 0;
 		m_nextDrawCall = 0;
+		auto defaultDiffuse = m_textureManager->GetTexture(g_defaultTextures["DiffuseTexture"]);
+		m_defaultDiffuseResidentHandle = defaultDiffuse ? defaultDiffuse->GetResidentHandle() : 0;
+		auto defaultNormal = m_textureManager->GetTexture(g_defaultTextures["NormalsTexture"]);
+		m_defaultNormalResidentHandle = defaultNormal ? defaultNormal->GetResidentHandle() : 0;
+		auto defaultSpecular = m_textureManager->GetTexture(g_defaultTextures["SpecularTexture"]);
+		m_defaultSpecularResidentHandle = defaultSpecular ? defaultSpecular->GetResidentHandle() : 0;
 	}
 
 	void Renderer::SetCamera(const Render::Camera& c)
@@ -251,8 +259,7 @@ namespace Engine
 		const struct ShaderHandle& shader, const Render::VertexArray* va, const Render::RenderBuffer* ib,
 		const Render::MeshChunk* chunks, uint32_t chunkCount, const PerInstanceData& pid)
 	{
-		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-		const auto foundShader = sm->GetShader(shader);
+		const auto foundShader = m_shaderManager->GetShader(shader);
 		const uint64_t dataIndex = list.m_entries.size();
 		list.m_transformBounds.emplace_back(InstanceList::TransformBounds{trns, aabbMin, aabbMax});
 		list.m_drawData.emplace_back(InstanceList::DrawData{ foundShader, va, ib, nullptr, nullptr, chunks, chunkCount});
@@ -264,8 +271,7 @@ namespace Engine
 		const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
 		const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
-		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-		const auto foundShader = sm->GetShader(shader);
+		const auto foundShader = m_shaderManager->GetShader(shader);
 		const uint64_t dataIndex = list.m_entries.size();
 		list.m_transformBounds.emplace_back(InstanceList::TransformBounds{ trns, aabbMin, aabbMax });
 		list.m_drawData.emplace_back(InstanceList::DrawData{ foundShader, va, ib, meshMaterial, instanceMat, chunks, chunkCount });
@@ -282,7 +288,6 @@ namespace Engine
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat)
 	{
-		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		bool castShadow = mesh.GetMaterial().GetCastsShadows();
 		bool isTransparent = mesh.GetMaterial().GetIsTransparent();
 
@@ -294,7 +299,7 @@ namespace Engine
 
 		if (castShadow)
 		{
-			auto shadowShader = sm->GetShadowsShader(shader);
+			auto shadowShader = m_shaderManager->GetShadowsShader(shader);
 			if (shadowShader.m_index != (uint32_t)-1)
 			{
 				auto sortKey = ShadowCasterSortKey(shadowShader, &mesh.GetVertexArray(), mesh.GetChunks().data(), &mesh.GetMaterial());
@@ -322,35 +327,31 @@ namespace Engine
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader)
 	{
-		static ModelManager* mm = Engine::GetSystem<ModelManager>("Models");
-		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-		static auto tm = Engine::GetSystem<Engine::TextureManager>("Textures");
-		static uint64_t defaultDiffuse = tm->GetTexture(g_defaultTextures["DiffuseTexture"])->GetResidentHandle();
-		static uint64_t defaultSpecular = tm->GetTexture(g_defaultTextures["SpecularTexture"])->GetResidentHandle();
-		static uint64_t defaultNormal = tm->GetTexture(g_defaultTextures["NormalsTexture"])->GetResidentHandle();
-		const auto theModel = mm->GetModel(model);
-		const auto theShader = sm->GetShader(shader);
+		const auto theModel = m_modelManager->GetModel(model);
+		const auto theShader = m_shaderManager->GetShader(shader);
 		if (theModel != nullptr && theShader != nullptr)
 		{
-			ShaderHandle shadowShader = sm->GetShadowsShader(shader);
-			const Render::VertexArray* va = mm->GetVertexArray();
-			const Render::RenderBuffer* ib = mm->GetIndexBuffer();
-			for (const auto& meshPart : theModel->MeshParts())
+			ShaderHandle shadowShader = m_shaderManager->GetShadowsShader(shader);
+			const Render::VertexArray* va = m_modelManager->GetVertexArray();
+			const Render::RenderBuffer* ib = m_modelManager->GetIndexBuffer();
+			const auto partCount = theModel->MeshParts().size();
+			for (auto partIndex=0;partIndex<partCount;++partIndex)
 			{
+				const auto& meshPart = theModel->MeshParts()[partIndex];
 				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
 				glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
 
-				auto diffuse = tm->GetTexture(meshPart.m_drawData.m_diffuseTexture);
-				auto normal = tm->GetTexture(meshPart.m_drawData.m_normalsTexture);
-				auto specular = tm->GetTexture(meshPart.m_drawData.m_specularTexture);
+				auto diffuse = m_textureManager->GetTexture(meshPart.m_drawData.m_diffuseTexture);
+				auto normal = m_textureManager->GetTexture(meshPart.m_drawData.m_normalsTexture);
+				auto specular = m_textureManager->GetTexture(meshPart.m_drawData.m_specularTexture);
 
 				PerInstanceData pid;	// it may be better to defer getting the texture handles until post-culling?
 				pid.m_diffuseOpacity = meshPart.m_drawData.m_diffuseOpacity;
 				pid.m_specular = meshPart.m_drawData.m_specular;
 				pid.m_shininess = meshPart.m_drawData.m_shininess;
-				pid.m_diffuseTexture = diffuse ? diffuse->GetResidentHandle() : defaultDiffuse;
-				pid.m_normalsTexture = normal ? normal->GetResidentHandle() : defaultNormal;
-				pid.m_specularTexture = specular ? specular->GetResidentHandle() : defaultSpecular;
+				pid.m_diffuseTexture = diffuse ? diffuse->GetResidentHandle() : m_defaultDiffuseResidentHandle;
+				pid.m_normalsTexture = normal ? normal->GetResidentHandle() : m_defaultNormalResidentHandle;
+				pid.m_specularTexture = specular ? specular->GetResidentHandle() : m_defaultSpecularResidentHandle;
 
 				if (meshPart.m_material.GetCastsShadows() && shadowShader.m_index != (uint32_t)-1)
 				{
@@ -378,10 +379,8 @@ namespace Engine
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat)
 	{
-		static ModelManager* mm = Engine::GetSystem<ModelManager>("Models");
-		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-		const auto theModel = mm->GetModel(model);
-		const auto theShader = sm->GetShader(shader);
+		const auto theModel = m_modelManager->GetModel(model);
+		const auto theShader = m_shaderManager->GetShader(shader);
 
 		if (theModel != nullptr && theShader != nullptr)
 		{
@@ -389,11 +388,11 @@ namespace Engine
 			bool modelCastsShadow = instanceMat ? instanceMat->GetCastsShadows() : true;
 			if (modelCastsShadow)
 			{
-				shadowShader = sm->GetShadowsShader(shader);
+				shadowShader = m_shaderManager->GetShadowsShader(shader);
 			}
 
-			const Render::VertexArray* va = mm->GetVertexArray();
-			const Render::RenderBuffer* ib = mm->GetIndexBuffer();
+			const Render::VertexArray* va = m_modelManager->GetVertexArray();
+			const Render::RenderBuffer* ib = m_modelManager->GetIndexBuffer();
 			for (const auto& meshPart : theModel->MeshParts())
 			{
 				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
@@ -488,9 +487,6 @@ namespace Engine
 	int Renderer::PopulateInstanceBuffers(InstanceList& list, const EntryList& entries)
 	{
 		SDE_PROF_EVENT();
-
-		
-
 		static std::vector<RenderPerInstanceData> instanceData;
 		{
 			SDE_PROF_EVENT("Reserve");
@@ -925,6 +921,7 @@ namespace Engine
 								return SortKeyLessThan(s1.m_sortKey, s2.m_sortKey);
 							});
 					}
+					result.resize(jobData->m_count);
 					onComplete(jobData->m_count);
 					delete jobData;
 				}
@@ -1017,11 +1014,12 @@ namespace Engine
 		m_frameStats.m_instancesSubmitted = m_opaqueInstances.m_entries.size() + m_transparentInstances.m_entries.size();
 		m_frameStats.m_activeLights = std::min(m_lights.size(), c_maxLights);
 
+		CullLights();
+
 		static EntryList visibleOpaques, visibleTransparents;
 		static std::vector<std::unique_ptr<EntryList>> visibleShadowCasters;
 		std::atomic<bool> opaquesReady = false, transparentsReady = false;
 		std::atomic<int> shadowsInFlight = 0;
-
 		{
 			SDE_PROF_EVENT("BeginCulling");
 
@@ -1098,8 +1096,6 @@ namespace Engine
 			d.SetDepthState(true, true);	// make sure depth write is enabled before clearing!
 			d.ClearFramebufferColourDepth(m_mainFramebuffer, m_clearColour, FLT_MAX);
 		}
-
-		CullLights();
 
 		// setup global constants
 		const auto projectionMat = m_camera.ProjectionMatrix();
@@ -1200,8 +1196,7 @@ namespace Engine
 		// blit to bloom brightness buffer
 		d.SetDepthState(false, false);
 		d.SetBlending(false);
-		static auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-		auto brightnessShader = sm->GetShader(m_bloomBrightnessShader);
+		auto brightnessShader = m_shaderManager->GetShader(m_bloomBrightnessShader);
 		if (brightnessShader)
 		{
 			SDE_PROF_EVENT("BloomBrightness");
@@ -1216,7 +1211,7 @@ namespace Engine
 		}
 
 		// gaussian blur 
-		auto blurShader = sm->GetShader(m_bloomBlurShader);
+		auto blurShader = m_shaderManager->GetShader(m_bloomBlurShader);
 		if (blurShader)
 		{
 			SDE_PROF_EVENT("BloomBlur");
@@ -1233,7 +1228,7 @@ namespace Engine
 		}
 
 		// combine bloom with main buffer
-		auto combineShader = sm->GetShader(m_bloomCombineShader);
+		auto combineShader = m_shaderManager->GetShader(m_bloomCombineShader);
 		if (combineShader)
 		{
 			SDE_PROF_EVENT("BloomCombine");
@@ -1250,8 +1245,8 @@ namespace Engine
 		// blit main buffer to backbuffer + tonemap
 		d.SetDepthState(false, false);
 		d.SetBlending(true);
-		auto tonemapShader = sm->GetShader(m_tonemapShader);
-		auto blitShader = sm->GetShader(m_blitShader);
+		auto tonemapShader = m_shaderManager->GetShader(m_tonemapShader);
+		auto blitShader = m_shaderManager->GetShader(m_blitShader);
 		if (blitShader && tonemapShader)
 		{
 			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, *mainFb, *tonemapShader);

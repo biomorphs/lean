@@ -168,7 +168,7 @@ std::string EntitySystem::GetEntityNameWithTags(EntityHandle e) const
 	return text;
 }
 
-void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool expandAll, const char* titleText, bool allowAddEntity, ComponentInspector* i)
+uint32_t EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool expandAll, const char* titleText, bool allowAddEntity, ComponentInspector* i)
 {
 	SDE_PROF_EVENT();
 	static std::string filterText = "";
@@ -179,6 +179,7 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 		i = &basicInspector;
 	}
 
+	uint32_t entityToDelete = -1;
 	m_debugGui->BeginWindow(g_showWindow, titleText);
 	m_debugGui->TextInput("Tag Filter", filterText);
 	if (m_debugGui->TreeNode("All Entities", true))
@@ -231,6 +232,12 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 					}
 				}
 				m_debugGui->TreePop();
+				char buttonText[1024];
+				sprintf_s(buttonText, "Delete Entity?##%d", entityID);
+				if (m_debugGui->Button(buttonText))
+				{
+					entityToDelete = entityID;
+				}
 			}
 		}
 		if (allowAddEntity && m_debugGui->Button("Add entity"))
@@ -240,6 +247,7 @@ void EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool exp
 		m_debugGui->TreePop();
 	}
 	m_debugGui->EndWindow();
+	return entityToDelete;
 }
 
 EntityHandle EntitySystem::GetFirstEntityWithTag(Engine::Tag tag)
@@ -303,7 +311,11 @@ bool EntitySystem::Tick(float timeDelta)
 
 	if (g_showWindow)
 	{
-		ShowInspector(m_world->AllEntities());
+		uint32_t entityToDelete = ShowInspector(m_world->AllEntities());
+		if (entityToDelete != -1)
+		{
+			m_world->RemoveEntity(entityToDelete);
+		}
 	}
 	m_debugGui->MainMenuBar(g_entityMenu);
 

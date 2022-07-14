@@ -332,7 +332,12 @@ void Editor::DrawSelected()
 	if (selectedIDs.size() > 0)
 	{
 		EditorComponentInspector myInspector;
-		m_entitySystem->ShowInspector(selectedIDs, true, "Selected Entities", false, &myInspector);
+		uint32_t entityToDelete = m_entitySystem->ShowInspector(selectedIDs, true, "Selected Entities", false, &myInspector);
+		if (entityToDelete != -1)
+		{
+			m_commands.Push(std::make_unique<EditorSelectEntityCommand>(entityToDelete, false));
+			m_commands.Push(std::make_unique<EditorDeleteSelectionCommand>());
+		}
 	}
 }
 

@@ -159,6 +159,12 @@ namespace Engine
 		void FindVisibleInstancesAsync(const Frustum& f, const InstanceList& src, EntryList& result, OnFindVisibleComplete onComplete);
 
 		FrameStats m_frameStats;
+		class ModelManager* m_modelManager = nullptr;
+		class ShaderManager* m_shaderManager = nullptr;
+		class TextureManager* m_textureManager = nullptr;
+		uint64_t m_defaultDiffuseResidentHandle = -1;
+		uint64_t m_defaultNormalResidentHandle = -1;
+		uint64_t m_defaultSpecularResidentHandle = -1;
 		float m_hdrExposure = 1.0f;
 		std::vector<Light> m_lights;
 		InstanceList m_opaqueInstances;
