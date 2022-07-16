@@ -23,6 +23,25 @@ function SpawnWorldTiles_BasicHorizontal(tilePos_ivec2)
 	end
 end
 
+function SpawnWorldTiles_BasicFields(tilePos_ivec2)
+	local mr = math.random(0,1000)
+	if(mr > 995) then
+		return "survivors/grass_camp.scn"
+	elseif(mr > 900) then 
+		return "survivors/grass_basic_darker.scn"
+	elseif(mr > 850) then 
+		return "survivors/grass_basic_dark.scn"
+	elseif(mr > 830) then 
+		return "survivors/grass_basic_crates.scn"
+	elseif(mr > 800) then 
+		return "survivors/grass_trees.scn"
+	elseif(mr > 780) then 
+		return "survivors/grass_trees_dense.scn"
+	else
+		return "survivors/grass_basic.scn"
+	end
+end
+
 local firstRun = true
 function SurvivorsMain(entity)
 	local windowOpen = true
@@ -30,6 +49,9 @@ function SurvivorsMain(entity)
 	local tileLoadRadius = Survivors.GetWorldTileLoadRadius()
 	tileLoadRadius = DebugGui.DragInt('Tile load radius', tileLoadRadius, 1, 0, 64)
 	Survivors.SetWorldTileLoadRadius(tileLoadRadius)
+	if(DebugGui.Button('Spawn fields')) then 
+		Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicFields)
+	end
 	if(DebugGui.Button('Basic tile spawning')) then 
 		Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_Basic)
 	end
@@ -42,6 +64,12 @@ function SurvivorsMain(entity)
 	if(DebugGui.Button('Remove all tiles')) then 
 		Survivors.RemoveAllTiles()
 	end
+	if(DebugGui.Button('Reload')) then 
+		local myScriptCmp = World.GetComponent_Script(entity)
+		if(myScriptCmp ~= nil) then 
+			myScriptCmp:SetNeedsCompile()
+		end
+	end 
 	DebugGui.EndWindow()
 end
 

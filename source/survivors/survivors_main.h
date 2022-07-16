@@ -14,7 +14,7 @@ namespace Survivors
 		virtual void Shutdown();
 
 	private:
-		int m_tileLoadRadius = 8;
+		int m_tileLoadRadius = 7;
 		std::function<std::string(glm::ivec2)> m_worldTileSpawnFn;
 	};
 }
