@@ -297,6 +297,23 @@ target_include_directories(Creatures PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Creatures PRIVATE ${JSONIncludePaths})
 target_compile_options(Creatures PRIVATE ${CommonCompilerOptions})
 
+add_library(Survivors STATIC)
+set(SURVIVORS_SOURCES
+	source/survivors/survivors_main.h
+	source/survivors/survivors_main.cpp
+	source/survivors/player_component.h
+	source/survivors/player_component.cpp
+	source/survivors/world_tile_system.h
+	source/survivors/world_tile_system.cpp
+	source/survivors/world_tile_component.h
+	source/survivors/world_tile_component.cpp
+)
+target_sources(Survivors PRIVATE ${SURVIVORS_SOURCES})
+target_include_directories(Survivors PRIVATE ${CommonIncludePaths})
+target_include_directories(Survivors PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Survivors PRIVATE ${JSONIncludePaths})
+target_compile_options(Survivors PRIVATE ${CommonCompilerOptions})
+
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
 	source/playground/playground.h
@@ -372,6 +389,7 @@ target_link_libraries(Lean PRIVATE Entity)
 target_link_libraries(Lean PRIVATE Playground)
 target_link_libraries(Lean PRIVATE Editor)
 target_link_libraries(Lean PRIVATE Creatures)
+target_link_libraries(Lean PRIVATE Survivors)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysX_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCommon_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCooking_64.lib)

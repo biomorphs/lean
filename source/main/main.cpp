@@ -4,6 +4,9 @@
 #include "playground/playground.h"
 #include "playground/walkable_system.h"
 
+#include "survivors/world_tile_system.h"
+#include "survivors/survivors_main.h"
+
 #include "editor/editor.h"
 
 #include "core/log.h"
@@ -13,6 +16,8 @@ void CreateSystems(const std::string& cmdLine)
 {
 	auto& sysManager = Engine::SystemManager::GetInstance();
 	sysManager.RegisterSystem("Walkables", new WalkableSystem);
+	sysManager.RegisterSystem("SurvivorsWorldTiles", new Survivors::WorldTileSystem);
+	sysManager.RegisterSystem("SurvivorsMain", new Survivors::SurvivorsMain);
 	if (cmdLine.find("-playground") != -1)
 	{
 		sysManager.RegisterSystem("Playground", new Playground());
