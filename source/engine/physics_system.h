@@ -35,7 +35,7 @@ namespace Engine
 		virtual ~PhysicsSystem();
 
 		bool PreInit();
-		bool Initialise();
+		bool PostInit();
 		bool Tick(float timeDelta);
 		void Shutdown();
 		

@@ -9,6 +9,8 @@
 #include "entity/component_inspector.h"
 
 COMPONENT_SCRIPTS(CharacterController,
+	"SetEnabled", &CharacterController::SetEnabled,
+	"GetEnabled", &CharacterController::GetEnabled,
 	"GetRadius", &CharacterController::GetRadius,
 	"SetRadius", &CharacterController::SetRadius,
 	"GetHalfHeight", &CharacterController::GetHalfHeight,
@@ -37,6 +39,7 @@ COMPONENT_INSPECTOR_IMPL(CharacterController)
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 
+		i.Inspect("Enabled", cc.GetEnabled(), InspectFn(e, &CharacterController::SetEnabled));
 		gui->DragVector("Velocity", cc.GetCurrentVelocity());	// read only
 		i.Inspect("Capsule Radius", cc.GetRadius(), InspectFn(e, &CharacterController::SetRadius), 0.1f, 0.1f);
 		i.Inspect("Half Height", cc.GetHalfHeight(), InspectFn(e, &CharacterController::SetHalfHeight), 0.1f, 0.1f);

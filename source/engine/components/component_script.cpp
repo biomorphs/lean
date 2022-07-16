@@ -1,12 +1,14 @@
 #include "component_script.h"
 #include "engine/debug_gui_system.h"
 #include "engine/system_manager.h"
+#include "engine/file_picker_dialog.h"
 #include "entity/entity_handle.h"
 #include "core/base64.h"
 
 COMPONENT_SCRIPTS(Script)
 
 SERIALISE_BEGIN(Script)
+SERIALISE_PROPERTY("ScriptFile", m_scriptFile)
 if (op == Engine::SerialiseType::Read)
 {
 	std::string encoded;
@@ -29,6 +31,15 @@ COMPONENT_INSPECTOR_IMPL(Script)
 		auto& s = *static_cast<StorageType&>(cs).Find(e);
 		static EntityHandle editStringHandle;
 		static std::string editString;
+		std::string scriptFile = s.GetScriptFile();
+		if (gui->Button(scriptFile.length() > 0 ? scriptFile.c_str() : "Select a file"))
+		{
+			std::string newFile = Engine::ShowFilePicker("Select Script", "", "Lua script (.lua)\0*.lua\0");
+			if (newFile != "")
+			{
+				s.SetFile(newFile);
+			}
+		}
 		if (gui->Button("Edit"))
 		{
 			editStringHandle = e;

@@ -78,6 +78,10 @@ namespace Engine
 		
 		static auto s_it = world->MakeIterator<CharacterController, Transform>();
 		s_it.ForEach([this, graphics, physics, timeDelta, gravity](CharacterController& c, Transform& t, EntityHandle e) {
+			if (!c.GetEnabled())
+			{
+				return;
+			}
 			glm::mat4 matrix = glm::translate(glm::identity<glm::mat4>(), t.GetPosition() + glm::vec3(0.0f,c.GetVerticalOffset(),0.0f));
 			matrix = matrix * glm::toMat4(t.GetOrientation());
 			glm::vec3 worldSpacePos = glm::vec3(matrix[3]);

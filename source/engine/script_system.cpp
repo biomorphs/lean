@@ -139,6 +139,14 @@ namespace Engine
 			world->ForEachComponent<Script>([this](Script& s, EntityHandle e) {
 				if (s.NeedsCompile())
 				{
+					if (s.GetScriptFile().length() > 0)
+					{
+						std::string scriptText;
+						if (Core::LoadTextFromFile(s.GetScriptFile(), scriptText))
+						{
+							s.SetFunctionText(scriptText);
+						}
+					}
 					if (s.GetFunctionText().length() == 0)
 					{
 						s.SetCompiledFunction({});

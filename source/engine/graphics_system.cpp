@@ -113,6 +113,9 @@ void GraphicsSystem::RegisterComponents()
 
 void GraphicsSystem::RegisterScripts()
 {
+	m_scriptSystem->Globals().new_usertype<glm::ivec2>("ivec2", sol::constructors<glm::ivec2(), glm::ivec2(int, int)>(),
+		"x", &glm::ivec2::x,
+		"y", &glm::ivec2::y);
 	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(),
 		"x", &glm::vec3::x,
 		"y", &glm::vec3::y,

@@ -46,8 +46,8 @@ namespace Engine
 		sysManager.RegisterSystem("Events", new EventSystem);
 		sysManager.RegisterSystem("Jobs", new JobSystem);
 		sysManager.RegisterSystem("Input", new InputSystem);
-		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
+		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
 		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
 		systemCreation();
