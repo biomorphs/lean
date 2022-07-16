@@ -36,6 +36,7 @@ namespace Engine
 	private:
 		void RegisterScripts();
 		void RegisterComponents();
+		bool m_drawCameraFrustums = false;
 		EntityHandle m_activeCamera;
 		std::unique_ptr<Engine::DebugCamera> m_debugCamera;
 		std::unique_ptr<Render::Camera> m_mainRenderCamera;

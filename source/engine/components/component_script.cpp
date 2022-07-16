@@ -5,7 +5,9 @@
 #include "entity/entity_handle.h"
 #include "core/base64.h"
 
-COMPONENT_SCRIPTS(Script)
+COMPONENT_SCRIPTS(Script,
+	"SetNeedsCompile", &Script::SetNeedsCompile
+)
 
 SERIALISE_BEGIN(Script)
 SERIALISE_PROPERTY("ScriptFile", m_scriptFile)

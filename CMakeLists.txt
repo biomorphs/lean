@@ -230,6 +230,8 @@ set(ENGINE_SOURCES
 	source/engine/components/component_sdf_model.cpp
 	source/engine/components/component_model.h
 	source/engine/components/component_model.cpp
+	source/engine/components/component_model_part_materials.h
+	source/engine/components/component_model_part_materials.cpp
 	source/engine/components/component_transform.h
 	source/engine/components/component_transform.cpp
 	source/engine/components/component_light.h

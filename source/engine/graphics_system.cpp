@@ -25,6 +25,7 @@
 #include "engine/components/component_sdf_model.h"
 #include "engine/components/component_tags.h"
 #include "engine/components/component_material.h"
+#include "engine/components/component_model_part_materials.h"
 #include "engine/components/component_environment_settings.h"
 #include "new_render.h"
 
@@ -91,6 +92,9 @@ void GraphicsSystem::RegisterComponents()
 {
 	m_entitySystem->RegisterComponentType<Material>();
 	m_entitySystem->RegisterInspector<Material>(Material::MakeInspector(*m_debugGui));
+
+	m_entitySystem->RegisterComponentType<ModelPartMaterials>();
+	m_entitySystem->RegisterInspector<ModelPartMaterials>(ModelPartMaterials::MakeInspector(*m_debugGui));
 
 	m_entitySystem->RegisterComponentType<Tags>();
 	m_entitySystem->RegisterInspector<Tags>(Tags::MakeInspector(*m_debugGui));
@@ -317,9 +321,15 @@ void GraphicsSystem::ProcessEntities()
 		modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
 			if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
 			{
-				Material* cmpMat = m.GetMaterialComponent();
-				Render::Material* instanceMaterial = cmpMat ? &cmpMat->GetRenderMaterial() : nullptr;
-				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
+				ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
+				if (partOverrides == nullptr)
+				{
+					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
+				}
+				else
+				{
+					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
+				}
 			}
 		});
 	}

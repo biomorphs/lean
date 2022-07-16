@@ -10,8 +10,6 @@
 #include "render/material.h"
 #include "frustum.h"
 #include "mesh_instance.h"
-#include "model_manager.h"
-#include "shader_manager.h"
 #include "model.h"
 #include "material_helpers.h"
 #include "job_system.h"
@@ -325,7 +323,7 @@ namespace Engine
 		SubmitInstance(transform, mesh, shader, { -FLT_MAX, -FLT_MAX, -FLT_MAX }, { FLT_MAX, FLT_MAX, FLT_MAX }, instanceMat);
 	}
 
-	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader)
+	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Model::MeshPart::DrawData* partOverride, uint32_t overrideCount)
 	{
 		const auto theModel = m_modelManager->GetModel(model);
 		const auto theShader = m_shaderManager->GetShader(shader);
@@ -335,20 +333,22 @@ namespace Engine
 			const Render::VertexArray* va = m_modelManager->GetVertexArray();
 			const Render::RenderBuffer* ib = m_modelManager->GetIndexBuffer();
 			const auto partCount = theModel->MeshParts().size();
-			for (auto partIndex=0;partIndex<partCount;++partIndex)
+			for (auto partIndex = 0; partIndex < partCount; ++partIndex)
 			{
 				const auto& meshPart = theModel->MeshParts()[partIndex];
 				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
 				glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
 
-				auto diffuse = m_textureManager->GetTexture(meshPart.m_drawData.m_diffuseTexture);
-				auto normal = m_textureManager->GetTexture(meshPart.m_drawData.m_normalsTexture);
-				auto specular = m_textureManager->GetTexture(meshPart.m_drawData.m_specularTexture);
+				const Model::MeshPart::DrawData& partDrawData = overrideCount > partIndex ? partOverride[partIndex] : meshPart.m_drawData;
+
+				auto diffuse = m_textureManager->GetTexture(partDrawData.m_diffuseTexture);
+				auto normal = m_textureManager->GetTexture(partDrawData.m_normalsTexture);
+				auto specular = m_textureManager->GetTexture(partDrawData.m_specularTexture);
 
 				PerInstanceData pid;	// it may be better to defer getting the texture handles until post-culling?
-				pid.m_diffuseOpacity = meshPart.m_drawData.m_diffuseOpacity;
-				pid.m_specular = meshPart.m_drawData.m_specular;
-				pid.m_shininess = meshPart.m_drawData.m_shininess;
+				pid.m_diffuseOpacity = partDrawData.m_diffuseOpacity;
+				pid.m_specular = partDrawData.m_specular;
+				pid.m_shininess = partDrawData.m_shininess;
 				pid.m_diffuseTexture = diffuse ? diffuse->GetResidentHandle() : m_defaultDiffuseResidentHandle;
 				pid.m_normalsTexture = normal ? normal->GetResidentHandle() : m_defaultNormalResidentHandle;
 				pid.m_specularTexture = specular ? specular->GetResidentHandle() : m_defaultSpecularResidentHandle;
@@ -375,6 +375,11 @@ namespace Engine
 				}
 			}
 		}
+	}
+
+	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader)
+	{
+		SubmitInstance(transform, model, shader, nullptr, 0);
 	}
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat)
@@ -1067,7 +1072,6 @@ namespace Engine
 						{
 							Frustum shadowFrustum(shadowTransforms[cubeSide]);
 							++shadowsInFlight;
-							visibleShadowCasters[shadowCasterListId]->resize(0);
 							FindVisibleInstancesAsync(shadowFrustum, m_allShadowCasterInstances,
 								*visibleShadowCasters[shadowCasterListId], [shadowCasterListId, &shadowsInFlight](size_t count) {
 									--shadowsInFlight;

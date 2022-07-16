@@ -190,6 +190,9 @@ void Editor::UpdateMenubar()
 	fileMenu.AddItem("Save Scene", [this]() {
 		m_commands.Push(std::make_unique<EditorSaveSceneCommand>(m_debugGui, this, m_sceneFilepath));
 	});
+	fileMenu.AddItem("Save Scene As", [this]() {
+		m_commands.Push(std::make_unique<EditorSaveSceneCommand>(m_debugGui, this, ""));
+	});
 	fileMenu.AddItem("Exit", [this]() {
 		m_commands.Push(std::make_unique<EditorCloseCommand>(m_debugGui, this));
 	});

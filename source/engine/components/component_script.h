@@ -25,6 +25,7 @@ public:
 	std::string GetFunctionText() { return m_scriptText; }
 	void SetFunctionText(const std::string& text) { m_scriptText = text; m_needsCompile = true;	}
 
+	void SetNeedsCompile() { m_needsCompile = true; }
 	bool NeedsCompile() const { return m_needsCompile; }
 	void SetCompiledFunction(sol::protected_function fn) { m_compiledFn = fn; m_needsCompile = false; }
 	const sol::protected_function& GetCompiledFunction() { return m_compiledFn; }

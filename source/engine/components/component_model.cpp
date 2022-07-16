@@ -11,11 +11,13 @@
 COMPONENT_SCRIPTS(Model,
 	"SetShader", &Model::SetShader,
 	"SetModel", &Model::SetModel,
-	"SetMaterialEntity", &Model::SetMaterialEntity
+	"SetMaterialEntity", &Model::SetMaterialEntity,
+	"SetPartMaterialEntity", &Model::SetPartMaterialsEntity
 )
 
 SERIALISE_BEGIN(Model)
 	SERIALISE_PROPERTY("MaterialEntity", m_material)
+	SERIALISE_PROPERTY("PartMaterialsEntity", m_partMaterials)
 	SERIALISE_PROPERTY("Shader", m_shader)
 	SERIALISE_PROPERTY("Model", m_model)
 SERIALISE_END()
@@ -56,6 +58,10 @@ COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui)
 		{
 			m.SetShader({ (uint32_t)(shaderIndex == (shaderpaths.size() - 1) ? (uint32_t)-1 : shaderIndex) });
 		}
+
+		i.Inspect("Part Materials Entity", m.GetPartMaterialsEntity(), InspectFn(e, &Model::SetPartMaterialsEntity), [entities](const EntityHandle& p) {
+				return entities->GetWorld()->GetComponent<ModelPartMaterials>(p) != nullptr;
+		});
 
 		i.Inspect("Material Entity", m.GetMaterialEntity(), InspectFn(e, &Model::SetMaterialEntity), [entities](const EntityHandle& p) {
 			return entities->GetWorld()->GetComponent<Material>(p) != nullptr;

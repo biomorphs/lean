@@ -5,7 +5,9 @@
 #include "engine/script_system.h"
 #include "engine/render_system.h"
 #include "engine/graphics_system.h"
+#include "engine/debug_render.h"
 #include "engine/input_system.h"
+#include "engine/frustum.h"
 #include "engine/debug_camera.h"
 #include "engine/renderer.h"
 #include "engine/new_render.h"
@@ -82,6 +84,9 @@ namespace Engine
 		// Update the camera menu
 		Engine::MenuBar mainMenu;
 		auto& cameraMenu = mainMenu.AddSubmenu(ICON_FK_CAMERA " Camera");
+		cameraMenu.AddItem(m_drawCameraFrustums ? "Hide Frustums" : "Show Frustums", [this]() {
+			m_drawCameraFrustums = !m_drawCameraFrustums;
+		});
 		cameraMenu.AddItem("Flycam", [this]() {
 			m_activeCamera = -1;
 		});
@@ -124,6 +129,21 @@ namespace Engine
 		}
 		m_graphics->Renderer().SetCamera(*m_mainRenderCamera);
 		m_graphics->NewRender().SetCamera(*m_mainRenderCamera);
+
+		if (m_drawCameraFrustums)
+		{
+			auto iterator = m_entitySystem->GetWorld()->MakeIterator<Camera, Transform>();
+			iterator.ForEach([&](Camera& c, Transform& t, EntityHandle e) {
+				Render::Camera tmpCam;
+				tmpCam.SetFOVAndAspectRatio(c.GetFOV(), aspectRatio);
+				tmpCam.SetClipPlanes(c.GetNearPlane(), c.GetFarPlane());
+				glm::vec3 lookDirection = glm::vec3(0.0f, 0.0f, 1.0f) * t.GetOrientation();
+				glm::vec3 lookUp = glm::vec3(0.0f, 1.0f, 0.0f) * t.GetOrientation();
+				tmpCam.LookAt(t.GetPosition(), t.GetPosition() + lookDirection, lookUp);
+				Engine::Frustum f(tmpCam.ProjectionMatrix() * tmpCam.ViewMatrix());
+				m_graphics->DebugRenderer().DrawFrustum(f, {1.0f,1.0f,0.0f,1.0f});
+			});
+		}
 
 		return true;
 	}

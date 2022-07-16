@@ -8,6 +8,7 @@
 #include "mesh_instance.h"
 #include "light.h"
 #include "shader_manager.h"
+#include "model_manager.h"
 #include <vector>
 #include <memory>
 #include <unordered_map>
@@ -52,6 +53,7 @@ namespace Engine
 		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Render::Material* instanceMat);
 		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader);
+		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Model::MeshPart::DrawData* partOverride, uint32_t overrideCount);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation);
 		void SetLight(glm::vec4 positionAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation,
 					  Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap);
