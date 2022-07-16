@@ -1,0 +1,310 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "EnvironmentSettings",
+            "ClearColour": [
+              0.05644463002681732,
+              0.08719317615032196,
+              0.14215683937072754
+            ],
+            "Gravity": [
+              0.0,
+              -39.20000076293945,
+              0.0
+            ]
+          },
+          "Type": "EnvironmentSettings"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Global Settings"
+              }
+            ]
+          },
+          "Type": "Tags"
+        }
+      ],
+      "ID": 0
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Script",
+            "ScriptFile": "E:\\Git\\lean\\data\\survivors\\main.lua",
+            "ScriptText": "ZnVuY3Rpb24gU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljKHRpbGVQb3NfaXZlYzIpCglpZihtYXRoLnJhbmRvbSgwLDEwMCkgPiA5OSkgdGhlbgoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX21pZGRsZXBpbGxhci5zY24iCgllbHNlCgkJcmV0dXJuICJzdXJ2aXZvcnMvYmFzaWNfd2hpdGUuc2NuIgoJZW5kCmVuZAoKZnVuY3Rpb24gU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljSG9yaXpvbnRhbCh0aWxlUG9zX2l2ZWMyKQoJaWYodGlsZVBvc19pdmVjMi55IDwgLTIgb3IgdGlsZVBvc19pdmVjMi55ID4gMikgdGhlbiAKCQlyZXR1cm4gIiIKCWVuZAoJaWYodGlsZVBvc19pdmVjMi55ID09IC0yKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX3RvcC5zY24iCgllbmQKCWlmKHRpbGVQb3NfaXZlYzIueSA9PSAyKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX2JvdHRvbS5zY24iCgllbmQKCWlmKG1hdGgucmFuZG9tKDAsMTAwKSA+IDgwKSB0aGVuCgkJcmV0dXJuICJzdXJ2aXZvcnMvYmFzaWNfd2hpdGVfbWlkZGxlcGlsbGFyLnNjbiIKCWVsc2UKCQlyZXR1cm4gInN1cnZpdm9ycy9iYXNpY193aGl0ZS5zY24iCgllbmQKZW5kCgpmdW5jdGlvbiBTcGF3bldvcmxkVGlsZXNfQmFzaWNGaWVsZHModGlsZVBvc19pdmVjMikKCWxvY2FsIG1yID0gbWF0aC5yYW5kb20oMCwxMDAwKQoJaWYobXIgPiA5OTUpIHRoZW4KCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19jYW1wLnNjbiIKCWVsc2VpZihtciA+IDkwMCkgdGhlbiAKCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19iYXNpY19kYXJrZXIuc2NuIgoJZWxzZWlmKG1yID4gODUwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX2Jhc2ljX2Rhcmsuc2NuIgoJZWxzZWlmKG1yID4gODMwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX2Jhc2ljX2NyYXRlcy5zY24iCgllbHNlaWYobXIgPiA4MDApIHRoZW4gCgkJcmV0dXJuICJzdXJ2aXZvcnMvZ3Jhc3NfdHJlZXMuc2NuIgoJZWxzZWlmKG1yID4gNzgwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX3RyZWVzX2RlbnNlLnNjbiIKCWVsc2UKCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19iYXNpYy5zY24iCgllbmQKZW5kCgpsb2NhbCBmaXJzdFJ1biA9IHRydWUKZnVuY3Rpb24gU3Vydml2b3JzTWFpbihlbnRpdHkpCglsb2NhbCB3aW5kb3dPcGVuID0gdHJ1ZQoJRGVidWdHdWkuQmVnaW5XaW5kb3codHJ1ZSwgJ1N1cnZpdm9ycyEnKQoJbG9jYWwgdGlsZUxvYWRSYWRpdXMgPSBTdXJ2aXZvcnMuR2V0V29ybGRUaWxlTG9hZFJhZGl1cygpCgl0aWxlTG9hZFJhZGl1cyA9IERlYnVnR3VpLkRyYWdJbnQoJ1RpbGUgbG9hZCByYWRpdXMnLCB0aWxlTG9hZFJhZGl1cywgMSwgMCwgNjQpCglTdXJ2aXZvcnMuU2V0V29ybGRUaWxlTG9hZFJhZGl1cyh0aWxlTG9hZFJhZGl1cykKCWlmKERlYnVnR3VpLkJ1dHRvbignU3Bhd24gZmllbGRzJykpIHRoZW4gCgkJU3Vydml2b3JzLlNldFdvcmxkVGlsZVNwYXduRm4oU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljRmllbGRzKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ0Jhc2ljIHRpbGUgc3Bhd25pbmcnKSkgdGhlbiAKCQlTdXJ2aXZvcnMuU2V0V29ybGRUaWxlU3Bhd25GbihTcGF3bldvcmxkVGlsZXNfQmFzaWMpCgllbmQKCWlmKERlYnVnR3VpLkJ1dHRvbignQmFzaWMgaG9yaXpvbnRhbCBzcGF3bmluZycpKSB0aGVuIAoJCVN1cnZpdm9ycy5TZXRXb3JsZFRpbGVTcGF3bkZuKFNwYXduV29ybGRUaWxlc19CYXNpY0hvcml6b250YWwpCgllbmQKCWlmKERlYnVnR3VpLkJ1dHRvbignRGlzYWJsZSB0aWxlIHNwYXduaW5nJykpIHRoZW4gCgkJU3Vydml2b3JzLlNldFdvcmxkVGlsZVNwYXduRm4obmlsKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ1JlbW92ZSBhbGwgdGlsZXMnKSkgdGhlbiAKCQlTdXJ2aXZvcnMuUmVtb3ZlQWxsVGlsZXMoKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ1JlbG9hZCcpKSB0aGVuIAoJCWxvY2FsIG15U2NyaXB0Q21wID0gV29ybGQuR2V0Q29tcG9uZW50X1NjcmlwdChlbnRpdHkpCgkJaWYobXlTY3JpcHRDbXAgfj0gbmlsKSB0aGVuIAoJCQlteVNjcmlwdENtcDpTZXROZWVkc0NvbXBpbGUoKQoJCWVuZAoJZW5kIAoJRGVidWdHdWkuRW5kV2luZG93KCkKZW5kCgpyZXR1cm4gU3Vydml2b3JzTWFpbg=="
+          },
+          "Type": "Script"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "MainScript"
+              }
+            ]
+          },
+          "Type": "Tags"
+        }
+      ],
+      "ID": 3
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "PlayerComponent"
+          },
+          "Type": "PlayerComponent"
+        },
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [
+              {
+                "ClassName": "CapsuleCollider",
+                "HalfHeight": 1.2000000476837158,
+                "Origin": [
+                  0.0,
+                  4.949999809265137,
+                  0.0
+                ],
+                "PitchYawRoll": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Radius": 3.9000000953674316
+              }
+            ],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": true,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "WizardTemplate"
+              },
+              {
+                "ClassName": "Tag",
+                "String": "PlayerCharacter"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 6
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Camera",
+            "FOV": 47.0,
+            "FarPlane": 474.5,
+            "NearPlane": 0.10000000149011612
+          },
+          "Type": "Camera"
+        },
+        {
+          "Data": {
+            "ClassName": "Script",
+            "ScriptFile": "E:\\Git\\lean\\data\\survivors\\camera_follow_player.lua",
+            "ScriptText": "CmZ1bmN0aW9uIEZvbGxvd1BsYXllcihlbnRpdHkpCglsb2NhbCBteVRyYW5zZm9ybSA9IFdvcmxkLkdldENvbXBvbmVudF9UcmFuc2Zvcm0oZW50aXR5KQoJaWYobXlUcmFuc2Zvcm0gPT0gbmlsKSB0aGVuCgkJcmV0dXJuCgllbmQgCgkKCWxvY2FsIGZvdW5kUGxheWVyID0gV29ybGQuR2V0Rmlyc3RFbnRpdHlXaXRoVGFnKFRhZy5uZXcoIlBsYXllckNoYXJhY3RlciIpKQoJbG9jYWwgcGxheWVyVHJhbnNmb3JtID0gV29ybGQuR2V0Q29tcG9uZW50X1RyYW5zZm9ybShmb3VuZFBsYXllcikKCWlmKGZvdW5kUGxheWVyID09IG5pbCkgdGhlbiAKCQlyZXR1cm4KCWVuZAoJbG9jYWwgcGxheWVyUG9zID0gcGxheWVyVHJhbnNmb3JtOkdldFBvc2l0aW9uKCkKCWxvY2FsIG15UG9zID0gbXlUcmFuc2Zvcm06R2V0UG9zaXRpb24oKQoJbXlUcmFuc2Zvcm06U2V0UG9zaXRpb24ocGxheWVyUG9zLngsIHBsYXllclBvcy55ICsgMTg0LjUsIHBsYXllclBvcy56IC0gMTg0Ljc1KQplbmQKCnJldHVybiBGb2xsb3dQbGF5ZXI="
+          },
+          "Type": "Script"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "PlayerFollowCamera"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -0.3894183337688446,
+              -0.0,
+              0.0,
+              0.9210609793663025
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              184.5,
+              -184.75
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 527
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.10000000149011612,
+            "Attenutation": 1.0,
+            "Brightness": 0.8999999761581421,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              0.8129084706306458,
+              0.9367831349372864,
+              0.9754902124404907
+            ],
+            "Distance": 856.0,
+            "ShadowBias": 0.0020000000949949026,
+            "ShadowMapSize": [
+              2048,
+              2048
+            ],
+            "ShadowOrthoScale": 316.1000061035156,
+            "SpotAngles": [
+              0.5899999737739563,
+              0.7099999785423279
+            ],
+            "Type": 0
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "PlayerFollowCameraSpotlight"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.6534018516540527,
+              -0.2704404592514038,
+              0.27049553394317627,
+              0.6532688140869141
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 527
+            },
+            "Position": [
+              -152.5,
+              -327.5,
+              300.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 11595
+    }
+  ],
+  "EntityCount": 5,
+  "EntityIDs": [
+    0,
+    3,
+    6,
+    527,
+    11595
+  ],
+  "SceneName": "Survivors"
+}

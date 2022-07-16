@@ -1,0 +1,102 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  64.0,
+                  1.0,
+                  64.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\cube2.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              32.0,
+              -0.5,
+              32.0
+            ],
+            "Scale": [
+              64.0,
+              1.0,
+              64.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 61
+    }
+  ],
+  "EntityCount": 1,
+  "EntityIDs": [
+    61
+  ],
+  "SceneName": "BlankTile"
+}

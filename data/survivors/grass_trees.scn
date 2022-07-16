@@ -1,0 +1,887 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  64.0,
+                  1.0,
+                  64.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.8284230828285217,
+                  0.8284313678741455,
+                  0.8284254670143127,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\grass2.jpg"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  36.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  9.999999974752427e-07,
+                  9.999899930335232e-07,
+                  9.999899930335232e-07,
+                  0.25
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "cube2.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              32.0,
+              -0.5,
+              32.0
+            ],
+            "Scale": [
+              64.0,
+              1.0,
+              64.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 4
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 9
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  3.0,
+                  20.0,
+                  3.0
+                ],
+                "Origin": [
+                  0.0,
+                  9.949999809265137,
+                  0.0
+                ]
+              },
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  12.0,
+                  7.349999904632568,
+                  12.0
+                ],
+                "Origin": [
+                  0.0,
+                  17.290000915527344,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  9.999999974752427e-07,
+                  8.480392352794297e-07,
+                  8.480392352794297e-07,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures\\Tree_Bark.jpg"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.16176468133926392,
+                  0.1371827870607376,
+                  0.1371827870607376,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.19509077072143555,
+              0.0,
+              0.9807851910591125
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              27.929428100585938,
+              0.22143469750881195,
+              38.724464416503906
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 9
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 10
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  3.0,
+                  20.0,
+                  3.0
+                ],
+                "Origin": [
+                  0.0,
+                  9.949999809265137,
+                  0.0
+                ]
+              },
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  12.0,
+                  7.349999904632568,
+                  12.0
+                ],
+                "Origin": [
+                  0.0,
+                  17.290000915527344,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  9.999999974752427e-07,
+                  9.264705909117765e-07,
+                  9.264705909117765e-07,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures\\Tree_Bark.jpg"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.2549019455909729,
+                  0.23615914583206177,
+                  0.23615914583206177,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.555571436882019,
+              0.0,
+              0.831468939781189
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              27.929428100585938,
+              0.22143469750881195,
+              20.926048278808594
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 10
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 11
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  2.0,
+                  16.0,
+                  2.0
+                ],
+                "Origin": [
+                  0.0,
+                  6.889999866485596,
+                  0.0
+                ]
+              },
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  8.0,
+                  6.0,
+                  8.0
+                ],
+                "Origin": [
+                  0.0,
+                  12.869999885559082,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  9.999999974752427e-07,
+                  4.901960437564412e-07,
+                  4.902266823592072e-07,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures\\Tree_Bark.jpg"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.19463667273521423,
+                  0.28394055366516113,
+                  0.3970588445663452,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.555571436882019,
+              0.0,
+              0.831468939781189
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              44.76447296142578,
+              0.22143469750881195,
+              40.35840606689453
+            ],
+            "Scale": [
+              3.0,
+              3.0,
+              3.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 11
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  2.0,
+                  16.0,
+                  2.0
+                ],
+                "Origin": [
+                  0.0,
+                  6.889999866485596,
+                  0.0
+                ]
+              },
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  8.0,
+                  6.0,
+                  8.0
+                ],
+                "Origin": [
+                  0.0,
+                  12.869999885559082,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  9.999999974752427e-07,
+                  9.999899930335232e-07,
+                  9.999899930335232e-07,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures\\Tree_Bark.jpg"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.24019604921340942,
+                  0.24019365012645721,
+                  0.24019365012645721,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.501960813999176
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.555571436882019,
+              0.0,
+              0.831468939781189
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              44.76447296142578,
+              0.22143469750881195,
+              28.604307174682617
+            ],
+            "Scale": [
+              3.0,
+              3.0,
+              3.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12
+    }
+  ],
+  "EntityCount": 5,
+  "EntityIDs": [
+    4,
+    9,
+    10,
+    11,
+    12
+  ],
+  "SceneName": "grass_basic"
+}

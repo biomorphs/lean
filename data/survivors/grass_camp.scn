@@ -1,0 +1,478 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 1
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  64.0,
+                  1.0,
+                  64.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\grass2.jpg"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  36.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  9.999999974752427e-07,
+                  9.999899930335232e-07,
+                  9.999899930335232e-07,
+                  0.25
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "cube2.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              32.0,
+              -0.5,
+              32.0
+            ],
+            "Scale": [
+              64.0,
+              1.0,
+              64.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 1
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.0949999988079071,
+            "Attenutation": 3.0,
+            "Brightness": 2.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.29166650772094727,
+              0.0
+            ],
+            "Distance": 39.5,
+            "ShadowBias": 1.0,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              26.75,
+              3.25,
+              25.75
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 2
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\survival-kit-1.0\\Models\\FBX format\\campfire.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\survival-kit-1.0\\Models\\FBX format\\campfire.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.38268429040908813,
+              0.0,
+              0.9238791465759277
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              26.398555755615234,
+              0.0,
+              25.68748664855957
+            ],
+            "Scale": [
+              0.20000000298023224,
+              0.20000000298023224,
+              0.20000000298023224
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 3
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              -0.19509075582027435,
+              0.0,
+              0.9807851910591125
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              30.84610366821289,
+              0.0,
+              35.60689926147461
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 9
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\tent_detailedOpen.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\tent_detailedOpen.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              -0.38268426060676575,
+              0.0,
+              0.9238792061805725
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              38.665279388427734,
+              0.0,
+              20.89250946044922
+            ],
+            "Scale": [
+              1.5,
+              1.5,
+              1.5
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 10
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              -0.0649542361497879,
+              0.0,
+              0.9978882670402527
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              24.190431594848633,
+              0.0,
+              35.40847396850586
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 11
+    }
+  ],
+  "EntityCount": 6,
+  "EntityIDs": [
+    1,
+    2,
+    3,
+    9,
+    10,
+    11
+  ],
+  "SceneName": "grass_basic"
+}

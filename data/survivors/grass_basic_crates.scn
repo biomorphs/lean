@@ -1,0 +1,931 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 1
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  64.0,
+                  1.0,
+                  64.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\grass2.jpg"
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  36.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "Specular": [
+                  9.999999974752427e-07,
+                  9.999899930335232e-07,
+                  9.999899930335232e-07,
+                  0.25
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "cube2.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              32.0,
+              -0.5,
+              32.0
+            ],
+            "Scale": [
+              64.0,
+              1.0,
+              64.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 1
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -5.940022447248339e-07,
+              0.19618315994739532,
+              2.9659333904419327e-06,
+              0.9805672764778137
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              31.80559730529785,
+              2.0999999046325684,
+              21.34412956237793
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 3
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -4.011589727070941e-09,
+              0.001113921171054244,
+              3.0245819289120845e-06,
+              0.9999994039535522
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              36.948219299316406,
+              2.0999999046325684,
+              21.34412956237793
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 9
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -2.2727084569851286e-07,
+              0.07492970675230026,
+              3.016124992427649e-06,
+              0.9971888065338135
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              42.033775329589844,
+              2.0999999046325684,
+              22.939437866210938
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 10
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              3.0131619155326916e-07,
+              -0.0998334214091301,
+              3.0094049634499243e-06,
+              0.9950041770935059
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              42.033775329589844,
+              2.0999999046325684,
+              28.426067352294922
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 11
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -1.518062475724946e-07,
+              0.04997916892170906,
+              3.0208314001356484e-06,
+              0.9987502694129944
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              35.95702362060547,
+              2.0999999046325684,
+              27.202598571777344
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -1.518062475724946e-07,
+              0.04997916892170906,
+              3.0208314001356484e-06,
+              0.9987502694129944
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              30.266395568847656,
+              2.0999999046325684,
+              27.202598571777344
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 13
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -1.518062475724946e-07,
+              0.04997916892170906,
+              3.0208314001356484e-06,
+              0.9987502694129944
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              32.84893798828125,
+              6.420029163360596,
+              24.822032928466797
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 14
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [
+              {
+                "ClassName": "BoxCollider",
+                "Dimensions": [
+                  4.0,
+                  4.0,
+                  4.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -7.38213088880002e-07,
+              0.24386577308177948,
+              2.9334205464692786e-06,
+              0.9698089957237244
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              39.79344177246094,
+              6.420029163360596,
+              24.822032928466797
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 15
+    }
+  ],
+  "EntityCount": 9,
+  "EntityIDs": [
+    1,
+    3,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "SceneName": "grass_basic"
+}

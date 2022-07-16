@@ -1,0 +1,359 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "EnvironmentSettings",
+            "ClearColour": [
+              0.034313738346099854,
+              0.034313395619392395,
+              0.034313395619392395
+            ],
+            "Gravity": [
+              0.0,
+              -9.8100004196167,
+              0.0
+            ]
+          },
+          "Type": "EnvironmentSettings"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Global Settings"
+              }
+            ]
+          },
+          "Type": "Tags"
+        }
+      ],
+      "ID": 0
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.03700000047683716,
+            "Attenutation": 1.0,
+            "Brightness": 1.0,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              0.9117646813392639,
+              0.8883535861968994,
+              0.822376012802124
+            ],
+            "Distance": 720.0,
+            "ShadowBias": 0.0010000000474974513,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 608.7999877929688,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 0
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Sun Light"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.14452651143074036,
+              -0.014171004295349121,
+              -0.09654853492975235,
+              0.9846774339675903
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              158.5,
+              353.0,
+              232.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 2
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Exterior\\exterior.obj"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Exterior\\exterior.obj"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              0.10000000149011612,
+              0.10000000149011612,
+              0.10000000149011612
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 3
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Interior\\interior.obj"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Interior\\interior.obj"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              0.10000000149011612,
+              0.10000000149011612,
+              0.10000000149011612
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 4
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.23000000417232513,
+            "Attenutation": 2.0,
+            "Brightness": 1.0,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.6427106857299805,
+              0.24019604921340942
+            ],
+            "Distance": 86.0999984741211,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              52.5,
+              29.25,
+              -5.75
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 5
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 1.0,
+            "Brightness": 1.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              0.0497404970228672,
+              0.06326034665107727,
+              0.08823531866073608
+            ],
+            "Distance": 566.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 0
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              -0.3625595271587372,
+              0.543296217918396,
+              0.16713270545005798,
+              0.7385435104370117
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              347.5,
+              -497.5
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 6
+    }
+  ],
+  "EntityCount": 6,
+  "EntityIDs": [
+    0,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "SceneName": "test"
+}

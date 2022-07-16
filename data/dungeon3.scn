@@ -1,0 +1,1174 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "EnvironmentSettings",
+            "ClearColour": [
+              0.0005046119331382215,
+              0.002953680930659175,
+              0.0049019455909729
+            ],
+            "Gravity": [
+              0.0,
+              -9.8100004196167,
+              0.0
+            ]
+          },
+          "Type": "EnvironmentSettings"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Global Settings"
+              }
+            ]
+          },
+          "Type": "Tags"
+        }
+      ],
+      "ID": 0
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.050999999046325684,
+            "Attenutation": 1.0,
+            "Brightness": 1.0,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              0.13235294818878174,
+              0.07411458343267441,
+              0.06163495033979416
+            ],
+            "Distance": 512.0,
+            "ShadowBias": 0.003000000026077032,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 339.6000061035156,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 0
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Sun Light"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.5758082270622253,
+              -0.05645864084362984,
+              -0.07959192246198654,
+              0.8117403388023376
+            ],
+            "Position": [
+              72.5,
+              171.5,
+              360.5
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 1
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_rogue.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_rogue.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              38.5,
+              0.0,
+              39.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 2
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_barbarian.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_barbarian.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.2503800094127655,
+              0.0,
+              0.9681476354598999
+            ],
+            "Position": [
+              -10.25,
+              0.0,
+              86.75
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 3
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              0.0,
+              -32.25,
+              0.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 4
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              192.0,
+              -32.25,
+              0.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 5
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.7071068286895752,
+              0.0,
+              0.7071068286895752
+            ],
+            "Position": [
+              192.0,
+              -32.25,
+              192.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 6
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              0.0,
+              -32.25,
+              192.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 7
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.23514211177825928,
+              0.0,
+              0.9719610214233398
+            ],
+            "Position": [
+              88.75,
+              16.5,
+              0.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 8
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.08628654479980469,
+              0.0,
+              0.9962703585624695
+            ],
+            "Position": [
+              88.75,
+              16.5,
+              52.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 9
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              -0.1753668487071991,
+              0.0,
+              0.9845031499862671
+            ],
+            "Position": [
+              141.25,
+              16.5,
+              52.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 10
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              -0.34775403141975403,
+              0.0,
+              0.9375858306884766
+            ],
+            "Position": [
+              141.25,
+              16.5,
+              4.25
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 11
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.1192704439163208,
+              0.0,
+              0.992861807346344
+            ],
+            "Position": [
+              194.0,
+              16.5,
+              4.25
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.08280820399522781,
+              0.0,
+              0.9965655207633972
+            ],
+            "Position": [
+              194.0,
+              16.5,
+              53.5
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 13
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              -22.0,
+              0.0,
+              7.0
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 14
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\sword_rare.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\sword_rare.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              89.5,
+              12.0,
+              176.75
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 15
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 3.0,
+            "Brightness": 8.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              0.0,
+              0.6470589637756348,
+              1.0
+            ],
+            "Distance": 128.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              88.75,
+              64.75,
+              171.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 16
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 3.0,
+            "Brightness": 8.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              0.0,
+              0.5588235855102539,
+              1.0
+            ],
+            "Distance": 128.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              88.75,
+              64.75,
+              182.75
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 17
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.7071068286895752,
+              0.0,
+              0.7071068286895752
+            ],
+            "Position": [
+              7.5,
+              88.75,
+              5.5
+            ],
+            "Scale": [
+              32.0,
+              32.0,
+              32.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 18
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 4.300000190734863,
+            "Brightness": 2.0,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.3214285373687744,
+              0.0
+            ],
+            "Distance": 360.70001220703125,
+            "ShadowBias": 1.0,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Position": [
+              33.25,
+              132.0,
+              6.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 19
+    }
+  ],
+  "EntityCount": 20,
+  "EntityIDs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "SceneName": "aaa"
+}
