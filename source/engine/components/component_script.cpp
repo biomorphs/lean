@@ -13,14 +13,17 @@ SERIALISE_BEGIN(Script)
 SERIALISE_PROPERTY("ScriptFile", m_scriptFile)
 if (op == Engine::SerialiseType::Read)
 {
-	std::string encoded;
-	SERIALISE_PROPERTY("ScriptText", encoded);
-	m_scriptText = base64_decode(encoded);
+	if (m_scriptFile.length() == 0)
+	{
+		std::string encoded;
+		SERIALISE_PROPERTY("ScriptText", encoded);
+		m_scriptText = base64_decode(encoded);
+	}
 	m_needsCompile = true;
 }
 else
 {
-	std::string encoded = base64_encode(m_scriptText);
+	std::string encoded = m_scriptFile.length() > 0 ? "" : base64_encode(m_scriptText);
 	SERIALISE_PROPERTY("ScriptText", encoded);
 }
 SERIALISE_END()

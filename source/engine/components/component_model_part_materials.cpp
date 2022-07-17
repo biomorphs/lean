@@ -50,11 +50,18 @@ COMPONENT_INSPECTOR_IMPL(ModelPartMaterials, Engine::DebugGuiSystem& gui)
 			m.Materials().clear();
 		}
 		auto& textures = *Engine::GetSystem<Engine::TextureManager>("Textures");
+		int partIndex = 0;
 		for (auto& p : m.m_partMaterials)
 		{
-			p.m_diffuseOpacity = gui.ColourEdit("Diffuse/Opacity", p.m_diffuseOpacity);
-			p.m_specular = gui.ColourEdit("Specular Colour/Strength", p.m_specular);
-			p.m_shininess.x = gui.DragFloat("Shininess", p.m_shininess.x, 0.01f, 0.0f);
+			char text[1024];
+			auto imguiLabel = [&text , &partIndex](const char* lbl) {
+				sprintf_s(text, "%s##%d", lbl, partIndex);
+				return text;
+			};
+			
+			p.m_diffuseOpacity = gui.ColourEdit(imguiLabel("Diffuse/Opacity"), p.m_diffuseOpacity);
+			p.m_specular = gui.ColourEdit(imguiLabel("Specular Colour/Strength"), p.m_specular);
+			p.m_shininess.x = gui.DragFloat(imguiLabel("Shininess"), p.m_shininess.x, 0.01f, 0.0f);
 
 			auto doTexture = [&](std::string name, Engine::TextureHandle& t)
 			{
@@ -73,9 +80,10 @@ COMPONENT_INSPECTOR_IMPL(ModelPartMaterials, Engine::DebugGuiSystem& gui)
 					gui.Image(*theTexture, { 256,256 });
 				}
 			};
-			doTexture("Diffuse Texture", p.m_diffuseTexture);
-			doTexture("Normals Texture", p.m_normalsTexture);
-			doTexture("Specular Texture", p.m_specularTexture);
+			doTexture(imguiLabel("Diffuse Texture"), p.m_diffuseTexture);
+			doTexture(imguiLabel("Normals Texture"), p.m_normalsTexture);
+			doTexture(imguiLabel("Specular Texture"), p.m_specularTexture);
+			++partIndex;
 		}
 	};
 	return fn;

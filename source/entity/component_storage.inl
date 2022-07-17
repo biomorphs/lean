@@ -6,6 +6,30 @@
 constexpr int c_maxComponents = 1024 * 64;
 
 template<class ComponentType>
+uint64_t LinearComponentStorage<ComponentType>::GetActiveCount()
+{
+	return m_components.size();
+}
+
+template<class ComponentType>
+uint64_t LinearComponentStorage<ComponentType>::GetActiveSizeBytes()
+{
+	uint64_t totalSize = m_owners.size() * sizeof(EntityHandle);
+	totalSize += m_components.size() * sizeof(ComponentType);
+	totalSize += m_entityToComponent.calcNumBytesInfo(m_entityToComponent.size());
+	return totalSize;
+}
+
+template<class ComponentType>
+uint64_t  LinearComponentStorage<ComponentType>::GetTotalSizeBytes()
+{
+	uint64_t totalSize = m_owners.capacity() * sizeof(EntityHandle);
+	totalSize += m_components.capacity() * sizeof(ComponentType);
+	totalSize += m_entityToComponent.calcNumBytesTotal(m_entityToComponent.size());
+	return totalSize;
+}
+
+template<class ComponentType>
 LinearComponentStorage<ComponentType>::LinearComponentStorage()
 {
 	m_owners.reserve(c_maxComponents);

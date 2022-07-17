@@ -16,6 +16,9 @@ public:
 	virtual ~ComponentStorage() = default;
 	virtual SERIALISED_CLASS() {}
 
+	virtual uint64_t GetActiveCount() = 0;
+	virtual uint64_t GetActiveSizeBytes() = 0;
+	virtual uint64_t GetTotalSizeBytes() = 0;
 	virtual uint64_t GetGeneration() const = 0;		// this is used to ensure pointers cached can be quickly tested for validity
 	virtual void Serialise(EntityHandle owner, nlohmann::json& json, Engine::SerialiseType op) = 0;
 	virtual void Create(EntityHandle owner) = 0;
@@ -35,6 +38,9 @@ public:
 	void ForEach(std::function<void(ComponentType&, EntityHandle)> fn);
 	void ForEachAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& js, int32_t componentsPerJob);
 
+	virtual uint64_t GetActiveCount();
+	virtual uint64_t GetActiveSizeBytes();
+	virtual uint64_t GetTotalSizeBytes();
 	virtual uint64_t GetGeneration() const { return m_generation; }
 	virtual void Serialise(EntityHandle owner, nlohmann::json& json, Engine::SerialiseType op);
 	virtual void Create(EntityHandle owner);

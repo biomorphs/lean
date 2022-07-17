@@ -40,10 +40,13 @@ public:
 	EntityHandle GetFirstEntityWithTag(Engine::Tag tag);
 
 private:
+	void ShowStats();
+
 	std::map<ComponentType, InspectorFn> m_componentInspectors;
 	std::unique_ptr<World> m_world;
 	Engine::ScriptSystem* m_scriptSystem;
 	Engine::DebugGuiSystem* m_debugGui;
+	bool m_showStats = false;
 };
 
 template<class ComponentType>

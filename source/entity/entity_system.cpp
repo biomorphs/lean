@@ -301,8 +301,50 @@ bool EntitySystem::Initialise()
 
 	auto& menu = g_entityMenu.AddSubmenu(ICON_FK_EYE " Entities");
 	menu.AddItem("List", []() {	g_showWindow = !g_showWindow; });
+	menu.AddItem("Stats", [&]() { m_showStats = !m_showStats; });
 
 	return true;
+}
+
+void EntitySystem::ShowStats()
+{
+	uint32_t entityCount = m_world->AllEntities().size();
+	auto componentTypes = m_world->GetAllComponentTypes();
+	if (m_debugGui->BeginWindow(m_showStats, ""))
+	{
+		char text[1024];
+		sprintf_s(text, "Active Entities: %d", entityCount);
+		m_debugGui->Text(text);
+		sprintf_s(text, "Component Types: %zd", componentTypes.size());
+		m_debugGui->Text(text);
+		uint64_t totalComponents = 0;
+		uint64_t totalMemoryUsed = 0;
+		uint64_t activeMemoryUsed = 0;
+		auto InMb = [](uint64_t b) {
+			return (float)b / (1024.0f * 1024.0f);
+		};
+		if (m_debugGui->BeginListbox("", { 600, 300 }))
+		{
+			for (const auto& cmpType : componentTypes)
+			{
+				auto storage = m_world->GetStorage(cmpType);
+				totalComponents += storage->GetActiveCount();
+				activeMemoryUsed += storage->GetActiveSizeBytes();
+				totalMemoryUsed += storage->GetTotalSizeBytes();
+				sprintf_s(text, "%s: %zd active (%fMb used, %fMb total)", 
+					cmpType.c_str(), storage->GetActiveCount(), InMb(storage->GetActiveSizeBytes()), InMb(storage->GetTotalSizeBytes()));
+				m_debugGui->Text(text);
+			}
+			m_debugGui->EndListbox();
+		}
+		sprintf_s(text, "Active Components: %zd", totalComponents);
+		m_debugGui->Text(text);
+		sprintf_s(text, "Active memory used: %fMb", InMb(activeMemoryUsed));
+		m_debugGui->Text(text);
+		sprintf_s(text, "Total memory: %fMb", InMb(totalMemoryUsed));
+		m_debugGui->Text(text);
+		m_debugGui->EndWindow();
+	}
 }
 
 bool EntitySystem::Tick(float timeDelta)
@@ -318,6 +360,11 @@ bool EntitySystem::Tick(float timeDelta)
 		}
 	}
 	m_debugGui->MainMenuBar(g_entityMenu);
+
+	if (m_showStats)
+	{
+		ShowStats();
+	}
 
 	m_world->CollectGarbage();
 	return true;

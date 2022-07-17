@@ -50,6 +50,7 @@ public:
 	void RemoveComponent(EntityHandle owner);
 
 	void CollectGarbage();					// destroy all entities pending deletion
+	int GetPendingDeleteCount() { return m_pendingDelete.size(); }
 
 	template<class Cmp1, class Cmp2>
 	class EntityIterator

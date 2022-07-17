@@ -107,7 +107,7 @@ namespace Engine
 					{
 						// we were already overlapping something, try to push ourself up (but don't touch velocity!)
 						//newPosition.y += -hitDepth;
-						newPosition = newPosition  + -hitDepth * hitNormal;
+						newPosition.y = newPosition.y  + -hitDepth * hitNormal.y;
 						capsuleColour = { 1.0f,0.0f,0.0f,1.0f };
 					}
 					else
