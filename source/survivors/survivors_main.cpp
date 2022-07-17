@@ -15,6 +15,7 @@ namespace Survivors
 {
 	void SurvivorsMain::StartGame()
 	{
+		SDE_PROF_EVENT();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
 		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
@@ -33,6 +34,7 @@ namespace Survivors
 
 	void SurvivorsMain::StopGame()
 	{
+		SDE_PROF_EVENT();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
 		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
@@ -99,17 +101,32 @@ namespace Survivors
 		{
 			auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
 			auto playerTransform = world->GetComponent<Transform>(playerEntity);
+			std::vector<EntityHandle> monstersToDespawn;
 			if (playerTransform != nullptr)
 			{
 				const glm::vec3 playerPos = playerTransform->GetPosition();
 				auto monsterIterator = world->MakeIterator<MonsterComponent, Transform>();
 				monsterIterator.ForEach([&](MonsterComponent& cc, Transform& t, EntityHandle e) {
 					auto posToPlayer = playerPos - t.GetPosition();
-					auto lookTransform = glm::quatLookAt(posToPlayer, glm::vec3(0.0f,1.0f,0.0f));
-					lookTransform = lookTransform * glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f,1.0f,0.0f));
-					t.SetOrientation(lookTransform);
-					t.SetPosition(t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * cc.GetSpeed());
+					posToPlayer.y = 0.0f;	// ignore y component for now
+					float distanceToPlayer = glm::length(posToPlayer);
+					if (distanceToPlayer >= cc.GetDespawnRadius())	// despawn if too far away
+					{
+						monstersToDespawn.emplace_back(e);
+						return;
+					}
+					if (distanceToPlayer <= cc.GetVisionRadius() && distanceToPlayer > 0.1f)	// move towards player if in vision range
+					{
+						auto lookTransform = glm::quatLookAt(posToPlayer, glm::vec3(0.0f, 1.0f, 0.0f));
+						lookTransform = lookTransform * glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+						t.SetOrientation(glm::normalize(lookTransform));
+						t.SetPosition(t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * cc.GetSpeed());
+					}
 				});
+				for (auto it : monstersToDespawn)
+				{
+					entities->GetWorld()->RemoveEntity(it);
+				}
 			}
 		}
 
@@ -130,6 +147,7 @@ namespace Survivors
 
 	void SurvivorsMain::Shutdown()
 	{
+		SDE_PROF_EVENT();
 		m_worldTileSpawnFn = nullptr;
 	}
 }

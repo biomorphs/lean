@@ -4,11 +4,19 @@
 #include "engine/debug_gui_system.h"
 
 COMPONENT_SCRIPTS(MonsterComponent,
-	"GetCurrentHealth", &MonsterComponent::GetCurrentHealth
+	"GetCurrentHealth", &MonsterComponent::GetCurrentHealth,
+	"GetSpeed", &MonsterComponent::GetSpeed,
+	"SetSpeed", &MonsterComponent::SetSpeed,
+	"GetVisionRadius", &MonsterComponent::GetVisionRadius,
+	"SetVisionRadius", &MonsterComponent::SetVisionRadius,
+	"GetDespawnRadius", &MonsterComponent::GetDespawnRadius,
+	"SetDespawnRadius", &MonsterComponent::SetDespawnRadius
 )
 SERIALISE_BEGIN(MonsterComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
 SERIALISE_PROPERTY("Speed", m_speed)
+SERIALISE_PROPERTY("VisionRadius", m_visionRadius)
+SERIALISE_PROPERTY("DespawnRadius", m_despawnRadius)
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(MonsterComponent)
@@ -21,6 +29,8 @@ COMPONENT_INSPECTOR_IMPL(MonsterComponent)
 		sprintf_s(text, "Current HP: %d", a.GetCurrentHealth());
 		gui->Text(text);
 		i.Inspect("Move Speed", a.GetSpeed(), InspectFn(e, &MonsterComponent::SetSpeed));
+		i.Inspect("Vision Radius", a.GetVisionRadius(), InspectFn(e, &MonsterComponent::SetVisionRadius));
+		i.Inspect("Despawn Radius", a.GetDespawnRadius(), InspectFn(e, &MonsterComponent::SetDespawnRadius));
 	};
 	return fn;
 }

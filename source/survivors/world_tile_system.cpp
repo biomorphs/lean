@@ -41,11 +41,13 @@ namespace Survivors
 
 	void WorldTileSystem::Shutdown()
 	{
+		SDE_PROF_EVENT();
 		m_loadedTileData.clear();
 	}
 
 	void WorldTileSystem::DestroyAll()
 	{
+		SDE_PROF_EVENT();
 		while (m_activeTiles.size() > 0)
 		{
 			DestroyTileAt(m_activeTiles.begin()->second.m_origin);

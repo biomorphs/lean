@@ -16,7 +16,7 @@ namespace Survivors
 	private:
 		void StartGame();
 		void StopGame();
-		int m_tileLoadRadius = 7;
+		int m_tileLoadRadius = 16;
 		std::function<std::string(glm::ivec2)> m_worldTileSpawnFn;
 		bool m_enemiesEnabled = false;
 	};
