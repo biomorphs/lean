@@ -305,6 +305,8 @@ set(SURVIVORS_SOURCES
 	source/survivors/survivors_main.cpp
 	source/survivors/player_component.h
 	source/survivors/player_component.cpp
+	source/survivors/monster_component.h
+	source/survivors/monster_component.cpp
 	source/survivors/world_tile_system.h
 	source/survivors/world_tile_system.cpp
 	source/survivors/world_tile_component.h
