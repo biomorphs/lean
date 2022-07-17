@@ -52,10 +52,12 @@ namespace Engine
 		{
 			gui.BeginWindow(s_showWindow, "ModelManager");
 			char text[1024] = { '\0' };
+			int labelIndex = 0;
 			int32_t inFlight = m_inFlightModels;
 			sprintf_s(text, "Loading: %d", inFlight);
 			gui.Text(text);
 			gui.Separator();
+			auto& textures = *Engine::GetSystem<Engine::TextureManager>("Textures");
 			if (gui.TreeNode("All Models", true))
 			{
 				for (int t = 0; t < m_models.size(); ++t)
@@ -63,64 +65,46 @@ namespace Engine
 					sprintf_s(text, "%s", m_models[t].m_name.c_str());
 					if (m_models[t].m_renderModel.get() && gui.TreeNode(text))
 					{
-						if (gui.TreeNode("Parts"))
+						auto imguiLabel = [&](const char* lbl) {
+							sprintf_s(text, "%s##%d", lbl, labelIndex++);
+							return text;
+						};
+						auto doTexture = [&](std::string name, Engine::TextureHandle& t)
 						{
-							auto& parts = m_models[t].m_renderModel->MeshParts();
-							for (auto& p : parts)
+							auto theTexture = textures.GetTexture(t);
+							auto path = textures.GetTexturePath(t);
+							if (gui.Button(path.length() > 0 ? path.c_str() : name.c_str()))
 							{
-								sprintf_s(text, "%d: (%3.1f,%3.1f,%3.1f) - (%3.1f,%3.1f,%3.1f)", (int)(&p - parts.data()),
-									p.m_boundsMin.x, p.m_boundsMin.y, p.m_boundsMin.z,
-									p.m_boundsMax.x, p.m_boundsMax.y, p.m_boundsMax.z);
-								if (gui.TreeNode(text))
+								std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
+								if (newFile != "")
 								{
-									auto& material = p.m_material;
-									auto& uniforms = material.GetUniforms();
-									auto& samplers = material.GetSamplers();
-									for (auto& v : uniforms.FloatValues())
-									{
-										sprintf_s(text, "%s", v.second.m_name.c_str());
-										v.second.m_value = gui.DragFloat(text, v.second.m_value);
-									}
-									for (auto& v : uniforms.Vec4Values())
-									{
-										sprintf_s(text, "%s", v.second.m_name.c_str());
-										v.second.m_value = gui.DragVector(text, v.second.m_value);
-									}
-									for (auto& v : uniforms.IntValues())
-									{
-										sprintf_s(text, "%s", v.second.m_name.c_str());
-										v.second.m_value = gui.DragInt(text, v.second.m_value);
-									}
-									for (auto& t : samplers)
-									{
-										sprintf_s(text, "%s", t.second.m_name.c_str());
-										if (t.second.m_handle != 0 && gui.TreeNode(text))
-										{
-											auto texture = tm.GetTexture({ t.second.m_handle });
-											auto path = tm.GetTexturePath({ t.second.m_handle });
-											if (texture)
-											{
-												gui.Image(*texture, { 256,256 });
-											}
-											sprintf_s(text, "%s", t.second.m_name.c_str());
-											if (gui.Button(text))
-											{
-												std::string newFile = Engine::ShowFilePicker("Select Texture", "", "JPG (.jpg)\0*.jpg\0PNG (.png)\0*.png\0BMP (.bmp)\0*.bmp\0");
-												if (newFile != "")
-												{
-													auto loadedTexture = tm.LoadTexture(newFile.c_str());
-													t.second.m_handle = loadedTexture.m_index;
-												}
-											}
-											gui.TreePop();
-										}
-									}
-									gui.TreePop();
+									t = textures.LoadTexture(newFile.c_str());
 								}
 							}
-							gui.TreePop();
+							if (theTexture)
+							{
+								gui.Image(*theTexture, { 256,256 });
+							}
+						};
+						auto& parts = m_models[t].m_renderModel->MeshParts();
+						for (auto& p : parts)
+						{
+							sprintf_s(text, "%d: (%3.1f,%3.1f,%3.1f) - (%3.1f,%3.1f,%3.1f)", (int)(&p - parts.data()),
+								p.m_boundsMin.x, p.m_boundsMin.y, p.m_boundsMin.z,
+								p.m_boundsMax.x, p.m_boundsMax.y, p.m_boundsMax.z);
+							if (gui.TreeNode(text))
+							{
+								p.m_castsShadows = gui.Checkbox(imguiLabel("Cast Shadows"), p.m_castsShadows);
+								p.m_isTransparent = gui.Checkbox(imguiLabel("Transparent"), p.m_isTransparent);
+								p.m_drawData.m_diffuseOpacity = gui.ColourEdit(imguiLabel("Diffuse/Opacity"), p.m_drawData.m_diffuseOpacity);
+								p.m_drawData.m_specular = gui.ColourEdit(imguiLabel("Specular"), p.m_drawData.m_specular);
+								p.m_drawData.m_shininess.x = gui.DragFloat(imguiLabel("Shininess"), p.m_drawData.m_shininess.x);
+								doTexture(imguiLabel("Diffuse Texture"), p.m_drawData.m_diffuseTexture);
+								doTexture(imguiLabel("Normals Texture"), p.m_drawData.m_diffuseTexture);
+								doTexture(imguiLabel("Specular Texture"), p.m_drawData.m_diffuseTexture);
+								gui.TreePop();
+							}
 						}
-
 						gui.TreePop();
 					}
 				}
@@ -174,7 +158,6 @@ namespace Engine
 			std::string specPath = mat.SpecularMaps().size() > 0 ? mat.SpecularMaps()[0] : "";
 
 			auto packedSpecular = glm::vec4(mat.SpecularColour(), mat.ShininessStrength());
-
 			auto& dd = renderModel.MeshParts()[p].m_drawData;
 			dd.m_diffuseOpacity = glm::vec4(mat.DiffuseColour(), mat.Opacity());
 			dd.m_specular = packedSpecular;
@@ -182,6 +165,8 @@ namespace Engine
 			dd.m_diffuseTexture = tm.LoadTexture(diffusePath.c_str());
 			dd.m_normalsTexture = tm.LoadTexture(normalPath.c_str());
 			dd.m_specularTexture = tm.LoadTexture(specPath.c_str());
+			renderModel.MeshParts()[p].m_castsShadows = true;
+			renderModel.MeshParts()[p].m_isTransparent = mat.Opacity() < 1.0f;
 		}
 	}
 
