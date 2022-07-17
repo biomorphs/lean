@@ -12,6 +12,7 @@ namespace Core
 			: m_name(name)
 			, m_parent(parent)
 			, m_workerIndex(workerIndex)
+			, m_hasInitialised(false)
 		{
 		}
 		~PooledThread()
@@ -27,6 +28,7 @@ namespace Core
 				{
 					m_parent->m_initFn(m_parent->m_threadStartIndex + m_workerIndex);
 				}
+				m_hasInitialised = true;
 				while (m_parent->m_stopRequested == 0)
 				{
 					m_parent->m_fn(m_parent->m_threadStartIndex + m_workerIndex);
@@ -40,9 +42,14 @@ namespace Core
 			SDE_PROF_STALL("PooledThread::WaitForFinish");
 			m_thread.WaitForFinish();
 		}
+		bool HasInitialised()
+		{
+			return m_hasInitialised;
+		}
 	private:
 		Thread m_thread;
 		ThreadPool* m_parent;
+		std::atomic<bool> m_hasInitialised;
 		std::string m_name;
 		uint32_t m_workerIndex;
 	};
@@ -73,6 +80,11 @@ namespace Core
 			auto thisThread = std::make_unique<PooledThread>(threadNameBuffer, this, t);
 			assert(thisThread);
 			thisThread->Start();
+			while (!thisThread->HasInitialised())
+			{
+				SDE_PROF_STALL("Wait for thread init");
+				Core::Thread::Sleep(0);
+			}
 			m_threads.push_back(std::move(thisThread));
 		}
 	}

@@ -263,6 +263,16 @@ EntityHandle EntitySystem::GetFirstEntityWithTag(Engine::Tag tag)
 	return result;
 }
 
+EntityHandle EntitySystem::CloneEntity(EntityHandle src)
+{
+	std::vector<uint32_t> srcIDs;
+	srcIDs.push_back(src.GetID());
+	nlohmann::json srcJson = SerialiseEntities(srcIDs);
+	std::vector<uint32_t> newIDs = SerialiseEntities(srcJson);
+	assert(newIDs.size() == 1);
+	return newIDs[0];
+}
+
 bool EntitySystem::PreInit()
 {
 	SDE_PROF_EVENT();
@@ -290,6 +300,9 @@ bool EntitySystem::PreInit()
 	world["RemoveEntity"] = [this](EntityHandle e) { return m_world->RemoveEntity(e); };
 	world["GetFirstEntityWithTag"] = [this](Engine::Tag t) {
 		return GetFirstEntityWithTag(t);
+	};
+	world["CloneEntity"] = [this](EntityHandle e) {
+		return CloneEntity(e);
 	};
 
 	return true;

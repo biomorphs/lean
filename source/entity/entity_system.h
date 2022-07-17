@@ -33,6 +33,8 @@ public:
 	World* GetWorld() { return m_world.get(); }
 	void NewWorld();
 
+	EntityHandle CloneEntity(EntityHandle src);
+
 	nlohmann::json SerialiseEntities(const std::vector<uint32_t>& entityIDs);
 	std::vector<uint32_t> SerialiseEntities(nlohmann::json& data, bool restoreIDsFromData=false);
 

@@ -253,19 +253,26 @@ namespace Engine
 		return less > greater;
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const glm::vec3& aabbMin, const glm::vec3& aabbMax,
+	inline bool SortKeyEqual(__m128i a, __m128i b)
+	{
+		__m128i compared = _mm_cmpeq_epi8(a, b);     
+		uint16_t bitMask = _mm_movemask_epi8(compared);
+		return bitMask == 0xffff;
+	}
+
+	inline void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const glm::vec3& aabbMin, const glm::vec3& aabbMax,
 		const struct ShaderHandle& shader, const Render::VertexArray* va, const Render::RenderBuffer* ib,
 		const Render::MeshChunk* chunks, uint32_t chunkCount, const PerInstanceData& pid)
 	{
 		const auto foundShader = m_shaderManager->GetShader(shader);
 		const uint64_t dataIndex = list.m_entries.size();
 		list.m_transformBounds.emplace_back(InstanceList::TransformBounds{trns, aabbMin, aabbMax});
-		list.m_drawData.emplace_back(InstanceList::DrawData{ foundShader, va, ib, nullptr, nullptr, chunks, chunkCount});
+		list.m_drawData.push_back({ foundShader, va, ib, nullptr, nullptr, chunks, chunkCount});
 		list.m_perInstanceData.emplace_back(pid);
 		list.m_entries.emplace_back(InstanceList::Entry{sortKey, dataIndex});
 	}
 
-	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, 
+	inline void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, 
 		const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
 		const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
@@ -332,15 +339,11 @@ namespace Engine
 			ShaderHandle shadowShader = m_shaderManager->GetShadowsShader(shader);
 			const Render::VertexArray* va = m_modelManager->GetVertexArray();
 			const Render::RenderBuffer* ib = m_modelManager->GetIndexBuffer();
-			const auto partCount = theModel->MeshParts().size();
-			for (auto partIndex = 0; partIndex < partCount; ++partIndex)
+			const int partCount = theModel->MeshParts().size();
+			for (int partIndex = 0; partIndex < partCount; ++partIndex)
 			{
 				const auto& meshPart = theModel->MeshParts()[partIndex];
-				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
-				glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
-
 				const Model::MeshPart::DrawData& partDrawData = overrideCount > partIndex ? partOverride[partIndex] : meshPart.m_drawData;
-
 				auto diffuse = m_textureManager->GetTexture(partDrawData.m_diffuseTexture);
 				auto normal = m_textureManager->GetTexture(partDrawData.m_normalsTexture);
 				auto specular = m_textureManager->GetTexture(partDrawData.m_specularTexture);
@@ -353,6 +356,8 @@ namespace Engine
 				pid.m_normalsTexture = normal ? normal->GetResidentHandle() : m_defaultNormalResidentHandle;
 				pid.m_specularTexture = specular ? specular->GetResidentHandle() : m_defaultSpecularResidentHandle;
 
+				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
+				glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
 				if (meshPart.m_material.GetCastsShadows() && shadowShader.m_index != (uint32_t)-1)
 				{
 					auto sortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), nullptr);
@@ -923,7 +928,18 @@ namespace Engine
 					{
 						std::sort(result.begin(), result.begin() + jobData->m_count,
 							[](const InstanceList::Entry& s1, const InstanceList::Entry& s2) {
-								return SortKeyLessThan(s1.m_sortKey, s2.m_sortKey);
+								if (SortKeyLessThan(s1.m_sortKey, s2.m_sortKey))
+								{
+									return true;
+								}
+								else if (SortKeyEqual(s1.m_sortKey, s2.m_sortKey))
+								{
+									return s1.m_dataIndex < s2.m_dataIndex;
+								}
+								else
+								{
+									return false;
+								}
 							});
 					}
 					result.resize(jobData->m_count);

@@ -198,7 +198,7 @@ namespace Engine
 		physx::PxCudaContextManagerDesc cudaContextManagerDesc;
 		m_cudaManager = PxCreateCudaContextManager(*m_foundation.Get(), cudaContextManagerDesc, PxGetProfilerCallback());
 
-		const bool c_useCUDA = false;
+		const bool c_useCUDA = true;
 		g_dispatcher.m_jobs = m_jobSystem;
 		physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
@@ -259,6 +259,8 @@ namespace Engine
 
 	void PhysicsSystem::RebuildActor(Physics& p, EntityHandle& e)
 	{
+		SDE_PROF_EVENT();
+
 		auto transformComponent = m_entitySystem->GetWorld()->GetComponent<Transform>(e);
 		if (!transformComponent)
 		{
@@ -328,6 +330,8 @@ namespace Engine
 
 	EntityHandle PhysicsSystem::Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal)
 	{
+		SDE_PROF_EVENT();
+
 		const auto origin = physx::PxVec3(start.x, start.y, start.z);
 		const auto dir = glm::normalize(end - start);
 		const auto pxDir = physx::PxVec3(dir.x, dir.y, dir.z);
@@ -351,6 +355,8 @@ namespace Engine
 	bool PhysicsSystem::SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance,
 		glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity, EntityHandle ignoreEntity)
 	{
+		SDE_PROF_EVENT();
+
 		physx::PxCapsuleGeometry capsuleGeom(radius, halfHeight);
 		physx::PxVec3 origin(pos.x, pos.y, pos.z);
 		physx::PxVec3 unitDir(direction.x, direction.y, direction.z);
@@ -361,11 +367,10 @@ namespace Engine
 
 		// passing an array allows us to get a list of everything touched
 		// we don't get any blocking touches, so we need to figure out the closes hit ourselves
-		physx::PxSweepHit sweepResults[128];
-		physx::PxSweepBuffer results(sweepResults, 128);
+		static physx::PxSweepHit sweepResults[4];
+		physx::PxSweepBuffer results(sweepResults, 4);
 		auto flags = physx::PxHitFlag::eDEFAULT | physx::PxHitFlag::eMTD;	// mtd = depth of penetration
 		bool hitSomething = m_scene->sweep(capsuleGeom, capsulePose, unitDir, distance, results, flags);
-		
 		if (hitSomething && results.getNbAnyHits() > 0)
 		{
 			physx::PxVec3 hitPosPx;
@@ -410,6 +415,8 @@ namespace Engine
 
 	void PhysicsSystem::UpdateGui()
 	{
+		SDE_PROF_EVENT();
+
 		Engine::MenuBar mainMenu;
 		auto& physicsMenu = mainMenu.AddSubmenu(ICON_FK_CUBE " Physics");
 		physicsMenu.AddItem(m_simEnabled ? "Disable Simulation" : "Enable Simulation", [this]() {
