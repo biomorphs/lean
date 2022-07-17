@@ -39,7 +39,7 @@
           "Data": {
             "ClassName": "Script",
             "ScriptFile": "E:\\Git\\lean\\data\\survivors\\main.lua",
-            "ScriptText": "ZnVuY3Rpb24gU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljKHRpbGVQb3NfaXZlYzIpCglpZihtYXRoLnJhbmRvbSgwLDEwMCkgPiA5OSkgdGhlbgoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX21pZGRsZXBpbGxhci5zY24iCgllbHNlCgkJcmV0dXJuICJzdXJ2aXZvcnMvYmFzaWNfd2hpdGUuc2NuIgoJZW5kCmVuZAoKZnVuY3Rpb24gU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljSG9yaXpvbnRhbCh0aWxlUG9zX2l2ZWMyKQoJaWYodGlsZVBvc19pdmVjMi55IDwgLTIgb3IgdGlsZVBvc19pdmVjMi55ID4gMikgdGhlbiAKCQlyZXR1cm4gIiIKCWVuZAoJaWYodGlsZVBvc19pdmVjMi55ID09IC0yKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX3RvcC5zY24iCgllbmQKCWlmKHRpbGVQb3NfaXZlYzIueSA9PSAyKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX2JvdHRvbS5zY24iCgllbmQKCWlmKG1hdGgucmFuZG9tKDAsMTAwKSA+IDgwKSB0aGVuCgkJcmV0dXJuICJzdXJ2aXZvcnMvYmFzaWNfd2hpdGVfbWlkZGxlcGlsbGFyLnNjbiIKCWVsc2UKCQlyZXR1cm4gInN1cnZpdm9ycy9iYXNpY193aGl0ZS5zY24iCgllbmQKZW5kCgpmdW5jdGlvbiBTcGF3bldvcmxkVGlsZXNfQmFzaWNGaWVsZHModGlsZVBvc19pdmVjMikKCWxvY2FsIG1yID0gbWF0aC5yYW5kb20oMCwxMDAwKQoJaWYobXIgPiA5OTUpIHRoZW4KCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19jYW1wLnNjbiIKCWVsc2VpZihtciA+IDkwMCkgdGhlbiAKCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19iYXNpY19kYXJrZXIuc2NuIgoJZWxzZWlmKG1yID4gODUwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX2Jhc2ljX2Rhcmsuc2NuIgoJZWxzZWlmKG1yID4gODMwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX2Jhc2ljX2NyYXRlcy5zY24iCgllbHNlaWYobXIgPiA4MDApIHRoZW4gCgkJcmV0dXJuICJzdXJ2aXZvcnMvZ3Jhc3NfdHJlZXMuc2NuIgoJZWxzZWlmKG1yID4gNzgwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX3RyZWVzX2RlbnNlLnNjbiIKCWVsc2UKCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19iYXNpYy5zY24iCgllbmQKZW5kCgpsb2NhbCBmaXJzdFJ1biA9IHRydWUKZnVuY3Rpb24gU3Vydml2b3JzTWFpbihlbnRpdHkpCglsb2NhbCB3aW5kb3dPcGVuID0gdHJ1ZQoJRGVidWdHdWkuQmVnaW5XaW5kb3codHJ1ZSwgJ1N1cnZpdm9ycyEnKQoJbG9jYWwgdGlsZUxvYWRSYWRpdXMgPSBTdXJ2aXZvcnMuR2V0V29ybGRUaWxlTG9hZFJhZGl1cygpCgl0aWxlTG9hZFJhZGl1cyA9IERlYnVnR3VpLkRyYWdJbnQoJ1RpbGUgbG9hZCByYWRpdXMnLCB0aWxlTG9hZFJhZGl1cywgMSwgMCwgNjQpCglTdXJ2aXZvcnMuU2V0V29ybGRUaWxlTG9hZFJhZGl1cyh0aWxlTG9hZFJhZGl1cykKCWlmKERlYnVnR3VpLkJ1dHRvbignU3Bhd24gZmllbGRzJykpIHRoZW4gCgkJU3Vydml2b3JzLlNldFdvcmxkVGlsZVNwYXduRm4oU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljRmllbGRzKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ0Jhc2ljIHRpbGUgc3Bhd25pbmcnKSkgdGhlbiAKCQlTdXJ2aXZvcnMuU2V0V29ybGRUaWxlU3Bhd25GbihTcGF3bldvcmxkVGlsZXNfQmFzaWMpCgllbmQKCWlmKERlYnVnR3VpLkJ1dHRvbignQmFzaWMgaG9yaXpvbnRhbCBzcGF3bmluZycpKSB0aGVuIAoJCVN1cnZpdm9ycy5TZXRXb3JsZFRpbGVTcGF3bkZuKFNwYXduV29ybGRUaWxlc19CYXNpY0hvcml6b250YWwpCgllbmQKCWlmKERlYnVnR3VpLkJ1dHRvbignRGlzYWJsZSB0aWxlIHNwYXduaW5nJykpIHRoZW4gCgkJU3Vydml2b3JzLlNldFdvcmxkVGlsZVNwYXduRm4obmlsKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ1JlbW92ZSBhbGwgdGlsZXMnKSkgdGhlbiAKCQlTdXJ2aXZvcnMuUmVtb3ZlQWxsVGlsZXMoKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ1JlbG9hZCcpKSB0aGVuIAoJCWxvY2FsIG15U2NyaXB0Q21wID0gV29ybGQuR2V0Q29tcG9uZW50X1NjcmlwdChlbnRpdHkpCgkJaWYobXlTY3JpcHRDbXAgfj0gbmlsKSB0aGVuIAoJCQlteVNjcmlwdENtcDpTZXROZWVkc0NvbXBpbGUoKQoJCWVuZAoJZW5kIAoJRGVidWdHdWkuRW5kV2luZG93KCkKZW5kCgpyZXR1cm4gU3Vydml2b3JzTWFpbg=="
+            "ScriptText": "ZnVuY3Rpb24gU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljKHRpbGVQb3NfaXZlYzIpCglpZihtYXRoLnJhbmRvbSgwLDEwMCkgPiA5OSkgdGhlbgoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX21pZGRsZXBpbGxhci5zY24iCgllbHNlCgkJcmV0dXJuICJzdXJ2aXZvcnMvYmFzaWNfd2hpdGUuc2NuIgoJZW5kCmVuZAoKZnVuY3Rpb24gU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljSG9yaXpvbnRhbCh0aWxlUG9zX2l2ZWMyKQoJaWYodGlsZVBvc19pdmVjMi55IDwgLTIgb3IgdGlsZVBvc19pdmVjMi55ID4gMikgdGhlbiAKCQlyZXR1cm4gIiIKCWVuZAoJaWYodGlsZVBvc19pdmVjMi55ID09IC0yKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX3RvcC5zY24iCgllbmQKCWlmKHRpbGVQb3NfaXZlYzIueSA9PSAyKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2Jhc2ljX3doaXRlX2JvdHRvbS5zY24iCgllbmQKCWlmKG1hdGgucmFuZG9tKDAsMTAwKSA+IDgwKSB0aGVuCgkJcmV0dXJuICJzdXJ2aXZvcnMvYmFzaWNfd2hpdGVfbWlkZGxlcGlsbGFyLnNjbiIKCWVsc2UKCQlyZXR1cm4gInN1cnZpdm9ycy9iYXNpY193aGl0ZS5zY24iCgllbmQKZW5kCgpmdW5jdGlvbiBTcGF3bldvcmxkVGlsZXNfQmFzaWNGaWVsZHModGlsZVBvc19pdmVjMikKCWxvY2FsIG1yID0gbWF0aC5yYW5kb20oMCwxMDAwKQoJaWYobXIgPiA5OTUpIHRoZW4KCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19jYW1wLnNjbiIKCWVsc2VpZihtciA+IDkwMCkgdGhlbiAKCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19iYXNpY19kYXJrZXIuc2NuIgoJZWxzZWlmKG1yID4gODUwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX2Jhc2ljX2Rhcmsuc2NuIgoJZWxzZWlmKG1yID4gODMwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX2Jhc2ljX2NyYXRlcy5zY24iCgllbHNlaWYobXIgPiA4MDApIHRoZW4gCgkJcmV0dXJuICJzdXJ2aXZvcnMvZ3Jhc3NfdHJlZXMuc2NuIgoJZWxzZWlmKG1yID4gNzgwKSB0aGVuIAoJCXJldHVybiAic3Vydml2b3JzL2dyYXNzX3RyZWVzX2RlbnNlLnNjbiIKCWVsc2UKCQlyZXR1cm4gInN1cnZpdm9ycy9ncmFzc19iYXNpYy5zY24iCgllbmQKZW5kCgpmdW5jdGlvbiBDQ1Rlc3QoKQoJCmVuZAoKbG9jYWwgZmlyc3RSdW4gPSB0cnVlCmZ1bmN0aW9uIFN1cnZpdm9yc01haW4oZW50aXR5KQoJbG9jYWwgd2luZG93T3BlbiA9IHRydWUKCURlYnVnR3VpLkJlZ2luV2luZG93KHRydWUsICdTdXJ2aXZvcnMhJykKCWxvY2FsIHRpbGVMb2FkUmFkaXVzID0gU3Vydml2b3JzLkdldFdvcmxkVGlsZUxvYWRSYWRpdXMoKQoJdGlsZUxvYWRSYWRpdXMgPSBEZWJ1Z0d1aS5EcmFnSW50KCdUaWxlIGxvYWQgcmFkaXVzJywgdGlsZUxvYWRSYWRpdXMsIDEsIDAsIDY0KQoJU3Vydml2b3JzLlNldFdvcmxkVGlsZUxvYWRSYWRpdXModGlsZUxvYWRSYWRpdXMpCglpZihEZWJ1Z0d1aS5CdXR0b24oJ1NwYXduIGZpZWxkcycpKSB0aGVuIAoJCVN1cnZpdm9ycy5TZXRXb3JsZFRpbGVTcGF3bkZuKFNwYXduV29ybGRUaWxlc19CYXNpY0ZpZWxkcykKCWVuZAoJaWYoRGVidWdHdWkuQnV0dG9uKCdCYXNpYyB0aWxlIHNwYXduaW5nJykpIHRoZW4gCgkJU3Vydml2b3JzLlNldFdvcmxkVGlsZVNwYXduRm4oU3Bhd25Xb3JsZFRpbGVzX0Jhc2ljKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ0Jhc2ljIGhvcml6b250YWwgc3Bhd25pbmcnKSkgdGhlbiAKCQlTdXJ2aXZvcnMuU2V0V29ybGRUaWxlU3Bhd25GbihTcGF3bldvcmxkVGlsZXNfQmFzaWNIb3Jpem9udGFsKQoJZW5kCglpZihEZWJ1Z0d1aS5CdXR0b24oJ0Rpc2FibGUgdGlsZSBzcGF3bmluZycpKSB0aGVuIAoJCVN1cnZpdm9ycy5TZXRXb3JsZFRpbGVTcGF3bkZuKG5pbCkKCWVuZAoJaWYoRGVidWdHdWkuQnV0dG9uKCdSZW1vdmUgYWxsIHRpbGVzJykpIHRoZW4gCgkJU3Vydml2b3JzLlJlbW92ZUFsbFRpbGVzKCkKCWVuZAoJaWYoRGVidWdHdWkuQnV0dG9uKCdSZWxvYWQnKSkgdGhlbiAKCQlsb2NhbCBteVNjcmlwdENtcCA9IFdvcmxkLkdldENvbXBvbmVudF9TY3JpcHQoZW50aXR5KQoJCWlmKG15U2NyaXB0Q21wIH49IG5pbCkgdGhlbiAKCQkJbXlTY3JpcHRDbXA6U2V0TmVlZHNDb21waWxlKCkKCQllbmQKCWVuZCAKCURlYnVnR3VpLkVuZFdpbmRvdygpCmVuZAoKcmV0dXJuIFN1cnZpdm9yc01haW4="
           },
           "Type": "Script"
         },
@@ -57,115 +57,6 @@
         }
       ],
       "ID": 3
-    },
-    {
-      "Components": [
-        {
-          "Data": {
-            "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
-            "Model": {
-              "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
-            },
-            "PartMaterialsEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
-            "Shader": {
-              "ClassName": "ShaderHandle",
-              "FS": "simplediffuse.fs",
-              "Name": "diffuse",
-              "VSCS": "simplediffuse.vs"
-            }
-          },
-          "Type": "Model"
-        },
-        {
-          "Data": {
-            "ClassName": "PlayerComponent"
-          },
-          "Type": "PlayerComponent"
-        },
-        {
-          "Data": {
-            "BoxColliders": [],
-            "CapsuleColliders": [
-              {
-                "ClassName": "CapsuleCollider",
-                "HalfHeight": 1.2000000476837158,
-                "Origin": [
-                  0.0,
-                  4.949999809265137,
-                  0.0
-                ],
-                "PitchYawRoll": [
-                  0.0,
-                  0.0,
-                  0.0
-                ],
-                "Radius": 3.9000000953674316
-              }
-            ],
-            "ClassName": "Physics",
-            "Density": 1.0,
-            "DynamicFriction": 0.5,
-            "IsKinematic": true,
-            "IsStatic": false,
-            "PlaneColliders": [],
-            "Restitution": 0.6000000238418579,
-            "SphereColliders": [],
-            "StaticFriction": 0.5
-          },
-          "Type": "Physics"
-        },
-        {
-          "Data": {
-            "ClassName": "Tags",
-            "Tags": [
-              {
-                "ClassName": "Tag",
-                "String": "WizardTemplate"
-              },
-              {
-                "ClassName": "Tag",
-                "String": "PlayerCharacter"
-              }
-            ]
-          },
-          "Type": "Tags"
-        },
-        {
-          "Data": {
-            "ClassName": "Transform",
-            "Orientation": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "Parent": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
-            "Position": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "Scale": [
-              4.0,
-              4.0,
-              4.0
-            ]
-          },
-          "Type": "Transform"
-        }
-      ],
-      "ID": 6
     },
     {
       "Components": [
@@ -213,7 +104,7 @@
             },
             "Position": [
               0.0,
-              184.5,
+              184.60150146484375,
               -184.75
             ],
             "Scale": [
@@ -296,15 +187,102 @@
         }
       ],
       "ID": 11595
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "MaterialEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "CharacterController",
+            "CurrentVelocity": [
+              0.0,
+              -0.32488569617271423,
+              0.0
+            ],
+            "HalfHeight": 1.0,
+            "Radius": 3.0,
+            "VerticalOffset": 3.9000000953674316
+          },
+          "Type": "CharacterController"
+        },
+        {
+          "Data": {
+            "ClassName": "PlayerComponent"
+          },
+          "Type": "PlayerComponent"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "PlayerCharacter"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.10150771588087082,
+              0.0
+            ],
+            "Scale": [
+              4.0,
+              4.0,
+              4.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12190
     }
   ],
   "EntityCount": 5,
   "EntityIDs": [
     0,
     3,
-    6,
     527,
-    11595
+    11595,
+    12190
   ],
   "SceneName": "Survivors"
 }

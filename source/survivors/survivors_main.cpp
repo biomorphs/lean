@@ -6,6 +6,8 @@
 #include "entity/entity_system.h"
 #include "player_component.h"
 #include "world_tile_system.h"
+#include "engine/character_controller_system.h"
+#include "engine/components/component_character_controller.h"
 
 namespace Survivors
 {
@@ -32,6 +34,9 @@ namespace Survivors
 		survivors["SetWorldTileLoadRadius"] = [this](int r)	{
 			m_tileLoadRadius = r;
 		};
+		survivors["SetEnemiesEnabled"] = [this](bool e) {
+			m_enemiesEnabled = e;
+		};
 
 		return true;
 	}
@@ -44,9 +49,27 @@ namespace Survivors
 		auto world = entities->GetWorld();
 		auto worldTiles = Engine::GetSystem<Survivors::WorldTileSystem>("SurvivorsWorldTiles");
 
-		auto playerIterator = world->MakeIterator<PlayerComponent, Transform>();
+		if (m_enemiesEnabled)
+		{
+			auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
+			auto playerTransform = world->GetComponent<Transform>(playerEntity);
+			if (playerTransform != nullptr)
+			{
+				const glm::vec3 playerPos = playerTransform->GetPosition();
+				auto characterControllerIterator = world->MakeIterator<CharacterController, Transform>();
+				characterControllerIterator.ForEach([&](CharacterController& cc, Transform& t, EntityHandle e) {
+					if (e.GetID() != playerEntity.GetID())
+					{
+						cc.SetEnabled(true);
+						auto posToPlayer = playerPos - t.GetPosition();
+						t.SetPosition(t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * 8.0f);
+					}
+				});
+			}
+		}
 
 		// Load tiles around player, unload tiles far away
+		auto playerIterator = world->MakeIterator<PlayerComponent, Transform>();
 		playerIterator.ForEach([&](PlayerComponent& p, Transform& t, EntityHandle e) {
 			if (m_worldTileSpawnFn != nullptr)
 			{
@@ -56,7 +79,7 @@ namespace Survivors
 				worldTiles->EnsureLoadedExclusive(firstTile, lastTile, m_worldTileSpawnFn);
 			}
 		});
-
+		
 		return true;
 	}
 

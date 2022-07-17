@@ -38,8 +38,12 @@ function SpawnWorldTiles_BasicFields(tilePos_ivec2)
 	elseif(mr > 780) then 
 		return "survivors/grass_trees_dense.scn"
 	else
-		return "survivors/grass_basic.scn"
+		return "survivors/grass_basic_crates.scn"
 	end
+end
+
+function CCTest()
+	
 end
 
 local firstRun = true
@@ -64,7 +68,13 @@ function SurvivorsMain(entity)
 	if(DebugGui.Button('Remove all tiles')) then 
 		Survivors.RemoveAllTiles()
 	end
-	if(DebugGui.Button('Reload')) then 
+	if(DebugGui.Button('Enable Enemies')) then 
+		Survivors.SetEnemiesEnabled(true)
+	end
+	if(DebugGui.Button('Disable Enemies')) then 
+		Survivors.SetEnemiesEnabled(false)
+	end
+	if(DebugGui.Button('Reload Main Script')) then 
 		local myScriptCmp = World.GetComponent_Script(entity)
 		if(myScriptCmp ~= nil) then 
 			myScriptCmp:SetNeedsCompile()
