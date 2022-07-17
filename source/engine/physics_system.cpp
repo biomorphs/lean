@@ -349,7 +349,7 @@ namespace Engine
 	}
 
 	bool PhysicsSystem::SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance,
-		glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity)
+		glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity, EntityHandle ignoreEntity)
 	{
 		physx::PxCapsuleGeometry capsuleGeom(radius, halfHeight);
 		physx::PxVec3 origin(pos.x, pos.y, pos.z);
@@ -359,20 +359,49 @@ namespace Engine
 		physx::PxTransform capsulePose(origin, { rot.x, rot.y, rot.z, rot.w });
 		capsulePose = capsulePose * physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1)));
 
-		physx::PxSweepBuffer results;
+		// passing an array allows us to get a list of everything touched
+		// we don't get any blocking touches, so we need to figure out the closes hit ourselves
+		physx::PxSweepHit sweepResults[128];
+		physx::PxSweepBuffer results(sweepResults, 128);
 		auto flags = physx::PxHitFlag::eDEFAULT | physx::PxHitFlag::eMTD;	// mtd = depth of penetration
 		bool hitSomething = m_scene->sweep(capsuleGeom, capsulePose, unitDir, distance, results, flags);
 		
 		if (hitSomething && results.getNbAnyHits() > 0)
 		{
-			physx::PxVec3 hitPosPx = results.block.position;
-			physx::PxVec3 hitNormalPx = results.block.normal;
+			physx::PxVec3 hitPosPx;
+			physx::PxVec3 hitNormalPx;
+			float closestHitDist = FLT_MAX;
+			int closestHitIndex = -1;
+			for (int t = 0; t < results.getNbTouches(); ++t)
+			{
+				if (results.touches[t].distance < closestHitDist)
+				{
+					if (ignoreEntity.GetID() != -1 && results.touches[t].actor)
+					{
+						auto entityId = reinterpret_cast<uintptr_t>(results.touches[t].actor->userData);
+						if (entityId == ignoreEntity.GetID())
+						{
+							continue;
+						}
+					}
+
+					closestHitDist = results.touches[t].distance;
+					closestHitIndex = t;
+				}
+			}
+			if (closestHitIndex == -1)
+			{
+				return false;		// means we only hit the thing to be ignored
+			}
+
+			hitPosPx = results.touches[closestHitIndex].position;
+			hitNormalPx = results.touches[closestHitIndex].normal;
 			hitPos = { hitPosPx.x,hitPosPx.y,hitPosPx.z };
 			hitNormal = { hitNormalPx.x,hitNormalPx.y,hitNormalPx.z };
-			hitDistance = results.block.distance;
-			if (results.block.actor)
+			hitDistance = closestHitDist;
+			if (results.touches[closestHitIndex].actor)
 			{
-				auto entityId = reinterpret_cast<uintptr_t>(results.block.actor->userData);
+				auto entityId = reinterpret_cast<uintptr_t>(results.touches[closestHitIndex].actor->userData);
 				hitEntity = entityId;
 			}
 		}

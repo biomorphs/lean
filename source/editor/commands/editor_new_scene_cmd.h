@@ -24,5 +24,5 @@ public:
 private:
 	Engine::DebugGuiSystem* m_gui = nullptr;
 	Editor* m_editor = nullptr;
-	std::string m_newSceneName;
+	std::string m_newSceneName = "New Scene";
 };

@@ -15,6 +15,12 @@ Command::Result EditorNewSceneCommand::Execute()
 			m_gui->CloseCurrentPopup();
 			commandResult = Command::Result::Succeeded;
 		}
+		m_gui->SameLine();
+		if (m_gui->Button("Cancel"))
+		{
+			commandResult = Command::Result::Failed;
+			m_gui->CloseCurrentPopup();
+		}
 		m_gui->EndModalPopup();
 	}
 	return commandResult;

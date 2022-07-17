@@ -3,6 +3,7 @@
 #include "system.h"
 #include "core/glm_headers.h"
 #include "physics_handle.h"
+#include "entity/entity_handle.h"
 #include <memory>
 #include <vector>
 
@@ -19,7 +20,6 @@ namespace physx
 }
 
 class EntitySystem;
-class EntityHandle;
 class Physics;
 class GraphicsSystem;
 namespace Engine
@@ -61,7 +61,7 @@ namespace Engine
 		GuiTick* MakeGuiTick();
 		EntityHandle Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal);
 		bool SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance, 
-			glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity);
+			glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity, EntityHandle ignoreEntity=-1);
 
 		void SetSimulationEnabled(bool enabled) { m_simEnabled = enabled; }
 

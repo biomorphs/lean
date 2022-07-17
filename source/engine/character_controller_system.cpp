@@ -94,7 +94,7 @@ namespace Engine
 				glm::vec3 hitPos, hitNormal;
 				float hitDepth;
 				EntityHandle hitEntity;
-				bool hit = physics->SweepCapsule(c.GetRadius(), c.GetHalfHeight(), worldSpacePos, t.GetOrientation(), { 0.0f,-1.0f,0.0f }, -currentVelocity.y * timeDelta, hitPos, hitNormal, hitDepth, hitEntity);
+				bool hit = physics->SweepCapsule(c.GetRadius(), c.GetHalfHeight(), worldSpacePos, t.GetOrientation(), { 0.0f,-1.0f,0.0f }, -currentVelocity.y * timeDelta, hitPos, hitNormal, hitDepth, hitEntity, e);
 				if (hit && hitEntity.GetID() != e.GetID())
 				{
 					capsuleColour = { 0.0f,0.5f,0.5f,1.0f };
