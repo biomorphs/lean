@@ -3,14 +3,52 @@
 #include "engine/script_system.h"
 #include "engine/debug_gui_system.h"
 #include "engine/components/component_transform.h"
+#include "engine/physics_system.h"
 #include "entity/entity_system.h"
 #include "player_component.h"
+#include "monster_component.h"
 #include "world_tile_system.h"
 #include "engine/character_controller_system.h"
 #include "engine/components/component_character_controller.h"
 
 namespace Survivors
 {
+	void SurvivorsMain::StartGame()
+	{
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
+		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
+		auto playerCCT = entities->GetWorld()->GetComponent<CharacterController>(playerEntity);
+		if (playerCCT)
+		{
+			playerCCT->SetEnabled(true);
+		}
+		auto monsterIterator = entities->GetWorld()->MakeIterator<MonsterComponent, CharacterController>();
+		monsterIterator.ForEach([&](MonsterComponent& m, CharacterController& cc, EntityHandle e) {
+			cc.SetEnabled(true);
+		});
+		m_enemiesEnabled = true;
+		physics->SetSimulationEnabled(true);
+	}
+
+	void SurvivorsMain::StopGame()
+	{
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
+		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
+		auto playerCCT = entities->GetWorld()->GetComponent<CharacterController>(playerEntity);
+		if (playerCCT)
+		{
+			playerCCT->SetEnabled(false);
+		}
+		auto monsterIterator = entities->GetWorld()->MakeIterator<MonsterComponent, CharacterController>();
+		monsterIterator.ForEach([&](MonsterComponent& m, CharacterController& cc, EntityHandle e) {
+			cc.SetEnabled(false);
+		});
+		m_enemiesEnabled = false;
+		physics->SetSimulationEnabled(false);
+	}
+
 	bool SurvivorsMain::PostInit()
 	{
 		SDE_PROF_EVENT();
@@ -18,6 +56,8 @@ namespace Survivors
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		entities->RegisterComponentType<PlayerComponent>();
 		entities->RegisterInspector<PlayerComponent>(PlayerComponent::MakeInspector());
+		entities->RegisterComponentType<MonsterComponent>();
+		entities->RegisterInspector<MonsterComponent>(MonsterComponent::MakeInspector());
 
 		auto scripts = Engine::GetSystem<Engine::ScriptSystem>("Script");
 		auto survivors = scripts->Globals()["Survivors"].get_or_create<sol::table>();
@@ -36,6 +76,12 @@ namespace Survivors
 		};
 		survivors["SetEnemiesEnabled"] = [this](bool e) {
 			m_enemiesEnabled = e;
+		};
+		survivors["StartGame"] = [this]() {
+			StartGame();
+		};
+		survivors["StopGame"] = [this] {
+			StopGame();
 		};
 
 		return true;
@@ -56,14 +102,13 @@ namespace Survivors
 			if (playerTransform != nullptr)
 			{
 				const glm::vec3 playerPos = playerTransform->GetPosition();
-				auto characterControllerIterator = world->MakeIterator<CharacterController, Transform>();
-				characterControllerIterator.ForEach([&](CharacterController& cc, Transform& t, EntityHandle e) {
-					if (e.GetID() != playerEntity.GetID())
-					{
-						cc.SetEnabled(true);
-						auto posToPlayer = playerPos - t.GetPosition();
-						t.SetPosition(t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * 8.0f);
-					}
+				auto monsterIterator = world->MakeIterator<MonsterComponent, Transform>();
+				monsterIterator.ForEach([&](MonsterComponent& cc, Transform& t, EntityHandle e) {
+					auto posToPlayer = playerPos - t.GetPosition();
+					auto lookTransform = glm::quatLookAt(posToPlayer, glm::vec3(0.0f,1.0f,0.0f));
+					lookTransform = lookTransform * glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f,1.0f,0.0f));
+					t.SetOrientation(lookTransform);
+					t.SetPosition(t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * cc.GetSpeed());
 				});
 			}
 		}

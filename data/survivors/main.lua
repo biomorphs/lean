@@ -42,13 +42,39 @@ function SpawnWorldTiles_BasicFields(tilePos_ivec2)
 	end
 end
 
-function CCTest()
+function PlayerUpdate()
+	local playerSpeed = 0.2
+	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
+	local playerTransform = World.GetComponent_Transform(foundPlayer)
+	local cct = World.GetComponent_CharacterController(foundPlayer)
+	if(playerTransform == nil or cct == nil) then 
+		return
+	end
 	
+	local myPos = playerTransform:GetPosition()
+	if(Input.IsKeyPressed('KEY_l')) then 
+		myPos.x = myPos.x - playerSpeed
+		playerTransform:SetRotation(0,-90,0)
+	end
+	if(Input.IsKeyPressed('KEY_j')) then 
+		myPos.x = myPos.x + playerSpeed
+		playerTransform:SetRotation(0,90,0)
+	end
+	if(Input.IsKeyPressed('KEY_k')) then 
+		myPos.z = myPos.z - playerSpeed
+		playerTransform:SetRotation(0,180,0)
+	end
+	if(Input.IsKeyPressed('KEY_i')) then 
+		myPos.z = myPos.z + playerSpeed
+		playerTransform:SetRotation(0,0,0)
+	end
+	playerTransform:SetPosition(myPos.x,myPos.y,myPos.z)
 end
 
 local firstRun = true
 function SurvivorsMain(entity)
 	local windowOpen = true
+	PlayerUpdate();
 	DebugGui.BeginWindow(true, 'Survivors!')
 	local tileLoadRadius = Survivors.GetWorldTileLoadRadius()
 	tileLoadRadius = DebugGui.DragInt('Tile load radius', tileLoadRadius, 1, 0, 64)
@@ -68,11 +94,11 @@ function SurvivorsMain(entity)
 	if(DebugGui.Button('Remove all tiles')) then 
 		Survivors.RemoveAllTiles()
 	end
-	if(DebugGui.Button('Enable Enemies')) then 
-		Survivors.SetEnemiesEnabled(true)
+	if(DebugGui.Button('Start Game')) then 
+		Survivors.StartGame()
 	end
-	if(DebugGui.Button('Disable Enemies')) then 
-		Survivors.SetEnemiesEnabled(false)
+	if(DebugGui.Button('Stop Game')) then 
+		Survivors.StopGame()
 	end
 	if(DebugGui.Button('Reload Main Script')) then 
 		local myScriptCmp = World.GetComponent_Script(entity)

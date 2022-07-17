@@ -7,7 +7,7 @@ function FollowPlayer(entity)
 	
 	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
-	if(foundPlayer == nil) then 
+	if(playerTransform == nil) then 
 		return
 	end
 	local playerPos = playerTransform:GetPosition()
