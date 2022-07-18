@@ -130,3 +130,15 @@ void World::RemoveEntity(EntityHandle h)
 		}
 	}
 }
+
+void World::RemoveComponent(EntityHandle r, ComponentType t)
+{
+	if (r.IsValid())
+	{
+		auto foundStorage = m_components.find(t);
+		if (foundStorage != m_components.end())
+		{
+			foundStorage->second->Destroy(r);
+		}
+	}
+}

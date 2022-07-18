@@ -206,6 +206,7 @@ uint32_t EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool
 			}
 			if (m_debugGui->TreeNode(GetEntityNameWithTags(entityID).c_str(), expandAll))
 			{
+				char buttonText[1024];
 				std::vector<ComponentType> owned = m_world->GetOwnedComponentTypes(entityID);
 				for (const auto& cmp : owned)
 				{
@@ -216,6 +217,11 @@ uint32_t EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool
 						{
 							inspector->second(*i, *m_world->GetStorage(cmp), entityID);
 						}
+						sprintf_s(buttonText, "Delete %s?##%d", cmp.c_str(), entityID);
+						if (m_debugGui->Button(buttonText))
+						{
+							m_world->RemoveComponent(entityID, cmp);
+						};
 						m_debugGui->TreePop();
 					}
 				}
@@ -232,7 +238,7 @@ uint32_t EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool
 					}
 				}
 				m_debugGui->TreePop();
-				char buttonText[1024];
+				
 				sprintf_s(buttonText, "Delete Entity?##%d", entityID);
 				if (m_debugGui->Button(buttonText))
 				{

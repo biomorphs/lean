@@ -19,7 +19,7 @@ function SpawnZombie()
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	local playerPos = playerTransform:GetPosition()
 	local spawnRadiusMin = 350
-	local spawnRadiusMax = 100
+	local spawnRadiusMax = 50
 	local theta = math.random() * 2.0 * 3.14
 	local spawnDistance = spawnRadiusMin + math.random() * spawnRadiusMax
 	local rx = playerPos.x + math.sin(theta) * spawnDistance

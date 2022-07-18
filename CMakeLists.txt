@@ -301,6 +301,8 @@ target_compile_options(Creatures PRIVATE ${CommonCompilerOptions})
 
 add_library(Survivors STATIC)
 set(SURVIVORS_SOURCES
+	source/survivors/entity_grid.h
+	source/survivors/entity_grid.cpp
 	source/survivors/survivors_main.h
 	source/survivors/survivors_main.cpp
 	source/survivors/player_component.h

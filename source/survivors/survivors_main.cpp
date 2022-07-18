@@ -24,10 +24,6 @@ namespace Survivors
 		{
 			playerCCT->SetEnabled(true);
 		}
-		auto monsterIterator = entities->GetWorld()->MakeIterator<MonsterComponent, CharacterController>();
-		monsterIterator.ForEach([&](MonsterComponent& m, CharacterController& cc, EntityHandle e) {
-			cc.SetEnabled(true);
-		});
 		m_enemiesEnabled = true;
 		physics->SetSimulationEnabled(true);
 	}
@@ -43,10 +39,6 @@ namespace Survivors
 		{
 			playerCCT->SetEnabled(false);
 		}
-		auto monsterIterator = entities->GetWorld()->MakeIterator<MonsterComponent, CharacterController>();
-		monsterIterator.ForEach([&](MonsterComponent& m, CharacterController& cc, EntityHandle e) {
-			cc.SetEnabled(false);
-		});
 		m_enemiesEnabled = false;
 		physics->SetSimulationEnabled(false);
 	}

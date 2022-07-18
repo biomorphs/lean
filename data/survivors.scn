@@ -193,10 +193,6 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
@@ -313,10 +309,6 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\zombie.fbx"
@@ -333,20 +325,6 @@
             }
           },
           "Type": "Model"
-        },
-        {
-          "Data": {
-            "ClassName": "CharacterController",
-            "CurrentVelocity": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "HalfHeight": 1.5,
-            "Radius": 2.799999952316284,
-            "VerticalOffset": 4.0
-          },
-          "Type": "CharacterController"
         },
         {
           "Data": {

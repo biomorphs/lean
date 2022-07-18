@@ -183,8 +183,8 @@ namespace Engine
 				aiProcess_SortByPType |
 				aiProcess_ValidateDataStructure | 
 				aiProcess_OptimizeMeshes |
-				aiProcess_RemoveRedundantMaterials
-				//| aiProcess_PreTransformVertices // useful for static meshes
+				aiProcess_RemoveRedundantMaterials |
+				aiProcess_PreTransformVertices // for static meshes only
 			);
 			if (!scene)
 			{

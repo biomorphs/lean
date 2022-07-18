@@ -48,6 +48,7 @@ public:
 
 	template<class ComponentType>
 	void RemoveComponent(EntityHandle owner);
+	void RemoveComponent(EntityHandle owner, ComponentType type);
 
 	void CollectGarbage();					// destroy all entities pending deletion
 	int GetPendingDeleteCount() { return m_pendingDelete.size(); }
