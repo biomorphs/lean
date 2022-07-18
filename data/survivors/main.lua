@@ -14,26 +14,27 @@ function SpawnZombieAt(pos)
 	newMonsterCmp:SetSpeed(2.0 + math.random() * 4.0)
 end
 
+function SpawnZombie()
+	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
+	local playerTransform = World.GetComponent_Transform(foundPlayer)
+	local playerPos = playerTransform:GetPosition()
+	local spawnRadiusMin = 350
+	local spawnRadiusMax = 100
+	local theta = math.random() * 2.0 * 3.14
+	local spawnDistance = spawnRadiusMin + math.random() * spawnRadiusMax
+	local rx = playerPos.x + math.sin(theta) * spawnDistance
+	local ry = 0.5
+	local rz = playerPos.z + math.cos(theta) * spawnDistance
+	SpawnZombieAt(vec3.new(rx,ry,rz))
+end
+
 function SpawnZombies()
 	if(zombieSpawnEnabled == false or zombiesPerSecond <= 0) then 
 		return 
 	end
 	zombieSpawnTimer = zombieSpawnTimer + 0.066	-- todo delta
 	if(zombieSpawnTimer > (1.0 / zombiesPerSecond)) then 
-		local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
-		local playerTransform = World.GetComponent_Transform(foundPlayer)
-		local playerPos = playerTransform:GetPosition()
-		local spawnRadiusMin = 350
-		local spawnRadiusMax = 100
-		local spawnCount = 1
-		for s=0,spawnCount do
-			local theta = math.random() * 2.0 * 3.14
-			local spawnDistance = spawnRadiusMin + math.random() * spawnRadiusMax
-			local rx = playerPos.x + math.sin(theta) * spawnDistance
-			local ry = 0.5
-			local rz = playerPos.z + math.cos(theta) * spawnDistance
-			SpawnZombieAt(vec3.new(rx,ry,rz))
-		end
+		SpawnZombie()
 		zombieSpawnTimer = 0
 	end
 end
@@ -150,6 +151,11 @@ function SurvivorsMain(entity)
 	end
 	if(DebugGui.Button('Spawn Zombies')) then 
 		zombieSpawnEnabled = true
+	end
+	if(DebugGui.Button('2k zombies')) then 
+		for i=0,2000 do
+			SpawnZombie()
+		end
 	end
 	zombiesPerSecond = DebugGui.DragInt('Zombies/second', zombiesPerSecond, 1, 0, 128)
 	if(DebugGui.Button('Reload Main Script')) then 
