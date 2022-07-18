@@ -10,6 +10,7 @@
 #include "world_tile_system.h"
 #include "engine/character_controller_system.h"
 #include "engine/components/component_character_controller.h"
+#include "entity_grid.h"
 
 namespace Survivors
 {
@@ -88,38 +89,101 @@ namespace Survivors
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 		auto worldTiles = Engine::GetSystem<Survivors::WorldTileSystem>("SurvivorsWorldTiles");
+		
+		struct ActiveMonster
+		{
+			glm::vec4 m_positionRadius;
+			glm::vec3 m_targetPosition;
+			MonsterComponent* m_cc;
+			Transform* m_transform;
+		};
+		static WorldGrid<ActiveMonster> activeMonsterGrid({8.0f,8.0f});
+		static std::vector<ActiveMonster> activeMonsters;
+		activeMonsterGrid.Reset();
+		activeMonsters.clear();
+		std::vector<EntityHandle> monstersToDespawn;
 
+		// monster update first pass, collect active + despawning entities
 		if (m_enemiesEnabled)
 		{
 			auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
 			auto playerTransform = world->GetComponent<Transform>(playerEntity);
-			std::vector<EntityHandle> monstersToDespawn;
-			if (playerTransform != nullptr)
-			{
-				const glm::vec3 playerPos = playerTransform->GetPosition();
-				auto monsterIterator = world->MakeIterator<MonsterComponent, Transform>();
-				monsterIterator.ForEach([&](MonsterComponent& cc, Transform& t, EntityHandle e) {
-					auto posToPlayer = playerPos - t.GetPosition();
-					posToPlayer.y = 0.0f;	// ignore y component for now
-					float distanceToPlayer = glm::length(posToPlayer);
-					if (distanceToPlayer >= cc.GetDespawnRadius())	// despawn if too far away
-					{
-						monstersToDespawn.emplace_back(e);
-						return;
-					}
-					if (distanceToPlayer <= cc.GetVisionRadius() && distanceToPlayer > 0.1f)	// move towards player if in vision range
-					{
-						auto lookTransform = glm::quatLookAt(posToPlayer, glm::vec3(0.0f, 1.0f, 0.0f));
-						lookTransform = lookTransform * glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-						t.SetOrientation(glm::normalize(lookTransform));
-						t.SetPosition(t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * cc.GetSpeed());
-					}
-				});
-				for (auto it : monstersToDespawn)
+			const glm::vec3 playerPos = playerTransform->GetPosition();
+			const auto rotation180 = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+			static auto monsterIterator = world->MakeIterator<MonsterComponent, Transform>();
+			monsterIterator.ForEach([&](MonsterComponent& cc, Transform& t, EntityHandle e) {
+				auto posToPlayer = (playerPos - t.GetPosition()) * glm::vec3(1.0f,0.0f,1.0f);
+				float distanceToPlayer = glm::length(posToPlayer);
+				if (distanceToPlayer >= cc.GetDespawnRadius())	// despawn if too far away
 				{
-					entities->GetWorld()->RemoveEntity(it);
+					monstersToDespawn.emplace_back(e);
+				}
+				else if (distanceToPlayer <= cc.GetVisionRadius())
+				{
+					glm::vec3 targetPosition = t.GetPosition();
+					if (distanceToPlayer > cc.GetCollideRadius())
+					{
+						targetPosition  = t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * cc.GetSpeed();
+					}
+
+					// look at the player
+					auto lookTransform = glm::quatLookAt(posToPlayer, glm::vec3(0.0f, 1.0f, 0.0f));
+					lookTransform = lookTransform * rotation180;
+					t.SetOrientation(glm::normalize(lookTransform));
+
+					// Add to the grid for later
+					const float collideRadius = cc.GetCollideRadius();
+					const auto pos = t.GetPosition();
+					const auto aabMin = pos - glm::vec3(collideRadius, 0.0f, collideRadius);
+					const auto aabMax = pos + glm::vec3(collideRadius, 0.0f, collideRadius);
+					ActiveMonster am{ glm::vec4(pos, collideRadius), targetPosition , &cc, &t };
+					activeMonsterGrid.AddEntry(aabMin, aabMax, am);
+					activeMonsters.emplace_back(am);
+				}
+			});
+
+			// movement / collision pass
+			static std::vector<ActiveMonster> nearbyMonsters;
+			for (int m = 0; m < activeMonsters.size(); ++m)
+			{
+				auto& monster = activeMonsters[m];
+				const float collideRadius = monster.m_positionRadius.w;
+				const auto aabMin = monster.m_targetPosition - glm::vec3(collideRadius, 0.0f, collideRadius);
+				const auto aabMax = monster.m_targetPosition + glm::vec3(collideRadius, 0.0f, collideRadius);
+				nearbyMonsters.clear();
+				activeMonsterGrid.FindEntries(aabMin, aabMax, nearbyMonsters);
+				if (nearbyMonsters.size() > 1)	// don't include the monster itself
+				{
+					const auto posToPlayer = (playerPos - monster.m_targetPosition) * glm::vec3(1.0f, 0.0f, 1.0f);
+					for (auto& neighbour : nearbyMonsters)
+					{
+						if (neighbour.m_cc == monster.m_cc)
+							continue;
+						glm::vec3 monsterToNearby = monster.m_targetPosition - glm::vec3(neighbour.m_positionRadius);
+						const float d = glm::fastLength(monsterToNearby);
+						const float neighbourRadius = neighbour.m_positionRadius.w;
+						if (d < (neighbourRadius + collideRadius))
+						{
+							monsterToNearby = -monsterToNearby / d;
+							const glm::vec3 neighbourPos = glm::vec3(neighbour.m_positionRadius);
+							float shiftDistance = (neighbourRadius + collideRadius) - d;
+							const glm::vec3 shift = monsterToNearby * shiftDistance;
+							monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
+							neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
+						}
+					}
 				}
 			}
+			for (int m = 0; m < activeMonsters.size(); ++m)
+			{
+				auto& monster = activeMonsters[m];
+				monster.m_transform->SetPosition(monster.m_targetPosition);
+			}
+		}
+
+		for (auto it : monstersToDespawn)
+		{
+			entities->GetWorld()->RemoveEntity(it);
 		}
 
 		// Load tiles around player, unload tiles far away

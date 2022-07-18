@@ -11,14 +11,15 @@ function SpawnZombieAt(pos)
 		newTransform:SetPosition(pos.x, pos.y, pos.z)
 	end
 	local newMonsterCmp = World.AddComponent_MonsterComponent(newZombie)
-	newMonsterCmp:SetSpeed(2.0 + math.random() * 4.0)
+	newMonsterCmp:SetSpeed(4.0 + math.random() * 8.0)
+	newMonsterCmp:SetCollideRadius(3.0)
 end
 
 function SpawnZombie()
 	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	local playerPos = playerTransform:GetPosition()
-	local spawnRadiusMin = 350
+	local spawnRadiusMin = 150
 	local spawnRadiusMax = 50
 	local theta = math.random() * 2.0 * 3.14
 	local spawnDistance = spawnRadiusMin + math.random() * spawnRadiusMax

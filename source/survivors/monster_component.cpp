@@ -10,13 +10,16 @@ COMPONENT_SCRIPTS(MonsterComponent,
 	"GetVisionRadius", &MonsterComponent::GetVisionRadius,
 	"SetVisionRadius", &MonsterComponent::SetVisionRadius,
 	"GetDespawnRadius", &MonsterComponent::GetDespawnRadius,
-	"SetDespawnRadius", &MonsterComponent::SetDespawnRadius
+	"SetDespawnRadius", &MonsterComponent::SetDespawnRadius,
+	"GetCollideRadius", &MonsterComponent::GetCollideRadius,
+	"SetCollideRadius", &MonsterComponent::SetCollideRadius
 )
 SERIALISE_BEGIN(MonsterComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
 SERIALISE_PROPERTY("Speed", m_speed)
 SERIALISE_PROPERTY("VisionRadius", m_visionRadius)
 SERIALISE_PROPERTY("DespawnRadius", m_despawnRadius)
+SERIALISE_PROPERTY("CollideRadius", m_collideRadius)
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(MonsterComponent)
@@ -31,6 +34,7 @@ COMPONENT_INSPECTOR_IMPL(MonsterComponent)
 		i.Inspect("Move Speed", a.GetSpeed(), InspectFn(e, &MonsterComponent::SetSpeed));
 		i.Inspect("Vision Radius", a.GetVisionRadius(), InspectFn(e, &MonsterComponent::SetVisionRadius));
 		i.Inspect("Despawn Radius", a.GetDespawnRadius(), InspectFn(e, &MonsterComponent::SetDespawnRadius));
+		i.Inspect("Collision Radius", a.GetCollideRadius(), InspectFn(e, &MonsterComponent::SetCollideRadius));
 	};
 	return fn;
 }
