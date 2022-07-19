@@ -17,14 +17,7 @@ namespace Survivors
 	void SurvivorsMain::StartGame()
 	{
 		SDE_PROF_EVENT();
-		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
-		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
-		auto playerCCT = entities->GetWorld()->GetComponent<CharacterController>(playerEntity);
-		if (playerCCT)
-		{
-			playerCCT->SetEnabled(true);
-		}
 		m_enemiesEnabled = true;
 		physics->SetSimulationEnabled(true);
 	}
@@ -32,14 +25,7 @@ namespace Survivors
 	void SurvivorsMain::StopGame()
 	{
 		SDE_PROF_EVENT();
-		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
-		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
-		auto playerCCT = entities->GetWorld()->GetComponent<CharacterController>(playerEntity);
-		if (playerCCT)
-		{
-			playerCCT->SetEnabled(false);
-		}
 		m_enemiesEnabled = false;
 		physics->SetSimulationEnabled(false);
 	}
@@ -97,7 +83,7 @@ namespace Survivors
 			MonsterComponent* m_cc;
 			Transform* m_transform;
 		};
-		static WorldGrid<uint32_t> activeMonsterGrid({32.0f,32.0f});	// indexes into vector below
+		static WorldGrid<uint32_t> activeMonsterGrid({16.0f,16.0f});	// indexes into vector below
 		static std::vector<ActiveMonster> activeMonsters;
 		std::vector<EntityHandle> monstersToDespawn;
 		activeMonsterGrid.Reset();
@@ -122,9 +108,11 @@ namespace Survivors
 				else if (distanceToPlayer <= cc.GetVisionRadius())
 				{
 					glm::vec3 targetPosition = t.GetPosition();
-					if (distanceToPlayer > cc.GetCollideRadius())
+					cc.SetKnockback(cc.GetKnockback()* cc.GetKnockbackFalloff());
+					targetPosition += glm::vec3(cc.GetKnockback().x, 0.0f, cc.GetKnockback().y) * timeDelta;
+					if (distanceToPlayer > (cc.GetCollideRadius() + 2.0f))	// todo - player radius
 					{
-						targetPosition  = t.GetPosition() + glm::normalize(posToPlayer) * timeDelta * cc.GetSpeed();
+						targetPosition  = targetPosition + glm::normalize(posToPlayer) * timeDelta * cc.GetSpeed();
 					}
 
 					// look at the player
@@ -146,51 +134,56 @@ namespace Survivors
 			// movement / collision pass
 			{
 				SDE_PROF_EVENT("Phase2");
-				static std::vector<ActiveMonster> nearbyMonsters;
 				for (int m = 0; m < activeMonsters.size(); ++m)
 				{
 					auto& monster = activeMonsters[m];
 					auto posToPlayer = (playerPos - monster.m_targetPosition) * glm::vec3(1.0f, 0.0f, 1.0f);
 					float distanceToPlayer = glm::length(posToPlayer);
-					if (distanceToPlayer < monster.m_positionRadius.w)
+					if (distanceToPlayer > 360)	// todo - min collision radius
 					{
 						continue;
 					}
-
 					const float collideRadius = monster.m_positionRadius.w;
 					const auto aabMin = monster.m_targetPosition - glm::vec3(collideRadius, 0.0f, collideRadius);
 					const auto aabMax = monster.m_targetPosition + glm::vec3(collideRadius, 0.0f, collideRadius);
-					nearbyMonsters.clear();
-
-					activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
-						auto& neighbour = activeMonsters[index];
-						if (neighbour.m_cc == monster.m_cc)
-							return;
-						const glm::vec3 neighbourPos = neighbour.m_targetPosition;
-						glm::vec3 monsterToNearby = monster.m_targetPosition - neighbourPos;
-						const float d = glm::length(monsterToNearby);
-						const float neighbourRadius = neighbour.m_positionRadius.w;
-						if (d < (neighbourRadius + collideRadius))
+					for (int iteration = 0; iteration < 1; ++iteration)
+					{
+						int touched = 0;
+						activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
+							auto& neighbour = activeMonsters[index];
+							if (neighbour.m_cc == monster.m_cc)
+								return;
+							const glm::vec3 neighbourPos = neighbour.m_targetPosition;
+							glm::vec3 monsterToNearby = monster.m_targetPosition - neighbourPos;
+							const float d = glm::length(monsterToNearby);
+							const float neighbourRadius = neighbour.m_positionRadius.w;
+							if (d < (neighbourRadius + collideRadius))
+							{
+								++touched;
+								monsterToNearby = -monsterToNearby / d;
+								float shiftDistance = (neighbourRadius + collideRadius) - d;
+								shiftDistance = shiftDistance * 0.2f;
+								const glm::vec3 shift = monsterToNearby * shiftDistance;
+								if (neighbourRadius < collideRadius)
+								{
+									neighbour.m_targetPosition = neighbour.m_targetPosition + shift;
+								}
+								else if (neighbourRadius == collideRadius)
+								{
+									monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
+									neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
+								}
+								else
+								{
+									monster.m_targetPosition = monster.m_targetPosition - shift;
+								}
+							}
+						});
+						if (touched == 0)
 						{
-							monsterToNearby = -monsterToNearby / d;
-							float shiftDistance = (neighbourRadius + collideRadius) - d;
-							shiftDistance = shiftDistance * 0.5f;	// damper on shift/frame
-							const glm::vec3 shift = monsterToNearby * shiftDistance;
-							if (neighbourRadius < collideRadius)
-							{
-								neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
-							}
-							else if (neighbourRadius == collideRadius)
-							{
-								monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
-								neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
-							}
-							else
-							{
-								monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
-							}
+							break;
 						}
-					});
+					}
 				}
 			}
 			for (int m = 0; m < activeMonsters.size(); ++m)

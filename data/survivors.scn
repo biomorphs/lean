@@ -212,20 +212,6 @@
         },
         {
           "Data": {
-            "ClassName": "CharacterController",
-            "CurrentVelocity": [
-              0.0,
-              -0.32488569617271423,
-              0.0
-            ],
-            "HalfHeight": 1.0,
-            "Radius": 3.0,
-            "VerticalOffset": 3.9000000953674316
-          },
-          "Type": "CharacterController"
-        },
-        {
-          "Data": {
             "ClassName": "PlayerComponent",
             "CurrentHP": 100
           },

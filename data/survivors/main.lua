@@ -25,7 +25,7 @@ function SpawnSkeletonAt(pos)
 	end
 	local newMonsterCmp = World.AddComponent_MonsterComponent(newSkele)
 	newMonsterCmp:SetSpeed(3.0 + math.random() * 6.0)
-	newMonsterCmp:SetCollideRadius(4.0)
+	newMonsterCmp:SetCollideRadius(4.5)
 end
 
 function SpawnZombieChadAt(pos)
@@ -49,7 +49,7 @@ function SpawnZombieAt(pos)
 	end
 	local newMonsterCmp = World.AddComponent_MonsterComponent(newZombie)
 	newMonsterCmp:SetSpeed(4.0 + math.random() * 8.0)
-	newMonsterCmp:SetCollideRadius(3.0)
+	newMonsterCmp:SetCollideRadius(3.5)
 end
 
 function SpawnEnemy(SpawnAtFn)
@@ -171,8 +171,7 @@ function PlayerUpdate()
 	local playerSpeed = 0.3
 	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
-	local cct = World.GetComponent_CharacterController(foundPlayer)
-	if(playerTransform == nil or cct == nil) then 
+	if(playerTransform == nil) then 
 		return
 	end
 	
