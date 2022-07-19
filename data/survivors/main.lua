@@ -16,6 +16,26 @@ local skeletonsPerSecondIncrement = 0.0001
 local skeletonsSpawnTimer = 0
 local skeletonsSpawnEnabled = false
 
+function DoExplosionAt(pos, radius, damage)
+	local template = World.GetFirstEntityWithTag(Tag.new("ExplosionTemplate"))
+	local newEntity = World.CloneEntity(template)
+	local newTransform = World.GetComponent_Transform(newEntity)
+	local newPhysics = World.GetComponent_Physics(newEntity)
+	if(newPhysics ~= nil) then 
+		newPhysics:AddSphereCollider(vec3.new(0,0,0), radius)
+		newPhysics:Rebuild()
+	end
+	if(newTransform ~= nil) then 
+		newTransform:SetPosition(pos.x, pos.y, pos.z)
+		newTransform:SetScale(radius,radius,radius)
+	end
+	local newExplosion = World.AddComponent_ExplosionComponent(newEntity)
+	newExplosion:SetDamageRadius(radius)
+	newExplosion:SetDamageAtCenter(damage)
+	newExplosion:SetDamageAtEdge(damage / 2)
+	newExplosion:SetFadeoutSpeed(2)
+end
+
 function SpawnSkeletonAt(pos)
 	local template = World.GetFirstEntityWithTag(Tag.new("SkeletonTemplate"))
 	local newSkele = World.CloneEntity(template)
@@ -258,6 +278,24 @@ function SurvivorsMain(entity)
 	if(DebugGui.Button('200 skelies')) then 
 		for i=0,200 do
 			SpawnEnemy(SpawnSkeletonAt)
+		end
+	end
+	if(DebugGui.Button('explode!')) then
+		local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
+		local playerTransform = World.GetComponent_Transform(foundPlayer)
+		DoExplosionAt(playerTransform:GetPosition(), 64.0, 50)
+	end
+	if(DebugGui.Button('cluster bombs!')) then
+		local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
+		local playerTransform = World.GetComponent_Transform(foundPlayer)
+		for i=0,10 do
+			local playerPos = playerTransform:GetPosition()
+			local theta = i * (2.0 * 3.14 * 0.1)
+			local spawnDistance = 32.0 + math.random() * 32.0
+			local rx = playerPos.x + math.sin(theta) * spawnDistance
+			local ry = 0.5
+			local rz = playerPos.z + math.cos(theta) * spawnDistance
+			DoExplosionAt(vec3.new(rx,ry,rz), 24.0, 33)
 		end
 	end
 	spawnRadiusMin = DebugGui.DragFloat('Spawn min radius', spawnRadiusMin, 1.0, 2.0, 800)

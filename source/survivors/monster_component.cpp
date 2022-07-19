@@ -35,7 +35,7 @@ COMPONENT_INSPECTOR_IMPL(MonsterComponent)
 	{
 		auto& a = *static_cast<StorageType&>(cs).Find(e);
 		char text[1024];
-		sprintf_s(text, "Current HP: %d", a.GetCurrentHealth());
+		sprintf_s(text, "Current HP: %f", a.GetCurrentHealth());
 		gui->Text(text);
 		i.Inspect("Move Speed", a.GetSpeed(), InspectFn(e, &MonsterComponent::SetSpeed));
 		i.Inspect("Vision Radius", a.GetVisionRadius(), InspectFn(e, &MonsterComponent::SetVisionRadius));

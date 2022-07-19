@@ -864,17 +864,7 @@
             "IsStatic": false,
             "PlaneColliders": [],
             "Restitution": 0.6000000238418579,
-            "SphereColliders": [
-              {
-                "ClassName": "SphereCollider",
-                "Origin": [
-                  0.0,
-                  0.0,
-                  0.0
-                ],
-                "Radius": 16.0
-              }
-            ],
+            "SphereColliders": [],
             "StaticFriction": 0.5
           },
           "Type": "Physics"
@@ -890,7 +880,7 @@
                   3.9215686321258545,
                   3.9215686321258545,
                   3.9215686321258545,
-                  0.5882353186607361
+                  0.7843137383460999
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",

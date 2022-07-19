@@ -8,7 +8,8 @@ public:
 	COMPONENT(MonsterComponent);
 	COMPONENT_INSPECTOR();
 
-	int GetCurrentHealth() { return m_currentHP; }
+	void SetCurrentHealth(float hp) { m_currentHP = hp; }
+	float GetCurrentHealth() { return m_currentHP; }
 	float GetSpeed() { return m_speed; }
 	void SetSpeed(float speed) { m_speed = speed; }
 	float GetVisionRadius() { return m_visionRadius; }
@@ -25,7 +26,7 @@ public:
 
 private:
 	// active state
-	int m_currentHP = 100;
+	float m_currentHP = 100;
 	float m_speed = 4.0f;
 	float m_visionRadius = 450.0f;
 	float m_despawnRadius = 500.0f;

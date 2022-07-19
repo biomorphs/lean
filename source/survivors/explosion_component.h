@@ -6,6 +6,7 @@
 class ExplosionComponent
 {
 public:
+	COMPONENT(ExplosionComponent);
 	bool HasExploded() { return m_hasExploded; }
 	void SetHasExploded(bool e) { m_hasExploded = e; }
 	float GetDamageRadius() { return m_damageRadius; }
@@ -21,5 +22,5 @@ private:
 	float m_damageRadius = 64.0f;
 	float m_damageAtCenter = 100.0f;
 	float m_damageAtEdge = 10.0f;
-	float m_fadeOutSpeed = 0.5f;
+	float m_fadeOutSpeed = 4.0f;
 };

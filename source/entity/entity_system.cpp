@@ -329,7 +329,7 @@ void EntitySystem::ShowStats()
 {
 	uint32_t entityCount = m_world->AllEntities().size();
 	auto componentTypes = m_world->GetAllComponentTypes();
-	if (m_debugGui->BeginWindow(m_showStats, ""))
+	if (m_debugGui->BeginWindow(m_showStats, "Entity Stats"))
 	{
 		char text[1024];
 		sprintf_s(text, "Active Entities: %d", entityCount);
