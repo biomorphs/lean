@@ -146,6 +146,7 @@ bool Editor::ImportScene(const char* fileName, bool makeNewWorld)
 	if (makeNewWorld)
 	{
 		m_entitySystem->NewWorld();
+		m_sceneFilepath = fileName;
 	}
 	m_entitySystem->SerialiseEntities(sceneJson, makeNewWorld);		// restore the old ids if making a new world
 

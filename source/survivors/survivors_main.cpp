@@ -97,11 +97,11 @@ namespace Survivors
 			MonsterComponent* m_cc;
 			Transform* m_transform;
 		};
-		static WorldGrid<ActiveMonster> activeMonsterGrid({32.0f,32.0f});
+		static WorldGrid<uint32_t> activeMonsterGrid({32.0f,32.0f});	// indexes into vector below
 		static std::vector<ActiveMonster> activeMonsters;
+		std::vector<EntityHandle> monstersToDespawn;
 		activeMonsterGrid.Reset();
 		activeMonsters.clear();
-		std::vector<EntityHandle> monstersToDespawn;
 
 		// monster update first pass, collect active + despawning entities
 		if (m_enemiesEnabled)
@@ -138,8 +138,8 @@ namespace Survivors
 					const auto aabMin = pos - glm::vec3(collideRadius, 0.0f, collideRadius);
 					const auto aabMax = pos + glm::vec3(collideRadius, 0.0f, collideRadius);
 					ActiveMonster am{ glm::vec4(pos, collideRadius), targetPosition , &cc, &t };
-					activeMonsterGrid.AddEntry(aabMin, aabMax, am);
 					activeMonsters.emplace_back(am);
+					activeMonsterGrid.AddEntry(aabMin, aabMax, activeMonsters.size() - 1);
 				}
 			});
 
@@ -150,32 +150,47 @@ namespace Survivors
 				for (int m = 0; m < activeMonsters.size(); ++m)
 				{
 					auto& monster = activeMonsters[m];
+					auto posToPlayer = (playerPos - monster.m_targetPosition) * glm::vec3(1.0f, 0.0f, 1.0f);
+					float distanceToPlayer = glm::length(posToPlayer);
+					if (distanceToPlayer < monster.m_positionRadius.w)
+					{
+						continue;
+					}
+
 					const float collideRadius = monster.m_positionRadius.w;
 					const auto aabMin = monster.m_targetPosition - glm::vec3(collideRadius, 0.0f, collideRadius);
 					const auto aabMax = monster.m_targetPosition + glm::vec3(collideRadius, 0.0f, collideRadius);
 					nearbyMonsters.clear();
-					activeMonsterGrid.FindEntries(aabMin, aabMax, nearbyMonsters);
-					if (nearbyMonsters.size() > 1)	// don't include the monster itself
-					{
-						for (auto& neighbour : nearbyMonsters)
+
+					activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
+						auto& neighbour = activeMonsters[index];
+						if (neighbour.m_cc == monster.m_cc)
+							return;
+						const glm::vec3 neighbourPos = neighbour.m_targetPosition;
+						glm::vec3 monsterToNearby = monster.m_targetPosition - neighbourPos;
+						const float d = glm::length(monsterToNearby);
+						const float neighbourRadius = neighbour.m_positionRadius.w;
+						if (d < (neighbourRadius + collideRadius))
 						{
-							if (neighbour.m_cc == monster.m_cc)
-								continue;
-							const glm::vec3 neighbourPos = glm::vec3(neighbour.m_targetPosition);
-							glm::vec3 monsterToNearby = monster.m_targetPosition - neighbourPos;
-							const float d = glm::length(monsterToNearby);
-							const float neighbourRadius = neighbour.m_positionRadius.w;
-							if (d < (neighbourRadius + collideRadius))
+							monsterToNearby = -monsterToNearby / d;
+							float shiftDistance = (neighbourRadius + collideRadius) - d;
+							shiftDistance = shiftDistance * 0.5f;	// damper on shift/frame
+							const glm::vec3 shift = monsterToNearby * shiftDistance;
+							if (neighbourRadius < collideRadius)
 							{
-								monsterToNearby = -monsterToNearby / d;
-								float shiftDistance = (neighbourRadius + collideRadius) - d;
-								shiftDistance = shiftDistance * 1.0f;	// damper on shift/frame
-								const glm::vec3 shift = monsterToNearby * shiftDistance;
+								neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
+							}
+							else if (neighbourRadius == collideRadius)
+							{
 								monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
 								neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
 							}
+							else
+							{
+								monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
+							}
 						}
-					}
+					});
 				}
 			}
 			for (int m = 0; m < activeMonsters.size(); ++m)

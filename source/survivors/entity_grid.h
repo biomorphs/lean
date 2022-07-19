@@ -15,6 +15,7 @@ public:
 	void SetTileSize(glm::vec2 t) { m_tileSize = t; Reset(true); }
 	void AddEntry(glm::vec3 aabMin, glm::vec3 aabMax, const PerTileData& d);
 	void FindEntries(glm::vec3 aabMin, glm::vec3 aabMax, std::vector<PerTileData>& results);
+	void ForEachNearby(glm::vec3 aabMin, glm::vec3 aabMax, std::function<void(PerTileData&)> fn);
 private:
 	struct Tile
 	{
@@ -24,6 +25,7 @@ private:
 	glm::ivec2 PositionToTileIndex(glm::vec3 p) const;
 	uint64_t TileIndexToHash(glm::ivec2) const;
 	Tile& GetTile(glm::ivec2 t);
+	Tile* GetTileMaybe(glm::ivec2 t);
 	
 	int m_initialTileEntries = 4;
 	glm::vec2 m_tileSize = { 32.0f, 32.0f };
@@ -43,6 +45,21 @@ typename WorldGrid<PerTileData>::Tile& WorldGrid<PerTileData>::GetTile(glm::ivec
 		return *(*(newIt.first)).second;	// argh my eyes!
 	}
 	return *(*it).second;
+}
+
+template<class PerTileData>
+typename WorldGrid<PerTileData>::Tile* WorldGrid<PerTileData>::GetTileMaybe(glm::ivec2 t)
+{
+	const auto hash = TileIndexToHash(t);
+	auto it = m_tiles.find(hash);
+	if (it != m_tiles.end())
+	{
+		return (*it).second.get();
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 template<class PerTileData>
@@ -92,6 +109,27 @@ void WorldGrid<PerTileData>::AddEntry(glm::vec3 aabMin, glm::vec3 aabMax, const 
 			{
 				Tile& t = GetTile({ tx, tz });
 				t.m_entries.emplace_back(d);
+			}
+		}
+	}
+}
+
+template<class PerTileData>
+void WorldGrid<PerTileData>::ForEachNearby(glm::vec3 aabMin, glm::vec3 aabMax, std::function<void(PerTileData&)> fn)
+{
+	auto tileIdMin = PositionToTileIndex(aabMin);
+	auto tileIdMax = PositionToTileIndex(aabMax);
+	for (int tx = tileIdMin.x; tx <= tileIdMax.x; ++tx)
+	{
+		for (int tz = tileIdMin.y; tz <= tileIdMax.y; ++tz)
+		{
+			Tile* t = GetTileMaybe({ tx, tz });
+			if (t != nullptr)
+			{
+				for (auto& entry : t->m_entries)
+				{
+					fn(entry);
+				}
 			}
 		}
 	}
