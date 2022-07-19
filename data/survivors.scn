@@ -103,7 +103,7 @@
               "ID": 4294967295
             },
             "Position": [
-              0.0,
+              -12.137834548950195,
               184.5,
               -184.75
             ],
@@ -289,7 +289,7 @@
               "ID": 4294967295
             },
             "Position": [
-              0.0,
+              -12.137834548950195,
               0.0,
               0.0
             ],
@@ -398,16 +398,455 @@
         }
       ],
       "ID": 12193
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\skeleton.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [
+              {
+                "ClassName": "CapsuleCollider",
+                "HalfHeight": 2.5,
+                "Origin": [
+                  0.75,
+                  5.860000133514404,
+                  0.0
+                ],
+                "PitchYawRoll": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Radius": 3.5
+              }
+            ],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": true,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "SkeletonTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              60.26481246948242,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              1.5,
+              1.5,
+              1.5
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12194
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\zombie.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12195
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [
+              {
+                "ClassName": "CapsuleCollider",
+                "HalfHeight": 5.300000190734863,
+                "Origin": [
+                  1.0399999618530273,
+                  12.65999984741211,
+                  0.0
+                ],
+                "PitchYawRoll": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Radius": 8.0
+              }
+            ],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": true,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0968858003616333,
+                  0.3529411554336548,
+                  0.11947881430387497,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.16945405304431915,
+                  0.21078431606292725,
+                  0.17310082912445068,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.1813725233078003,
+                  0.12449021637439728,
+                  0.09513166546821594,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.08240041881799698,
+                  0.20588237047195435,
+                  0.0746828243136406,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.1764706373214722,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "ZombieChadTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              95.29993438720703,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              3.0,
+              3.0,
+              3.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12195
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [
+              {
+                "ClassName": "PlaneCollider",
+                "Normal": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "GroundPlane"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12196
     }
   ],
-  "EntityCount": 6,
+  "EntityCount": 9,
   "EntityIDs": [
     0,
     3,
     527,
     11595,
     12190,
-    12193
+    12193,
+    12194,
+    12195,
+    12196
   ],
   "SceneName": "Survivors"
 }

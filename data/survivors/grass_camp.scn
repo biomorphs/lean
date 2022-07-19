@@ -5,10 +5,6 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\cube2.fbx"
@@ -25,36 +21,6 @@
             }
           },
           "Type": "Model"
-        },
-        {
-          "Data": {
-            "BoxColliders": [
-              {
-                "ClassName": "BoxCollider",
-                "Dimensions": [
-                  64.0,
-                  1.0,
-                  64.0
-                ],
-                "Origin": [
-                  0.0,
-                  0.0,
-                  0.0
-                ]
-              }
-            ],
-            "CapsuleColliders": [],
-            "ClassName": "Physics",
-            "Density": 1.0,
-            "DynamicFriction": 0.5,
-            "IsKinematic": false,
-            "IsStatic": true,
-            "PlaneColliders": [],
-            "Restitution": 0.6000000238418579,
-            "SphereColliders": [],
-            "StaticFriction": 0.5
-          },
-          "Type": "Physics"
         },
         {
           "Data": {
@@ -201,10 +167,6 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\survival-kit-1.0\\Models\\FBX format\\campfire.fbx"
@@ -268,10 +230,6 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
@@ -335,10 +293,6 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\tent_detailedOpen.fbx"
@@ -402,10 +356,6 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"

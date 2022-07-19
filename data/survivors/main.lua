@@ -1,7 +1,44 @@
 local firstRun = true
-local zombiesPerSecond = 2
+
+local spawnRadiusMin = 360
+local spawnRadiusMax = 40
+
+local zombieChadsPerSecond = 0.0
+local zombieChadsPerSecondIncrement = 0.000001
+local zombieChadSpawnTimer = 0
+local zombieChadSpawnEnabled = false
+local zombiesPerSecond = 0.0
+local zombiesPerSecondIncrement = 0.0005
 local zombieSpawnTimer = 0
 local zombieSpawnEnabled = false
+local skeletonsPerSecond = 0.0
+local skeletonsPerSecondIncrement = 0.0001
+local skeletonsSpawnTimer = 0
+local skeletonsSpawnEnabled = false
+
+function SpawnSkeletonAt(pos)
+	local template = World.GetFirstEntityWithTag(Tag.new("SkeletonTemplate"))
+	local newSkele = World.CloneEntity(template)
+	local newTransform = World.GetComponent_Transform(newSkele)
+	if(newTransform ~= nil) then 
+		newTransform:SetPosition(pos.x, pos.y, pos.z)
+	end
+	local newMonsterCmp = World.AddComponent_MonsterComponent(newSkele)
+	newMonsterCmp:SetSpeed(3.0 + math.random() * 6.0)
+	newMonsterCmp:SetCollideRadius(4.0)
+end
+
+function SpawnZombieChadAt(pos)
+	local zombieTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieChadTemplate"))
+	local newZombie = World.CloneEntity(zombieTemplate)
+	local newTransform = World.GetComponent_Transform(newZombie)
+	if(newTransform ~= nil) then 
+		newTransform:SetPosition(pos.x, pos.y, pos.z)
+	end
+	local newMonsterCmp = World.AddComponent_MonsterComponent(newZombie)
+	newMonsterCmp:SetSpeed(6.0 + math.random() * 10.0)
+	newMonsterCmp:SetCollideRadius(8.5)
+end
 
 function SpawnZombieAt(pos)
 	local zombieTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieTemplate"))
@@ -15,18 +52,29 @@ function SpawnZombieAt(pos)
 	newMonsterCmp:SetCollideRadius(3.0)
 end
 
-function SpawnZombie()
-	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
+function SpawnEnemy(SpawnAtFn)
+	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))	-- can be cached
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
-	local playerPos = playerTransform:GetPosition()
-	local spawnRadiusMin = 150
-	local spawnRadiusMax = 50
-	local theta = math.random() * 2.0 * 3.14
-	local spawnDistance = spawnRadiusMin + math.random() * spawnRadiusMax
-	local rx = playerPos.x + math.sin(theta) * spawnDistance
-	local ry = 0.5
-	local rz = playerPos.z + math.cos(theta) * spawnDistance
-	SpawnZombieAt(vec3.new(rx,ry,rz))
+	if(playerTransform ~= nil) then
+		local playerPos = playerTransform:GetPosition()
+		local theta = math.random() * 2.0 * 3.14
+		local spawnDistance = spawnRadiusMin + math.random() * spawnRadiusMax
+		local rx = playerPos.x + math.sin(theta) * spawnDistance
+		local ry = 0.5
+		local rz = playerPos.z + math.cos(theta) * spawnDistance
+		SpawnAtFn(vec3.new(rx,ry,rz))
+	end
+end
+
+function SpawnSkeletons()
+	if(skeletonsSpawnEnabled == false or skeletonsPerSecond <= 0) then 
+		return 
+	end
+	skeletonsSpawnTimer = skeletonsSpawnTimer + 0.066	-- todo delta
+	if(skeletonsSpawnTimer > (1.0 / skeletonsPerSecond)) then 
+		SpawnEnemy(SpawnSkeletonAt)
+		skeletonsSpawnTimer = 0
+	end
 end
 
 function SpawnZombies()
@@ -35,8 +83,19 @@ function SpawnZombies()
 	end
 	zombieSpawnTimer = zombieSpawnTimer + 0.066	-- todo delta
 	if(zombieSpawnTimer > (1.0 / zombiesPerSecond)) then 
-		SpawnZombie()
+		SpawnEnemy(SpawnZombieAt)
 		zombieSpawnTimer = 0
+	end
+end
+
+function SpawnZombieChads()
+	if(zombieChadSpawnEnabled == false or zombieChadsPerSecond <= 0) then 
+		return 
+	end
+	zombieChadSpawnTimer = zombieChadSpawnTimer + 0.066	-- todo delta
+	if(zombieChadSpawnTimer > (1.0 / zombieChadsPerSecond)) then 
+		SpawnEnemy(SpawnZombieChadAt)
+		zombieChadSpawnTimer = 0
 	end
 end
 
@@ -84,8 +143,32 @@ function SpawnWorldTiles_BasicFields(tilePos_ivec2)
 	end
 end
 
+function DoStartGame()
+	local foundCamera = World.GetFirstEntityWithTag(Tag.new("PlayerFollowCamera"))
+	Graphics.SetActiveCamera(foundCamera)
+	Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicFields)
+	Survivors.RemoveAllTiles()
+	Survivors.StartGame()
+	zombieChadSpawnEnabled = true
+	zombieChadsPerSecond = 0.001
+	zombieSpawnEnabled = true
+	zombiesPerSecond = 1.0
+	skeletonsSpawnEnabled = true
+	skeletonsPerSecond = 0.2
+end
+
+function DoStopGame()
+	zombieChadsPerSecond = 0.0
+	zombieChadSpawnEnabled = false
+	zombiesPerSecond = 0.0
+	zombieSpawnEnabled = false
+	skeletonsPerSecond = 0.0
+	skeletonsSpawnEnabled = false
+	Survivors.StopGame()
+end
+
 function PlayerUpdate()
-	local playerSpeed = 0.2
+	local playerSpeed = 0.3
 	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	local cct = World.GetComponent_CharacterController(foundPlayer)
@@ -113,17 +196,21 @@ function PlayerUpdate()
 	playerTransform:SetPosition(myPos.x,myPos.y,myPos.z)
 end
 
-function DoStartGame()
-	local foundCamera = World.GetFirstEntityWithTag(Tag.new("PlayerFollowCamera"))
-	Graphics.SetActiveCamera(foundCamera)
-	Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicFields)
-	Survivors.RemoveAllTiles()
-	Survivors.StartGame()
-end
-
 function SurvivorsMain(entity)
 	PlayerUpdate();
 	SpawnZombies();
+	SpawnZombieChads();
+	SpawnSkeletons();
+	
+	if(zombieSpawnEnabled==true) then 
+		zombiesPerSecond = zombiesPerSecond + zombiesPerSecondIncrement
+	end
+	if(zombieChadSpawnEnabled==true) then 
+		zombieChadsPerSecond = zombieChadsPerSecond + zombieChadsPerSecondIncrement
+	end
+	if(skeletonsSpawnEnabled==true) then
+		skeletonsPerSecond = skeletonsPerSecond + skeletonsPerSecondIncrement
+	end
 	
 	DebugGui.BeginWindow(true, 'Survivors!')
 	local tileLoadRadius = Survivors.GetWorldTileLoadRadius()
@@ -148,17 +235,38 @@ function SurvivorsMain(entity)
 		DoStartGame()
 	end
 	if(DebugGui.Button('Stop Game')) then 
-		Survivors.StopGame()
+		DoStopGame()
 	end
 	if(DebugGui.Button('Spawn Zombies')) then 
 		zombieSpawnEnabled = true
 	end
-	if(DebugGui.Button('2k zombies')) then 
-		for i=0,2000 do
-			SpawnZombie()
+	if(DebugGui.Button('200 zombies')) then 
+		for i=0,200 do
+			SpawnEnemy(SpawnZombieAt)
 		end
 	end
-	zombiesPerSecond = DebugGui.DragInt('Zombies/second', zombiesPerSecond, 1, 0, 128)
+	if(DebugGui.Button('Spawn Zombie Chad')) then 
+		zombieChadSpawnEnabled = true
+	end
+	if(DebugGui.Button('20 zombie chads')) then 
+		for i=0,20 do
+			SpawnEnemy(SpawnZombieChadAt)
+		end
+	end
+	if(DebugGui.Button('Spawn Skelies')) then 
+		skeletonsSpawnEnabled = true
+	end
+	if(DebugGui.Button('200 skelies')) then 
+		for i=0,200 do
+			SpawnEnemy(SpawnSkeletonAt)
+		end
+	end
+	spawnRadiusMin = DebugGui.DragFloat('Spawn min radius', spawnRadiusMin, 1.0, 2.0, 800)
+	spawnRadiusMax = DebugGui.DragFloat('Spawn ring size', spawnRadiusMax, 1.0, 0, 800.0)
+	zombiesPerSecond = DebugGui.DragFloat('Zombies/second', zombiesPerSecond, 1.0, 0.0, 128.0)
+	zombieChadsPerSecond = DebugGui.DragFloat('Zombie chads/second', zombieChadsPerSecond, 1.0, 0.0, 128.0)
+	skeletonsPerSecond = DebugGui.DragFloat('Skeletons/second', skeletonsPerSecond, 1.0, 0.0, 128.0)
+	
 	if(DebugGui.Button('Reload Main Script')) then 
 		local myScriptCmp = World.GetComponent_Script(entity)
 		if(myScriptCmp ~= nil) then 

@@ -22,7 +22,7 @@ private:
 	// active state
 	int m_currentHP = 100;
 	float m_speed = 4.0f;
-	float m_visionRadius = 400.0f;
+	float m_visionRadius = 450.0f;
 	float m_despawnRadius = 500.0f;
 	float m_collideRadius = 2.0f;
 };

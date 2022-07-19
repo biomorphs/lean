@@ -97,7 +97,7 @@ namespace Survivors
 			MonsterComponent* m_cc;
 			Transform* m_transform;
 		};
-		static WorldGrid<ActiveMonster> activeMonsterGrid({8.0f,8.0f});
+		static WorldGrid<ActiveMonster> activeMonsterGrid({32.0f,32.0f});
 		static std::vector<ActiveMonster> activeMonsters;
 		activeMonsterGrid.Reset();
 		activeMonsters.clear();
@@ -106,6 +106,7 @@ namespace Survivors
 		// monster update first pass, collect active + despawning entities
 		if (m_enemiesEnabled)
 		{
+			SDE_PROF_EVENT("Phase1");
 			auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
 			auto playerTransform = world->GetComponent<Transform>(playerEntity);
 			const glm::vec3 playerPos = playerTransform->GetPosition();
@@ -143,33 +144,36 @@ namespace Survivors
 			});
 
 			// movement / collision pass
-			static std::vector<ActiveMonster> nearbyMonsters;
-			for (int m = 0; m < activeMonsters.size(); ++m)
 			{
-				auto& monster = activeMonsters[m];
-				const float collideRadius = monster.m_positionRadius.w;
-				const auto aabMin = monster.m_targetPosition - glm::vec3(collideRadius, 0.0f, collideRadius);
-				const auto aabMax = monster.m_targetPosition + glm::vec3(collideRadius, 0.0f, collideRadius);
-				nearbyMonsters.clear();
-				activeMonsterGrid.FindEntries(aabMin, aabMax, nearbyMonsters);
-				if (nearbyMonsters.size() > 1)	// don't include the monster itself
+				SDE_PROF_EVENT("Phase2");
+				static std::vector<ActiveMonster> nearbyMonsters;
+				for (int m = 0; m < activeMonsters.size(); ++m)
 				{
-					const auto posToPlayer = (playerPos - monster.m_targetPosition) * glm::vec3(1.0f, 0.0f, 1.0f);
-					for (auto& neighbour : nearbyMonsters)
+					auto& monster = activeMonsters[m];
+					const float collideRadius = monster.m_positionRadius.w;
+					const auto aabMin = monster.m_targetPosition - glm::vec3(collideRadius, 0.0f, collideRadius);
+					const auto aabMax = monster.m_targetPosition + glm::vec3(collideRadius, 0.0f, collideRadius);
+					nearbyMonsters.clear();
+					activeMonsterGrid.FindEntries(aabMin, aabMax, nearbyMonsters);
+					if (nearbyMonsters.size() > 1)	// don't include the monster itself
 					{
-						if (neighbour.m_cc == monster.m_cc)
-							continue;
-						glm::vec3 monsterToNearby = monster.m_targetPosition - glm::vec3(neighbour.m_positionRadius);
-						const float d = glm::fastLength(monsterToNearby);
-						const float neighbourRadius = neighbour.m_positionRadius.w;
-						if (d < (neighbourRadius + collideRadius))
+						for (auto& neighbour : nearbyMonsters)
 						{
-							monsterToNearby = -monsterToNearby / d;
-							const glm::vec3 neighbourPos = glm::vec3(neighbour.m_positionRadius);
-							float shiftDistance = (neighbourRadius + collideRadius) - d;
-							const glm::vec3 shift = monsterToNearby * shiftDistance;
-							monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
-							neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
+							if (neighbour.m_cc == monster.m_cc)
+								continue;
+							const glm::vec3 neighbourPos = glm::vec3(neighbour.m_targetPosition);
+							glm::vec3 monsterToNearby = monster.m_targetPosition - neighbourPos;
+							const float d = glm::length(monsterToNearby);
+							const float neighbourRadius = neighbour.m_positionRadius.w;
+							if (d < (neighbourRadius + collideRadius))
+							{
+								monsterToNearby = -monsterToNearby / d;
+								float shiftDistance = (neighbourRadius + collideRadius) - d;
+								shiftDistance = shiftDistance * 1.0f;	// damper on shift/frame
+								const glm::vec3 shift = monsterToNearby * shiftDistance;
+								monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
+								neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
+							}
 						}
 					}
 				}
