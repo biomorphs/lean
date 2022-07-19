@@ -16,6 +16,8 @@ SERIALISE_PROPERTY("Shininess", m_shininess)
 SERIALISE_PROPERTY("DiffuseTexture", m_diffuseTexture)
 SERIALISE_PROPERTY("NormalTexture", m_normalsTexture)
 SERIALISE_PROPERTY("SpecularTexture", m_specularTexture)
+SERIALISE_PROPERTY("IsTransparent", m_isTransparent)
+SERIALISE_PROPERTY("CastShadows", m_castsShadows)
 SERIALISE_END()
 
 SERIALISE_BEGIN(ModelPartMaterials)
@@ -58,11 +60,6 @@ COMPONENT_INSPECTOR_IMPL(ModelPartMaterials, Engine::DebugGuiSystem& gui)
 				sprintf_s(text, "%s##%d", lbl, partIndex);
 				return text;
 			};
-			
-			p.m_diffuseOpacity = gui.ColourEdit(imguiLabel("Diffuse/Opacity"), p.m_diffuseOpacity);
-			p.m_specular = gui.ColourEdit(imguiLabel("Specular Colour/Strength"), p.m_specular);
-			p.m_shininess.x = gui.DragFloat(imguiLabel("Shininess"), p.m_shininess.x, 0.01f, 0.0f);
-
 			auto doTexture = [&](std::string name, Engine::TextureHandle& t)
 			{
 				auto theTexture = textures.GetTexture(t);
@@ -80,10 +77,25 @@ COMPONENT_INSPECTOR_IMPL(ModelPartMaterials, Engine::DebugGuiSystem& gui)
 					gui.Image(*theTexture, { 256,256 });
 				}
 			};
-			doTexture(imguiLabel("Diffuse Texture"), p.m_diffuseTexture);
-			doTexture(imguiLabel("Normals Texture"), p.m_normalsTexture);
-			doTexture(imguiLabel("Specular Texture"), p.m_specularTexture);
-			++partIndex;
+
+			sprintf_s(text, "Part %d", partIndex);
+			if (gui.TreeNode(text))
+			{
+				i.Inspect(imguiLabel("Cast Shadows"), p.m_castsShadows, [&](bool v) {
+					p.m_castsShadows = v;
+				});
+				i.Inspect(imguiLabel("Transparent"), p.m_isTransparent, [&](bool v) {
+					p.m_isTransparent = v;
+				});
+				p.m_diffuseOpacity = gui.ColourEdit(imguiLabel("Diffuse/Opacity"), p.m_diffuseOpacity);
+				p.m_specular = gui.ColourEdit(imguiLabel("Specular Colour/Strength"), p.m_specular);
+				p.m_shininess.x = gui.DragFloat(imguiLabel("Shininess"), p.m_shininess.x, 0.01f, 0.0f);
+				doTexture(imguiLabel("Diffuse Texture"), p.m_diffuseTexture);
+				doTexture(imguiLabel("Normals Texture"), p.m_normalsTexture);
+				doTexture(imguiLabel("Specular Texture"), p.m_specularTexture);
+				++partIndex;
+				gui.TreePop();
+			}
 		}
 	};
 	return fn;

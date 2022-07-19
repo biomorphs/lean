@@ -539,6 +539,7 @@
             "ClassName": "ModelPartMaterials",
             "Parts": [
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.0968858003616333,
@@ -550,6 +551,7 @@
                   "ClassName": "TextureHandle",
                   "Path": ""
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -572,6 +574,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.16945405304431915,
@@ -583,6 +586,7 @@
                   "ClassName": "TextureHandle",
                   "Path": ""
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -605,6 +609,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.1813725233078003,
@@ -616,6 +621,7 @@
                   "ClassName": "TextureHandle",
                   "Path": ""
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -638,6 +644,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.08240041881799698,
@@ -649,6 +656,7 @@
                   "ClassName": "TextureHandle",
                   "Path": ""
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -671,6 +679,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   1.1764706373214722,
@@ -682,6 +691,7 @@
                   "ClassName": "TextureHandle",
                   "Path": ""
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -820,9 +830,141 @@
         }
       ],
       "ID": 12196
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\sphere_low.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12197
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": true,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [
+              {
+                "ClassName": "SphereCollider",
+                "Origin": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Radius": 16.0
+              }
+            ],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": false,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  3.9215686321258545,
+                  3.9215686321258545,
+                  3.9215686321258545,
+                  0.5882353186607361
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "E:\\Git\\lean\\data\\survivors\\Fire texture seamless.jpg"
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  25.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  9.999999974752427e-07,
+                  9.803922011997201e-07,
+                  9.803922011997201e-07,
+                  0.25
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "ExplosionTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              137.24215698242188,
+              0.22137236595153809,
+              -9.00198745727539
+            ],
+            "Scale": [
+              16.0,
+              16.0,
+              16.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12197
     }
   ],
-  "EntityCount": 9,
+  "EntityCount": 10,
   "EntityIDs": [
     0,
     3,
@@ -832,7 +974,8 @@
     12193,
     12194,
     12195,
-    12196
+    12196,
+    12197
   ],
   "SceneName": "Survivors"
 }

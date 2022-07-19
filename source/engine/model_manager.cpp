@@ -94,8 +94,8 @@ namespace Engine
 								p.m_boundsMax.x, p.m_boundsMax.y, p.m_boundsMax.z);
 							if (gui.TreeNode(text))
 							{
-								p.m_castsShadows = gui.Checkbox(imguiLabel("Cast Shadows"), p.m_castsShadows);
-								p.m_isTransparent = gui.Checkbox(imguiLabel("Transparent"), p.m_isTransparent);
+								p.m_drawData.m_castsShadows = gui.Checkbox(imguiLabel("Cast Shadows"), p.m_drawData.m_castsShadows);
+								p.m_drawData.m_isTransparent = gui.Checkbox(imguiLabel("Transparent"), p.m_drawData.m_isTransparent);
 								p.m_drawData.m_diffuseOpacity = gui.ColourEdit(imguiLabel("Diffuse/Opacity"), p.m_drawData.m_diffuseOpacity);
 								p.m_drawData.m_specular = gui.ColourEdit(imguiLabel("Specular"), p.m_drawData.m_specular);
 								p.m_drawData.m_shininess.x = gui.DragFloat(imguiLabel("Shininess"), p.m_drawData.m_shininess.x);
@@ -165,8 +165,8 @@ namespace Engine
 			dd.m_diffuseTexture = tm.LoadTexture(diffusePath.c_str());
 			dd.m_normalsTexture = tm.LoadTexture(normalPath.c_str());
 			dd.m_specularTexture = tm.LoadTexture(specPath.c_str());
-			renderModel.MeshParts()[p].m_castsShadows = true;
-			renderModel.MeshParts()[p].m_isTransparent = mat.Opacity() < 1.0f;
+			dd.m_castsShadows = true;
+			dd.m_isTransparent = mat.Opacity() < 1.0f;
 		}
 	}
 

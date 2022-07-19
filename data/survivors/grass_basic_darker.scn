@@ -27,6 +27,7 @@
             "ClassName": "ModelPartMaterials",
             "Parts": [
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.7254829406738281,
@@ -38,6 +39,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "E:\\Git\\lean\\data\\grass2.jpg"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""

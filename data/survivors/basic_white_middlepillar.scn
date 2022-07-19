@@ -63,13 +63,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -126,13 +126,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -219,13 +219,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -312,13 +312,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",

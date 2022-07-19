@@ -30,8 +30,6 @@ namespace Engine
 			glm::mat4 m_transform;
 			glm::vec3 m_boundsMin;
 			glm::vec3 m_boundsMax;
-			bool m_isTransparent;
-			bool m_castsShadows;
 			struct DrawData {
 				glm::vec4 m_diffuseOpacity;
 				glm::vec4 m_specular;	//r,g,b,strength
@@ -39,7 +37,9 @@ namespace Engine
 				TextureHandle m_diffuseTexture;
 				TextureHandle m_normalsTexture;
 				TextureHandle m_specularTexture;
-			} m_drawData;		
+				bool m_isTransparent = false;
+				bool m_castsShadows = true;
+			} m_drawData;
 			std::vector<Render::MeshChunk> m_chunks;	// draw calls indexing into global buffers
 		};
 		const std::vector<MeshPart>& MeshParts() const { return m_meshParts; }

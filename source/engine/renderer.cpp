@@ -357,15 +357,15 @@ namespace Engine
 				pid.m_specularTexture = specular ? specular->GetResidentHandle() : m_defaultSpecularResidentHandle;
 
 				const glm::mat4 instanceTransform = transform * meshPart.m_transform;
-				glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
-				if (meshPart.m_castsShadows && shadowShader.m_index != (uint32_t)-1)
+				const glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
+				if (partDrawData.m_castsShadows && shadowShader.m_index != (uint32_t)-1)
 				{
 					auto sortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), nullptr);
 					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform, boundsMin, boundsMax,
 						shadowShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
 				}
 
-				if (meshPart.m_isTransparent)
+				if (partDrawData.m_isTransparent || pid.m_diffuseOpacity.a != 1.0f)
 				{
 					const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
 					auto sortKey = TransparentSortKey(shader, va, meshPart.m_chunks.data(), nullptr, distanceToCamera);
