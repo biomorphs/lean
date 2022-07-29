@@ -93,9 +93,9 @@ COMPONENT_INSPECTOR_IMPL(ModelPartMaterials, Engine::DebugGuiSystem& gui)
 				doTexture(imguiLabel("Diffuse Texture"), p.m_diffuseTexture);
 				doTexture(imguiLabel("Normals Texture"), p.m_normalsTexture);
 				doTexture(imguiLabel("Specular Texture"), p.m_specularTexture);
-				++partIndex;
 				gui.TreePop();
 			}
+			++partIndex;
 		}
 	};
 	return fn;

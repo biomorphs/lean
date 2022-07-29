@@ -12,12 +12,13 @@
 #include "engine/character_controller_system.h"
 #include "engine/components/component_character_controller.h"
 #include "engine/components/component_model_part_materials.h"
+#include "engine/components/component_physics.h"
 #include "entity_grid.h"
 
 namespace Survivors
 {
 	SurvivorsMain::SurvivorsMain()
-		: m_activeMonsterGrid({8.0f,8.0f})
+		: m_activeMonsterGrid({16.0f,16.0f})
 	{
 
 	}
@@ -90,7 +91,7 @@ namespace Survivors
 			{
 				float damage = damageAtCenter;	// todo scaling
 				enemy.m_cc->SetCurrentHealth(enemy.m_cc->GetCurrentHealth() - damage);
-				glm::vec2 knockBack = -glm::normalize(glm::vec2(explosionToEnemy.x, explosionToEnemy.z)) * damage * 2.0f;
+				glm::vec2 knockBack = -glm::normalize(glm::vec2(explosionToEnemy.x, explosionToEnemy.z)) * damage * 3.0f;
 				enemy.m_cc->AddKnockback(knockBack);
 			}
 		});
@@ -236,8 +237,6 @@ namespace Survivors
 		auto playerTransform = world->GetComponent<Transform>(playerEntity);
 		const glm::vec3 playerPos = playerTransform ? playerTransform->GetPosition() : glm::vec3(0.0f, 0.0f, 0.0f);
 
-		static float tileSize = 8.0f;
-		m_activeMonsterGrid.SetTileSize({ tileSize,tileSize });
 		m_activeMonsterGrid.Reset();
 		m_activeMonsters.clear();
 		m_monstersToDespawn.clear();
