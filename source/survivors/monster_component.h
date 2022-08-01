@@ -23,9 +23,12 @@ public:
 	glm::vec2 GetKnockback() { return m_knockBack; }
 	void SetKnockbackFalloff(float v) { m_knockBackFalloff = v; }
 	float GetKnockbackFalloff() { return m_knockBackFalloff; }
+	float GetRagdollChance() { return m_ragdollChance; }
+	void SetRagdollChance(float c) { m_ragdollChance = c; }
 
 private:
 	// active state
+	float m_ragdollChance = 0.1f;
 	float m_currentHP = 100;
 	float m_speed = 4.0f;
 	float m_visionRadius = 450.0f;

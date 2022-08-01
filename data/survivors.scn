@@ -333,7 +333,7 @@
               }
             ],
             "ClassName": "Physics",
-            "Density": 1.0,
+            "Density": 5.0,
             "DynamicFriction": 0.5,
             "IsKinematic": true,
             "IsStatic": false,
@@ -428,7 +428,7 @@
               }
             ],
             "ClassName": "Physics",
-            "Density": 1.0,
+            "Density": 10.0,
             "DynamicFriction": 0.5,
             "IsKinematic": true,
             "IsStatic": false,
@@ -523,7 +523,7 @@
               }
             ],
             "ClassName": "Physics",
-            "Density": 1.0,
+            "Density": 5.0,
             "DynamicFriction": 0.5,
             "IsKinematic": true,
             "IsStatic": false,

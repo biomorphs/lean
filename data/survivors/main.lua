@@ -46,6 +46,7 @@ function SpawnSkeletonAt(pos)
 	local newMonsterCmp = World.AddComponent_MonsterComponent(newSkele)
 	newMonsterCmp:SetSpeed(3.0 + math.random() * 6.0)
 	newMonsterCmp:SetCollideRadius(4.5)
+	newMonsterCmp:SetRagdollChance(0.1)
 end
 
 function SpawnZombieChadAt(pos)
@@ -58,6 +59,7 @@ function SpawnZombieChadAt(pos)
 	local newMonsterCmp = World.AddComponent_MonsterComponent(newZombie)
 	newMonsterCmp:SetSpeed(6.0 + math.random() * 10.0)
 	newMonsterCmp:SetCollideRadius(8.5)
+	newMonsterCmp:SetRagdollChance(0.0)
 end
 
 function SpawnZombieAt(pos)
@@ -70,6 +72,7 @@ function SpawnZombieAt(pos)
 	local newMonsterCmp = World.AddComponent_MonsterComponent(newZombie)
 	newMonsterCmp:SetSpeed(4.0 + math.random() * 8.0)
 	newMonsterCmp:SetCollideRadius(3.5)
+	newMonsterCmp:SetRagdollChance(0.05)
 end
 
 function SpawnEnemy(SpawnAtFn)

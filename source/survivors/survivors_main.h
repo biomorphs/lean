@@ -24,6 +24,7 @@ namespace Survivors
 		void DoEnemyAvoidance(glm::vec3 playerPos, float timeDelta);
 		void CollectActiveAndDespawning(glm::vec3 playerPos, float timeDelta);
 		void UpdateEnemies(float timeDelta);
+		void KillEnemies();
 		void StartGame();
 		void StopGame();
 
@@ -33,12 +34,14 @@ namespace Survivors
 			float m_radius;
 			MonsterComponent* m_cc;
 			Transform* m_transform;
+			EntityHandle m_entity;
 		};
 		bool m_enemiesEnabled = false;
 		int m_avoidanceIterations = 1;				// increase for more stability but slower
 		WorldGrid<uint32_t> m_activeMonsterGrid;	// indexes into vector below
 		std::vector<ActiveMonster> m_activeMonsters;
 		std::vector<EntityHandle> m_monstersToDespawn;
+		std::vector<EntityHandle> m_monstersToKill;
 		int m_tileLoadRadius = 12;
 		std::function<std::string(glm::ivec2)> m_worldTileSpawnFn;
 	};

@@ -1,4 +1,5 @@
 #include "survivors_main.h"
+#include "core/random.h"
 #include "engine/system_manager.h"
 #include "engine/script_system.h"
 #include "engine/debug_gui_system.h"
@@ -90,6 +91,10 @@ namespace Survivors
 			if (d < (enemyRadius + radius))
 			{
 				float damage = damageAtCenter;	// todo scaling
+				if (enemy.m_cc->GetCurrentHealth() <= damageAtCenter)
+				{
+					m_monstersToKill.push_back(enemy.m_entity);	
+				}
 				enemy.m_cc->SetCurrentHealth(enemy.m_cc->GetCurrentHealth() - damage);
 				glm::vec2 knockBack = -glm::normalize(glm::vec2(explosionToEnemy.x, explosionToEnemy.z)) * damage * 3.0f;
 				enemy.m_cc->AddKnockback(knockBack);
@@ -199,11 +204,11 @@ namespace Survivors
 		monsterIterator.ForEach([&](MonsterComponent& cc, Transform& t, EntityHandle e) {
 			auto posToPlayer = (playerPos - t.GetPosition()) * glm::vec3(1.0f, 0.0f, 1.0f);
 			float distanceToPlayer = glm::length(posToPlayer);
-			if (distanceToPlayer >= cc.GetDespawnRadius() || cc.GetCurrentHealth() <= 0.0f)	// despawn if too far away or dead
+			if (distanceToPlayer >= cc.GetDespawnRadius())
 			{
 				m_monstersToDespawn.emplace_back(e);
 			}
-			else if (distanceToPlayer <= cc.GetVisionRadius())
+			else if (distanceToPlayer <= cc.GetVisionRadius() && cc.GetCurrentHealth() > 0.0f)
 			{
 				glm::vec3 targetPosition = t.GetPosition();
 				cc.SetKnockback(cc.GetKnockback() * cc.GetKnockbackFalloff());
@@ -222,11 +227,39 @@ namespace Survivors
 				const float collideRadius = cc.GetCollideRadius();
 				const auto aabMin = targetPosition - glm::vec3(collideRadius, 0.0f, collideRadius);
 				const auto aabMax = targetPosition + glm::vec3(collideRadius, 0.0f, collideRadius);
-				ActiveMonster am{ targetPosition, collideRadius, &cc, &t };
+				ActiveMonster am{ targetPosition, collideRadius, &cc, &t, e };
 				m_activeMonsters.emplace_back(am);
 				m_activeMonsterGrid.AddEntry(aabMin, aabMax, m_activeMonsters.size() - 1);
 			}
 		});
+	}
+
+	void SurvivorsMain::KillEnemies()
+	{
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto world = entities->GetWorld();
+
+		for (auto entity : m_monstersToKill)
+		{
+			auto mc = world->GetComponent<MonsterComponent>(entity);
+			if (mc)
+			{
+				if (Core::Random::GetFloat(0.0f, 1.0f) < mc->GetRagdollChance())
+				{
+					auto physics = world->GetComponent<Physics>(entity);
+					if (physics)
+					{
+						physics->SetKinematic(false);
+						physics->Rebuild();
+					}
+					world->RemoveComponent<MonsterComponent>(entity);
+				}
+				else
+				{
+					m_monstersToDespawn.push_back(entity);
+				}
+			}
+		}
 	}
 
 	void SurvivorsMain::UpdateEnemies(float timeDelta)
@@ -240,9 +273,11 @@ namespace Survivors
 		m_activeMonsterGrid.Reset();
 		m_activeMonsters.clear();
 		m_monstersToDespawn.clear();
+		m_monstersToKill.clear();
 		CollectActiveAndDespawning(playerPos, timeDelta);
 		DoEnemyAvoidance(playerPos, timeDelta);
 		UpdateExplosions(timeDelta);
+		KillEnemies();
 
 		// despawn last as to not mess with component storage
 		for (auto it : m_monstersToDespawn)
