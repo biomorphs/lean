@@ -69,7 +69,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -86,7 +86,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
               }
             ]
           },
@@ -132,7 +132,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\potA.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -179,7 +179,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\potA.fbx"
               }
             ]
           },
@@ -225,7 +225,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -272,7 +272,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\cube2.fbx"
+                "String": "cube2.fbx"
               }
             ]
           },
@@ -318,7 +318,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -365,7 +365,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\cube2.fbx"
+                "String": "cube2.fbx"
               }
             ]
           },

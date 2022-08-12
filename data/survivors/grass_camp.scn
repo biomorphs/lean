@@ -7,7 +7,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -36,7 +36,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\grass2.jpg"
+                  "Path": "grass2.jpg"
                 },
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
@@ -169,7 +169,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\survival-kit-1.0\\Models\\FBX format\\campfire.fbx"
+              "Path": "survival-kit-1.0\\Models\\FBX format\\campfire.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -190,7 +190,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\survival-kit-1.0\\Models\\FBX format\\campfire.fbx"
+                "String": "survival-kit-1.0\\Models\\FBX format\\campfire.fbx"
               }
             ]
           },
@@ -232,7 +232,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+              "Path": "kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -253,7 +253,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+                "String": "kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
               }
             ]
           },
@@ -295,7 +295,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\tent_detailedOpen.fbx"
+              "Path": "kenney_natureKit_2.1\\Models\\FBX format\\tent_detailedOpen.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -316,7 +316,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\tent_detailedOpen.fbx"
+                "String": "kenney_natureKit_2.1\\Models\\FBX format\\tent_detailedOpen.fbx"
               }
             ]
           },
@@ -358,7 +358,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+              "Path": "kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -379,7 +379,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
+                "String": "kenney_natureKit_2.1\\Models\\FBX format\\bed_floor.fbx"
               }
             ]
           },

@@ -114,7 +114,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -161,7 +161,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -207,7 +207,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -254,7 +254,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -300,7 +300,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedA.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedA.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -347,7 +347,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -393,7 +393,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -440,7 +440,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -486,7 +486,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_medium.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickA_medium.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -533,7 +533,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -579,7 +579,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_medium.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_medium.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -626,7 +626,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -672,7 +672,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileSpikes_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileSpikes_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -719,7 +719,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -765,7 +765,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -812,7 +812,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -858,7 +858,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_broken.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_broken.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -905,7 +905,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -951,7 +951,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_door.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_door.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1024,7 +1024,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1070,7 +1070,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_end.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_end.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1117,7 +1117,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1163,7 +1163,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_end_broken.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_end_broken.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1210,7 +1210,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1256,7 +1256,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_gate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_gate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1303,7 +1303,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1349,7 +1349,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_gateCorner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_gateCorner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1409,7 +1409,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1455,7 +1455,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1515,7 +1515,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1561,7 +1561,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_window.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_window.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1608,7 +1608,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1654,7 +1654,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_windowGate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_windowGate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1701,7 +1701,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1747,7 +1747,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallDecorationA.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallDecorationA.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1807,7 +1807,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1853,7 +1853,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallDecorationB.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallDecorationB.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1913,7 +1913,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -1959,7 +1959,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallIntersection.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallIntersection.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2019,7 +2019,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2065,7 +2065,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSingle.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSingle.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2112,7 +2112,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2158,7 +2158,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSingle_broken.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSingle_broken.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2205,7 +2205,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2251,7 +2251,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSingle_door.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSingle_door.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2298,7 +2298,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2344,7 +2344,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSingle_window.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSingle_window.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2391,7 +2391,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2437,7 +2437,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSingle_windowGate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSingle_windowGate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2484,7 +2484,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2530,7 +2530,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSingle_decorationA.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSingle_decorationA.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2590,7 +2590,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2636,7 +2636,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSingle_decorationB.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSingle_decorationB.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2696,7 +2696,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2742,7 +2742,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2789,7 +2789,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2835,7 +2835,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2882,7 +2882,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -2928,7 +2928,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -2975,7 +2975,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3021,7 +3021,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3068,7 +3068,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3114,7 +3114,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3161,7 +3161,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3207,7 +3207,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3254,7 +3254,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3300,7 +3300,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3347,7 +3347,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3393,7 +3393,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3440,7 +3440,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3486,7 +3486,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3533,7 +3533,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3579,7 +3579,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3626,7 +3626,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3672,7 +3672,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3719,7 +3719,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3765,7 +3765,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3812,7 +3812,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3858,7 +3858,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3905,7 +3905,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -3951,7 +3951,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -3998,7 +3998,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4044,7 +4044,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4091,7 +4091,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4137,7 +4137,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4184,7 +4184,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4230,7 +4230,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4277,7 +4277,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4323,7 +4323,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4370,7 +4370,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4416,7 +4416,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4463,7 +4463,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4509,7 +4509,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4569,7 +4569,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4615,7 +4615,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4662,7 +4662,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4708,7 +4708,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4768,7 +4768,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4814,7 +4814,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4861,7 +4861,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -4907,7 +4907,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_windowGate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_windowGate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -4954,7 +4954,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5000,7 +5000,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_windowGate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_windowGate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5047,7 +5047,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5093,7 +5093,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5140,7 +5140,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5186,7 +5186,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5246,7 +5246,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5292,7 +5292,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5339,7 +5339,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5385,7 +5385,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5432,7 +5432,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5478,7 +5478,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5525,7 +5525,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5571,7 +5571,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5618,7 +5618,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5664,7 +5664,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5711,7 +5711,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5757,7 +5757,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_door.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_door.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5830,7 +5830,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5876,7 +5876,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -5923,7 +5923,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -5969,7 +5969,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6016,7 +6016,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6062,7 +6062,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_end.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_end.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6109,7 +6109,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6155,7 +6155,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6202,7 +6202,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6248,7 +6248,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6295,7 +6295,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6341,7 +6341,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6388,7 +6388,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6434,7 +6434,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6481,7 +6481,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6527,7 +6527,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6574,7 +6574,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6620,7 +6620,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSplit.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSplit.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6680,7 +6680,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6726,7 +6726,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSplit.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSplit.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6786,7 +6786,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6832,7 +6832,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallSplit.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallSplit.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6892,7 +6892,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -6938,7 +6938,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -6985,7 +6985,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7031,7 +7031,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7078,7 +7078,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7124,7 +7124,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7171,7 +7171,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7217,7 +7217,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7264,7 +7264,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7310,7 +7310,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7357,7 +7357,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7403,7 +7403,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7450,7 +7450,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7496,7 +7496,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7556,7 +7556,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7602,7 +7602,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_door.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_door.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7675,7 +7675,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7721,7 +7721,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wall_end.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wall_end.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7768,7 +7768,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7814,7 +7814,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\wallCorner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7874,7 +7874,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -7920,7 +7920,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\door.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\door.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -7967,7 +7967,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\door.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\door.fbx"
               }
             ]
           },
@@ -8013,7 +8013,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\door.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\door.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8060,7 +8060,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\door.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\door.fbx"
               }
             ]
           },
@@ -8106,7 +8106,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torch.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\torch.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8153,7 +8153,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torch.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\torch.fbx"
               }
             ]
           },
@@ -8199,7 +8199,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8246,7 +8246,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
               }
             ]
           },
@@ -8292,7 +8292,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8339,7 +8339,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
               }
             ]
           },
@@ -8385,7 +8385,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8432,7 +8432,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
               }
             ]
           },
@@ -8478,7 +8478,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableMedium.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tableMedium.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8525,7 +8525,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableMedium.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tableMedium.fbx"
               }
             ]
           },
@@ -8571,7 +8571,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableSmall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tableSmall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8618,7 +8618,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableMedium.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tableMedium.fbx"
               }
             ]
           },
@@ -8664,7 +8664,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8711,7 +8711,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -8757,7 +8757,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcase.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bookcase.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8804,7 +8804,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcase.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bookcase.fbx"
               }
             ]
           },
@@ -8850,7 +8850,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8897,7 +8897,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
               }
             ]
           },
@@ -8943,7 +8943,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -8990,7 +8990,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
               }
             ]
           },
@@ -9036,7 +9036,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9083,7 +9083,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
               }
             ]
           },
@@ -9129,7 +9129,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9192,7 +9192,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
               }
             ]
           },
@@ -9238,7 +9238,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9285,7 +9285,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
               }
             ]
           },
@@ -9331,7 +9331,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar_broken.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pillar_broken.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9378,7 +9378,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
               }
             ]
           },
@@ -9424,7 +9424,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar_broken.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pillar_broken.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9471,7 +9471,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pillar.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pillar.fbx"
               }
             ]
           },
@@ -9517,7 +9517,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9564,7 +9564,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
               }
             ]
           },
@@ -9610,7 +9610,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9657,7 +9657,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
               }
             ]
           },
@@ -9703,7 +9703,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9750,7 +9750,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bookcaseWide.fbx"
               }
             ]
           },
@@ -9796,7 +9796,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9843,7 +9843,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
               }
             ]
           },
@@ -9889,7 +9889,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -9936,7 +9936,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tableLarge.fbx"
               }
             ]
           },
@@ -9982,7 +9982,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\banner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\banner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10029,7 +10029,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\banner.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\banner.fbx"
               }
             ]
           },
@@ -10075,7 +10075,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\banner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\banner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10122,7 +10122,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\banner.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\banner.fbx"
               }
             ]
           },
@@ -10168,7 +10168,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\banner.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\banner.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10215,7 +10215,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\banner.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\banner.fbx"
               }
             ]
           },
@@ -10261,7 +10261,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedB.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10308,7 +10308,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -10354,7 +10354,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10401,7 +10401,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -10447,7 +10447,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10494,7 +10494,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -10540,7 +10540,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10587,7 +10587,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -10633,7 +10633,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10680,7 +10680,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -10726,7 +10726,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10773,7 +10773,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -10819,7 +10819,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10866,7 +10866,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -10912,7 +10912,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -10959,7 +10959,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -11005,7 +11005,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11052,7 +11052,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -11098,7 +11098,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11145,7 +11145,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -11191,7 +11191,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11238,7 +11238,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -11284,7 +11284,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11331,7 +11331,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -11377,7 +11377,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\bench.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11424,7 +11424,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\bench.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\bench.fbx"
               }
             ]
           },
@@ -11470,7 +11470,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11517,7 +11517,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -11563,7 +11563,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11610,7 +11610,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -11656,7 +11656,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11703,7 +11703,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -11749,7 +11749,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11796,7 +11796,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -11842,7 +11842,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11889,7 +11889,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -11935,7 +11935,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -11982,7 +11982,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -12028,7 +12028,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12075,7 +12075,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -12121,7 +12121,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12168,7 +12168,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -12214,7 +12214,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12261,7 +12261,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
               }
             ]
           },
@@ -12365,7 +12365,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12412,7 +12412,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
               }
             ]
           },
@@ -12516,7 +12516,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12563,7 +12563,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
               }
             ]
           },
@@ -12667,7 +12667,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12714,7 +12714,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -12760,7 +12760,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12820,7 +12820,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
               }
             ]
           },
@@ -12866,7 +12866,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pots.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pots.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -12913,7 +12913,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pots.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pots.fbx"
               }
             ]
           },
@@ -12959,7 +12959,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pots.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pots.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13006,7 +13006,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pots.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pots.fbx"
               }
             ]
           },
@@ -13052,7 +13052,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pots.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\pots.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13099,7 +13099,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\pots.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\pots.fbx"
               }
             ]
           },
@@ -13145,7 +13145,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13205,7 +13205,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
               }
             ]
           },
@@ -13251,7 +13251,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13311,7 +13311,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
               }
             ]
           },
@@ -13357,7 +13357,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13417,7 +13417,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\weaponRack.fbx"
               }
             ]
           },
@@ -13463,7 +13463,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13510,7 +13510,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
               }
             ]
           },
@@ -13556,7 +13556,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13603,7 +13603,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
               }
             ]
           },
@@ -13649,7 +13649,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13696,7 +13696,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
               }
             ]
           },
@@ -13742,7 +13742,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13789,7 +13789,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\potA_decorated.fbx"
               }
             ]
           },
@@ -13835,7 +13835,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13882,7 +13882,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\trapdoor.fbx"
               }
             ]
           },
@@ -13928,7 +13928,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedA.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_largeCrackedA.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -13975,7 +13975,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -14021,7 +14021,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14068,7 +14068,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
               }
             ]
           },
@@ -14114,7 +14114,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14161,7 +14161,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
               }
             ]
           },
@@ -14207,7 +14207,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14254,7 +14254,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
               }
             ]
           },
@@ -14300,7 +14300,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14347,7 +14347,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrel.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\barrel.fbx"
               }
             ]
           },
@@ -14393,7 +14393,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14440,7 +14440,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
               }
             ]
           },
@@ -14486,7 +14486,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14533,7 +14533,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\cratePlatform_large.fbx"
               }
             ]
           },
@@ -14579,7 +14579,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14626,7 +14626,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
               }
             ]
           },
@@ -14672,7 +14672,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14719,7 +14719,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\cratePlatform_medium.fbx"
               }
             ]
           },
@@ -14765,7 +14765,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14782,7 +14782,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
               }
             ]
           },
@@ -14828,7 +14828,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14845,7 +14845,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
               }
             ]
           },
@@ -14891,7 +14891,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14908,7 +14908,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
               }
             ]
           },
@@ -14954,7 +14954,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -14971,7 +14971,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\floorDecoration_shatteredBricks.fbx"
               }
             ]
           },
@@ -15017,7 +15017,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15064,7 +15064,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
               }
             ]
           },
@@ -15110,7 +15110,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15157,7 +15157,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
               }
             ]
           },
@@ -15203,7 +15203,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15250,7 +15250,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\chest_rare.fbx"
               }
             ]
           },
@@ -15296,7 +15296,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15343,7 +15343,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\chestTop_rare.fbx"
               }
             ]
           },
@@ -15447,7 +15447,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15494,7 +15494,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -15540,7 +15540,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15587,7 +15587,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -15633,7 +15633,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\tileBrickB_large.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15680,7 +15680,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\tileBrickA_large.fbx"
               }
             ]
           },
@@ -15726,7 +15726,7 @@
             },
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
+              "Path": "Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -15775,7 +15775,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
+                "String": "Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
               }
             ]
           },
