@@ -27,6 +27,7 @@
             "ClassName": "ModelPartMaterials",
             "Parts": [
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.8284230828285217,
@@ -38,6 +39,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "grass2.jpg"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -174,6 +176,7 @@
             "ClassName": "ModelPartMaterials",
             "Parts": [
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   9.999999974752427e-07,
@@ -185,6 +188,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "textures\\Tree_Bark.jpg"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -207,6 +211,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.16176468133926392,
@@ -218,6 +223,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "Tree_Leaves.png"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -354,6 +360,7 @@
             "ClassName": "ModelPartMaterials",
             "Parts": [
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   9.999999974752427e-07,
@@ -365,6 +372,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "textures\\Tree_Bark.jpg"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -387,6 +395,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.2549019455909729,
@@ -398,6 +407,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "Tree_Leaves.png"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -534,6 +544,7 @@
             "ClassName": "ModelPartMaterials",
             "Parts": [
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   9.999999974752427e-07,
@@ -545,6 +556,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "textures\\Tree_Bark.jpg"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -567,6 +579,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.19463667273521423,
@@ -578,6 +591,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "Tree_Leaves.png"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -714,6 +728,7 @@
             "ClassName": "ModelPartMaterials",
             "Parts": [
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   9.999999974752427e-07,
@@ -725,6 +740,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "textures\\Tree_Bark.jpg"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -747,6 +763,7 @@
                 }
               },
               {
+                "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
                   0.24019604921340942,
@@ -758,6 +775,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "Tree_Leaves.png"
                 },
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""

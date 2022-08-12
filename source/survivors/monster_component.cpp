@@ -16,7 +16,9 @@ COMPONENT_SCRIPTS(MonsterComponent,
 	"SetCollideRadius", &MonsterComponent::SetCollideRadius,
 	"AddKnockback", &MonsterComponent::AddKnockback,
 	"SetKnockbackFalloff", &MonsterComponent::SetKnockbackFalloff,
-	"GetKnockbackFalloff", &MonsterComponent::GetKnockbackFalloff
+	"GetKnockbackFalloff", &MonsterComponent::GetKnockbackFalloff,
+	"GetRagdollChance", &MonsterComponent::GetRagdollChance,
+	"SetRagdollChance", &MonsterComponent::SetRagdollChance
 )
 SERIALISE_BEGIN(MonsterComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
@@ -26,6 +28,7 @@ SERIALISE_PROPERTY("DespawnRadius", m_despawnRadius)
 SERIALISE_PROPERTY("CollideRadius", m_collideRadius)
 SERIALISE_PROPERTY("Knockback", m_knockBack)
 SERIALISE_PROPERTY("KnockbackFalloff", m_knockBackFalloff)
+SERIALISE_PROPERTY("RagdollChance", m_ragdollChance)
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(MonsterComponent)
@@ -35,13 +38,14 @@ COMPONENT_INSPECTOR_IMPL(MonsterComponent)
 	{
 		auto& a = *static_cast<StorageType&>(cs).Find(e);
 		char text[1024];
-		sprintf_s(text, "Current HP: %d", a.GetCurrentHealth());
+		sprintf_s(text, "Current HP: %f", a.GetCurrentHealth());
 		gui->Text(text);
 		i.Inspect("Move Speed", a.GetSpeed(), InspectFn(e, &MonsterComponent::SetSpeed));
 		i.Inspect("Vision Radius", a.GetVisionRadius(), InspectFn(e, &MonsterComponent::SetVisionRadius));
 		i.Inspect("Despawn Radius", a.GetDespawnRadius(), InspectFn(e, &MonsterComponent::SetDespawnRadius));
 		i.Inspect("Collision Radius", a.GetCollideRadius(), InspectFn(e, &MonsterComponent::SetCollideRadius));
 		i.Inspect("Knockback falloff", a.GetKnockbackFalloff(), InspectFn(e, &MonsterComponent::SetKnockbackFalloff));
+		i.Inspect("Ragdoll chance", a.GetRagdollChance(), InspectFn(e, &MonsterComponent::SetRagdollChance));
 		if (gui->Button("Random knockback"))
 		{
 			glm::vec2 force = {

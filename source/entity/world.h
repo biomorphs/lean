@@ -156,7 +156,7 @@ void World::RemoveComponent(EntityHandle owner)
 	SDE_PROF_EVENT();
 	if (owner.IsValid())
 	{
-		auto foundStorage = m_components.find(type);
+		auto foundStorage = m_components.find(ComponentType::GetType());
 		if (foundStorage != m_components.end())
 		{
 			static_cast<ComponentType::StorageType*>(foundStorage->second.get())->Destroy(owner);

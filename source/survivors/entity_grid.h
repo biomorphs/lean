@@ -12,7 +12,7 @@ public:
 	{
 	}
 	void Reset(bool removeOldTiles=false);
-	void SetTileSize(glm::vec2 t) { m_tileSize = t; Reset(true); }
+	void SetTileSize(glm::vec2 t);
 	void AddEntry(glm::vec3 aabMin, glm::vec3 aabMax, const PerTileData& d);
 	void FindEntries(glm::vec3 aabMin, glm::vec3 aabMax, std::vector<PerTileData>& results);
 	void ForEachNearby(glm::vec3 aabMin, glm::vec3 aabMax, std::function<void(PerTileData&)> fn);
@@ -31,6 +31,16 @@ private:
 	glm::vec2 m_tileSize = { 32.0f, 32.0f };
 	robin_hood::unordered_map<uint64_t, std::unique_ptr<Tile>> m_tiles;
 };
+
+template<class PerTileData>
+void WorldGrid<PerTileData>::SetTileSize(glm::vec2 t)
+{
+	if (t != m_tileSize)
+	{
+		Reset(true);
+		m_tileSize = t;
+	}
+}
 
 template<class PerTileData>
 typename WorldGrid<PerTileData>::Tile& WorldGrid<PerTileData>::GetTile(glm::ivec2 t)
@@ -119,16 +129,36 @@ void WorldGrid<PerTileData>::ForEachNearby(glm::vec3 aabMin, glm::vec3 aabMax, s
 {
 	auto tileIdMin = PositionToTileIndex(aabMin);
 	auto tileIdMax = PositionToTileIndex(aabMax);
-	for (int tx = tileIdMin.x; tx <= tileIdMax.x; ++tx)
+	if (tileIdMin == tileIdMax)
 	{
-		for (int tz = tileIdMin.y; tz <= tileIdMax.y; ++tz)
+		Tile* t = GetTileMaybe(tileIdMin);
+		if (t != nullptr)
 		{
-			Tile* t = GetTileMaybe({ tx, tz });
-			if (t != nullptr)
+			for (auto& entry : t->m_entries)
 			{
-				for (auto& entry : t->m_entries)
+				fn(entry);
+			}
+		}
+	}
+	else
+	{
+		static robin_hood::unordered_flat_set<PerTileData> uniqueData;
+		uniqueData.clear();
+		for (int tx = tileIdMin.x; tx <= tileIdMax.x; ++tx)
+		{
+			for (int tz = tileIdMin.y; tz <= tileIdMax.y; ++tz)
+			{
+				Tile* t = GetTileMaybe({ tx, tz });
+				if (t != nullptr)
 				{
-					fn(entry);
+					for (auto& entry : t->m_entries)
+					{
+						if (uniqueData.find(entry) == uniqueData.end())
+						{
+							uniqueData.insert(entry);
+							fn(entry);
+						}
+					}
 				}
 			}
 		}
