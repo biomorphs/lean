@@ -61,6 +61,8 @@ namespace Engine
 		void SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles);
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 
+		void ForEachUsedRT(std::function<void(const char*, Render::FrameBuffer&)> rtFn);
+
 		struct FrameStats {
 			size_t m_instancesSubmitted = 0;
 			size_t m_totalTransparentInstances = 0;
@@ -191,6 +193,7 @@ namespace Engine
 		Render::RenderBuffer m_globalsUniformBuffer;
 		Render::FrameBuffer m_mainFramebuffer;
 		Render::FrameBuffer m_mainFramebufferResolved;
+		Render::FrameBuffer m_mainDepthResolved;
 		Render::FrameBuffer m_bloomBrightnessBuffer;
 		std::unique_ptr<Render::FrameBuffer> m_bloomBlurBuffers[2];
 		Render::Camera m_camera;

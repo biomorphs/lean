@@ -16,12 +16,19 @@ namespace Render
 		Destroy();
 	}
 
-	void FrameBuffer::Resolve(FrameBuffer& target)
+	void FrameBuffer::Resolve(FrameBuffer& target, ResolveType type)
 	{
 		assert(m_msaaSamples != 1);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboHandle);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.GetHandle());
-		glBlitFramebuffer(0, 0, m_dimensions.x, m_dimensions.y, 0, 0, target.m_dimensions.x, target.m_dimensions.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		if (type == Colour)
+		{
+			glBlitFramebuffer(0, 0, m_dimensions.x, m_dimensions.y, 0, 0, target.m_dimensions.x, target.m_dimensions.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		}
+		else
+		{
+			glBlitFramebuffer(0, 0, m_dimensions.x, m_dimensions.y, 0, 0, target.m_dimensions.x, target.m_dimensions.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		}
 	}
 
 	TextureSource::Antialiasing GetAAMode(int samples)

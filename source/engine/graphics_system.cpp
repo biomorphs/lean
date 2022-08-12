@@ -213,6 +213,7 @@ bool GraphicsSystem::PostInit()
 	RegisterScripts();
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
+	gMenu.AddItem("Toggle RT Debug", [this]() { m_showTargets = !m_showTargets; });
 	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
 	gMenu.AddItem("Switch renderer", [this]() {m_useNewRender = !m_useNewRender; });
 
@@ -398,9 +399,39 @@ void GraphicsSystem::ProcessEntities()
 	}
 }
 
+void GraphicsSystem::ShowRTGui()
+{
+	if (m_showTargets && m_debugGui->BeginWindow(m_showTargets, "Render targets"))
+	{
+		auto showRt = [&](const char* name, Render::FrameBuffer& fb) -> void
+		{
+			m_debugGui->Text(name);
+			if (fb.GetMSAASamples() > 1)
+			{
+				m_debugGui->Text("        MSAA - no debug!");
+			}
+			else
+			{
+				for (int c = 0; c < fb.GetColourAttachmentCount(); ++c)
+				{
+					m_debugGui->Image(fb.GetColourAttachment(c), glm::vec2(fb.Dimensions()) * 0.5f);
+				}
+				if (fb.GetDepthStencil() != nullptr)
+				{
+					m_debugGui->Image(*fb.GetDepthStencil(), glm::vec2(fb.Dimensions()) * 0.5f);
+				}
+			}
+		};
+		m_renderer->ForEachUsedRT(showRt);
+		m_debugGui->EndWindow();
+	}
+}
+
 void GraphicsSystem::ShowGui(int framesPerSecond)
 {
 	m_debugGui->MainMenuBar(g_graphicsMenu);
+
+	ShowRTGui();
 
 	if (m_showStats)
 	{

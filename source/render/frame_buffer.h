@@ -35,7 +35,11 @@ namespace Render
 		const std::unique_ptr<Texture>& GetDepthStencil() const { return m_depthStencil; }
 		glm::ivec2 Dimensions() const {	return m_dimensions; }
 		bool IsCubemap() const { return m_isCubemap; }
-		void Resolve(FrameBuffer& target);	// required for msaa targets
+		enum ResolveType {
+			Colour, 
+			Depth
+		};
+		void Resolve(FrameBuffer& target, ResolveType = Colour);	// required for msaa targets
 
 	private:
 		std::vector<std::unique_ptr<Texture>> m_colourAttachments;

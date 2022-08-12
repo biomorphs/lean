@@ -14,6 +14,7 @@
 #include "material_helpers.h"
 #include "job_system.h"
 #include "system_manager.h"
+#include "ssao.h"
 #include <algorithm>
 #include <map>
 
@@ -87,6 +88,7 @@ namespace Engine
 		, m_windowSize(windowSize)
 		, m_mainFramebuffer(windowSize)
 		, m_mainFramebufferResolved(windowSize)
+		, m_mainDepthResolved(windowSize)
 		, m_bloomBrightnessBuffer(windowSize)
 	{
 		SDE_PROF_EVENT();
@@ -124,6 +126,11 @@ namespace Engine
 			if (!m_mainFramebufferResolved.Create())
 			{
 				SDE_LOG("Failed to create framebuffer!");
+			}
+			m_mainDepthResolved.AddDepthStencil();
+			if (!m_mainDepthResolved.Create())
+			{
+				SDE_LOG("Failed to create framebuffer");
 			}
 			m_bloomBrightnessBuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F16);
 			m_bloomBrightnessBuffer.Create();
@@ -977,6 +984,19 @@ namespace Engine
 		}
 	}
 
+	void Renderer::ForEachUsedRT(std::function<void(const char*, Render::FrameBuffer&)> rtFn)
+	{
+		rtFn("MainColourDepth", m_mainFramebuffer);
+		if (m_mainFramebuffer.GetMSAASamples() > 1)
+		{
+			rtFn("MainResolved", m_mainFramebufferResolved);
+			rtFn("MainDepthResolved", m_mainDepthResolved);
+		}
+		rtFn("BloomBrightness", m_bloomBrightnessBuffer);
+		rtFn("BloomBlur0", *m_bloomBlurBuffers[0]);
+		rtFn("BloomBlur1", *m_bloomBlurBuffers[1]);
+	}
+
 	void Renderer::RenderAll(Render::Device& d)
 	{
 		SDE_PROF_EVENT();
@@ -1121,6 +1141,12 @@ namespace Engine
 				DrawInstances(d, m_opaqueInstances, visibleOpaques, baseInstance, true, nullptr);
 			}
 			m_frameStats.m_renderedOpaqueInstances = visibleOpaques.size();
+
+			// once opaques are all drawn we can resolve depth for later passes
+			if (m_mainFramebuffer.GetMSAASamples() > 1)
+			{
+				m_mainFramebuffer.Resolve(m_mainDepthResolved, Render::FrameBuffer::Depth);
+			}
 
 			// render transparents
 			d.SetDepthState(true, false);		// enable z-test, disable write

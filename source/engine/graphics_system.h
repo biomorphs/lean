@@ -39,10 +39,12 @@ private:
 	void RegisterScripts();
 	void RegisterComponents();
 	void ShowGui(int fps);
+	void ShowRTGui();
 	void ProcessLight(class Light& l, class Transform* transform);
 	void ProcessEntities();
 	bool m_showBounds = false;
 	bool m_showStats = false;
+	bool m_showTargets = false;
 	bool m_useNewRender = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
