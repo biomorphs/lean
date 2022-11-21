@@ -12,6 +12,7 @@
 #include "world_tile_system.h"
 #include "engine/character_controller_system.h"
 #include "engine/components/component_character_controller.h"
+#include "engine/components/component_model.h"
 #include "engine/components/component_model_part_materials.h"
 #include "engine/components/component_physics.h"
 #include "entity_grid.h"
@@ -83,6 +84,8 @@ namespace Survivors
 	{
 		const auto aabMin = pos - glm::vec3(radius, 0.0f, radius);
 		const auto aabMax = pos + glm::vec3(radius, 0.0f, radius);
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto world = entities->GetWorld();
 		m_activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
 			auto& enemy = m_activeMonsters[index];
 			const glm::vec3 explosionToEnemy = pos - enemy.m_targetPosition;
@@ -98,6 +101,13 @@ namespace Survivors
 				enemy.m_cc->SetCurrentHealth(enemy.m_cc->GetCurrentHealth() - damage);
 				glm::vec2 knockBack = -glm::normalize(glm::vec2(explosionToEnemy.x, explosionToEnemy.z)) * damage * 3.0f;
 				enemy.m_cc->AddKnockback(knockBack);
+
+				EntityHandle damagedMaterial = enemy.m_cc->GetDamagedMaterialEntity();
+				if (damagedMaterial.IsValid())
+				{
+					auto modelCmp = world->GetComponent<Model>(enemy.m_entity);
+					modelCmp->SetPartMaterialsEntity(damagedMaterial);
+				}
 			}
 		});
 	}

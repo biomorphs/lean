@@ -38,5 +38,6 @@ namespace Engine
 	private:
 		void OpenDefaultLibraries(sol::state& state);
 		std::unique_ptr<sol::state> m_globalState;
+		double m_deltaTime = 0.016;
 	};
 }

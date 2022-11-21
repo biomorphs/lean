@@ -15,6 +15,7 @@ local skeletonsPerSecond = 0.0
 local skeletonsPerSecondIncrement = 0.0001
 local skeletonsSpawnTimer = 0
 local skeletonsSpawnEnabled = false
+local explosionTimeout = 0
 
 function DoExplosionAt(pos, radius, damage)
 	local template = World.GetFirstEntityWithTag(Tag.new("ExplosionTemplate"))
@@ -38,6 +39,7 @@ end
 
 function SpawnSkeletonAt(pos)
 	local template = World.GetFirstEntityWithTag(Tag.new("SkeletonTemplate"))
+	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("SkeletonDamaged"))
 	local newSkele = World.CloneEntity(template)
 	local newTransform = World.GetComponent_Transform(newSkele)
 	if(newTransform ~= nil) then 
@@ -47,10 +49,12 @@ function SpawnSkeletonAt(pos)
 	newMonsterCmp:SetSpeed(3.0 + math.random() * 6.0)
 	newMonsterCmp:SetCollideRadius(4.5)
 	newMonsterCmp:SetRagdollChance(0.1)
+	newMonsterCmp:SetDamagedMaterialEntity(damageTemplate)
 end
 
 function SpawnZombieChadAt(pos)
 	local zombieTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieChadTemplate"))
+	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieChadDamaged"))
 	local newZombie = World.CloneEntity(zombieTemplate)
 	local newTransform = World.GetComponent_Transform(newZombie)
 	if(newTransform ~= nil) then 
@@ -58,12 +62,14 @@ function SpawnZombieChadAt(pos)
 	end
 	local newMonsterCmp = World.AddComponent_MonsterComponent(newZombie)
 	newMonsterCmp:SetSpeed(6.0 + math.random() * 10.0)
-	newMonsterCmp:SetCollideRadius(8.5)
+	newMonsterCmp:SetCollideRadius(7.5)
 	newMonsterCmp:SetRagdollChance(0.0)
+	newMonsterCmp:SetDamagedMaterialEntity(damageTemplate)
 end
 
 function SpawnZombieAt(pos)
 	local zombieTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieTemplate"))
+	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieDamaged"))
 	local newZombie = World.CloneEntity(zombieTemplate)
 	local newTransform = World.GetComponent_Transform(newZombie)
 	if(newTransform ~= nil) then 
@@ -73,6 +79,7 @@ function SpawnZombieAt(pos)
 	newMonsterCmp:SetSpeed(4.0 + math.random() * 8.0)
 	newMonsterCmp:SetCollideRadius(3.5)
 	newMonsterCmp:SetRagdollChance(0.05)
+	newMonsterCmp:SetDamagedMaterialEntity(damageTemplate)
 end
 
 function SpawnEnemy(SpawnAtFn)
@@ -166,10 +173,22 @@ function SpawnWorldTiles_BasicFields(tilePos_ivec2)
 	end
 end
 
+function SpawnWorldTiles_BasicScifi(tilePos_ivec2)
+	local mr = math.random(0,1000)
+	if(mr < 750) then
+		return "survivors/tile_metal_01.scn"
+	elseif(mr < 850) then 
+		return "survivors/tile_metal_02.scn"
+	else
+		return "survivors/tile_metal_03.scn"
+	end
+end
+
 function DoStartGame()
 	local foundCamera = World.GetFirstEntityWithTag(Tag.new("PlayerFollowCamera"))
 	Graphics.SetActiveCamera(foundCamera)
 	Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicFields)
+	-- Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicScifi)
 	Survivors.RemoveAllTiles()
 	Survivors.StartGame()
 	zombieChadSpawnEnabled = true
@@ -215,6 +234,12 @@ function PlayerUpdate()
 		myPos.z = myPos.z + playerSpeed
 		playerTransform:SetRotation(0,0,0)
 	end
+	if(explosionTimeout <= 0 and Input.IsKeyPressed('KEY_r')) then 
+		local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
+		local playerTransform = World.GetComponent_Transform(foundPlayer)
+		DoExplosionAt(playerTransform:GetPosition(), 64.0, 50)
+		explosionTimeout = 0.66
+	end
 	playerTransform:SetPosition(myPos.x,myPos.y,myPos.z)
 end
 
@@ -223,6 +248,9 @@ function SurvivorsMain(entity)
 	SpawnZombies();
 	SpawnZombieChads();
 	SpawnSkeletons();
+	
+	local timeDelta = Scripts.GetTimeDelta()
+	explosionTimeout = explosionTimeout - timeDelta
 	
 	if(zombieSpawnEnabled==true) then 
 		zombiesPerSecond = zombiesPerSecond + zombiesPerSecondIncrement
@@ -246,6 +274,9 @@ function SurvivorsMain(entity)
 	end
 	if(DebugGui.Button('Basic horizontal spawning')) then 
 		Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicHorizontal)
+	end
+	if(DebugGui.Button('Basic Scifi')) then 
+		Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicScifi)
 	end
 	if(DebugGui.Button('Disable tile spawning')) then 
 		Survivors.SetWorldTileSpawnFn(nil)

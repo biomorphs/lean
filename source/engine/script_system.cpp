@@ -111,6 +111,11 @@ namespace Engine
 
 		m_globalState = std::make_unique<sol::state>();
 		OpenDefaultLibraries(*m_globalState);
+
+		auto scripts = (*m_globalState)["Scripts"].get_or_create<sol::table>();
+		scripts["GetTimeDelta"]= [this]() {
+			return m_deltaTime;
+		};
 		
 		return true;
 	}
@@ -126,6 +131,7 @@ namespace Engine
 	bool ScriptSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
+		m_deltaTime = timeDelta;
 
 		{
 			SDE_PROF_EVENT("CollectGarbage");

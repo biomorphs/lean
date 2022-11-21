@@ -47,9 +47,10 @@ namespace Engine
 	void SDFMeshBuilder::GenerateAO(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, std::vector<float>& ao)
 	{
 		SDE_PROF_EVENT();
-		const int c_raysToFire = 48;
+		const int c_raysToFire = 16;
 		static float s_mainRayLength = 16.0f;
 		static float s_step = s_mainRayLength / 8.0f;
+		const float c_maxStep = glm::compMax(m_cellSize);
 		for (int v=0;v<vertices.size();++v)
 		{
 			glm::vec3 v0 = vertices[v];
@@ -63,7 +64,7 @@ namespace Engine
 			std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
 			if (s0.distance <= 0.00001f)	// initial point is inside the object
 			{
-				if (SDF::Raycast(v0, v0 + n0 * glm::compMax(m_cellSize), glm::compMax(m_cellSize), m_fn, t, mat))
+				if (SDF::Raycast(v0, v0 + n0 * c_maxStep, c_maxStep, m_fn, t, mat))
 				{
 					v0 = v0 + n0 * t * 1.01f;		// munge factor needed?
 					std::tie(s0.distance, s0.material) = m_fn(v0.x, v0.y, v0.z);
@@ -87,7 +88,7 @@ namespace Engine
 				float angleToNormal = acosf(glm::dot(pointOnSphere, n0));
 				if(angleToNormal < (3.14f * 0.49f))
 				{
-					if (SDF::Raycast(v0, v0 + pointOnSphere * s_mainRayLength, s_step, m_fn, t, mat))
+					if (SDF::Raycast(v0, v0 + pointOnSphere * s_mainRayLength, s_mainRayLength, m_fn, t, mat))
 					{
 						occlusion += 1.0f;
 						occluded++;

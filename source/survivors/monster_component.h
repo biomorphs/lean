@@ -1,6 +1,8 @@
 #pragma once
 
 #include "entity/component.h"
+#include "entity/component_handle.h"
+#include "engine/components/component_model_part_materials.h"
 
 class MonsterComponent
 {
@@ -25,6 +27,8 @@ public:
 	float GetKnockbackFalloff() { return m_knockBackFalloff; }
 	float GetRagdollChance() { return m_ragdollChance; }
 	void SetRagdollChance(float c) { m_ragdollChance = c; }
+	void SetDamagedMaterialEntity(EntityHandle e) { m_damagedMaterial = e; }
+	EntityHandle GetDamagedMaterialEntity() { return m_damagedMaterial.GetEntity(); }
 
 private:
 	// active state
@@ -36,4 +40,5 @@ private:
 	float m_collideRadius = 2.0f;
 	glm::vec2 m_knockBack = { 0.0f,0.0f };
 	float m_knockBackFalloff = 0.95f;
+	ComponentHandle<ModelPartMaterials> m_damagedMaterial;
 };

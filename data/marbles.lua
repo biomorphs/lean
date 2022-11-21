@@ -329,7 +329,7 @@ function MakeSpinner(pos, dims, speed)
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
-	newModel:SetMaterialEntity(SpinnerMaterial)
+	-- newModel:SetMaterialEntity(SpinnerMaterial)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStatic(false)
@@ -399,7 +399,7 @@ function MakeMarbleTarget(pos, dims, colour, marble)
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
-	newModel:SetMaterialEntity(em)
+	-- newModel:SetMaterialEntity(em)
 	
 	table.insert(TargetAreas, {{pos[1],pos[3]}, {dims[1],dims[3]}, marble})
 end
@@ -425,7 +425,7 @@ function MakeMarble(pos, size, colour)
 	local newModel = World.AddComponent_Model(e)
 	newModel:SetModel(SphereModel)
 	newModel:SetShader(ModelDiffuseShader)
-	newModel:SetMaterialEntity(em)
+	-- newModel:SetMaterialEntity(em)
 	
 	local physics = World.AddComponent_Physics(e)
 	physics:SetStaticFriction(0.1)
@@ -464,7 +464,7 @@ function MakeOrientedBox(pos, rotation, dims, mat, tag)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
 	if(mat ~= nil) then 
-		newModel:SetMaterialEntity(mat)
+		-- newModel:SetMaterialEntity(mat)
 	end
 	
 	local physics = World.AddComponent_Physics(e)
@@ -489,7 +489,7 @@ function MakeBoxScalePhys(pos, dims, mat, tag, physscale)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
 	if(mat ~= nil) then 
-		newModel:SetMaterialEntity(mat)
+		-- newModel:SetMaterialEntity(mat)
 	end
 	
 	local physics = World.AddComponent_Physics(e)
@@ -514,7 +514,7 @@ function MakeBox(pos, dims, mat, tag)
 	newModel:SetModel(CubeModel)
 	newModel:SetShader(ModelDiffuseShader)
 	if(mat ~= nil) then 
-		newModel:SetMaterialEntity(mat)
+		-- newModel:SetMaterialEntity(mat)
 	end
 	
 	local physics = World.AddComponent_Physics(e)
