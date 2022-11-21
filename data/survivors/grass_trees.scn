@@ -7,7 +7,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -37,7 +37,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\grass2.jpg"
+                  "Path": "grass2.jpg"
                 },
                 "IsTransparent": false,
                 "NormalTexture": {
@@ -113,7 +113,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+              "Path": "treefixed.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -221,7 +221,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                  "Path": "Tree_Leaves.png"
                 },
                 "IsTransparent": false,
                 "NormalTexture": {
@@ -255,7 +255,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+                "String": "treefixed.fbx"
               }
             ]
           },
@@ -297,7 +297,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+              "Path": "treefixed.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -405,7 +405,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                  "Path": "Tree_Leaves.png"
                 },
                 "IsTransparent": false,
                 "NormalTexture": {
@@ -439,7 +439,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+                "String": "treefixed.fbx"
               }
             ]
           },
@@ -481,7 +481,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+              "Path": "treefixed.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -589,7 +589,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                  "Path": "Tree_Leaves.png"
                 },
                 "IsTransparent": false,
                 "NormalTexture": {
@@ -623,7 +623,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+                "String": "treefixed.fbx"
               }
             ]
           },
@@ -665,7 +665,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\treefixed.fbx"
+              "Path": "treefixed.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -773,7 +773,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\Tree_Leaves.png"
+                  "Path": "Tree_Leaves.png"
                 },
                 "IsTransparent": false,
                 "NormalTexture": {
@@ -807,7 +807,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\treefixed.fbx"
+                "String": "treefixed.fbx"
               }
             ]
           },

@@ -7,7 +7,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -58,7 +58,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\cube2.fbx"
+                "String": "cube2.fbx"
               }
             ]
           },

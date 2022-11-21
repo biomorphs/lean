@@ -7,7 +7,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -37,7 +37,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\grass2.jpg"
+                  "Path": "grass2.jpg"
                 },
                 "IsTransparent": false,
                 "NormalTexture": {
@@ -113,7 +113,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -164,7 +164,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -206,7 +206,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -257,7 +257,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -299,7 +299,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -350,7 +350,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -392,7 +392,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -443,7 +443,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -485,7 +485,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -536,7 +536,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -578,7 +578,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -629,7 +629,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -671,7 +671,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -722,7 +722,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },
@@ -764,7 +764,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\crate.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -815,7 +815,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\crate.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\crate.fbx"
               }
             ]
           },

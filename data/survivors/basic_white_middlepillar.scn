@@ -65,7 +65,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -86,7 +86,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\torchWall.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\torchWall.fbx"
               }
             ]
           },
@@ -128,7 +128,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\potA.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -179,7 +179,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\potA.fbx"
+                "String": "Dungeon Pack\\Models\\fbx\\potA.fbx"
               }
             ]
           },
@@ -221,7 +221,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -272,7 +272,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\cube2.fbx"
+                "String": "cube2.fbx"
               }
             ]
           },
@@ -314,7 +314,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -365,7 +365,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\cube2.fbx"
+                "String": "cube2.fbx"
               }
             ]
           },

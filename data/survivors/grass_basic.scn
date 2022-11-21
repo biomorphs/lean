@@ -7,7 +7,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+              "Path": "cube2.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -37,7 +37,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\grass2.jpg"
+                  "Path": "grass2.jpg"
                 },
                 "IsTransparent": false,
                 "NormalTexture": {

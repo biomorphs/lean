@@ -38,7 +38,7 @@
         {
           "Data": {
             "ClassName": "Script",
-            "ScriptFile": "E:\\Git\\lean\\data\\survivors\\main.lua",
+            "ScriptFile": "survivors\\main.lua",
             "ScriptText": ""
           },
           "Type": "Script"
@@ -72,7 +72,7 @@
         {
           "Data": {
             "ClassName": "Script",
-            "ScriptFile": "E:\\Git\\lean\\data\\survivors\\camera_follow_player.lua",
+            "ScriptFile": "survivors\\camera_follow_player.lua",
             "ScriptText": ""
           },
           "Type": "Script"
@@ -195,7 +195,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
+              "Path": "Dungeon Pack\\Models\\Characters\\fbx\\character_mage.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -297,7 +297,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\zombie.fbx"
+              "Path": "kenney_graveyardkit_3\\zombie.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -392,7 +392,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\skeleton.fbx"
+              "Path": "kenney_graveyardkit_3\\skeleton.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -487,7 +487,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\zombie.fbx"
+              "Path": "kenney_graveyardkit_3\\zombie.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
