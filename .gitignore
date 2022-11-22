@@ -60,3 +60,4 @@ data/playground_config.json
 data/heavy.scn
 data/benchmark.scn
 data/explosion.scn
+external/freetype-windows-binaries/
