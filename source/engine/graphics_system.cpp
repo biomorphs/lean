@@ -13,6 +13,7 @@
 #include "engine/renderer.h"
 #include "engine/debug_render.h"
 #include "engine/frustum.h"
+#include "engine/2d_render_context.h"
 #include "render/render_pass.h"
 #include "engine/file_picker_dialog.h"
 #include "render/window.h"
@@ -27,10 +28,31 @@
 #include "engine/components/component_material.h"
 #include "engine/components/component_model_part_materials.h"
 #include "engine/components/component_environment_settings.h"
-#include "new_render.h"
 
 Engine::MenuBar g_graphicsMenu;
 bool g_enableShadowUpdate = true;
+
+class RenderPass2D : public Render::RenderPass
+{
+public:
+	void Reset()
+	{
+		if (m_rc2d)
+		{
+			m_rc2d->Reset(m_windowDimensions);
+		}
+	}
+	void RenderAll(Render::Device& d)
+	{
+		if (m_rc2d)
+		{
+			d.DrawToBackbuffer();
+			m_rc2d->Render(d);
+		}
+	}
+	Engine::RenderContext2D* m_rc2d = nullptr;;
+	glm::vec2 m_windowDimensions;
+} g_rc2d;
 
 struct SDFDebugDraw : public Engine::SDFMeshBuilder::Debug
 {
@@ -120,6 +142,9 @@ void GraphicsSystem::RegisterScripts()
 	m_scriptSystem->Globals().new_usertype<glm::ivec2>("ivec2", sol::constructors<glm::ivec2(), glm::ivec2(int, int)>(),
 		"x", &glm::ivec2::x,
 		"y", &glm::ivec2::y);
+	m_scriptSystem->Globals().new_usertype<glm::vec2>("vec2", sol::constructors<glm::vec2(), glm::vec2(float, float)>(),
+		"x", &glm::vec2::x,
+		"y", &glm::vec2::y);
 	m_scriptSystem->Globals().new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(),
 		"x", &glm::vec3::x,
 		"y", &glm::vec3::y,
@@ -128,7 +153,7 @@ void GraphicsSystem::RegisterScripts()
 		"x", &glm::vec4::x,
 		"y", &glm::vec4::y,
 		"z", &glm::vec4::z,
-		"w", &glm::vec4::z);
+		"w", &glm::vec4::w);
 
 	m_scriptSystem->Globals().new_usertype<Engine::TextureHandle>("TextureHandle", sol::constructors<Engine::TextureHandle()>());
 	m_scriptSystem->Globals().new_usertype<Engine::ModelHandle>("ModelHandle", sol::constructors<Engine::ModelHandle()>());
@@ -179,6 +204,20 @@ void GraphicsSystem::RegisterScripts()
 		};
 		m_debugRender->AddLines(positions, colours, 1);
 	};
+	auto graphics2d = m_scriptSystem->Globals()["Graphics2D"].get_or_create<sol::table>();
+	graphics2d["DrawSolidQuad"] = [this](float p0x, float p0y, int zIndex, float width, float height, float r, float g, float b, float a) {
+		auto white = Engine::GetSystem<Engine::TextureManager>("Textures")->LoadTexture("white.bmp");
+		m_render2D->DrawQuad({ p0x, p0y }, zIndex, { width,height }, { 0.0,0.0 }, { 1.0,1.0 }, { r,g,b,a }, white);
+	};
+	graphics2d["DrawTexturedQuad"] = [this](float p0x, float p0y, int zIndex, float width, float height,
+		float uv0x, float uv0y, float uv1x, float uv1y,
+		float r, float g, float b, float a, Engine::TextureHandle t)
+	{
+		m_render2D->DrawQuad({ p0x, p0y }, zIndex, { width, height }, { uv0x, uv0y }, { uv1x, uv1y }, { r,g,b,a }, t);
+	};
+	graphics2d["GetDimensions"] = [this]() -> glm::vec2 {
+		return m_render2D->GetDimensions();
+	};
 }
 
 bool GraphicsSystem::PreInit()
@@ -203,18 +242,19 @@ bool GraphicsSystem::PostInit()
 	m_windowSize = glm::ivec2(windowProps.m_sizeX, windowProps.m_sizeY);
 
 	//// add our renderer to the global passes
-	m_newRender = std::make_unique<Engine::NewRender>();
 	m_renderer = std::make_unique<Engine::Renderer>(m_jobSystem, m_windowSize);
 	m_renderSystem->AddPass(*m_renderer);
-	m_renderSystem->AddPass(*m_newRender);
 	m_debugRender = std::make_unique<Engine::DebugRender>();
+	m_render2D = std::make_unique<Engine::RenderContext2D>();
+	g_rc2d.m_rc2d = m_render2D.get();
+	g_rc2d.m_windowDimensions = m_windowSize;
+	m_renderSystem->AddPass(g_rc2d);
 
 	RegisterComponents();
 	RegisterScripts();
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
 	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
-	gMenu.AddItem("Switch renderer", [this]() {m_useNewRender = !m_useNewRender; });
 
 	return true;
 }
@@ -304,35 +344,29 @@ void GraphicsSystem::ProcessEntities()
 	auto materials = world->GetAllComponents<Material>();
 
 	// submit all lights
-	if(!m_useNewRender)
-	{
-		SDE_PROF_EVENT("SubmitLights");
-		static auto lightIterator = world->MakeIterator<Light, Transform>();
-		lightIterator.ForEach([this](Light& l, Transform& t, EntityHandle h) {
-			ProcessLight(l, &t);
-		});
-	}
+	SDE_PROF_EVENT("SubmitLights");
+	static auto lightIterator = world->MakeIterator<Light, Transform>();
+	lightIterator.ForEach([this](Light& l, Transform& t, EntityHandle h) {
+		ProcessLight(l, &t);
+	});
 
 	// submit all models
-	if (!m_useNewRender)
-	{
-		SDE_PROF_EVENT("SubmitEntities");
-		static auto modelIterator = world->MakeIterator<Model, Transform>();
-		modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
-			if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
+	SDE_PROF_EVENT("SubmitEntities");
+	static auto modelIterator = world->MakeIterator<Model, Transform>();
+	modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
+		if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
+		{
+			ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
+			if (partOverrides == nullptr)
 			{
-				ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
-				if (partOverrides == nullptr)
-				{
-					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
-				}
-				else
-				{
-					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
-				}
+				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
 			}
-		});
-	}
+			else
+			{
+				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
+			}
+		}
+	});
 
 	if(m_showBounds)
 	{
@@ -374,7 +408,7 @@ void GraphicsSystem::ProcessEntities()
 				m.UpdateMesh(m_jobSystem);
 			}
 
-			if (!m_useNewRender && m.GetMesh() && m.GetShader().m_index != -1)
+			if (m.GetMesh() && m.GetShader().m_index != -1)
 			{
 				Render::Material* instanceMaterial = nullptr;
 				if (m.GetMaterialEntity().GetID() != -1)
@@ -390,12 +424,9 @@ void GraphicsSystem::ProcessEntities()
 		});
 	}
 
-	if (!m_useNewRender)
-	{
-		world->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
-			m_renderer->SetClearColour(glm::vec4(s.GetClearColour(), 1.0f));
-		});
-	}
+	world->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
+		m_renderer->SetClearColour(glm::vec4(s.GetClearColour(), 1.0f));
+	});
 }
 
 void GraphicsSystem::ShowGui(int framesPerSecond)
@@ -407,7 +438,6 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		const auto& fs = m_renderer->GetStats();
 		char statText[1024] = { '\0' };
 		m_debugGui->BeginWindow(m_showStats, "Render Stats");
-		sprintf_s(statText, m_useNewRender ? "*** Using new renderer! ***" : "*** Using old renderer! ***");	m_debugGui->Text(statText);
 		m_renderer->SetUseDrawIndirect(m_debugGui->Checkbox("Use draw indirect", m_renderer->GetUseDrawIndirect()));
 		sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
@@ -452,14 +482,7 @@ bool GraphicsSystem::Tick(float timeDelta)
 	ProcessEntities();
 	ShowGui(framesPerSecond);
 
-	if (!m_useNewRender)
-	{
-		m_debugRender->PushToRenderer(*m_renderer);
-	}
-	else
-	{
-		m_newRender->Tick(timeDelta);
-	}
+	m_debugRender->PushToRenderer(*m_renderer);
 
 	return true;
 }
@@ -471,5 +494,6 @@ void GraphicsSystem::Shutdown()
 	m_scriptSystem->Globals()["Graphics"] = nullptr;
 	m_debugRender = nullptr;
 	m_renderer = nullptr;
-	m_newRender = nullptr;
+	g_rc2d.m_rc2d = nullptr;
+	m_render2D = nullptr;
 }
