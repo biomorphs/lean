@@ -25,8 +25,11 @@ namespace Survivors
 		void CollectActiveAndDespawning(glm::vec3 playerPos, float timeDelta);
 		void UpdateEnemies(float timeDelta);
 		void KillEnemies();
+		void DamagePlayer(EntityHandle srcMonster, int damage);
+		void UpdateAttackingMonsters();
 		void StartGame();
 		void StopGame();
+		void LoadMainScene();
 
 		struct ActiveMonster
 		{
@@ -36,6 +39,8 @@ namespace Survivors
 			Transform* m_transform;
 			EntityHandle m_entity;
 		};
+		bool m_firstFrame = true;
+		double m_damagedMaterialTime = 0.25;			// time that a monster will show damaged material
 		bool m_enemiesEnabled = false;
 		int m_avoidanceIterations = 1;				// increase for more stability but slower
 		WorldGrid<uint32_t> m_activeMonsterGrid;	// indexes into vector below
@@ -43,6 +48,7 @@ namespace Survivors
 		std::vector<EntityHandle> m_monstersToDespawn;
 		std::vector<EntityHandle> m_monstersToKill;
 		int m_tileLoadRadius = 12;
+		float m_monsterGridSize = 16.0f;
 		std::function<std::string(glm::ivec2)> m_worldTileSpawnFn;
 	};
 }

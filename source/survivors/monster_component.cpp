@@ -5,6 +5,7 @@
 #include "core/random.h"
 
 COMPONENT_SCRIPTS(MonsterComponent,
+	"SetCurrentHealth", &MonsterComponent::SetCurrentHealth,
 	"GetCurrentHealth", &MonsterComponent::GetCurrentHealth,
 	"GetSpeed", &MonsterComponent::GetSpeed,
 	"SetSpeed", &MonsterComponent::SetSpeed,
@@ -20,7 +21,12 @@ COMPONENT_SCRIPTS(MonsterComponent,
 	"GetRagdollChance", &MonsterComponent::GetRagdollChance,
 	"SetRagdollChance", &MonsterComponent::SetRagdollChance,
 	"SetDamagedMaterialEntity", &MonsterComponent::SetDamagedMaterialEntity,
-	"GetDamagedMaterialEntity", &MonsterComponent::GetDamagedMaterialEntity
+	"GetDamagedMaterialEntity", &MonsterComponent::GetDamagedMaterialEntity,
+	"SetAttackFrequency", &MonsterComponent::SetAttackFrequency,
+	"SetAttackMinValue", &MonsterComponent::SetAttackMinValue,
+	"SetAttackMaxValue", &MonsterComponent::SetAttackMaxValue,
+	"GetXPOnDeath", &MonsterComponent::GetXPOnDeath,
+	"SetXPOnDeath", &MonsterComponent::SetXPOnDeath
 )
 SERIALISE_BEGIN(MonsterComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
@@ -32,6 +38,9 @@ SERIALISE_PROPERTY("Knockback", m_knockBack)
 SERIALISE_PROPERTY("KnockbackFalloff", m_knockBackFalloff)
 SERIALISE_PROPERTY("RagdollChance", m_ragdollChance)
 SERIALISE_PROPERTY("DamagedMaterialEntity", m_damagedMaterial)
+SERIALISE_PROPERTY("AttackFrequency", m_attackFrequency)
+SERIALISE_PROPERTY("DamageMinValue", m_damageMinValue)
+SERIALISE_PROPERTY("DamageMaxValue", m_damageMaxValue)
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(MonsterComponent)
