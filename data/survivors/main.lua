@@ -1,4 +1,5 @@
 require "survivors/weapon_explode_nova"
+require "survivors/weapon_barrel_bomb"
 
 local isFirstRun = true
 local playerStartPosition = {5000,0,5000}
@@ -12,20 +13,21 @@ local isWaitingOnLevelUp = false
 local spawnRadiusMin = 360
 local spawnRadiusMax = 40
 local zombieChadsPerSecond = 0.0
-local zombieChadsPerSecondIncrement = 0.000004
+local zombieChadsPerSecondIncrement = 0.000002
 local zombieChadSpawnTimer = 0
 local zombieChadSpawnEnabled = false
 local zombiesPerSecond = 0.0
-local zombiesPerSecondIncrement = 0.002
+local zombiesPerSecondIncrement = 0.001
 local zombieSpawnTimer = 0
 local zombieSpawnEnabled = false
 local skeletonsPerSecond = 0.0
-local skeletonsPerSecondIncrement = 0.0004
+local skeletonsPerSecondIncrement = 0.0002
 local skeletonsSpawnTimer = 0
 local skeletonsSpawnEnabled = false
 
 -- weapons
 local explodeNovaActive = false
+local barrelBombActive = false
 
 -- hud
 local barBg = vec4.new(0.2,0.2,0.2,1)
@@ -36,6 +38,9 @@ local deadImg = Graphics.LoadTexture("dead.png")
 function DoExplosionAt(pos, radius, damage)
 	local template = World.GetFirstEntityWithTag(Tag.new("ExplosionTemplate"))
 	local newEntity = World.CloneEntity(template)
+	local newTags = World.GetComponent_Tags(newEntity)
+	newTags:ClearTags()
+	newTags:AddTag(Tag.new("ExplosionInstance"))
 	local newTransform = World.GetComponent_Transform(newEntity)
 	local newPhysics = World.GetComponent_Physics(newEntity)
 	if(newPhysics ~= nil) then 
@@ -57,6 +62,9 @@ function SpawnSkeletonAt(pos)
 	local template = World.GetFirstEntityWithTag(Tag.new("SkeletonTemplate"))
 	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("SkeletonDamaged"))
 	local newSkele = World.CloneEntity(template)
+	local newTags = World.GetComponent_Tags(newSkele)
+	newTags:ClearTags()
+	newTags:AddTag(Tag.new("SkeletonInstance"))
 	local newTransform = World.GetComponent_Transform(newSkele)
 	if(newTransform ~= nil) then 
 		newTransform:SetPosition(pos.x, pos.y, pos.z)
@@ -77,6 +85,9 @@ function SpawnZombieChadAt(pos)
 	local zombieTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieChadTemplate"))
 	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieChadDamaged"))
 	local newZombie = World.CloneEntity(zombieTemplate)
+	local newTags = World.GetComponent_Tags(newZombie)
+	newTags:ClearTags()
+	newTags:AddTag(Tag.new("ZombieChadInstance"))
 	local newTransform = World.GetComponent_Transform(newZombie)
 	if(newTransform ~= nil) then 
 		newTransform:SetPosition(pos.x, pos.y, pos.z)
@@ -97,6 +108,9 @@ function SpawnZombieAt(pos)
 	local zombieTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieTemplate"))
 	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("ZombieDamaged"))
 	local newZombie = World.CloneEntity(zombieTemplate)
+	local newTags = World.GetComponent_Tags(newZombie)
+	newTags:ClearTags()
+	newTags:AddTag(Tag.new("ZombieInstance"))
 	local newTransform = World.GetComponent_Transform(newZombie)
 	if(newTransform ~= nil) then 
 		newTransform:SetPosition(pos.x, pos.y, pos.z)
@@ -212,6 +226,7 @@ function ResetPlayer()
 	playerCmp:SetDamageMultiplier(1)
 	playerCmp:SetCooldownMultiplier(1)
 	playerCmp:SetMoveSpeedMultiplier(1)
+	playerCmp:SetProjectileCount(1)
 	
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	playerTransform:SetPosition(playerStartPosition[1], playerStartPosition[2], playerStartPosition[3])
@@ -230,6 +245,7 @@ function DoStartGame()
 	skeletonsSpawnEnabled = true
 	skeletonsPerSecond = 0.2
 	explodeNovaActive = true
+	barrelBombActive = true
 	ResetPlayer()
 end
 
@@ -242,6 +258,7 @@ function DoStopGame()
 	skeletonsSpawnEnabled = false
 	Survivors.StopGame()
 	explodeNovaActive = false
+	barrelBombActive = false
 end
 
 function OnPlayerDead()
@@ -274,6 +291,10 @@ function OnLevelUp(playerCmp)
 	end
 	if(DebugGui.Button("COOLDOWN++")) then 
 		playerCmp:SetCooldownMultiplier(playerCmp:GetCooldownMultiplier() * 0.92)
+		hasLeveledUp = true
+	end
+	if(DebugGui.Button("PROJECTILES++")) then 
+		playerCmp:SetProjectileCount(playerCmp:GetProjectileCount() + 1)
 		hasLeveledUp = true
 	end
 	if(DebugGui.Button("MOVEMENT++")) then 
@@ -456,6 +477,9 @@ function SurvivorsMain(entity)
 			PlayerUpdate(playerCmp, playerTransform);
 			if(explodeNovaActive) then 
 				UpdateWeaponExplodeNova(playerCmp, playerTransform)
+			end
+			if(barrelBombActive) then 
+				UpdateWeaponBarrelBomb(playerCmp, playerTransform)
 			end
 			SpawnZombies();
 			SpawnZombieChads();

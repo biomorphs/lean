@@ -5,12 +5,18 @@
 COMPONENT_SCRIPTS(Tags,
 	"AddTag", &Tags::AddTag,
 	"RemoveTag", &Tags::RemoveTag,
-	"ContainsTag", &Tags::ContainsTag
+	"ContainsTag", &Tags::ContainsTag,
+	"ClearTags", &Tags::ClearTags
 );
 
 SERIALISE_BEGIN(Tags)
 	SERIALISE_PROPERTY("Tags", m_tags)
 SERIALISE_END()
+
+void Tags::ClearTags()
+{
+	m_tags.clear();
+}
 
 void Tags::AddTag(const Engine::Tag& t)
 {

@@ -26,6 +26,8 @@ public:
 	void SetCooldownMultiplier(float a) { m_multiCooldown = a; }
 	float GetMoveSpeedMultiplier() { return m_multiMoveSpeed; }
 	void SetMoveSpeedMultiplier(float a) { m_multiMoveSpeed = a; }
+	void SetProjectileCount(int c) { m_projectileCount = c; }
+	int GetProjectileCount() { return m_projectileCount; }
 
 private:
 	// active state
@@ -36,6 +38,7 @@ private:
 	int m_nextLevelXP = 100;
 
 	// weapon stats
+	int m_projectileCount = 1;
 	float m_multiArea = 1.0f;
 	float m_multiDamage = 1.0f;
 	float m_multiCooldown = 1.0f;

@@ -21,7 +21,9 @@ COMPONENT_SCRIPTS(PlayerComponent,
 	"GetCooldownMultiplier", &PlayerComponent::GetCooldownMultiplier,
 	"SetCooldownMultiplier", &PlayerComponent::SetCooldownMultiplier,
 	"GetMoveSpeedMultiplier", &PlayerComponent::GetMoveSpeedMultiplier,
-	"SetMoveSpeedMultiplier", &PlayerComponent::SetMoveSpeedMultiplier
+	"SetMoveSpeedMultiplier", &PlayerComponent::SetMoveSpeedMultiplier,
+	"SetProjectileCount", &PlayerComponent::SetProjectileCount,
+	"GetProjectileCount", &PlayerComponent::GetProjectileCount
 )
 SERIALISE_BEGIN(PlayerComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
@@ -33,6 +35,7 @@ SERIALISE_PROPERTY("AreaMulti", m_multiArea)
 SERIALISE_PROPERTY("DamageMulti", m_multiDamage)
 SERIALISE_PROPERTY("CooldownMulti", m_multiCooldown)
 SERIALISE_PROPERTY("MoveSpeedMulti", m_multiMoveSpeed)
+SERIALISE_PROPERTY("ProjectileCount", m_projectileCount)
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(PlayerComponent)
@@ -50,6 +53,7 @@ COMPONENT_INSPECTOR_IMPL(PlayerComponent)
 		i.Inspect("Damage Multi", a.GetDamageMultiplier(), InspectFn(e, &PlayerComponent::SetDamageMultiplier));
 		i.Inspect("Cooldown Multi", a.GetCooldownMultiplier(), InspectFn(e, &PlayerComponent::SetCooldownMultiplier));
 		i.Inspect("Movement speed Multi", a.GetMoveSpeedMultiplier(), InspectFn(e, &PlayerComponent::SetMoveSpeedMultiplier));
+		i.Inspect("Projectile Count", a.GetProjectileCount(), InspectFn(e, &PlayerComponent::SetProjectileCount));
 	};
 	return fn;
 }
