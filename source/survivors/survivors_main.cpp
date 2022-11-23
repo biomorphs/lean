@@ -9,6 +9,7 @@
 #include "entity/entity_system.h"
 #include "player_component.h"
 #include "monster_component.h"
+#include "dead_monster_component.h"
 #include "explosion_component.h"
 #include "world_tile_system.h"
 #include "engine/character_controller_system.h"
@@ -40,6 +41,9 @@ namespace Survivors
 		world->ForEachComponent<MonsterComponent>([&](MonsterComponent& m, EntityHandle e) {
 			world->RemoveEntity(e);
 		});
+		world->ForEachComponent<DeadMonsterComponent>([&](DeadMonsterComponent& m, EntityHandle e) {
+			world->RemoveEntity(e);
+		});
 	}
 
 	void SurvivorsMain::StopGame()
@@ -59,6 +63,8 @@ namespace Survivors
 		entities->RegisterInspector<PlayerComponent>(PlayerComponent::MakeInspector());
 		entities->RegisterComponentType<MonsterComponent>();
 		entities->RegisterInspector<MonsterComponent>(MonsterComponent::MakeInspector());
+		entities->RegisterComponentType<DeadMonsterComponent>();
+		entities->RegisterInspector<DeadMonsterComponent>(DeadMonsterComponent::MakeInspector());
 		entities->RegisterComponentType<ExplosionComponent>();
 
 		auto scripts = Engine::GetSystem<Engine::ScriptSystem>("Script");
@@ -100,6 +106,8 @@ namespace Survivors
 
 	void SurvivorsMain::LoadMainScene()
 	{
+		SDE_PROF_EVENT();
+
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 
@@ -120,6 +128,8 @@ namespace Survivors
 
 	void SurvivorsMain::DoDamageInRadius(glm::vec3 pos, float radius, float damageAtCenter, float damageAtEdge)
 	{
+		SDE_PROF_EVENT();
+
 		const double currentTime = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
 		const auto aabMin = pos - glm::vec3(radius, 0.0f, radius);
 		const auto aabMax = pos + glm::vec3(radius, 0.0f, radius);
@@ -154,6 +164,7 @@ namespace Survivors
 
 	void SurvivorsMain::DamagePlayer(EntityHandle srcMonster, int damage)
 	{
+		SDE_PROF_EVENT();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
@@ -163,6 +174,8 @@ namespace Survivors
 
 	void SurvivorsMain::UpdateAttackingMonsters()
 	{
+		SDE_PROF_EVENT();
+
 		const double currentTime = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
@@ -194,6 +207,8 @@ namespace Survivors
 
 	void SurvivorsMain::UpdateExplosions(float timeDelta)
 	{
+		SDE_PROF_EVENT();
+
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 		static auto explosionIterator = world->MakeIterator<ExplosionComponent, Transform>();
@@ -225,6 +240,7 @@ namespace Survivors
 	void SurvivorsMain::DoEnemyAvoidance(glm::vec3 playerPos, float timeDelta)
 	{
 		SDE_PROF_EVENT();
+
 		for (int m = 0; m < m_activeMonsters.size(); ++m)
 		{
 			auto& monster = m_activeMonsters[m];
@@ -332,9 +348,27 @@ namespace Survivors
 		});
 	}
 
+	void SurvivorsMain::CleanupDeadEnemies(glm::vec3 playerPos)
+	{
+		SDE_PROF_EVENT();
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		double timeElapsed = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
+		auto world = entities->GetWorld();
+		static auto deadMonsters = world->MakeIterator<DeadMonsterComponent, Transform>();
+		deadMonsters.ForEach([&](DeadMonsterComponent& m, Transform& t, EntityHandle e) {
+			float distanceToPlayer = glm::length(playerPos - t.GetPosition());
+			if ((timeElapsed - m.GetDeathTime()) > m_deadMonsterTimeout || distanceToPlayer >= m_deadMonsterCullRadius)
+			{
+				m_monstersToDespawn.push_back(e);
+			}
+		});
+	}
+
 	void SurvivorsMain::KillEnemies()
 	{
+		SDE_PROF_EVENT();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		double timeElapsed = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
 		auto world = entities->GetWorld();
 		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
 		auto playerCmp = world->GetComponent<PlayerComponent>(playerEntity);
@@ -355,6 +389,9 @@ namespace Survivors
 						physics->Rebuild();
 					}
 					world->RemoveComponent<MonsterComponent>(entity);
+					world->AddComponent(entity, DeadMonsterComponent::GetType());
+					auto deadMonster = world->GetComponent<DeadMonsterComponent>(entity);
+					deadMonster->SetDeathTime(timeElapsed);
 				}
 				else
 				{
@@ -366,6 +403,7 @@ namespace Survivors
 
 	void SurvivorsMain::UpdateEnemies(float timeDelta)
 	{
+		SDE_PROF_EVENT();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
@@ -382,6 +420,7 @@ namespace Survivors
 		UpdateAttackingMonsters();
 		UpdateExplosions(timeDelta);
 		KillEnemies();
+		CleanupDeadEnemies(playerPos);
 
 		// despawn last as to not mess with component storage
 		for (auto it : m_monstersToDespawn)

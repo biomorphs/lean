@@ -90,6 +90,7 @@ void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, 
 	// Slow path
 	if (listsDirty)
 	{
+		SDE_PROF_EVENT("EnumerateEntities");
 		m_cmp1.clear();
 		m_cmp2.clear();
 		m_entities.clear();
@@ -106,10 +107,13 @@ void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, 
 		m_lastGeneration2 = currentGen2;
 	}
 
-	const int count = m_entities.size();
-	for (int index = 0; index < count; ++index)
 	{
-		fn(*m_cmp1[index], *m_cmp2[index], m_entities[index]);
+		SDE_PROF_EVENT("DoWork");
+		const int count = m_entities.size();
+		for (int index = 0; index < count; ++index)
+		{
+			fn(*m_cmp1[index], *m_cmp2[index], m_entities[index]);
+		}
 	}
 }
 

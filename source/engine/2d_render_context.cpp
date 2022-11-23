@@ -18,6 +18,8 @@ namespace Engine
 
 	void RenderContext2D::Reset(glm::vec2 dimensions)
 	{
+		SDE_PROF_EVENT();
+
 		if (m_viewportDimensions != dimensions)
 		{
 			Initialise(dimensions);
@@ -80,6 +82,8 @@ namespace Engine
 
 	void RenderContext2D::Render(Render::Device& d)
 	{
+		SDE_PROF_EVENT();
+
 		std::sort(m_thisFrameTriangles.begin(), m_thisFrameTriangles.end(), [](const Triangle& t0, const Triangle& t1) {
 			return t0.m_zIndex < t1.m_zIndex;
 		});
@@ -133,6 +137,8 @@ namespace Engine
 
 	void RenderContext2D::Initialise(glm::vec2 dimensions)
 	{
+		SDE_PROF_EVENT();
+
 		if (m_vertices.size() == 0)
 		{
 			for (int i = 0; i < m_maxBuffers; ++i)
@@ -161,6 +167,7 @@ namespace Engine
 
 	void RenderContext2D::Shutdown()
 	{
+		SDE_PROF_EVENT();
 		m_vertices.clear();
 	}
 }

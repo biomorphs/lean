@@ -25,6 +25,7 @@ namespace Survivors
 		void CollectActiveAndDespawning(glm::vec3 playerPos, float timeDelta);
 		void UpdateEnemies(float timeDelta);
 		void KillEnemies();
+		void CleanupDeadEnemies(glm::vec3 playerPos);
 		void DamagePlayer(EntityHandle srcMonster, int damage);
 		void UpdateAttackingMonsters();
 		void StartGame();
@@ -49,6 +50,8 @@ namespace Survivors
 		std::vector<EntityHandle> m_monstersToKill;
 		int m_tileLoadRadius = 12;
 		float m_monsterGridSize = 16.0f;
+		double m_deadMonsterTimeout = 60.0;			// remove corpses after this time
+		float m_deadMonsterCullRadius = 800.0f;		// remove corpses very far away
 		std::function<std::string(glm::ivec2)> m_worldTileSpawnFn;
 	};
 }

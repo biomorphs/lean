@@ -103,9 +103,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -12.137834548950195,
+              -140.36268615722656,
               184.5,
-              -184.75
+              -182.2835235595703
             ],
             "Scale": [
               1.0,
@@ -212,8 +212,16 @@
         },
         {
           "Data": {
+            "AreaMulti": 1.0,
             "ClassName": "PlayerComponent",
-            "CurrentHP": 100
+            "CooldownMulti": 1.0,
+            "CurrentHP": 100,
+            "CurrentXP": 0,
+            "DamageMulti": 1.0,
+            "MaxHP": 100,
+            "MoveSpeedMulti": 1.0,
+            "NextLevelXP": 100,
+            "ThisLevelXP": 0
           },
           "Type": "PlayerComponent"
         },
@@ -275,9 +283,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -12.137834548950195,
+              -140.36268615722656,
               0.0,
-              0.0
+              2.4664742946624756
             ],
             "Scale": [
               4.0,
@@ -1585,9 +1593,131 @@
         }
       ],
       "ID": 12200
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrelDark.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.10000000149011612,
+            "Attenutation": 4.0,
+            "Brightness": 8.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              0.9901960492134094,
+              0.22427891194820404,
+              0.09222421050071716
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [
+              {
+                "ClassName": "CapsuleCollider",
+                "HalfHeight": 0.6000000238418579,
+                "Origin": [
+                  0.0,
+                  0.6200000047683716,
+                  0.0
+                ],
+                "PitchYawRoll": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Radius": 3.0999999046325684
+              }
+            ],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "BarrelBombTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              163.40232849121094,
+              3.8745789527893066,
+              0.0
+            ],
+            "Scale": [
+              6.0,
+              6.0,
+              6.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12201
     }
   ],
-  "EntityCount": 13,
+  "EntityCount": 14,
   "EntityIDs": [
     0,
     3,
@@ -1601,7 +1731,8 @@
     12197,
     12198,
     12199,
-    12200
+    12200,
+    12201
   ],
   "SceneName": "Survivors"
 }

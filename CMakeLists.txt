@@ -315,6 +315,8 @@ set(SURVIVORS_SOURCES
 	source/survivors/survivors_main.cpp
 	source/survivors/player_component.h
 	source/survivors/player_component.cpp
+	source/survivors/dead_monster_component.h
+	source/survivors/dead_monster_component.cpp
 	source/survivors/monster_component.h
 	source/survivors/monster_component.cpp
 	source/survivors/explosion_component.h

@@ -118,3 +118,14 @@ bool BasicInspector::Inspect(const char* label, float currentValue, std::functio
 	}
 	return false;
 }
+
+bool BasicInspector::Inspect(const char* label, double currentValue, std::function<void(double)> setFn, double step, double minv, double maxv)
+{
+	float newValue = m_dbgGui->DragFloat(label, (float)currentValue, (float)step, (float)minv, (float)maxv);
+	if (newValue != currentValue)
+	{
+		setFn(newValue);
+		return true;
+	}
+	return false;
+}

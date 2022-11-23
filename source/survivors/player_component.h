@@ -24,6 +24,8 @@ public:
 	void SetDamageMultiplier(float a) { m_multiDamage = a; }
 	float GetCooldownMultiplier() { return m_multiCooldown; }
 	void SetCooldownMultiplier(float a) { m_multiCooldown = a; }
+	float GetMoveSpeedMultiplier() { return m_multiMoveSpeed; }
+	void SetMoveSpeedMultiplier(float a) { m_multiMoveSpeed = a; }
 
 private:
 	// active state
@@ -37,4 +39,5 @@ private:
 	float m_multiArea = 1.0f;
 	float m_multiDamage = 1.0f;
 	float m_multiCooldown = 1.0f;
+	float m_multiMoveSpeed = 1.0f;
 };

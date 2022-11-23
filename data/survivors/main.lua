@@ -1,26 +1,37 @@
 require "survivors/weapon_explode_nova"
 
 local isFirstRun = true
+local playerStartPosition = {5000,0,5000}
+local playerBaseMoveSpeed = 24
+local playerXpIncreasePerLevel = 1.3
+
+-- game state
+local isWaitingOnLevelUp = false
+
+-- monster spawning
 local spawnRadiusMin = 360
 local spawnRadiusMax = 40
-
 local zombieChadsPerSecond = 0.0
-local zombieChadsPerSecondIncrement = 0.000001
+local zombieChadsPerSecondIncrement = 0.000004
 local zombieChadSpawnTimer = 0
 local zombieChadSpawnEnabled = false
 local zombiesPerSecond = 0.0
-local zombiesPerSecondIncrement = 0.0005
+local zombiesPerSecondIncrement = 0.002
 local zombieSpawnTimer = 0
 local zombieSpawnEnabled = false
 local skeletonsPerSecond = 0.0
-local skeletonsPerSecondIncrement = 0.0001
+local skeletonsPerSecondIncrement = 0.0004
 local skeletonsSpawnTimer = 0
 local skeletonsSpawnEnabled = false
+
+-- weapons
+local explodeNovaActive = false
+
+-- hud
+local barBg = vec4.new(0.2,0.2,0.2,1)
+local barBorder = 4
 local wizardThumb = Graphics.LoadTexture("wizard_thumbnail.png")
 local deadImg = Graphics.LoadTexture("dead.png")
-local playerStartPosition = {5000,0,5000}
-local explodeNovaActive = false
-local isWaitingOnLevelUp = false
 
 function DoExplosionAt(pos, radius, damage)
 	local template = World.GetFirstEntityWithTag(Tag.new("ExplosionTemplate"))
@@ -79,7 +90,7 @@ function SpawnZombieChadAt(pos)
 	newMonsterCmp:SetAttackMinValue(10)
 	newMonsterCmp:SetAttackMaxValue(15)
 	newMonsterCmp:SetXPOnDeath(50)
-	newMonsterCmp:SetCurrentHealth(200)
+	newMonsterCmp:SetCurrentHealth(400)
 end
 
 function SpawnZombieAt(pos)
@@ -119,33 +130,36 @@ function SpawnSkeletons()
 	if(skeletonsSpawnEnabled == false or skeletonsPerSecond <= 0) then 
 		return 
 	end
-	skeletonsSpawnTimer = skeletonsSpawnTimer + 0.066	-- todo delta
+	skeletonsSpawnTimer = skeletonsSpawnTimer + Scripts.GetTimeDelta()
 	if(skeletonsSpawnTimer > (1.0 / skeletonsPerSecond)) then 
 		SpawnEnemy(SpawnSkeletonAt)
 		skeletonsSpawnTimer = 0
 	end
+	skeletonsPerSecond = skeletonsPerSecond + skeletonsPerSecondIncrement
 end
 
 function SpawnZombies()
 	if(zombieSpawnEnabled == false or zombiesPerSecond <= 0) then 
 		return 
 	end
-	zombieSpawnTimer = zombieSpawnTimer + 0.066	-- todo delta
+	zombieSpawnTimer = zombieSpawnTimer + Scripts.GetTimeDelta()
 	if(zombieSpawnTimer > (1.0 / zombiesPerSecond)) then 
 		SpawnEnemy(SpawnZombieAt)
 		zombieSpawnTimer = 0
 	end
+	zombiesPerSecond = zombiesPerSecond + zombiesPerSecondIncrement
 end
 
 function SpawnZombieChads()
 	if(zombieChadSpawnEnabled == false or zombieChadsPerSecond <= 0) then 
 		return 
 	end
-	zombieChadSpawnTimer = zombieChadSpawnTimer + 0.066	-- todo delta
+	zombieChadSpawnTimer = zombieChadSpawnTimer + Scripts.GetTimeDelta()
 	if(zombieChadSpawnTimer > (1.0 / zombieChadsPerSecond)) then 
 		SpawnEnemy(SpawnZombieChadAt)
 		zombieChadSpawnTimer = 0
 	end
+	zombieChadsPerSecond = zombieChadsPerSecond + zombieChadsPerSecondIncrement
 end
 
 function SpawnWorldTiles_BasicHorizontal(tilePos_ivec2)
@@ -192,11 +206,12 @@ function ResetPlayer()
 	
 	playerCmp:SetCurrentXP(0)
 	playerCmp:SetThisLevelXP(0)
-	playerCmp:SetNextLevelXP(100)
+	playerCmp:SetNextLevelXP(50)
 	
 	playerCmp:SetAreaMultiplier(1)
 	playerCmp:SetDamageMultiplier(1)
 	playerCmp:SetCooldownMultiplier(1)
+	playerCmp:SetMoveSpeedMultiplier(1)
 	
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	playerTransform:SetPosition(playerStartPosition[1], playerStartPosition[2], playerStartPosition[3])
@@ -245,13 +260,47 @@ function OnPlayerDead()
 	end
 end
 
-function PlayerUpdate()
-	local playerSpeed = 0.3
-	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
-	local playerTransform = World.GetComponent_Transform(foundPlayer)
-	if(playerTransform == nil) then 
-		return
+function OnLevelUp(playerCmp)
+	Survivors.SetEnemiesEnabled(false)
+	DebugGui.BeginWindow(true, 'Level Up!')
+	local hasLeveledUp = false
+	if(DebugGui.Button("AREA++")) then 
+		playerCmp:SetAreaMultiplier(playerCmp:GetAreaMultiplier() + 0.07)
+		hasLeveledUp = true
 	end
+	if(DebugGui.Button("DAMAGE++")) then 
+		playerCmp:SetDamageMultiplier(playerCmp:GetDamageMultiplier() + 0.07)
+		hasLeveledUp = true
+	end
+	if(DebugGui.Button("COOLDOWN++")) then 
+		playerCmp:SetCooldownMultiplier(playerCmp:GetCooldownMultiplier() * 0.92)
+		hasLeveledUp = true
+	end
+	if(DebugGui.Button("MOVEMENT++")) then 
+		playerCmp:SetMoveSpeedMultiplier(playerCmp:GetMoveSpeedMultiplier() + 0.12)
+		hasLeveledUp = true
+	end
+	if(DebugGui.Button("MAX HP++")) then 
+		playerCmp:SetMaximumHealth(playerCmp:GetMaximumHealth() * 1.08)
+		hasLeveledUp = true
+	end
+	if(playerCmp:GetCurrentHealth() < playerCmp:GetMaximumHealth()) then 
+		if(DebugGui.Button("HP++")) then 
+			playerCmp:SetCurrentHealth(math.min(playerCmp:GetMaximumHealth(), playerCmp:GetCurrentHealth() + playerCmp:GetMaximumHealth() * 0.25))
+			hasLeveledUp = true
+		end
+	end
+	DebugGui.EndWindow()
+	if(hasLeveledUp) then 
+		local nextLvlIncrease = (playerCmp:GetNextLevelXP() - playerCmp:GetThisLevelXP()) * playerXpIncreasePerLevel
+		playerCmp:SetThisLevelXP(playerCmp:GetNextLevelXP())
+		playerCmp:SetNextLevelXP(playerCmp:GetNextLevelXP() + nextLvlIncrease)
+		Survivors.SetEnemiesEnabled(true)
+	end
+end
+
+function PlayerUpdate(playerCmp, playerTransform)
+	local playerSpeed = playerCmp:GetMoveSpeedMultiplier() * playerBaseMoveSpeed * Scripts.GetTimeDelta()
 	
 	local myPos = playerTransform:GetPosition()
 	if(Input.IsKeyPressed('KEY_d')) then 
@@ -282,20 +331,17 @@ function LerpColour(c0, c1, t)
 	return cOut
 end
 
-function DrawHUD()
+function DrawHUD(playerCmp)
 	local windowDims = Graphics2D.GetDimensions()
-	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
-	local playerCmp = World.GetComponent_PlayerComponent(foundPlayer)
 	
-	local barBg = vec4.new(0.2,0.2,0.2,1)
-	local barBorder = 4
-	
+	-- thumbnail
 	local thumbOffset = {32,32}
 	local thumbDims = {128,128}
 	local thumbPos = {thumbOffset[1],windowDims.y - thumbOffset[2] - thumbDims[2]}
 	Graphics2D.DrawSolidQuad(thumbPos[1],thumbPos[2],0,thumbDims[1],thumbDims[2],barBg.x,barBg.y,barBg.z,barBg.w)
 	Graphics2D.DrawTexturedQuad(thumbPos[1] + barBorder, thumbPos[2] + barBorder, 0, thumbDims[1] - barBorder*2, thumbDims[2] - barBorder*2, 0,0,1,1, 1,1,1,1, wizardThumb)
 	
+	-- hp bar
 	local healthBarOffset = {16 + thumbOffset[1] + thumbDims[1],32}
 	local healthBarDims = {windowDims.x / 3,32}
 	local healthBarPos = {healthBarOffset[1], windowDims.y - healthBarOffset[2] - healthBarDims[2]}
@@ -308,6 +354,7 @@ function DrawHUD()
 	local barColour = LerpColour(healthBarHealthy, healthBarDead, hpRatio)
 	Graphics2D.DrawSolidQuad(healthBarPos[1] + barBorder,healthBarPos[2] + barBorder,0,barLength,healthBarDims[2]-barBorder*2,barColour.x,barColour.y,barColour.z,barColour.w)
 	
+	-- xp bar
 	local xpBarOffset = {16, 16}
 	local xpBarDims = {windowDims.x - 32, 16}
 	Graphics2D.DrawSolidQuad(xpBarOffset[1],xpBarOffset[2],0,xpBarDims[1],xpBarDims[2],barBg.x,barBg.y,barBg.z,barBg.w)
@@ -391,38 +438,6 @@ function OnFirstRun()
 	end
 end
 
-function OnLevelUp()
-	Survivors.SetEnemiesEnabled(false)
-	DebugGui.BeginWindow(true, 'Level Up!')
-	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
-	local playerCmp = World.GetComponent_PlayerComponent(foundPlayer)
-	local hasLeveledUp = false
-	if(DebugGui.Button("AREA++")) then 
-		playerCmp:SetAreaMultiplier(playerCmp:GetAreaMultiplier() + 0.1)
-		hasLeveledUp = true
-	end
-	if(DebugGui.Button("DAMAGE++")) then 
-		playerCmp:SetDamageMultiplier(playerCmp:GetDamageMultiplier() + 0.1)
-		hasLeveledUp = true
-	end
-	if(DebugGui.Button("COOLDOWN++")) then 
-		playerCmp:SetCooldownMultiplier(playerCmp:GetCooldownMultiplier() * 0.9)
-		hasLeveledUp = true
-	end
-	if(playerCmp:GetCurrentHealth() < playerCmp:GetMaximumHealth()) then 
-		if(DebugGui.Button("HP++")) then 
-			playerCmp:SetCurrentHealth(math.min(playerCmp:GetMaximumHealth(), playerCmp:GetCurrentHealth() + 25))
-			hasLeveledUp = true
-		end
-	end
-	DebugGui.EndWindow()
-	if(hasLeveledUp) then 
-		playerCmp:SetThisLevelXP(playerCmp:GetNextLevelXP())
-		playerCmp:SetNextLevelXP(playerCmp:GetNextLevelXP() * 1.5)
-		Survivors.SetEnemiesEnabled(true)
-	end
-end
-
 function SurvivorsMain(entity)
 	if(isFirstRun) then 
 		OnFirstRun()
@@ -431,35 +446,24 @@ function SurvivorsMain(entity)
 	
 	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
 	local playerCmp = World.GetComponent_PlayerComponent(foundPlayer)
+	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	if(playerCmp:GetCurrentHealth() <= 0) then 
 		OnPlayerDead()
 	else 
 		if(playerCmp:GetCurrentXP() >= playerCmp:GetNextLevelXP()) then
-			OnLevelUp()
+			OnLevelUp(playerCmp)
 		else
-			PlayerUpdate();
+			PlayerUpdate(playerCmp, playerTransform);
 			if(explodeNovaActive) then 
-				UpdateWeaponExplodeNova()
+				UpdateWeaponExplodeNova(playerCmp, playerTransform)
 			end
+			SpawnZombies();
+			SpawnZombieChads();
+			SpawnSkeletons();
 		end
 	end
 	
-	SpawnZombies();
-	SpawnZombieChads();
-	SpawnSkeletons();
-	DrawHUD();	
-	
-	local timeDelta = Scripts.GetTimeDelta()
-	
-	if(zombieSpawnEnabled==true) then 
-		zombiesPerSecond = zombiesPerSecond + zombiesPerSecondIncrement
-	end
-	if(zombieChadSpawnEnabled==true) then 
-		zombieChadsPerSecond = zombieChadsPerSecond + zombieChadsPerSecondIncrement
-	end
-	if(skeletonsSpawnEnabled==true) then
-		skeletonsPerSecond = skeletonsPerSecond + skeletonsPerSecondIncrement
-	end	
+	DrawHUD(playerCmp);	
 	
 	if(Survivors.IsEditorActive()) then
 		ShowEditor()
