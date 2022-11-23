@@ -1,5 +1,3 @@
-require "lean"
-
 local lastBarrelSpawnTime = -1
 local baseSpawnFrequency = 1.5
 local baseExplosionDelay = 4.0
@@ -9,6 +7,10 @@ local baseBarrelForceXZ = 400000
 local baseBarrelForceY = 100000
 local barrelXZSpawnOffset = 12
 local spawnedBarrels = {}	-- {entity, spawn time, time before explosion, explosion area, explosion damage, force to apply to body
+
+function RandomFloat(minv,maxv) 
+	return minv + (math.random() * (maxv-minv))
+end
 
 function SpawnBarrel(playerCmp, playerTransform, currentTime)
 	local template = World.GetFirstEntityWithTag(Tag.new("BarrelBombTemplate"))

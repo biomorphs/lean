@@ -1601,7 +1601,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Dungeon Pack\\Models\\fbx\\barrelDark.fbx"
+              "Path": "Dungeon Pack\\Models\\fbx\\barrelDark.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
