@@ -103,9 +103,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -140.36268615722656,
+              -575.214599609375,
               184.5,
-              -182.2835235595703
+              91.74880981445313
             ],
             "Scale": [
               1.0,
@@ -221,6 +221,8 @@
             "MaxHP": 100,
             "MoveSpeedMulti": 1.0,
             "NextLevelXP": 100,
+            "PickupAreaMulti": 1.0,
+            "ProjectileCount": 1,
             "ThisLevelXP": 0
           },
           "Type": "PlayerComponent"
@@ -283,9 +285,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -140.36268615722656,
+              -575.214599609375,
               0.0,
-              2.4664742946624756
+              276.4988098144531
             ],
             "Scale": [
               4.0,
@@ -1715,9 +1717,99 @@
         }
       ],
       "ID": 12201
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\urn.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.20000000298023224,
+            "Attenutation": 4.0,
+            "Brightness": 2.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              0.0,
+              0.6764705181121826,
+              1.0
+            ],
+            "Distance": 24.0,
+            "ShadowBias": 0.5,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "XPCrystalTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              18.920793533325195,
+              4.0,
+              0.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12205
     }
   ],
-  "EntityCount": 14,
+  "EntityCount": 15,
   "EntityIDs": [
     0,
     3,
@@ -1732,7 +1824,8 @@
     12198,
     12199,
     12200,
-    12201
+    12201,
+    12205
   ],
   "SceneName": "Survivors"
 }

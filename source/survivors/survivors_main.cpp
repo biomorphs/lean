@@ -11,6 +11,7 @@
 #include "monster_component.h"
 #include "dead_monster_component.h"
 #include "explosion_component.h"
+#include "attract_to_entity_component.h"
 #include "world_tile_system.h"
 #include "engine/character_controller_system.h"
 #include "engine/time_system.h"
@@ -34,6 +35,7 @@ namespace Survivors
 		SDE_PROF_EVENT();
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
 		m_enemiesEnabled = true;
+		m_attractorsEnabled = true;
 		physics->SetSimulationEnabled(true);
 
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
@@ -44,6 +46,9 @@ namespace Survivors
 		world->ForEachComponent<DeadMonsterComponent>([&](DeadMonsterComponent& m, EntityHandle e) {
 			world->RemoveEntity(e);
 		});
+		world->ForEachComponent<AttractToEntityComponent>([&](AttractToEntityComponent& m, EntityHandle e) {
+			world->RemoveEntity(e);
+		});
 	}
 
 	void SurvivorsMain::StopGame()
@@ -51,6 +56,7 @@ namespace Survivors
 		SDE_PROF_EVENT();
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
 		m_enemiesEnabled = false;
+		m_attractorsEnabled = false;
 		physics->SetSimulationEnabled(false);
 	}
 
@@ -66,6 +72,8 @@ namespace Survivors
 		entities->RegisterComponentType<DeadMonsterComponent>();
 		entities->RegisterInspector<DeadMonsterComponent>(DeadMonsterComponent::MakeInspector());
 		entities->RegisterComponentType<ExplosionComponent>();
+		entities->RegisterInspector<AttractToEntityComponent>(AttractToEntityComponent::MakeInspector());
+		entities->RegisterComponentType<AttractToEntityComponent>();
 
 		auto scripts = Engine::GetSystem<Engine::ScriptSystem>("Script");
 		auto survivors = scripts->Globals()["Survivors"].get_or_create<sol::table>();
@@ -85,6 +93,9 @@ namespace Survivors
 		survivors["SetEnemiesEnabled"] = [this](bool e) {
 			m_enemiesEnabled = e;
 		};
+		survivors["SetAttractorsEnabled"] = [this](bool e) {
+			m_attractorsEnabled = e;
+		};
 		survivors["StartGame"] = [this]() {
 			StartGame();
 		};
@@ -93,6 +104,9 @@ namespace Survivors
 		};
 		survivors["IsEditorActive"] = [this] {
 			return Engine::GetSystem<Editor>("Editor") != nullptr;
+		};
+		survivors["SetXPTemplateEntity"] = [this](EntityHandle e) {
+			m_xpTemplateEntity = e;
 		};
 
 		// Todo Hacks to fix later 
@@ -109,8 +123,6 @@ namespace Survivors
 		SDE_PROF_EVENT();
 
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
-		auto world = entities->GetWorld();
-
 		std::string sceneText;
 		if (!Core::LoadTextFromFile("survivors.scn", sceneText))
 		{
@@ -162,33 +174,23 @@ namespace Survivors
 		});
 	}
 
-	void SurvivorsMain::DamagePlayer(EntityHandle srcMonster, int damage)
+	void SurvivorsMain::DamagePlayer(PlayerComponent& playerCmp, EntityHandle srcMonster, int damage)
 	{
 		SDE_PROF_EVENT();
-		auto entities = Engine::GetSystem<EntitySystem>("Entities");
-		auto world = entities->GetWorld();
-		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
-		auto playerCmp = world->GetComponent<PlayerComponent>(playerEntity);
-		playerCmp->SetCurrentHealth(glm::max(0, playerCmp->GetCurrentHealth() - damage));
+		playerCmp.SetCurrentHealth(glm::max(0, playerCmp.GetCurrentHealth() - damage));
 	}
 
-	void SurvivorsMain::UpdateAttackingMonsters()
+	void SurvivorsMain::UpdateAttackingMonsters(PlayerComponent& playerCmp, glm::vec3 playerPos)
 	{
 		SDE_PROF_EVENT();
 
 		const double currentTime = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
-		auto entities = Engine::GetSystem<EntitySystem>("Entities");
-		auto world = entities->GetWorld();
-		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
-		auto playerTransform = world->GetComponent<Transform>(playerEntity);
-		const glm::vec3 playerPos = playerTransform ? playerTransform->GetPosition() : glm::vec3(0.0f, 0.0f, 0.0f);
 		const float c_attackerRadius = 16.0f;
 		const auto aabMin = playerPos - glm::vec3(c_attackerRadius, 0.0f, c_attackerRadius);
 		const auto aabMax = playerPos + glm::vec3(c_attackerRadius, 0.0f, c_attackerRadius);
-
 		m_activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
 			auto& enemy = m_activeMonsters[index];
-			if ((currentTime - enemy.m_cc->GetLastAttackedTime()) > enemy.m_cc->GetAttackFrequency())
+			if ((currentTime - enemy.m_cc->GetLastAttackedTime()) > enemy.m_cc->GetAttackFrequency() && glm::length(enemy.m_cc->GetKnockback()) < 0.5f)
 			{
 				const glm::vec3 playerToEnemy = playerPos - enemy.m_targetPosition;
 				const float d = glm::length(playerToEnemy);
@@ -197,7 +199,7 @@ namespace Survivors
 					int damage = Core::Random::GetInt(enemy.m_cc->GetAttackMinValue(), enemy.m_cc->GetAttackMaxValue());
 					if (damage > 0)
 					{
-						DamagePlayer(enemy.m_entity, damage);
+						DamagePlayer(playerCmp, enemy.m_entity, damage);
 					}
 					enemy.m_cc->SetLastAttackedTime(currentTime);
 				}
@@ -364,22 +366,51 @@ namespace Survivors
 		});
 	}
 
-	void SurvivorsMain::KillEnemies()
+	void SurvivorsMain::SpawnXPAt(EntityHandle player, glm::vec3 p, int xpToAdd)
+	{
+		if (m_xpTemplateEntity.IsValid())
+		{
+			auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			auto world = entities->GetWorld();
+			EntityHandle newXp = entities->CloneEntity(m_xpTemplateEntity);
+			world->AddComponent(newXp, AttractToEntityComponent::GetType());
+			AttractToEntityComponent* attractor = world->GetComponent<AttractToEntityComponent>(newXp);
+			Transform* t = world->GetComponent<Transform>(newXp);
+			if (attractor && t)
+			{
+				const glm::vec3 targetOffset(0.0f, 4.0f, 0.0);
+				t->SetPosition(p + targetOffset);
+				attractor->SetTargetOffset(targetOffset);
+				attractor->SetAcceleration(128.0f);
+				attractor->SetMaxSpeed(800.0f);
+				attractor->SetTriggerRange(3.0f);
+				attractor->SetTarget(player);
+				attractor->SetTriggerCallback([player, world, xpToAdd](EntityHandle src) {
+					auto playerCmp = world->GetComponent<PlayerComponent>(player);
+					if (playerCmp)
+					{
+						playerCmp->SetCurrentXP(playerCmp->GetCurrentXP() + xpToAdd);
+					}
+					world->RemoveEntity(src);
+				});
+			}
+		}
+	}
+
+	void SurvivorsMain::KillEnemies(EntityHandle player, PlayerComponent& playerCmp)
 	{
 		SDE_PROF_EVENT();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		double timeElapsed = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
 		auto world = entities->GetWorld();
-		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
-		auto playerCmp = world->GetComponent<PlayerComponent>(playerEntity);
 
 		for (auto entity : m_monstersToKill)
 		{
 			auto mc = world->GetComponent<MonsterComponent>(entity);
 			if (mc)
 			{
-				int newXP = playerCmp->GetCurrentXP() + mc->GetXPOnDeath();
-				playerCmp->SetCurrentXP(newXP);
+				auto transform = world->GetComponent<Transform>(entity);
+				SpawnXPAt(player, transform->GetPosition(), mc->GetXPOnDeath());
 				if (Core::Random::GetFloat(0.0f, 1.0f) < mc->GetRagdollChance())
 				{
 					auto physics = world->GetComponent<Physics>(entity);
@@ -401,14 +432,9 @@ namespace Survivors
 		}
 	}
 
-	void SurvivorsMain::UpdateEnemies(float timeDelta)
+	void SurvivorsMain::UpdateEnemies(EntityHandle player, PlayerComponent& playerCmp, glm::vec3 playerPos, float timeDelta)
 	{
 		SDE_PROF_EVENT();
-		auto entities = Engine::GetSystem<EntitySystem>("Entities");
-		auto world = entities->GetWorld();
-		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
-		auto playerTransform = world->GetComponent<Transform>(playerEntity);
-		const glm::vec3 playerPos = playerTransform ? playerTransform->GetPosition() : glm::vec3(0.0f, 0.0f, 0.0f);
 
 		m_activeMonsterGrid.SetTileSize({ m_monsterGridSize, m_monsterGridSize });
 		m_activeMonsterGrid.Reset();
@@ -417,16 +443,51 @@ namespace Survivors
 		m_monstersToKill.clear();
 		CollectActiveAndDespawning(playerPos, timeDelta);
 		DoEnemyAvoidance(playerPos, timeDelta);
-		UpdateAttackingMonsters();
+		UpdateAttackingMonsters(playerCmp, playerPos);
 		UpdateExplosions(timeDelta);
-		KillEnemies();
+		KillEnemies(player, playerCmp);
 		CleanupDeadEnemies(playerPos);
 
 		// despawn last as to not mess with component storage
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		for (auto it : m_monstersToDespawn)
 		{
 			entities->GetWorld()->RemoveEntity(it);
 		}
+	}
+
+	void SurvivorsMain::UpdateAttractors(PlayerComponent& playerCmp, float timeDelta)
+	{
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto world = entities->GetWorld();
+		static auto iterator = world->MakeIterator<AttractToEntityComponent, Transform>();
+		const float pickupRadius = m_baseXPPickupRange * playerCmp.GetPickupAreaMultiplier();
+		iterator.ForEach([&](AttractToEntityComponent& attract, Transform& t, EntityHandle parent) {
+			const Transform* target = attract.GetTarget();
+			if (target)
+			{
+				const auto meToTarget = target->GetPosition() + attract.GetTargetOffset() - t.GetPosition();
+				float distance = glm::length(meToTarget);
+				glm::vec3 velocity = attract.GetVelocity();
+				if (distance <= pickupRadius)
+				{
+					float currentSpeed = glm::length(velocity);
+					const auto direction = glm::normalize(meToTarget);
+					velocity = (direction * currentSpeed) + (direction * attract.GetAcceleration() * timeDelta);		// implicit euler
+					if (glm::length(velocity) > attract.GetMaxSpeed())
+					{
+						velocity = glm::normalize(velocity) * attract.GetMaxSpeed();
+					}
+					attract.SetVelocity(velocity);
+				}
+				if (distance <= attract.GetTriggerRange() && attract.GetTriggerCallback() != nullptr)
+				{
+					const auto& cb = attract.GetTriggerCallback();
+					cb(parent);
+				}
+				t.SetPosition(t.GetPosition() + velocity * timeDelta);
+			}
+		});
 	}
 
 	bool SurvivorsMain::Tick(float timeDelta)
@@ -444,14 +505,27 @@ namespace Survivors
 
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
-		auto worldTiles = Engine::GetSystem<Survivors::WorldTileSystem>("SurvivorsWorldTiles");
+		
+		auto playerEntity = entities->GetFirstEntityWithTag("PlayerCharacter");
+		auto playerTransform = world->GetComponent<Transform>(playerEntity);
+		auto playerCmp = world->GetComponent<PlayerComponent>(playerEntity);
+		if (playerCmp == nullptr)
+		{
+			return true;
+		}
 
 		if (m_enemiesEnabled)
 		{
-			UpdateEnemies(timeDelta);
+			UpdateEnemies(playerEntity, *playerCmp, playerTransform->GetPosition(), timeDelta);
+		}
+
+		if (m_attractorsEnabled)
+		{
+			UpdateAttractors(*playerCmp, timeDelta);
 		}
 
 		// Load tiles around player, unload tiles far away
+		auto worldTiles = Engine::GetSystem<Survivors::WorldTileSystem>("SurvivorsWorldTiles");
 		auto playerIterator = world->MakeIterator<PlayerComponent, Transform>();
 		playerIterator.ForEach([&](PlayerComponent& p, Transform& t, EntityHandle e) {
 			if (m_worldTileSpawnFn != nullptr)

@@ -228,9 +228,12 @@ namespace Engine
 		m_entitySystem->RegisterInspector<Physics>(Physics::MakeInspector(*m_debugGuiSystem, dbgRender, world));
 
 		//// expose Physics script functions
-		auto graphics = m_scriptSystem->Globals()["Physics"].get_or_create<sol::table>();
-		graphics["SetGravity"] = [this](float x, float y, float z) {
+		auto physics = m_scriptSystem->Globals()["Physics"].get_or_create<sol::table>();
+		physics["SetGravity"] = [this](float x, float y, float z) {
 			m_scene->setGravity({ x,y,z });
+		};
+		physics["SetSimulationEnabled"] = [this](bool enabled) {
+			SetSimulationEnabled(enabled);
 		};
 
 		return true;

@@ -143,8 +143,10 @@ namespace Engine
 			auto entities = Engine::GetSystem<EntitySystem>("Entities");
 			auto world = entities->GetWorld();
 			world->ForEachComponent<Script>([this](Script& s, EntityHandle e) {
+				SDE_PROF_EVENT("Script");
 				if (s.NeedsCompile())
 				{
+					SDE_PROF_EVENT("Load");
 					if (s.GetScriptFile().length() > 0)
 					{
 						std::string scriptText;
@@ -182,6 +184,7 @@ namespace Engine
 				}
 				if (!s.NeedsCompile() && s.GetCompiledFunction().valid())
 				{
+					SDE_PROF_EVENT("Run");
 					try
 					{
 						const auto& fn = s.GetCompiledFunction();

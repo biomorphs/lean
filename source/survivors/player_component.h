@@ -20,6 +20,8 @@ public:
 	void SetNextLevelXP(int xp) { m_nextLevelXP = xp; }
 	float GetAreaMultiplier() { return m_multiArea; }
 	void SetAreaMultiplier(float a) { m_multiArea = a; }
+	float GetPickupAreaMultiplier() { return m_multiPickupArea; }
+	void SetPickupAreaMultiplier(float a) { m_multiPickupArea = a; }
 	float GetDamageMultiplier() { return m_multiDamage; }
 	void SetDamageMultiplier(float a) { m_multiDamage = a; }
 	float GetCooldownMultiplier() { return m_multiCooldown; }
@@ -40,6 +42,7 @@ private:
 	// weapon stats
 	int m_projectileCount = 1;
 	float m_multiArea = 1.0f;
+	float m_multiPickupArea = 1.0f;
 	float m_multiDamage = 1.0f;
 	float m_multiCooldown = 1.0f;
 	float m_multiMoveSpeed = 1.0f;

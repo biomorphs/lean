@@ -23,7 +23,9 @@ COMPONENT_SCRIPTS(PlayerComponent,
 	"GetMoveSpeedMultiplier", &PlayerComponent::GetMoveSpeedMultiplier,
 	"SetMoveSpeedMultiplier", &PlayerComponent::SetMoveSpeedMultiplier,
 	"SetProjectileCount", &PlayerComponent::SetProjectileCount,
-	"GetProjectileCount", &PlayerComponent::GetProjectileCount
+	"GetProjectileCount", &PlayerComponent::GetProjectileCount,
+	"GetPickupAreaMultiplier", &PlayerComponent::GetPickupAreaMultiplier,
+	"SetPickupAreaMultiplier", &PlayerComponent::SetPickupAreaMultiplier
 )
 SERIALISE_BEGIN(PlayerComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
@@ -32,6 +34,7 @@ SERIALISE_PROPERTY("CurrentXP", m_currentXP)
 SERIALISE_PROPERTY("ThisLevelXP", m_thisLevelXP)
 SERIALISE_PROPERTY("NextLevelXP", m_nextLevelXP)
 SERIALISE_PROPERTY("AreaMulti", m_multiArea)
+SERIALISE_PROPERTY("PickupAreaMulti", m_multiPickupArea)
 SERIALISE_PROPERTY("DamageMulti", m_multiDamage)
 SERIALISE_PROPERTY("CooldownMulti", m_multiCooldown)
 SERIALISE_PROPERTY("MoveSpeedMulti", m_multiMoveSpeed)
@@ -50,6 +53,7 @@ COMPONENT_INSPECTOR_IMPL(PlayerComponent)
 		i.Inspect("This Level XP", a.GetThisLevelXP(), InspectFn(e, &PlayerComponent::SetThisLevelXP));
 		i.Inspect("Next Level XP", a.GetNextLevelXP(), InspectFn(e, &PlayerComponent::SetNextLevelXP));
 		i.Inspect("Area Multi", a.GetAreaMultiplier(), InspectFn(e, &PlayerComponent::SetAreaMultiplier));
+		i.Inspect("Pickup Area Multi", a.GetPickupAreaMultiplier(), InspectFn(e, &PlayerComponent::SetPickupAreaMultiplier));
 		i.Inspect("Damage Multi", a.GetDamageMultiplier(), InspectFn(e, &PlayerComponent::SetDamageMultiplier));
 		i.Inspect("Cooldown Multi", a.GetCooldownMultiplier(), InspectFn(e, &PlayerComponent::SetCooldownMultiplier));
 		i.Inspect("Movement speed Multi", a.GetMoveSpeedMultiplier(), InspectFn(e, &PlayerComponent::SetMoveSpeedMultiplier));

@@ -1,6 +1,6 @@
 local lastNovaTime = -1
-local novaFrequency = 2
-local novaArea = 48
+local novaFrequency = 2.3
+local novaArea = 40
 local novaDamage = 40
 
 function UpdateWeaponExplodeNova(playerCmp, playerTransform)

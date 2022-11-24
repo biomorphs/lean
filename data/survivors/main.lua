@@ -4,7 +4,7 @@ require "survivors/weapon_barrel_bomb"
 local isFirstRun = true
 local playerStartPosition = {5000,0,5000}
 local playerBaseMoveSpeed = 24
-local playerXpIncreasePerLevel = 1.3
+local playerXpIncreasePerLevel = 1.2
 
 -- game state
 local isWaitingOnLevelUp = false
@@ -279,6 +279,8 @@ end
 
 function OnLevelUp(playerCmp)
 	Survivors.SetEnemiesEnabled(false)
+	Survivors.SetAttractorsEnabled(false)
+	Physics.SetSimulationEnabled(false)
 	DebugGui.BeginWindow(true, 'Level Up!')
 	local hasLeveledUp = false
 	if(DebugGui.Button("AREA++")) then 
@@ -301,6 +303,10 @@ function OnLevelUp(playerCmp)
 		playerCmp:SetMoveSpeedMultiplier(playerCmp:GetMoveSpeedMultiplier() + 0.12)
 		hasLeveledUp = true
 	end
+	if(DebugGui.Button("PICKUP AREA++")) then 
+		playerCmp:SetPickupAreaMultiplier(playerCmp:GetPickupAreaMultiplier() * 1.1)
+		hasLeveledUp = true
+	end
 	if(DebugGui.Button("MAX HP++")) then 
 		playerCmp:SetMaximumHealth(playerCmp:GetMaximumHealth() * 1.08)
 		hasLeveledUp = true
@@ -317,6 +323,8 @@ function OnLevelUp(playerCmp)
 		playerCmp:SetThisLevelXP(playerCmp:GetNextLevelXP())
 		playerCmp:SetNextLevelXP(playerCmp:GetNextLevelXP() + nextLvlIncrease)
 		Survivors.SetEnemiesEnabled(true)
+		Survivors.SetAttractorsEnabled(true)
+		Physics.SetSimulationEnabled(true)
 	end
 end
 
@@ -454,6 +462,8 @@ function ShowEditor()
 end
 
 function OnFirstRun()
+	local foundXPTemplate = World.GetFirstEntityWithTag(Tag.new("XPCrystalTemplate"))
+	Survivors.SetXPTemplateEntity(foundXPTemplate)
 	if(Survivors.IsEditorActive() == false) then
 		DoStartGame()
 	end
