@@ -184,10 +184,10 @@ void GraphicsSystem::RegisterScripts()
 		m_renderer->SubmitInstance(transform, h, sh);
 	};
 	graphics["PointLight"] = [this](float px, float py, float pz, float r, float g, float b, float ambient, float distance, float atten) {
-		m_renderer->SetLight(glm::vec4(px, py, pz, 1.0f), glm::vec3(0.0f), glm::vec3(r, g, b), ambient, distance, atten);
+		m_renderer->PointLight({ px,py,pz }, { r,g,b }, ambient, distance, atten);
 	};
 	graphics["DirectionalLight"] = [this](float dx, float dy, float dz, float r, float g, float b, float ambient) {
-		m_renderer->SetLight(glm::vec4(0.0f), { dx,dy,dz }, glm::vec3(r, g, b), ambient, 0.0f, 0.0f);
+		m_renderer->DirectionalLight({ dx,dy,dz }, { r,g,b }, ambient);
 	};
 	graphics["DebugDrawAxis"] = [this](float px, float py, float pz, float size) {
 		m_debugRender->AddAxisAtPoint({ px,py,pz,1.0f }, size);
@@ -280,8 +280,8 @@ void GraphicsSystem::ProcessLight(Light& l, Transform* transform)
 	const glm::vec3 position = glm::vec3(transform->GetWorldspaceMatrix()[3]);
 	const glm::vec4 posAndType = { position, static_cast<float>(l.GetLightType()) };
 	const float distance = l.GetDistance();
-	const float attenuation = l.GetAttenuation();
 	glm::vec3 direction = { 0.0f,-1.0f,0.0f };
+	glm::mat4 shadowMatrix = l.GetShadowMatrix();
 	if (!l.IsPointLight())
 	{
 		// direction is based on entity transform, default is (0,-1,0)
@@ -290,9 +290,9 @@ void GraphicsSystem::ProcessLight(Light& l, Transform* transform)
 	}
 	if (l.CastsShadows())
 	{
-		bool recreateShadowmap = l.GetShadowMap() == nullptr || l.GetShadowMap()->IsCubemap() != l.IsPointLight();
-		if (recreateShadowmap)
+		if (l.GetShadowMap() == nullptr || l.GetShadowMap()->IsCubemap() != l.IsPointLight())
 		{
+			SDE_PROF_EVENT("CreateShadowMap");
 			auto& sm = l.GetShadowMap();
 			sm = std::make_unique<Render::FrameBuffer>(l.GetShadowmapSize());
 			if (l.IsPointLight())
@@ -304,34 +304,29 @@ void GraphicsSystem::ProcessLight(Light& l, Transform* transform)
 				SDE_LOG("Failed to create shadow depth buffer");
 			}
 		}
-		bool updateShadowmap = l.GetShadowMap() != nullptr;
-		glm::mat4 shadowMatrix = l.GetShadowMatrix();
-		if (updateShadowmap)
+		if (l.GetShadowMap() != nullptr)
 		{
 			shadowMatrix = l.UpdateShadowMatrix(position, direction);
-		}
-
-		if (l.GetLightType() == Light::Type::Spot)
-		{
-			m_renderer->SpotLight(position, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, l.GetSpotAngles(), *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
-		}
-		else
-		{
-			// the renderer keeps a reference to the shadow map here for 1 frame, do not delete lights that are in use!
-			m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, *l.GetShadowMap(), l.GetShadowBias(), shadowMatrix, updateShadowmap);
 		}
 	}
 	else
 	{
 		l.GetShadowMap() = nullptr;	// this is a safe spot to destroy unused shadow maps
-		if (l.GetLightType() == Light::Type::Spot)
-		{
-			m_renderer->SpotLight(position, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation, l.GetSpotAngles());
-		}
-		else
-		{
-			m_renderer->SetLight(posAndType, direction, l.GetColour() * l.GetBrightness(), l.GetAmbient(), distance, attenuation);
-		}
+	}
+
+	glm::vec3 lightColour = l.GetColour() * l.GetBrightness();
+	if (l.GetLightType() == Light::Type::Directional)
+	{
+		m_renderer->DirectionalLight(direction, lightColour, l.GetAmbient(), l.GetShadowMap().get(), l.GetShadowBias(), shadowMatrix);
+	}
+	else if (l.GetLightType() == Light::Type::Spot)
+	{
+		m_renderer->SpotLight(position, direction, lightColour, l.GetAmbient(), distance, l.GetAttenuation(), l.GetSpotAngles(), 
+			l.GetShadowMap().get(), l.GetShadowBias(), shadowMatrix);
+	}
+	else if (l.GetLightType() == Light::Type::Point)
+	{
+		m_renderer->PointLight(position, lightColour, l.GetAmbient(), distance, l.GetAttenuation(), l.GetShadowMap().get(), l.GetShadowBias(), shadowMatrix);
 	}
 };
 

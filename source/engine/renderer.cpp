@@ -387,20 +387,8 @@ namespace Engine
 		SubmitInstance(transform, model, shader, nullptr, 0);
 	}
 
-	void Renderer::SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles)
-	{
-		Light newLight;
-		newLight.m_colour = glm::vec4(colour, ambientStr);
-		newLight.m_position = { position, 2.0f };	// spotlight
-		newLight.m_direction = direction;
-		newLight.m_maxDistance = distance;
-		newLight.m_attenuationCompress = attenuation;
-		newLight.m_spotlightAngles = spotAngles;
-		m_lights.push_back(newLight);
-	}
-
 	void Renderer::SpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, glm::vec2 spotAngles,
-		Render::FrameBuffer& sm, float shadowBias, glm::mat4 shadowMatrix, bool updateShadowmap)
+		Render::FrameBuffer* sm, float shadowBias, glm::mat4 shadowMatrix)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
@@ -408,38 +396,41 @@ namespace Engine
 		newLight.m_direction = direction;
 		newLight.m_maxDistance = distance;
 		newLight.m_attenuationCompress = attenuation;
-		newLight.m_shadowMap = &sm;
+		newLight.m_shadowMap = sm;
 		newLight.m_lightspaceMatrix = shadowMatrix;
 		newLight.m_shadowBias = shadowBias;
-		newLight.m_updateShadowmap = updateShadowmap;
+		newLight.m_updateShadowmap = sm != nullptr;
 		newLight.m_spotlightAngles = spotAngles;
 		m_lights.push_back(newLight);
 	}
 
-	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation, 
-		Render::FrameBuffer& sm, float bias, glm::mat4 shadowMatrix, bool updateShadowmap)
+	void Renderer::DirectionalLight(glm::vec3 direction, glm::vec3 colour, float ambientStr, Render::FrameBuffer* shadowMap, float shadowBias, glm::mat4 shadowMatrix)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
-		newLight.m_position = posAndType;
+		newLight.m_position = { 0.0f,0.0f,0.0f,0.0f };	// directional
 		newLight.m_direction = direction;
-		newLight.m_maxDistance = distance;
-		newLight.m_attenuationCompress = attenuation;
-		newLight.m_shadowMap = &sm;
+		newLight.m_maxDistance = 0.0f;
+		newLight.m_attenuationCompress = 0.0f;
+		newLight.m_shadowMap = shadowMap;
 		newLight.m_lightspaceMatrix = shadowMatrix;
-		newLight.m_shadowBias = bias;
-		newLight.m_updateShadowmap = updateShadowmap;
+		newLight.m_shadowBias = shadowBias;
+		newLight.m_updateShadowmap = shadowMap != nullptr;
 		m_lights.push_back(newLight);
 	}
 
-	void Renderer::SetLight(glm::vec4 posAndType, glm::vec3 direction, glm::vec3 colour, float ambientStr, float distance, float attenuation)
+	void Renderer::PointLight(glm::vec3 position, glm::vec3 colour, float ambientStr, float distance, float attenuation,
+		Render::FrameBuffer* shadowMap, float shadowBias, glm::mat4 shadowMatrix)
 	{
 		Light newLight;
 		newLight.m_colour = glm::vec4(colour, ambientStr);
-		newLight.m_position = posAndType;
-		newLight.m_direction = direction;
+		newLight.m_position = { position,1.0f };	// point light
 		newLight.m_maxDistance = distance;
 		newLight.m_attenuationCompress = attenuation;
+		newLight.m_shadowMap = shadowMap;
+		newLight.m_lightspaceMatrix = shadowMatrix;
+		newLight.m_shadowBias = shadowBias;
+		newLight.m_updateShadowmap = shadowMap != nullptr;
 		m_lights.push_back(newLight);
 	}
 
