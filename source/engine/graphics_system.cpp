@@ -342,31 +342,32 @@ void GraphicsSystem::ProcessEntities()
 	auto world = m_entitySystem->GetWorld();
 	auto transforms = world->GetAllComponents<Transform>();
 	auto materials = world->GetAllComponents<Material>();
+	{
+		SDE_PROF_EVENT("SubmitLights");
+		static auto lightIterator = world->MakeIterator<Light, Transform>();
+		lightIterator.ForEach([this](Light& l, Transform& t, EntityHandle h) {
+			ProcessLight(l, &t);
+		});
+	}
 
-	// submit all lights
-	SDE_PROF_EVENT("SubmitLights");
-	static auto lightIterator = world->MakeIterator<Light, Transform>();
-	lightIterator.ForEach([this](Light& l, Transform& t, EntityHandle h) {
-		ProcessLight(l, &t);
-	});
-
-	// submit all models
-	SDE_PROF_EVENT("SubmitEntities");
-	static auto modelIterator = world->MakeIterator<Model, Transform>();
-	modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
-		if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
-		{
-			ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
-			if (partOverrides == nullptr)
+	{
+		SDE_PROF_EVENT("SubmitEntities");
+		static auto modelIterator = world->MakeIterator<Model, Transform>();
+		modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
+			if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
 			{
-				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
+				ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
+				if (partOverrides == nullptr)
+				{
+					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
+				}
+				else
+				{
+					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
+				}
 			}
-			else
-			{
-				m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
-			}
-		}
-	});
+		});
+	}
 
 	if(m_showBounds)
 	{

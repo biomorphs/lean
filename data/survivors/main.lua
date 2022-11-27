@@ -222,6 +222,7 @@ function ResetPlayer()
 	playerCmp:SetThisLevelXP(0)
 	playerCmp:SetNextLevelXP(50)
 	
+	playerCmp:SetPickupAreaMultiplier(1)
 	playerCmp:SetAreaMultiplier(1)
 	playerCmp:SetDamageMultiplier(1)
 	playerCmp:SetCooldownMultiplier(1)
@@ -284,11 +285,11 @@ function OnLevelUp(playerCmp)
 	DebugGui.BeginWindow(true, 'Level Up!')
 	local hasLeveledUp = false
 	if(DebugGui.Button("AREA++")) then 
-		playerCmp:SetAreaMultiplier(playerCmp:GetAreaMultiplier() + 0.07)
+		playerCmp:SetAreaMultiplier(playerCmp:GetAreaMultiplier() + 0.08)
 		hasLeveledUp = true
 	end
 	if(DebugGui.Button("DAMAGE++")) then 
-		playerCmp:SetDamageMultiplier(playerCmp:GetDamageMultiplier() + 0.07)
+		playerCmp:SetDamageMultiplier(playerCmp:GetDamageMultiplier() + 0.08)
 		hasLeveledUp = true
 	end
 	if(DebugGui.Button("COOLDOWN++")) then 
@@ -300,15 +301,15 @@ function OnLevelUp(playerCmp)
 		hasLeveledUp = true
 	end
 	if(DebugGui.Button("MOVEMENT++")) then 
-		playerCmp:SetMoveSpeedMultiplier(playerCmp:GetMoveSpeedMultiplier() + 0.12)
+		playerCmp:SetMoveSpeedMultiplier(playerCmp:GetMoveSpeedMultiplier() + 0.15)
 		hasLeveledUp = true
 	end
 	if(DebugGui.Button("PICKUP AREA++")) then 
-		playerCmp:SetPickupAreaMultiplier(playerCmp:GetPickupAreaMultiplier() * 1.1)
+		playerCmp:SetPickupAreaMultiplier(playerCmp:GetPickupAreaMultiplier() + 0.12)
 		hasLeveledUp = true
 	end
 	if(DebugGui.Button("MAX HP++")) then 
-		playerCmp:SetMaximumHealth(playerCmp:GetMaximumHealth() * 1.08)
+		playerCmp:SetMaximumHealth(playerCmp:GetMaximumHealth() * 1.1)
 		hasLeveledUp = true
 	end
 	if(playerCmp:GetCurrentHealth() < playerCmp:GetMaximumHealth()) then 

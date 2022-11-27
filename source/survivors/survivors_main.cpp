@@ -381,8 +381,8 @@ namespace Survivors
 				const glm::vec3 targetOffset(0.0f, 4.0f, 0.0);
 				t->SetPosition(p + targetOffset);
 				attractor->SetTargetOffset(targetOffset);
-				attractor->SetAcceleration(128.0f);
-				attractor->SetMaxSpeed(800.0f);
+				attractor->SetAcceleration(256.0f);
+				attractor->SetMaxSpeed(1000.0f);
 				attractor->SetTriggerRange(3.0f);
 				attractor->SetTarget(player);
 				attractor->SetTriggerCallback([player, world, xpToAdd](EntityHandle src) {

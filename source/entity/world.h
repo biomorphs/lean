@@ -47,6 +47,9 @@ public:
 	std::vector<ComponentType> GetOwnedComponentTypes(EntityHandle owner);
 
 	template<class ComponentType>
+	EntityHandle GetOwnerEntity(const ComponentType* c);	// this is not fast
+
+	template<class ComponentType>
 	void RemoveComponent(EntityHandle owner);
 	void RemoveComponent(EntityHandle owner, ComponentType type);
 
@@ -188,4 +191,16 @@ ComponentType* World::GetComponent(EntityHandle owner)
 		}
 	}
 	return nullptr;
+}
+
+template<class ComponentType>
+EntityHandle World::GetOwnerEntity(const ComponentType* c)
+{
+	EntityHandle result;
+	auto* storage = static_cast<ComponentType::StorageType*>(GetStorage(c->GetType()));
+	if (storage)
+	{
+		result = storage->FindOwner(c);
+	}
+	return result;
 }

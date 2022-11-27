@@ -32,24 +32,18 @@ namespace Engine
 		auto entities = m_physicsSystem->m_entitySystem;
 		if(m_physicsSystem->m_hasTicked)
 		{ 
-			// wait for sim to end
 			{
 				SDE_PROF_EVENT("FetchResults");
-				m_physicsSystem->m_scene->fetchResults(true);	
+				m_physicsSystem->m_scene->fetchResults(true);		// waits for sim to end
 			}
-
-			static bool s_useActiveActors = true;
-
-			if (s_useActiveActors)
 			{
-				SDE_PROF_EVENT("ApplyTransforms_ActiveActors");
-				// Apply new transforms to all non-kinematic dynamic bodies
+				SDE_PROF_EVENT("ApplyTransforms_ActiveActors");	// Apply new transforms to all non-kinematic dynamic bodies
 				auto theWorld = m_physicsSystem->m_entitySystem->GetWorld();
 				auto transforms = theWorld->GetAllComponents<Transform>();
 				auto physicscomps = theWorld->GetAllComponents<Physics>();
 				physx::PxU32 nbActiveActors = 0;
 				physx::PxActor** activeActors = m_physicsSystem->m_scene->getActiveActors(nbActiveActors);
-				m_physicsSystem->m_jobSystem->ForEachAsync(0, nbActiveActors, 1, 400, [this, &activeActors, &transforms, &physicscomps](int32_t i) 
+				m_physicsSystem->m_jobSystem->ForEachAsync(0, nbActiveActors, 1, 400, [this, &activeActors, &transforms, &physicscomps](int32_t i)
 				{
 					auto entityId = reinterpret_cast<uintptr_t>(activeActors[i]->userData);
 					auto p = physicscomps->Find(entityId);
@@ -61,51 +55,55 @@ namespace Engine
 						t->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
 					}
 				});
+				m_physicsSystem->m_hasTicked = false;
 			}
-			else
-			{
-				// we should not be doing this by looping through all components!
-				{
-					SDE_PROF_EVENT("ApplyTransforms_AllComponents");
-					auto transforms = entities->GetWorld()->GetAllComponents<Transform>();
-					entities->GetWorld()->ForEachComponentAsync<Physics>([this, &transforms](Physics& p, EntityHandle e)
-					{
-						if (!p.IsStatic() && !p.IsKinematic() && p.GetActor().Get() != nullptr)
-						{
-							auto transform = transforms->Find(e);
-							if (transform)
-							{
-								const auto& pose = p.GetActor()->getGlobalPose();
-								transform->SetPosition({ pose.p.x, pose.p.y, pose.p.z });
-								transform->SetOrientation({ pose.q.w, pose.q.x, pose.q.y, pose.q.z });
-							}
-						}
-					}, *m_physicsSystem->m_jobSystem, 400);
-				}
-			}
-			m_physicsSystem->m_hasTicked = false;
 		}
 		
-		// Rebuild actors if needed
-		// we should not be doing this by looping through all components!
 		{
 			SDE_PROF_EVENT("RebuildPending");
-			static World::EntityIterator iterator = entities->GetWorld()->MakeIterator<Physics, Transform>();
-			iterator.ForEach([this](Physics& p, Transform& t, EntityHandle h) {
-				if (p.NeedsRebuild())
+			for (const auto& e : m_physicsSystem->m_entitiesToRebuild)
+			{
+				Physics* phys = entities->GetWorld()->GetComponent<Physics>(e);
+				if (phys)
 				{
-					m_physicsSystem->RebuildActor(p, h);
+					m_physicsSystem->RebuildActor(*phys, e);
 				}
-				// update kinematic target transforms
-				if (!p.IsStatic() && p.IsKinematic() && p.GetActor().Get() != nullptr)
-				{
-					const auto pos = t.GetPosition();
-					const auto orient = t.GetOrientation();
-					physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
-					static_cast<physx::PxRigidDynamic*>(p.GetActor().Get())->setKinematicTarget(trans);
-				}
-			});
+			}
+			m_physicsSystem->m_entitiesToRebuild.clear();
 		}
+
+		{
+			SDE_PROF_EVENT("UpdateKinematics");
+			static std::vector<EntityHandle> kinematicsToRemove;
+			auto& kinematics = m_physicsSystem->m_kinematics;
+			auto physicsComponents = static_cast<Physics::StorageType*>(entities->GetWorld()->GetStorage(Physics::GetType()));
+			auto transformCmps = static_cast<Transform::StorageType*>(entities->GetWorld()->GetStorage(Transform::GetType()));
+			for (const auto& e : kinematics)
+			{
+				Physics* phys = physicsComponents->Find(e);
+				if (phys && !phys->IsStatic() && phys->IsKinematic())	// is the component alive + still kinematic?
+				{
+					if (phys->GetActor().Get() != nullptr)
+					{
+						Transform* trns = transformCmps->Find(e);
+						if (trns)
+						{
+							const auto pos = trns->GetPosition();
+							const auto orient = trns->GetOrientation();
+							physx::PxTransform trans(physx::PxVec3(pos.x, pos.y, pos.z), physx::PxQuat(orient.x, orient.y, orient.z, orient.w));
+							static_cast<physx::PxRigidDynamic*>(phys->GetActor().Get())->setKinematicTarget(trans);
+						}
+					}
+					continue;	// skip remove
+				}
+				kinematicsToRemove.push_back(e);
+			}
+			for (const auto& toRemove : kinematicsToRemove)
+			{
+				kinematics.erase(std::remove(kinematics.begin(), kinematics.end(), toRemove));
+			}
+			kinematicsToRemove.clear();
+		}		
 
 		return true;
 	}
@@ -155,6 +153,7 @@ namespace Engine
 
 	PhysicsSystem::PhysicsSystem()
 	{
+		m_entitiesToRebuild.reserve(1024);
 	}
 
 	PhysicsSystem::~PhysicsSystem()
@@ -169,6 +168,38 @@ namespace Engine
 	PhysicsSystem::UpdateEntities* PhysicsSystem::MakeUpdater()
 	{
 		return new UpdateEntities(this);
+	}
+
+	void PhysicsSystem::AddKinematic(Physics* p)
+	{
+		SDE_PROF_EVENT();
+		static auto world = Engine::GetSystem<EntitySystem>("Entities")->GetWorld();
+		EntityHandle parent = world->GetOwnerEntity<Physics>(p);
+		if (parent.IsValid() && std::find(m_kinematics.begin(), m_kinematics.end(), parent) == m_kinematics.end())
+		{
+			m_kinematics.push_back(parent);
+		}
+	}
+
+	void PhysicsSystem::RemoveKinematic(Physics* p)
+	{
+		SDE_PROF_EVENT();
+		static auto world = Engine::GetSystem<EntitySystem>("Entities")->GetWorld();
+		EntityHandle parent = world->GetOwnerEntity<Physics>(p);
+		auto found = std::remove(m_kinematics.begin(), m_kinematics.end(), parent);
+		if (found != m_kinematics.end())
+		{
+			m_kinematics.erase(found);
+		}
+	}
+
+	void PhysicsSystem::ScheduleRebuild(EntityHandle e)
+	{
+		SDE_PROF_EVENT();
+		if (std::find(m_entitiesToRebuild.begin(), m_entitiesToRebuild.end(), e) == m_entitiesToRebuild.end())
+		{
+			m_entitiesToRebuild.push_back(e);
+		}
 	}
 
 	bool PhysicsSystem::PreInit()
@@ -260,7 +291,7 @@ namespace Engine
 		}
 	}
 
-	void PhysicsSystem::RebuildActor(Physics& p, EntityHandle& e)
+	void PhysicsSystem::RebuildActor(Physics& p, const EntityHandle& e)
 	{
 		SDE_PROF_EVENT();
 
@@ -328,7 +359,6 @@ namespace Engine
 		}
 		p.SetActor(Engine::PhysicsHandle<physx::PxRigidActor>(body));
 		m_scene->addActor(*body);
-		p.SetNeedsRebuild(false);
 	}
 
 	EntityHandle PhysicsSystem::Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal)

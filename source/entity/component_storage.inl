@@ -1,6 +1,7 @@
 #include "core/profiler.h"
 #include "core/log.h"
 #include "core/thread.h"
+#include "entity_handle.h"
 #include <atomic>
 
 constexpr int c_maxComponents = 1024 * 64;
@@ -116,6 +117,21 @@ void LinearComponentStorage<ComponentType>::ForEach(std::function<void(Component
 	}
 
 	--m_iterationDepth;
+}
+
+template<class ComponentType>
+EntityHandle LinearComponentStorage<ComponentType>::FindOwner(const ComponentType* cmp)
+{
+	EntityHandle result;
+	auto foundOwner = std::find_if(m_components.begin(), m_components.end(), [cmp](const ComponentType& a) {
+		return &a == cmp;
+	});
+	if (foundOwner != m_components.end())
+	{
+		const int index = std::distance(m_components.begin(), foundOwner);
+		result = m_owners[index];
+	}
+	return result;
 }
 
 template<class ComponentType>

@@ -35,6 +35,7 @@ public:
 	SERIALISED_CLASS();
 	LinearComponentStorage();
 	ComponentType* Find(EntityHandle owner);
+	EntityHandle FindOwner(const ComponentType* c);
 	void ForEach(std::function<void(ComponentType&, EntityHandle)> fn);
 	void ForEachAsync(std::function<void(ComponentType&, EntityHandle)> fn, Engine::JobSystem& js, int32_t componentsPerJob);
 
@@ -47,6 +48,7 @@ public:
 	virtual bool Contains(EntityHandle owner) { return Find(owner) != nullptr; }
 	virtual void Destroy(EntityHandle owner);
 	virtual void DestroyAll();
+	
 private:
 	robin_hood::unordered_map<uint32_t, uint32_t> m_entityToComponent;
 	std::vector<EntityHandle> m_owners;

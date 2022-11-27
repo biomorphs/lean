@@ -64,11 +64,20 @@ namespace Engine
 			glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity, EntityHandle ignoreEntity=-1);
 
 		void SetSimulationEnabled(bool enabled) { m_simEnabled = enabled; }
+		void ScheduleRebuild(EntityHandle e);
+		void AddKinematic(Physics* p);
+		void RemoveKinematic(Physics* p);
 
 	private:
-		void RebuildActor(Physics& p, EntityHandle& e);
+		void RebuildActor(Physics& p, const EntityHandle& e);
 		physx::PxMaterial* GetOrCreateMaterial(Physics&);
 		void UpdateGui();
+
+		// entities that need a rebuild of their physx state this frame
+		std::vector<EntityHandle> m_entitiesToRebuild;
+
+		// kinematic entities kept separately to avoid iterating all components
+		std::vector<EntityHandle> m_kinematics;
 
 		class JobDispatcher;
 		JobSystem* m_jobSystem = nullptr;
