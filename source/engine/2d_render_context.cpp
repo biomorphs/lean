@@ -162,7 +162,7 @@ namespace Engine
 		}
 
 		ShaderManager* sm = Engine::GetSystem<ShaderManager>("Shaders");
-		m_shader = sm->LoadShader("RenderContext2D", "engine/render_context_2d.vs", "engine/render_context_2d.fs");
+		m_shader = sm->LoadShader("RenderContext2D", "engine/shaders/render_context_2d.vs", "engine/shaders/render_context_2d.fs");
 	}
 
 	void RenderContext2D::Shutdown()

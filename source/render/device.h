@@ -27,7 +27,8 @@ namespace Render
 		R32UI,
 		RF16,
 		RF32,
-		RGBAF32
+		RGBAF32,
+		RGBAU8
 	};
 
 	enum class ComputeImageAccess

@@ -417,6 +417,9 @@ namespace Render
 		case ComputeImageFormat::R32UI:
 			format = GL_R32UI;
 			break;
+		case ComputeImageFormat::RGBAU8:
+			format = GL_RGBA8UI;
+			break;
 		default:
 			assert(!"Whut");
 		}
