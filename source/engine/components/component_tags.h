@@ -15,6 +15,7 @@ public:
 	void AddTag(const Engine::Tag& t);
 	void RemoveTag(const Engine::Tag& t);
 	bool ContainsTag(const Engine::Tag& t) const;
+	void ClearTags();
 
 	using TagSet = std::vector<Engine::Tag>;
 	const TagSet& AllTags() const { return m_tags; }

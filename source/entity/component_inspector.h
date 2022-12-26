@@ -31,6 +31,7 @@ public:
 	virtual bool Inspect(const char* label, bool currentValue, std::function<void(bool)> setFn) = 0;
 	virtual bool Inspect(const char* label, int currentValue, std::function<void(int)> setFn, int step=1, int minv=INT_MIN, int maxv=INT_MAX) = 0;
 	virtual bool Inspect(const char* label, float currentValue, std::function<void(float)> setFn, float step = 1.0f, float minv = -FLT_MAX, float maxv = FLT_MAX) = 0;
+	virtual bool Inspect(const char* label, double currentValue, std::function<void(double)> setFn, double step = 1.0, double minv = -DBL_MAX, double maxv = DBL_MAX) = 0;
 	virtual bool Inspect(const char* label, glm::vec3 currentValue, std::function<void(glm::vec3)> setFn, float step = 1.0f, float minv = -FLT_MAX, float maxv = FLT_MAX) = 0;
 	virtual bool InspectColour(const char* label, glm::vec3 currentValue, std::function<void(glm::vec3)> setFn) = 0;
 };

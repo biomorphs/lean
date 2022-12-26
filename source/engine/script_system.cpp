@@ -111,6 +111,11 @@ namespace Engine
 
 		m_globalState = std::make_unique<sol::state>();
 		OpenDefaultLibraries(*m_globalState);
+
+		auto scripts = (*m_globalState)["Scripts"].get_or_create<sol::table>();
+		scripts["GetTimeDelta"]= [this]() {
+			return m_deltaTime;
+		};
 		
 		return true;
 	}
@@ -126,6 +131,7 @@ namespace Engine
 	bool ScriptSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
+		m_deltaTime = timeDelta;
 
 		{
 			SDE_PROF_EVENT("CollectGarbage");
@@ -137,8 +143,10 @@ namespace Engine
 			auto entities = Engine::GetSystem<EntitySystem>("Entities");
 			auto world = entities->GetWorld();
 			world->ForEachComponent<Script>([this](Script& s, EntityHandle e) {
+				SDE_PROF_EVENT("Script");
 				if (s.NeedsCompile())
 				{
+					SDE_PROF_EVENT("Load");
 					if (s.GetScriptFile().length() > 0)
 					{
 						std::string scriptText;
@@ -176,6 +184,7 @@ namespace Engine
 				}
 				if (!s.NeedsCompile() && s.GetCompiledFunction().valid())
 				{
+					SDE_PROF_EVENT("Run");
 					try
 					{
 						const auto& fn = s.GetCompiledFunction();

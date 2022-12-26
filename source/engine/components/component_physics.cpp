@@ -1,8 +1,11 @@
 #include "component_physics.h"
+#include "component_transform.h"
 #include "engine/debug_gui_system.h"
 #include "engine/debug_render.h"
+#include "engine/system_manager.h"
 #include "entity/entity_handle.h"
-#include "component_transform.h"
+#include "entity/entity_system.h"
+#include "engine/physics_system.h"
 #include "entity/world.h"
 #include "entity/component_inspector.h"
 #include <PxPhysicsAPI.h>
@@ -61,7 +64,7 @@ SERIALISE_BEGIN(Physics)
 	SERIALISE_PROPERTY("CapsuleColliders", m_capsuleColliders)
 	if (op == Engine::SerialiseType::Read)
 	{
-		SetNeedsRebuild(true);
+		SetKinematic(m_isKinematic);	// also triggers a rebuild
 	}
 SERIALISE_END()
 
@@ -73,6 +76,29 @@ Physics::Physics()
 Physics::~Physics()
 {
 	m_actor = nullptr;
+}
+
+void Physics::SetKinematic(bool k)
+{
+	static auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
+	if (k)
+	{
+		physics->AddKinematic(this);
+	}
+	else if(m_isKinematic)
+	{
+		physics->RemoveKinematic(this);
+	}
+	m_isKinematic = k;
+	Rebuild();
+}
+
+void Physics::Rebuild()
+{
+	static auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
+	static auto world = Engine::GetSystem<EntitySystem>("Entities")->GetWorld();
+	EntityHandle parent = world->GetOwnerEntity<Physics>(this);
+	physics->ScheduleRebuild(parent);
 }
 
 void Physics::AddForce(glm::vec3 force)

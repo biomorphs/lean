@@ -15,6 +15,7 @@
 #include "camera_system.h"
 #include "raycast_system.h"
 #include "character_controller_system.h"
+#include "time_system.h"
 #include "entity/entity_system.h"
 #include "platform.h"
 #include "core/log.h"
@@ -43,6 +44,7 @@ namespace Engine
 		auto raycaster = new RaycastSystem;
 
 		SystemManager& sysManager = SystemManager::GetInstance();
+		sysManager.RegisterSystem("Time", new TimeSystem);
 		sysManager.RegisterSystem("Events", new EventSystem);
 		sysManager.RegisterSystem("Jobs", new JobSystem);
 		sysManager.RegisterSystem("Input", new InputSystem);

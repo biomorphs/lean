@@ -60,7 +60,7 @@ public:
 	void SetStatic(bool s) { m_isStatic = s; Rebuild(); }
 
 	bool IsKinematic() { return m_isKinematic; }
-	void SetKinematic(bool k) { m_isKinematic = k; Rebuild(); }
+	void SetKinematic(bool k);
 
 	float GetDensity() { return m_density; }
 	void SetDensity(float d) { m_density = d; }
@@ -93,9 +93,7 @@ public:
 	}
 	CapsuleColliders& GetCapsuleColliders() { return m_capsuleColliders; }
 
-	void Rebuild() { m_needsRebuild = true; }
-	bool NeedsRebuild() { return m_needsRebuild; }
-	void SetNeedsRebuild(bool b) { m_needsRebuild = b; }
+	void Rebuild();
 
 	Engine::PhysicsHandle<physx::PxRigidActor>& GetActor() { return m_actor; }
 	void SetActor(Engine::PhysicsHandle<physx::PxRigidActor>&& a) { m_actor = std::move(a); }

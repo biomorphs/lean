@@ -67,8 +67,8 @@ bool SDFMeshSystem::PostInit()
 
 	// Compute shaders
 	auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
-	m_findCellVerticesShader = shaders->LoadComputeShader("FindSDFVertices", "compute_test_find_vertices.cs");
-	m_createTrianglesShader = shaders->LoadComputeShader("CreateTriangles", "compute_test_make_triangles.cs");
+	m_findCellVerticesShader = shaders->LoadComputeShader("FindSDFVertices", "compute_sdf_find_vertices.cs");
+	m_createTrianglesShader = shaders->LoadComputeShader("CreateTriangles", "compute_sdf_make_triangles.cs");
 
 	return true;
 }

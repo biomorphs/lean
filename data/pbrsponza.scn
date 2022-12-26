@@ -38,13 +38,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "cube2.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -201,13 +201,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\desklamp.FBX"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -322,13 +322,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "sponza.glb"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -370,9 +370,9 @@
               0.0
             ],
             "Scale": [
-              2000.0,
-              2000.0,
-              2000.0
+              20.0,
+              20.0,
+              20.0
             ]
           },
           "Type": "Transform"
@@ -385,13 +385,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -475,13 +475,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -565,13 +565,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -655,13 +655,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -745,13 +745,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -835,13 +835,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -925,13 +925,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",
@@ -1015,13 +1015,13 @@
         {
           "Data": {
             "ClassName": "Model",
-            "MaterialEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
             "Model": {
               "ClassName": "ModelHandle",
               "Path": "E:\\Git\\lean\\data\\sphere.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
             },
             "Shader": {
               "ClassName": "ShaderHandle",

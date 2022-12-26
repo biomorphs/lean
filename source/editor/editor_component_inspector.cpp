@@ -152,3 +152,18 @@ bool EditorComponentInspector::Inspect(const char* label, float currentValue, st
 	}
 	return false;
 }
+
+bool EditorComponentInspector::Inspect(const char* label, double currentValue, std::function<void(double)> setFn, double step, double minv, double maxv)
+{
+	m_dbgGui->AlignToNextControl();
+	m_dbgGui->Text(label);
+	m_dbgGui->SameLine(m_labelWidth);
+	std::string inputId = std::string("##") + label + "_value";
+	float newValue = m_dbgGui->InputFloat(inputId.c_str(), (float)currentValue, (float)step, (float)minv, (float)maxv);
+	if (newValue != currentValue)
+	{
+		m_editor->PushCommand(std::make_unique<EditorSetValueCommand<double>>(label, currentValue, newValue, setFn));
+		return true;
+	}
+	return false;
+}

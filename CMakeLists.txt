@@ -45,6 +45,8 @@ set(PysXIncludePaths
 set(PhysXLibPathRelease ${CMAKE_CURRENT_SOURCE_DIR}/../PhysX/physx/bin/win.x86_64.vc142.mt/checked/)
 set(PhysXLibPathDebug ${CMAKE_CURRENT_SOURCE_DIR}/../PhysX/physx/bin/win.x86_64.vc142.mt/debug/)
 
+set(FreeTypeLibPath "${CMAKE_CURRENT_SOURCE_DIR}/external/freetype-windows-binaries/release static/vs2015-2022/win64/freetype.lib")
+
 set(CommonCompilerOptions /WX /MP)
 
 add_library(Core STATIC)
@@ -132,6 +134,8 @@ target_compile_options(ImguiLib PRIVATE ${CommonCompilerOptions})
 
 add_library(Engine STATIC)
 set(ENGINE_SOURCES
+	source/engine/2d_render_context.h
+	source/engine/2d_render_context.cpp
 	source/engine/new_render.h
 	source/engine/new_render.cpp
 	source/engine/material_helpers.h
@@ -157,6 +161,8 @@ set(ENGINE_SOURCES
 	source/engine/engine_startup.h
 	source/engine/event_system.cpp
 	source/engine/event_system.h
+	source/engine/time_system.cpp
+	source/engine/time_system.h
 	source/engine/job.h
 	source/engine/job.cpp
 	source/engine/job_queue.h
@@ -255,9 +261,11 @@ target_include_directories(Engine PRIVATE ${PysXIncludePaths})
 target_include_directories(Engine PRIVATE external/imgui-docking/)
 target_include_directories(Engine PRIVATE external/assimp-5.0.1/include/)
 target_include_directories(Engine PRIVATE external/qef/)
+target_include_directories(Engine PRIVATE external/freetype-windows-binaries/include)
 target_link_libraries(Engine PRIVATE Core)
 target_link_libraries(Engine PRIVATE Render)
 target_link_libraries(Engine PRIVATE ImguiLib)
+target_link_libraries(Engine PRIVATE ${FreeTypeLibPath})
 target_compile_options(Engine PRIVATE ${CommonCompilerOptions})
 
 add_library(Entity STATIC)
@@ -301,12 +309,16 @@ target_compile_options(Creatures PRIVATE ${CommonCompilerOptions})
 
 add_library(Survivors STATIC)
 set(SURVIVORS_SOURCES
+	source/Survivors/attract_to_entity_component.h
+	source/Survivors/attract_to_entity_component.cpp
 	source/survivors/entity_grid.h
 	source/survivors/entity_grid.cpp
 	source/survivors/survivors_main.h
 	source/survivors/survivors_main.cpp
 	source/survivors/player_component.h
 	source/survivors/player_component.cpp
+	source/survivors/dead_monster_component.h
+	source/survivors/dead_monster_component.cpp
 	source/survivors/monster_component.h
 	source/survivors/monster_component.cpp
 	source/survivors/explosion_component.h

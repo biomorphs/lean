@@ -103,9 +103,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -12.137834548950195,
+              -575.214599609375,
               184.5,
-              -184.75
+              91.74880981445313
             ],
             "Scale": [
               1.0,
@@ -212,8 +212,18 @@
         },
         {
           "Data": {
+            "AreaMulti": 1.0,
             "ClassName": "PlayerComponent",
-            "CurrentHP": 100
+            "CooldownMulti": 1.0,
+            "CurrentHP": 100,
+            "CurrentXP": 0,
+            "DamageMulti": 1.0,
+            "MaxHP": 100,
+            "MoveSpeedMulti": 1.0,
+            "NextLevelXP": 100,
+            "PickupAreaMulti": 1.0,
+            "ProjectileCount": 1,
+            "ThisLevelXP": 0
           },
           "Type": "PlayerComponent"
         },
@@ -275,9 +285,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -12.137834548950195,
+              -575.214599609375,
               0.0,
-              0.0
+              276.4988098144531
             ],
             "Scale": [
               4.0,
@@ -838,7 +848,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\sphere_low.fbx"
+              "Path": "sphere_low.fbx"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -884,7 +894,7 @@
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "E:\\Git\\lean\\data\\survivors\\Fire texture seamless.jpg"
+                  "Path": "survivors\\Fire texture seamless.jpg"
                 },
                 "IsTransparent": true,
                 "NormalTexture": {
@@ -952,9 +962,854 @@
         }
       ],
       "ID": 12197
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "kenney_graveyardkit_3\\zombie.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12198
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.46568626165390015,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.45588237047195435,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.4852941036224365,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.6392157077789307,
+                  0.22745099663734436,
+                  0.22745099663734436,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.9528301954269409,
+                  0.08539507538080215,
+                  0.08539507538080215,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "ZombieDamaged"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              47.699161529541016,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12198
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "kenney_graveyardkit_3\\skeleton.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12199
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.3480392098426819,
+                  0.005118228495121002,
+                  0.005118228495121002,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.24019604921340942,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "SkeletonDamaged"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              73.01847839355469,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              1.5,
+              1.5,
+              1.5
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12199
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "kenney_graveyardkit_3\\zombie.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12200
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.1666666865348816,
+                  0.002450983040034771,
+                  0.002450983040034771,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.10294115543365479,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.4950980544090271,
+                  0.0024269437417387962,
+                  0.0024269437417387962,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.31372547149658203,
+                  0.01845441944897175,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.09313726425170898,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "ZombieChadDamaged"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              112.94207000732422,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              3.0,
+              3.0,
+              3.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12200
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "Dungeon Pack\\Models\\fbx\\barrelDark.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.10000000149011612,
+            "Attenutation": 4.0,
+            "Brightness": 8.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              0.9901960492134094,
+              0.22427891194820404,
+              0.09222421050071716
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [
+              {
+                "ClassName": "CapsuleCollider",
+                "HalfHeight": 0.6000000238418579,
+                "Origin": [
+                  0.0,
+                  0.6200000047683716,
+                  0.0
+                ],
+                "PitchYawRoll": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Radius": 3.0999999046325684
+              }
+            ],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": false,
+            "IsStatic": true,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "BarrelBombTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              163.40232849121094,
+              3.8745789527893066,
+              0.0
+            ],
+            "Scale": [
+              6.0,
+              6.0,
+              6.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12201
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_graveyardkit_3\\urn.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.20000000298023224,
+            "Attenutation": 4.0,
+            "Brightness": 2.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              0.0,
+              0.6764705181121826,
+              1.0
+            ],
+            "Distance": 24.0,
+            "ShadowBias": 0.5,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "XPCrystalTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              18.920793533325195,
+              4.0,
+              0.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12205
     }
   ],
-  "EntityCount": 10,
+  "EntityCount": 15,
   "EntityIDs": [
     0,
     3,
@@ -965,7 +1820,12 @@
     12194,
     12195,
     12196,
-    12197
+    12197,
+    12198,
+    12199,
+    12200,
+    12201,
+    12205
   ],
   "SceneName": "Survivors"
 }

@@ -47,6 +47,9 @@ public:
 	std::vector<ComponentType> GetOwnedComponentTypes(EntityHandle owner);
 
 	template<class ComponentType>
+	EntityHandle GetOwnerEntity(const ComponentType* c);	// this is not fast
+
+	template<class ComponentType>
 	void RemoveComponent(EntityHandle owner);
 	void RemoveComponent(EntityHandle owner, ComponentType type);
 
@@ -90,6 +93,7 @@ void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, 
 	// Slow path
 	if (listsDirty)
 	{
+		SDE_PROF_EVENT("EnumerateEntities");
 		m_cmp1.clear();
 		m_cmp2.clear();
 		m_entities.clear();
@@ -106,10 +110,13 @@ void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, 
 		m_lastGeneration2 = currentGen2;
 	}
 
-	const int count = m_entities.size();
-	for (int index = 0; index < count; ++index)
 	{
-		fn(*m_cmp1[index], *m_cmp2[index], m_entities[index]);
+		SDE_PROF_EVENT("DoWork");
+		const int count = m_entities.size();
+		for (int index = 0; index < count; ++index)
+		{
+			fn(*m_cmp1[index], *m_cmp2[index], m_entities[index]);
+		}
 	}
 }
 
@@ -184,4 +191,16 @@ ComponentType* World::GetComponent(EntityHandle owner)
 		}
 	}
 	return nullptr;
+}
+
+template<class ComponentType>
+EntityHandle World::GetOwnerEntity(const ComponentType* c)
+{
+	EntityHandle result;
+	auto* storage = static_cast<ComponentType::StorageType*>(GetStorage(c->GetType()));
+	if (storage)
+	{
+		result = storage->FindOwner(c);
+	}
+	return result;
 }
