@@ -459,6 +459,10 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 	m_debugGui->MainMenuBar(g_graphicsMenu);
 
 	ShowRTGui();
+	if (m_showLightTiles)
+	{
+		m_renderer->DrawLightTilesDebug(*m_render2D);
+	}
 
 	if (m_showStats)
 	{
@@ -479,6 +483,7 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
 		sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
 		m_renderer->SetWireframeMode(m_debugGui->Checkbox("Wireframe", m_renderer->GetWireframeMode()));
+		m_showLightTiles = m_debugGui->Checkbox("Show Light Tiles", m_showLightTiles);
 		m_showBounds = m_debugGui->Checkbox("Draw Bounds", m_showBounds);
 		m_renderer->SetExposure(m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f));
 		m_renderer->SetBloomThreshold(m_debugGui->DragFloat("Bloom Threshold", m_renderer->GetBloomThreshold(), 0.01f, 0.0f, 0.0f));

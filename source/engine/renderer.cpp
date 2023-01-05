@@ -15,6 +15,7 @@
 #include "job_system.h"
 #include "system_manager.h"
 #include "ssao.h"
+#include "2d_render_context.h"
 #include <algorithm>
 #include <map>
 
@@ -22,7 +23,7 @@ namespace Engine
 {
 	const uint64_t c_maxInstances = 1024 * 256;		// this needs to include all passes/shadowmap updates
 	const uint64_t c_maxDrawCalls = c_maxInstances;
-	const uint64_t c_maxLights = 256;
+	const uint64_t c_maxLights = 4096;
 	const uint32_t c_maxShadowMaps = 16;
 	const int32_t c_bloomBufferSizeDivider = 2;	// windowsize/divider
 	const uint32_t c_bloomBlurIterations = 10;
@@ -43,9 +44,9 @@ namespace Engine
 	{
 		glm::mat4 m_viewProjMat;
 		glm::vec4 m_cameraPosition;		// world-space
-		LightInfo m_lights[c_maxLights];
-		int m_lightCount;
 		float m_hdrExposure;
+		glm::vec2 m_windowDims;
+		glm::ivec2 m_lightTileCounts;
 	};
 
 	struct RenderPerInstanceData {
@@ -112,6 +113,9 @@ namespace Engine
 			m_opaqueInstances.Reserve(c_maxInstances);
 			m_transparentInstances.Reserve(c_maxInstances);
 			m_allShadowCasterInstances.Reserve(c_maxInstances);
+			const uint32_t maxLightTileData = (c_maxLightsPerTile + 1) * m_lightTileCounts.x * m_lightTileCounts.y;
+			m_lightTileData.Create(sizeof(uint32_t) * maxLightTileData, Render::RenderBufferModification::Dynamic, true);
+			m_allLightsData.Create(sizeof(LightInfo) * c_maxLights, Render::RenderBufferModification::Dynamic, true);
 		}
 		{
 			SDE_PROF_EVENT("Create render targets");
@@ -150,6 +154,9 @@ namespace Engine
 			sprintf_s(nameBuffer, "ShadowCubeMaps[%d]", i);
 			g_shadowCubeSamplerNames.push_back(nameBuffer);
 		}
+
+		const uint32_t maxTiles = m_lightTileCounts.x * m_lightTileCounts.y;
+		m_lightTiles.resize(maxTiles);
 	}
 
 	void Renderer::Reset() 
@@ -471,6 +478,129 @@ namespace Engine
 		return instanceIndex;
 	}
 
+	// returns the screen-space (normalized device coordinates) bounds of a projected sphere
+	// center = view-space center of the sphere
+	// radius = world or view space radius of the sphere
+	// boxMin = bottom left of projected bounds
+	// boxMax = top right of projected bounds
+	void ProjectedSphereAABB(const glm::vec3& center, const float radius, float nearPlane, const glm::mat4& Projection, glm::vec3& boxMin, glm::vec3& boxMax)
+	{
+		if ((center.z + radius) > nearPlane) {
+			return;
+		}
+
+		float d2 = glm::dot(center, center);
+
+		float a = glm::sqrt(d2 - radius * radius);
+
+		/// view-aligned "right" vector (right angle to the view plane from the center of the sphere. Since  "up" is always (0,n,0), replaced cross product with vec3(-c.z, 0, c.x)
+		glm::vec3 right = (radius / a) * glm::vec3(-center.z, 0, center.x);
+		glm::vec3 up = glm::vec3(0, radius, 0);
+
+		glm::vec4 projectedRight = Projection * glm::vec4(right, 0);
+		glm::vec4 projectedUp = Projection * glm::vec4(up, 0);
+
+		glm::vec4 projectedCenter = Projection * glm::vec4(center, 1);
+
+		glm::vec4 north = projectedCenter + projectedUp;
+		glm::vec4 east = projectedCenter + projectedRight;
+		glm::vec4 south = projectedCenter - projectedUp;
+		glm::vec4 west = projectedCenter - projectedRight;
+		north /= north.w;
+		east /= east.w;
+		west /= west.w;
+		south /= south.w;
+
+		boxMin = glm::vec3(glm::min(glm::min(glm::min(east, west), north), south));
+		boxMax = glm::vec3(glm::max(glm::max(glm::max(east, west), north), south));
+	}
+
+	void Renderer::ClassifyLightTiles()
+	{
+		SDE_PROF_EVENT();
+
+		const auto projectionMat = m_camera.ProjectionMatrix();
+		const auto viewMat = m_camera.ViewMatrix();
+		const glm::vec2 c_tileDims = glm::vec2(m_windowSize) / glm::vec2(m_lightTileCounts);
+
+		static std::vector<glm::vec4> viewSpaceBounds;
+		{
+			SDE_PROF_EVENT("FindBoundsViewSpace");
+			viewSpaceBounds.resize(m_lights.size());
+			for (uint32_t l = 0; l < m_lights.size(); ++l)
+			{
+				const Light& light = m_lights[l];
+				glm::vec4 bounds(0, 0, m_windowSize.x, m_windowSize.y);
+				if (light.m_position.w == 1.0f)	// point light
+				{
+					glm::vec4 lightCenterWs = { glm::vec3(light.m_position), 1 };
+					glm::vec4 centerVs = viewMat * lightCenterWs;
+					glm::vec3 center = glm::vec3(centerVs) / centerVs.w;
+					glm::vec3 bMin(0), bMax(0);
+					ProjectedSphereAABB(center, light.m_maxDistance, m_camera.NearPlane(), projectionMat, bMin, bMax);
+					glm::vec2 origin = (glm::vec2(bMin.x, bMin.y) + 1.0f) * glm::vec2(m_windowSize) * 0.5f;
+					glm::vec2 dims = glm::vec2(bMax.x - bMin.x, bMax.y - bMin.y) * glm::vec2(m_windowSize) * 0.5f;
+					bounds = glm::vec4(origin.x, origin.y, dims.x, dims.y);
+				}
+				viewSpaceBounds[l] = bounds;
+			}
+		}
+
+		{
+			SDE_PROF_EVENT("BuildTileData");
+			for (uint32_t tY = 0; tY < m_lightTileCounts.y; ++tY)
+			{
+				m_jobSystem->ForEachAsync(0, m_lightTileCounts.x, 1, 1, [&](int32_t tX) {
+					const uint32_t tileIndex = tX + (tY * m_lightTileCounts.x);
+					const glm::vec2 tileOrigin = glm::vec2(tX, tY) * c_tileDims;
+					uint32_t lightCount = 0;
+					for (uint32_t l = 0; l < m_lights.size() && lightCount < c_maxLightsPerTile; ++l)
+					{
+						const Light& light = m_lights[l];
+						const glm::vec2 origin = { viewSpaceBounds[l].x, viewSpaceBounds[l].y };
+						const glm::vec2 dims = { viewSpaceBounds[l].z, viewSpaceBounds[l].w };
+						if (origin.x + dims.x >= tileOrigin.x && origin.y + dims.y >= tileOrigin.y
+							&& origin.x <= tileOrigin.x + c_tileDims.x && origin.y <= tileOrigin.y + c_tileDims.y)
+						{
+							m_lightTiles[tileIndex].m_lightIndices[lightCount++] = l;
+						}
+					}
+					m_lightTiles[tileIndex].m_currentCount = lightCount;
+				});
+			}
+		}
+
+		{
+			SDE_PROF_EVENT("UploadBuffer");
+			m_lightTileData.SetData(0, m_lightTiles.size() * sizeof(LightTileInfo), m_lightTiles.data());
+		}
+	}
+
+	void Renderer::DrawLightTilesDebug(RenderContext2D& r2d)
+	{
+		SDE_PROF_EVENT();
+		const uint32_t maxTiles = m_lightTileCounts.x * m_lightTileCounts.y;
+		const glm::vec4 c_lowCountColour = { 0,1,0,0.2 };
+		const glm::vec4 c_highCountColour = { 1,0,0,0.2 };
+		const glm::vec2 c_tileDims = glm::vec2(m_windowSize) / glm::vec2(m_lightTileCounts);
+		auto defaultDiffuse = g_defaultTextures["DiffuseTexture"];
+		for (uint32_t tX = 0; tX < m_lightTileCounts.x; ++tX)
+		{
+			for (uint32_t tY = 0; tY < m_lightTileCounts.y; ++tY)
+			{
+				const uint32_t tileIndex = tX + (tY * m_lightTileCounts.x);
+				const uint32_t lightCount = m_lightTiles[tileIndex].m_currentCount;
+				if (lightCount > 0)
+				{
+					float t = m_lightTiles[tileIndex].m_currentCount / (float)c_maxLightsPerTile;
+					glm::vec4 c = (c_highCountColour * t) + (c_lowCountColour * (1.0f - t));
+					const glm::vec2 tileOrigin = glm::vec2(tX, tY) * c_tileDims;
+					r2d.DrawQuad(tileOrigin, 0, c_tileDims, { 0,0 }, { 1,1 }, c, defaultDiffuse);
+				}
+			}
+		}
+	}
+
 	void Renderer::CullLights()
 	{
 		SDE_PROF_EVENT();
@@ -493,36 +623,42 @@ namespace Engine
 			return false;
 		}), m_lights.end());
 		m_frameStats.m_visibleLights = m_lights.size();
+
+		ClassifyLightTiles();
 	}
 
 	void Renderer::UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat)
 	{
 		SDE_PROF_EVENT();
 		GlobalUniforms globals;
+		globals.m_windowDims = glm::vec2(m_windowSize);
+		globals.m_lightTileCounts = m_lightTileCounts;
 		globals.m_viewProjMat = projectionMat * viewMat;
 		uint32_t shadowMapIndex = 0;		// precalculate shadow map sampler indices
 		uint32_t cubeShadowMapIndex = 0;
+		static LightInfo allLights[c_maxLights];
 		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
-			globals.m_lights[l].m_colourAndAmbient = m_lights[l].m_colour;
-			globals.m_lights[l].m_position = m_lights[l].m_position;
-			globals.m_lights[l].m_direction = m_lights[l].m_direction;
-			globals.m_lights[l].m_distanceAttenuation = { m_lights[l].m_maxDistance, m_lights[l].m_attenuationCompress };
-			globals.m_lights[l].m_spotAngles = m_lights[l].m_spotlightAngles;
+			allLights[l].m_colourAndAmbient = m_lights[l].m_colour;
+			allLights[l].m_position = m_lights[l].m_position;
+			allLights[l].m_direction = m_lights[l].m_direction;
+			allLights[l].m_distanceAttenuation = { m_lights[l].m_maxDistance, m_lights[l].m_attenuationCompress };
+			allLights[l].m_spotAngles = m_lights[l].m_spotlightAngles;
 			bool canAddMore = m_lights[l].m_position.w == 1.0f ? cubeShadowMapIndex < c_maxShadowMaps : shadowMapIndex < c_maxShadowMaps;
 			if (m_lights[l].m_shadowMap && canAddMore)
 			{
-				globals.m_lights[l].m_shadowParams.x = 1.0f;
-				globals.m_lights[l].m_shadowParams.y = m_lights[l].m_position.w == 1.0f ? cubeShadowMapIndex++ : shadowMapIndex++;
-				globals.m_lights[l].m_shadowParams.z = m_lights[l].m_shadowBias;
-				globals.m_lights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
+				allLights[l].m_shadowParams.x = 1.0f;
+				allLights[l].m_shadowParams.y = m_lights[l].m_position.w == 1.0f ? cubeShadowMapIndex++ : shadowMapIndex++;
+				allLights[l].m_shadowParams.z = m_lights[l].m_shadowBias;
+				allLights[l].m_lightSpaceMatrix = m_lights[l].m_lightspaceMatrix;
 			}
 			else
 			{
-				globals.m_lights[l].m_shadowParams = { 0.0f,0.0f,0.0f };
+				allLights[l].m_shadowParams = { 0.0f,0.0f,0.0f };
 			}
 		}
-		globals.m_lightCount = static_cast<int>(std::min(m_lights.size(), c_maxLights));
+		const auto totalLights = static_cast<int>(std::min(m_lights.size(), c_maxLights));
+		m_allLightsData.SetData(0, sizeof(LightInfo) * totalLights, &allLights);
 		globals.m_cameraPosition = glm::vec4(m_camera.Position(), 0.0);
 		globals.m_hdrExposure = m_hdrExposure;
 		m_globalsUniformBuffer.SetData(0, sizeof(globals), &globals);
@@ -673,6 +809,8 @@ namespace Engine
 				d.BindUniformBufferIndex(*b.m_shader, "Globals", 0);
 				d.SetUniforms(*b.m_shader, m_globalsUniformBuffer, 0);
 				d.BindStorageBuffer(0, m_perInstanceData);		// bind instancing data once per shader
+				d.BindStorageBuffer(1, m_allLightsData);
+				d.BindStorageBuffer(2, m_lightTileData);
 				d.BindDrawIndirectBuffer(m_drawIndirectBuffer);
 				if (uniforms != nullptr)
 				{
@@ -750,6 +888,8 @@ namespace Engine
 					d.BindUniformBufferIndex(*theShader, "Globals", 0);
 					d.SetUniforms(*theShader, m_globalsUniformBuffer, 0);
 					d.BindStorageBuffer(0, m_perInstanceData);		// bind instancing data once per shader
+					d.BindStorageBuffer(1, m_allLightsData);
+					d.BindStorageBuffer(2, m_lightTileData);
 					if (uniforms != nullptr)
 					{
 						uniforms->Apply(d, *theShader);

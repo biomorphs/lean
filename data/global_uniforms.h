@@ -15,7 +15,23 @@ layout(std140, binding = 0) uniform Globals
 {
 	mat4 ProjectionViewMatrix;
 	vec4 CameraPosition;	// World Space
-	LightInfo Lights[256];
-	int LightCount;
 	float HDRExposure;
+	vec2 WindowDimensions;
+	ivec2 LightTileCounts;
+};
+
+struct LightTileData
+{
+	uint Count;
+	uint Indices[128];
+};
+
+layout(std430, binding = 1) buffer AllLightsBuffer
+{
+	LightInfo AllLights[4096];
+};
+
+layout(std430, binding = 2) buffer LightTileBuffer
+{
+	LightTileData LightTiles[];
 };

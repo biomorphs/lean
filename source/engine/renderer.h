@@ -26,6 +26,8 @@ namespace Engine
 	class JobSystem;
 	class Frustum;
 
+	const uint32_t c_maxLightsPerTile = 128;
+
 	class Renderer : public Render::RenderPass
 	{
 	public:
@@ -64,6 +66,7 @@ namespace Engine
 		void SetClearColour(glm::vec4 c) { m_clearColour = c; }
 
 		void ForEachUsedRT(std::function<void(const char*, Render::FrameBuffer&)> rtFn);
+		void DrawLightTilesDebug(class RenderContext2D& r2d);
 
 		struct FrameStats {
 			size_t m_instancesSubmitted = 0;
@@ -159,6 +162,7 @@ namespace Engine
 
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 		void CullLights();
+		void ClassifyLightTiles();
 
 		using OnFindVisibleComplete = std::function<void(size_t)>;	// param = num. results found (note the result vector is NOT resized!)
 		void FindVisibleInstancesAsync(const Frustum& f, const InstanceList& src, EntryList& result, OnFindVisibleComplete onComplete);
@@ -186,6 +190,15 @@ namespace Engine
 		JobSystem* m_jobSystem = nullptr;
 		float m_bloomThreshold = 1.0f;
 		float m_bloomMultiplier = 0.5f;
+		struct LightTileInfo
+		{
+			uint32_t m_currentCount;
+			uint32_t m_lightIndices[c_maxLightsPerTile];
+		};
+		glm::ivec2 m_lightTileCounts = { 32, 16 };
+		std::vector<LightTileInfo> m_lightTiles;
+		Render::RenderBuffer m_allLightsData;
+		Render::RenderBuffer m_lightTileData;
 		Render::RenderTargetBlitter m_targetBlitter;
 		Engine::ShaderHandle m_blitShader;
 		Engine::ShaderHandle m_tonemapShader;

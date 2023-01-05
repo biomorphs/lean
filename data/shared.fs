@@ -24,3 +24,14 @@ vec3 Tonemap_ACESFilm(vec3 x)
     float e = 0.14f;
     return clamp((x*(a*x+b))/(x*(c*x+d)+e),0.0,1.0);
 }
+
+ivec2 GetScreenTileIndices(vec2 glFragCoord)
+{
+	vec2 tileDimensions = WindowDimensions / LightTileCounts;
+	return ivec2(glFragCoord / tileDimensions);
+}
+
+uint GetLightTileIndex(ivec2 screenTileIndices)
+{
+	return screenTileIndices.x + (screenTileIndices.y * LightTileCounts.x);
+}

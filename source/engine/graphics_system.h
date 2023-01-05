@@ -47,6 +47,7 @@ private:
 	bool m_showStats = false;
 	bool m_showTargets = false;
 	bool m_useNewRender = false;
+	bool m_showLightTiles = false;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
 	std::unique_ptr<Engine::RenderContext2D> m_render2D;
