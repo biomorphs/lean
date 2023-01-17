@@ -254,6 +254,7 @@ bool GraphicsSystem::PostInit()
 	RegisterScripts();
  
 	auto& gMenu = g_graphicsMenu.AddSubmenu(ICON_FK_TELEVISION " Graphics");
+	gMenu.AddItem("Toggle RT Debug", [this]() { m_showTargets = !m_showTargets; });
 	gMenu.AddItem("Toggle Render Stats", [this]() {m_showStats = !m_showStats; });
 
 	return true;
@@ -425,9 +426,43 @@ void GraphicsSystem::ProcessEntities()
 	});
 }
 
+void GraphicsSystem::ShowRTGui()
+{
+	if (m_showTargets && m_debugGui->BeginWindow(m_showTargets, "Render targets"))
+	{
+		auto showRt = [&](const char* name, Render::FrameBuffer& fb) -> void
+		{
+			m_debugGui->Text(name);
+			if (fb.GetMSAASamples() > 1)
+			{
+				m_debugGui->Text("        MSAA - no debug!");
+			}
+			else
+			{
+				for (int c = 0; c < fb.GetColourAttachmentCount(); ++c)
+				{
+					m_debugGui->Image(fb.GetColourAttachment(c), glm::vec2(fb.Dimensions()) * 0.5f);
+				}
+				if (fb.GetDepthStencil() != nullptr)
+				{
+					m_debugGui->Image(*fb.GetDepthStencil(), glm::vec2(fb.Dimensions()) * 0.5f);
+				}
+			}
+		};
+		m_renderer->ForEachUsedRT(showRt);
+		m_debugGui->EndWindow();
+	}
+}
+
 void GraphicsSystem::ShowGui(int framesPerSecond)
 {
 	m_debugGui->MainMenuBar(g_graphicsMenu);
+
+	ShowRTGui();
+	if (m_showLightTiles)
+	{
+		m_renderer->DrawLightTilesDebug(*m_render2D);
+	}
 
 	if (m_showStats)
 	{
@@ -448,6 +483,7 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		sprintf_s(statText, "Total Tris: %zu", fs.m_totalVertices / 3);	m_debugGui->Text(statText);
 		sprintf_s(statText, "FPS: %d", framesPerSecond);	m_debugGui->Text(statText);
 		m_renderer->SetWireframeMode(m_debugGui->Checkbox("Wireframe", m_renderer->GetWireframeMode()));
+		m_showLightTiles = m_debugGui->Checkbox("Show Light Tiles", m_showLightTiles);
 		m_showBounds = m_debugGui->Checkbox("Draw Bounds", m_showBounds);
 		m_renderer->SetExposure(m_debugGui->DragFloat("Exposure", m_renderer->GetExposure(), 0.01f, 0.0f, 100.0f));
 		m_renderer->SetBloomThreshold(m_debugGui->DragFloat("Bloom Threshold", m_renderer->GetBloomThreshold(), 0.01f, 0.0f, 0.0f));

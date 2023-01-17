@@ -55,6 +55,13 @@ namespace Render
 		Error
 	};
 
+	enum class DepthFunction
+	{
+		Less,		// write if depth < stored value
+		LessOrEqual,// write if depth <= stored value
+		Always		// always write
+	};
+
 	// Indirect rendering (allows us to batch draw calls!)
 	// Build a RenderBuffer and pass it to DrawIndirect
 	struct DrawIndirectIndexedParams
@@ -87,6 +94,8 @@ namespace Render
 		void SetBackfaceCulling(bool enabled, bool frontFaceCCW);
 		void SetFrontfaceCulling(bool enabled, bool frontFaceCCW);
 		void SetDepthState(bool enabled, bool writeEnabled);
+		void SetDepthFunction(DepthFunction fn);
+		void SetColourWriteMask(bool r, bool g, bool b, bool a);
 		void ClearColourDepthTarget(const glm::vec4& colour, float depth);
 		void ClearFramebufferColourDepth(const FrameBuffer& fb, const glm::vec4& colour, float depth);
 		void ClearFramebufferColour(const FrameBuffer& fb, const glm::vec4& colour);

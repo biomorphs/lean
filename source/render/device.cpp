@@ -64,6 +64,11 @@ namespace Render
 		m_context = SDL_GL_CreateContext(windowHandle);
 		assert(m_context);
 
+		const GLubyte* vendor = glGetString(GL_VENDOR);
+		const GLubyte* renderer = glGetString(GL_RENDERER);
+		const GLubyte* version = glGetString(GL_VERSION);
+		SDE_LOG("Using GL driver %s-%s-%s", vendor, renderer, version);
+
 		// glew initialises GL function pointers
 		glewExperimental = true;		// must be set for core profile and above
 		auto glewError = glewInit();
@@ -287,6 +292,11 @@ namespace Render
 		}
 	}
 
+	void Device::SetColourWriteMask(bool r, bool g, bool b, bool a)
+	{
+		glColorMask(r, g, b, a);
+	}
+
 	void Device::SetBlending(bool enabled)
 	{
 		if (enabled)
@@ -329,6 +339,24 @@ namespace Render
 		}
 
 		glFrontFace(frontFaceCCW ? GL_CCW : GL_CW);
+	}
+
+	void Device::SetDepthFunction(DepthFunction fn)
+	{
+		uint32_t depthFn = GL_NEVER;
+		switch (fn)
+		{
+		case DepthFunction::Less:
+			depthFn = GL_LESS;
+			break;
+		case DepthFunction::LessOrEqual:
+			depthFn = GL_LEQUAL;
+			break;
+		case DepthFunction::Always:
+			depthFn = GL_ALWAYS;
+			break;
+		}
+		glDepthFunc(depthFn);
 	}
 
 	void Device::SetDepthState(bool enabled, bool writeEnabled)
