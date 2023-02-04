@@ -24,14 +24,15 @@ namespace Graphs
 		uint16_t GetID() const { return m_id; }
 		bool IsConstant() const { return m_isConstant; }
 		std::string_view GetName() const { return m_name; }
+		const std::vector<PinDescriptor>& GetPins() const { return m_pins; }
 
 		void SetID(uint16_t id) { m_id = id; }	// this should ONLY be called by a graph
 	protected:
 		std::string m_name;
 		bool m_isConstant = false;
 	private:
+		bool AddPin(uint8_t id, std::string_view name, std::string_view dataType, bool isOutput);
 		uint16_t m_id = InvalidID;
-		std::vector<PinDescriptor> m_inputs;
-		std::vector<PinDescriptor> m_outputs;
+		std::vector<PinDescriptor> m_pins;
 	};
 }

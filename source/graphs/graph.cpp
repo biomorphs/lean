@@ -1,11 +1,22 @@
 #include "graph.h"
 #include "core/log.h"
+#include "core/profiler.h"
 #include "node.h"
 
 namespace Graphs
 {
+	Graph::Graph()
+	{
+		SDE_PROF_EVENT();
+		m_inputs.reserve(4);
+		m_outputs.reserve(4);
+		m_nodes.reserve(128);
+		m_connections.reserve(256);
+	}
+
 	Graph::~Graph()
 	{
+		SDE_PROF_EVENT();
 		for (auto it : m_nodes)
 		{
 			delete it;
@@ -22,6 +33,7 @@ namespace Graphs
 		newPin.m_id = id;
 		newPin.m_name = name;
 		newPin.m_type = dataType;
+		newPin.m_isOutput = true;		// graph inputs act as output pins
 		m_inputs.push_back(newPin);
 		return true;
 	}
@@ -36,6 +48,7 @@ namespace Graphs
 		newPin.m_id = id;
 		newPin.m_name = name;
 		newPin.m_type = dataType;
+		newPin.m_isOutput = false;		// graph outputs work as input pins
 		m_outputs.push_back(newPin);
 		return true;
 	}
@@ -52,6 +65,8 @@ namespace Graphs
 		}
 
 		ptr->SetID(newNodeID);
+
+		m_nodeIdToIndex[newNodeID] = m_nodes.size();
 		m_nodes.push_back(ptr);
 
 		return newNodeID;
@@ -59,13 +74,11 @@ namespace Graphs
 
 	Node* Graph::GetNode(uint16_t nodeID)
 	{
-		auto foundIt = std::find_if(m_nodes.begin(), m_nodes.end(), [nodeID](const Node* n0) {
-			return n0->GetID() == nodeID;
-		});
 		Node* foundNode = nullptr;
-		if (foundIt != m_nodes.end())
+		const auto foundIt = m_nodeIdToIndex.find(nodeID);
+		if (foundIt != m_nodeIdToIndex.end())
 		{
-			foundNode = *foundIt;
+			foundNode = m_nodes[foundIt->second];
 		}
 		return foundNode;
 	}
@@ -102,8 +115,11 @@ namespace Graphs
 		{
 			return AddConnectionResult::BadPinID;
 		}
-
 		if (p0->m_type != p1->m_type)
+		{
+			return AddConnectionResult::TypesIncompatible;
+		}
+		if (p0->m_isOutput == false || p1->m_isOutput)
 		{
 			return AddConnectionResult::TypesIncompatible;
 		}
@@ -113,13 +129,6 @@ namespace Graphs
 		nc.m_pinID0 = pinID0;
 		nc.m_nodeID1 = node1;
 		nc.m_pinID1 = pinID1;
-		auto foundExisting = std::find_if(m_connections.begin(), m_connections.end(), [&nc](Connection& c) {
-			return c.m_nodeID0 == nc.m_nodeID0 && c.m_nodeID1 == nc.m_nodeID1 && c.m_pinID0 == nc.m_pinID0 && c.m_pinID1 == nc.m_pinID1;
-		});
-		if (foundExisting != m_connections.end())
-		{
-			return AddConnectionResult::Duplicate;
-		}
 		m_connections.push_back(nc);
 		return AddConnectionResult::OK;
 	}

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string_view>
 #include <vector>
+#include <robin_hood.h>
 
 namespace Graphs
 {
@@ -20,7 +21,7 @@ namespace Graphs
 	class Graph
 	{
 	public:
-		Graph() {}
+		Graph();
 		~Graph();
 
 		bool AddInputPin(uint8_t id, std::string_view name, std::string_view dataType);
@@ -37,8 +38,7 @@ namespace Graphs
 			OK,
 			BadNodeID,
 			BadPinID,
-			TypesIncompatible,
-			Duplicate	// connection already exists
+			TypesIncompatible
 		};
 		// pass Node::InvalidID to reference graph inputs/outputs
 		// only accepts output -> input
@@ -51,6 +51,7 @@ namespace Graphs
 		std::vector<PinDescriptor> m_outputs;
 		uint16_t m_nextNodeID = 0;
 		std::vector<Node*> m_nodes;
+		robin_hood::unordered_map<uint16_t, int> m_nodeIdToIndex;
 		std::vector<Connection> m_connections;
 	};
 }
