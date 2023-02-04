@@ -338,6 +338,14 @@ add_library(Graphs STATIC)
 set(GRAPHS_SOURCES
 	source/graphs/graph_system.h
 	source/graphs/graph_system.cpp
+	source/graphs/pin_descriptor.h
+	source/graphs/pin_descriptor.cpp
+	source/graphs/node.h
+	source/graphs/node.cpp
+	source/graphs/graph.h
+	source/graphs/graph.cpp
+	source/graphs/graph_context.h
+	source/graphs/graph_context.cpp
 )
 target_sources(Graphs PRIVATE ${GRAPHS_SOURCES})
 target_include_directories(Graphs PRIVATE ${CommonIncludePaths})
