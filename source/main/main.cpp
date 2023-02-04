@@ -9,6 +9,8 @@
 
 #include "editor/editor.h"
 
+#include "graphs/graph_system.h"
+
 #include "core/log.h"
 #include <algorithm>
 
@@ -18,6 +20,7 @@ void CreateSystems(const std::string& cmdLine)
 	sysManager.RegisterSystem("Walkables", new WalkableSystem);
 	sysManager.RegisterSystem("SurvivorsWorldTiles", new Survivors::WorldTileSystem);
 	sysManager.RegisterSystem("SurvivorsMain", new Survivors::SurvivorsMain);
+	sysManager.RegisterSystem("Graphs", new GraphSystem);
 	if (cmdLine.find("-playground") != -1)
 	{
 		sysManager.RegisterSystem("Playground", new Playground());

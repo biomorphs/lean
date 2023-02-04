@@ -334,6 +334,17 @@ target_include_directories(Survivors PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Survivors PRIVATE ${JSONIncludePaths})
 target_compile_options(Survivors PRIVATE ${CommonCompilerOptions})
 
+add_library(Graphs STATIC)
+set(GRAPHS_SOURCES
+	source/graphs/graph_system.h
+	source/graphs/graph_system.cpp
+)
+target_sources(Graphs PRIVATE ${GRAPHS_SOURCES})
+target_include_directories(Graphs PRIVATE ${CommonIncludePaths})
+target_include_directories(Graphs PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Graphs PRIVATE ${JSONIncludePaths})
+target_compile_options(Graphs PRIVATE ${CommonCompilerOptions})
+
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
 	source/playground/playground.h
@@ -347,7 +358,6 @@ set(PLAYGROUND_SOURCES
 	source/playground/walkable_system.h
 	source/playground/walkable_system.cpp
 )
-
 target_sources(Playground PRIVATE ${PLAYGROUND_SOURCES})
 target_include_directories(Playground PRIVATE ${CommonIncludePaths})
 target_include_directories(Playground PRIVATE ${LuaAndSolIncludePaths})
@@ -391,7 +401,6 @@ set(EDITOR_SOURCES
 	source/editor/commands/editor_set_entity_positions_cmd.h
 	source/editor/commands/editor_set_entity_positions_cmd.cpp
 )
-
 target_sources(Editor PRIVATE ${EDITOR_SOURCES})
 target_include_directories(Editor PRIVATE ${CommonIncludePaths})
 target_include_directories(Editor PRIVATE ${LuaAndSolIncludePaths})
@@ -403,6 +412,7 @@ target_include_directories(Lean PRIVATE ${CommonIncludePaths})
 target_include_directories(Lean PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Lean PRIVATE ${JSONIncludePaths})
 set_target_properties(Lean PROPERTIES VS_DPI_AWARE "ON")
+
 target_link_libraries(Lean PRIVATE Core)
 target_link_libraries(Lean PRIVATE Engine)
 target_link_libraries(Lean PRIVATE Entity)
@@ -410,6 +420,8 @@ target_link_libraries(Lean PRIVATE Playground)
 target_link_libraries(Lean PRIVATE Editor)
 target_link_libraries(Lean PRIVATE Creatures)
 target_link_libraries(Lean PRIVATE Survivors)
+target_link_libraries(Lean PRIVATE Graphs)
+
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysX_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCommon_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCooking_64.lib)
