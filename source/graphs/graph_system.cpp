@@ -101,6 +101,88 @@ public:
 
 Graphs::Graph g_testGraph;
 
+void IncrementOneValueABunch()
+{
+	SDE_PROF_EVENT();
+
+	Graphs::Graph g;
+
+	{
+		SDE_PROF_EVENT("Build Graph");
+		g.AddInputPin(0, "Exec", "Execution");
+		g.AddInputPin(1, "StartValue", "int");
+		g.AddOutputPin(2, "RunNext", "Execution");
+		g.AddOutputPin(3, "Result", "int");
+
+		int incrementConstant = g.AddNode(new ConstantNode(1));
+
+		int lastExecNode = -1;
+		int lastExecPin = 0;
+		int lastResultNode = -1;
+		int lastResultPin = 1;
+		constexpr bool DoPrint = false;
+		for (int i = 0; i < 1000; ++i)
+		{
+			int thisAddNode = g.AddNode(new AddIntsNode);
+			if constexpr (DoPrint)
+			{
+				int thisPrintNode = g.AddNode(new PrintIntNode);
+
+				// connect last exec to this one + set up next one
+				g.AddConnection(lastExecNode, lastExecPin, thisAddNode, 0);
+				g.AddConnection(thisAddNode, 3, thisPrintNode, 0);
+				lastExecNode = thisPrintNode;
+				lastExecPin = 2;	// print node output
+
+				// hook up data connections
+				g.AddConnection(lastResultNode, lastResultPin, thisAddNode, 1);		// last result value
+				g.AddConnection(incrementConstant, 0, thisAddNode, 2);				// + increment constant
+				g.AddConnection(thisAddNode, 4, thisPrintNode, 1);					// add -> print
+				lastResultNode = thisAddNode;
+				lastResultPin = 4;	// add node result -> next cycle
+			}
+			else
+			{
+				// connect last exec to this one + set up next one
+				g.AddConnection(lastExecNode, lastExecPin, thisAddNode, 0);
+				lastExecNode = thisAddNode;
+				lastExecPin = 3;
+
+				// hook up data connections
+				g.AddConnection(lastResultNode, lastResultPin, thisAddNode, 1);		// last result value
+				g.AddConnection(incrementConstant, 0, thisAddNode, 2);				// + increment constant
+				lastResultNode = thisAddNode;
+				lastResultPin = 4;	// add node result -> next cycle
+			}
+		}
+		// connect last node to the graph output
+		g.AddConnection(lastExecNode, lastExecPin, -1, 2);
+		g.AddConnection(lastResultNode, lastResultPin, -1, 3);
+	}
+
+	{
+		SDE_PROF_EVENT("RunContext");
+		Graphs::GraphContext runContext(&g);
+		runContext.WriteGraphPin(-1, 1, 1);		// start value
+		runContext.ExecuteNext(-1, 0);			// execute graph pin 0
+		bool graphRunning = true;
+		{
+			SDE_PROF_EVENT("RunSteps");
+			while (graphRunning)
+			{
+				auto stepResult = runContext.RunSingleStep();
+				if (stepResult == Graphs::GraphContext::Completed)
+				{
+					SDE_LOG("Graph finished ok");
+					int resultValue = runContext.ReadGraphPin(-1, 3);
+					SDE_LOG("\tresult = %d", resultValue);
+					graphRunning = false;
+				}
+			}
+		}
+	}
+}
+
 bool GraphSystem::Initialise()
 {
 	SDE_PROF_EVENT();
@@ -149,6 +231,7 @@ bool GraphSystem::Initialise()
 bool GraphSystem::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
+	IncrementOneValueABunch();
 	{
 		Graphs::GraphContext runContext(&g_testGraph);
 		runContext.WriteGraphPin(Graphs::Node::InvalidID, 1, 4);		// test value
