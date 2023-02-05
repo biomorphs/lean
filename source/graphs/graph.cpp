@@ -23,6 +23,22 @@ namespace Graphs
 		}
 	}
 
+	const NodeEditorData* Graph::GetNodeEditorData(uint16_t nodeID) const
+	{
+		const NodeEditorData* editorData = nullptr;
+		auto foundIt = m_nodeEditorData.find(nodeID);
+		if (foundIt != m_nodeEditorData.end())
+		{
+			editorData = &foundIt->second;
+		}
+		return editorData;
+	}
+
+	void Graph::SetNodeEditorData(uint16_t nodeID, const NodeEditorData& data)
+	{
+		m_nodeEditorData[nodeID] = data;
+	}
+
 	bool Graph::AddInputPin(uint8_t id, std::string_view name, std::string_view dataType)
 	{
 		if (GetInputPin(id) != nullptr)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pin_descriptor.h"
+#include "core/glm_headers.h"
 #include <stdint.h>
 #include <string_view>
 #include <vector>
@@ -15,6 +16,15 @@ namespace Graphs
 		uint16_t m_nodeID1;
 		uint8_t m_pinID0;
 		uint8_t m_pinID1;
+	};
+
+	class NodeEditorData
+	{
+	public:
+		glm::vec4 m_backgroundColour;
+		glm::vec4 m_borderColour;
+		glm::vec2 m_position;
+		glm::vec2 m_dimensions;
 	};
 
 	class Node;
@@ -46,12 +56,16 @@ namespace Graphs
 		const Connection* FindFirstConnection(uint16_t node0, uint8_t pinID0) const;
 		const std::vector<Connection>& GetConnections() const { return m_connections; }
 
+		const NodeEditorData* GetNodeEditorData(uint16_t nodeID) const;
+		void SetNodeEditorData(uint16_t nodeID, const NodeEditorData& data);
+
 	private:
 		std::vector<PinDescriptor> m_inputs;
 		std::vector<PinDescriptor> m_outputs;
 		uint16_t m_nextNodeID = 0;
 		std::vector<Node*> m_nodes;
 		robin_hood::unordered_map<uint16_t, int> m_nodeIdToIndex;
+		robin_hood::unordered_map<uint16_t, NodeEditorData> m_nodeEditorData;
 		std::vector<Connection> m_connections;
 	};
 }

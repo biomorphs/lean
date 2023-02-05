@@ -34,6 +34,7 @@ public:
 	virtual void Shutdown();
 	Engine::DebugRender& DebugRenderer() { return *m_debugRender; }
 	Engine::Renderer& Renderer() { return *m_renderer; }
+	Engine::RenderContext2D& GetRender2D() { return *m_render2D; }
 	bool ShouldDrawBounds() const { return m_showBounds; }
 	void DrawModelBounds(const Engine::Model& m, glm::mat4 transform, glm::vec4 mainColour, glm::vec4 partsColour = glm::vec4(0.0f));
 private:

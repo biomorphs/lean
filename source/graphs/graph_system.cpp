@@ -5,6 +5,10 @@
 #include "node.h"
 #include "graph.h"
 #include "graph_context.h"
+#include "engine/graphics_system.h"
+#include "engine/texture_manager.h"
+#include "engine/2d_render_context.h"
+#include "engine/system_manager.h"
 
 class ConstantNode : public Graphs::Node
 {
@@ -192,6 +196,16 @@ bool GraphSystem::Initialise()
 	g_testGraph.AddOutputPin(2, "RunNext", "Execution");
 	g_testGraph.AddOutputPin(3, "Result", "int");
 
+	auto AddEditorData = [](uint16_t nodeId, glm::vec4 bgColour, glm::vec2 pos, glm::vec2 dims)
+	{
+		Graphs::NodeEditorData ned;
+		ned.m_backgroundColour = bgColour;
+		ned.m_borderColour = { 1,1,1,1 };
+		ned.m_position = pos;
+		ned.m_dimensions = dims;
+		g_testGraph.SetNodeEditorData(nodeId, ned);
+	};
+
 	uint16_t c0id = g_testGraph.AddNode(new ConstantNode(3));
 	uint16_t printC0Id = g_testGraph.AddNode(new PrintIntNode(""));
 	uint16_t c1id = g_testGraph.AddNode(new ConstantNode(5));
@@ -201,6 +215,20 @@ bool GraphSystem::Initialise()
 	uint16_t igtId = g_testGraph.AddNode(new IntGreaterThan());
 	uint16_t printGtId = g_testGraph.AddNode(new PrintIntNode("which is greater than "));
 	uint16_t printNotGtId = g_testGraph.AddNode(new PrintIntNode("which is not greater than "));
+
+	AddEditorData(c0id, { 0.2,0.2,1.0,1.0 }, { 150, 300 }, { 64, 70 });
+	AddEditorData(c1id, { 0.2,0.2,1.0,1.0 }, { 256, 160 }, { 64, 70 });
+
+	AddEditorData(printC0Id, { 0.5,0.5,0.5,1.0 }, { 260, 400 }, { 96, 84 });
+	AddEditorData(printC1Id, { 0.5,0.5,0.5,1.0 }, { 420, 400 }, { 96, 84 });
+
+	AddEditorData(addIntId, { 0.8, 0.5, 0.5, 1 }, { 550, 300 }, { 80, 116 });
+	AddEditorData(printResultId, { 0.5,0.5,0.5,1.0 }, { 680, 400 }, { 96, 84 });
+
+	AddEditorData(igtId, { 0.8,0.8,1.0,1.0 }, { 850, 350 }, { 96, 100 });
+
+	AddEditorData(printGtId, { 0.5,0.5,0.5,1.0 }, { 1000, 370 }, { 96, 84 });
+	AddEditorData(printNotGtId, { 0.5,0.5,0.5,1.0 }, { 1000, 240 }, { 96, 84 });
 
 	// exec flow
 	g_testGraph.AddConnection(-1, 0, printC0Id, 0);				// graph execute -> c0 print
@@ -233,6 +261,7 @@ bool GraphSystem::Tick(float timeDelta)
 	SDE_PROF_EVENT();
 	IncrementOneValueABunch();
 	{
+		SDE_PROF_EVENT("Run test graph");
 		Graphs::GraphContext runContext(&g_testGraph);
 		runContext.WriteGraphPin(Graphs::Node::InvalidID, 1, 4);		// test value
 		runContext.ExecuteNext(Graphs::Node::InvalidID, 0);				// execute graph pin 0
@@ -250,6 +279,111 @@ bool GraphSystem::Tick(float timeDelta)
 		}
 	}
 
+	auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+	auto textures = Engine::GetSystem<Engine::TextureManager>("Textures");
+	auto whiteTex = textures->LoadTexture("white.bmp");
+	auto circleTex = textures->LoadTexture("circle_64x64.png");
+	auto& r2d = graphics->GetRender2D();
+	constexpr float c_nodeHeaderHeight = 24;
+	constexpr float c_pinSize = 12;
+	constexpr float c_pinXOffset = -6;
+	constexpr float c_pinYShift = 20;
+
+	auto GetInputPinPos = [&](const Graphs::Node* n, const Graphs::NodeEditorData* ned, uint8_t pinID) {
+		float inputPinsY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight - c_pinYShift;
+		for (const Graphs::PinDescriptor& pin : n->GetPins())
+		{
+			if (!pin.m_isOutput)
+			{
+				if (pin.m_id == pinID)
+				{
+					return glm::vec2( ned->m_position.x + c_pinXOffset + (c_pinSize / 2), inputPinsY );
+				}
+				inputPinsY -= c_pinYShift;
+			}
+		}
+		return glm::vec2(-1, -1);
+	};
+
+	auto GetOutputPinPos = [&](const Graphs::Node* n, const Graphs::NodeEditorData* ned, uint8_t pinID) {
+		float outputPinsY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight - c_pinYShift;
+		for (const Graphs::PinDescriptor& pin : n->GetPins())
+		{
+			if (pin.m_isOutput)
+			{
+				if (pin.m_id == pinID)
+				{
+					return glm::vec2(ned->m_position.x + ned->m_dimensions.x - c_pinXOffset - (c_pinSize / 2), outputPinsY);
+				}
+				outputPinsY -= c_pinYShift;
+			}
+		}
+		return glm::vec2(-1, -1);
+	};
+
+	{
+		SDE_PROF_EVENT("Draw nodes");
+		for (auto node : g_testGraph.GetNodes())
+		{
+			const Graphs::NodeEditorData* ned = g_testGraph.GetNodeEditorData(node->GetID());
+			if (ned)
+			{
+				const glm::vec2 borderOffset(2, 2);
+				r2d.DrawQuad(ned->m_position - borderOffset, -1, ned->m_dimensions + (borderOffset * 2.0f), { 0,0 }, { 1,1 }, ned->m_borderColour, whiteTex);
+				r2d.DrawQuad(ned->m_position, 0, ned->m_dimensions, { 0,0 }, { 1,1 }, ned->m_backgroundColour, whiteTex);
+				
+				float nodeHeaderY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight;
+				r2d.DrawLine({ ned->m_position.x, nodeHeaderY }, 
+							 { ned->m_position.x + ned->m_dimensions.x, nodeHeaderY },
+							 2, 1, ned->m_borderColour, ned->m_borderColour);
+				
+				float inputPinsY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight - c_pinYShift;
+				float outputPinsY = inputPinsY;
+				for (const Graphs::PinDescriptor& pin : node->GetPins())
+				{
+					glm::vec2 pinPos;
+					if (pin.m_isOutput)
+					{
+						pinPos = { ned->m_position.x + ned->m_dimensions.x - c_pinXOffset - (c_pinSize / 2), outputPinsY };
+						outputPinsY -= c_pinYShift;
+					}
+					else
+					{
+						pinPos = { ned->m_position.x + c_pinXOffset + (c_pinSize / 2), inputPinsY };
+						inputPinsY -= c_pinYShift;
+					}
+					r2d.DrawQuad(pinPos - (c_pinSize / 2), 1, { c_pinSize,c_pinSize }, { 0,0 }, { 1,1 }, { 1,1,1,1 }, circleTex);
+				}
+			}
+		}
+	}
+	{
+		SDE_PROF_EVENT("Draw connections");
+		for (auto connection : g_testGraph.GetConnections())
+		{
+			if (connection.m_nodeID0 == -1 || connection.m_nodeID1 == -1)	// ignore graph in/outs for now
+			{
+				continue;
+			}
+			const Graphs::Node* n0 = g_testGraph.GetNode(connection.m_nodeID0);
+			const Graphs::Node* n1 = g_testGraph.GetNode(connection.m_nodeID1);
+			const Graphs::NodeEditorData* ned0 = g_testGraph.GetNodeEditorData(connection.m_nodeID0);
+			const Graphs::NodeEditorData* ned1 = g_testGraph.GetNodeEditorData(connection.m_nodeID1);
+			if (n0 && n1 && ned0 && ned1)
+			{
+				glm::vec2 pin0Pos = GetOutputPinPos(n0, ned0, connection.m_pinID0);
+				glm::vec2 pin1Pos = GetInputPinPos(n1, ned1, connection.m_pinID1);
+				glm::vec4 startCol = { 0, 0.95, 1,1 };
+				glm::vec4 endCol = { 0.01, 0.5, 1, 1 };
+				if (n0->GetOutputPin(connection.m_pinID0)->m_type == "Execution")
+				{
+					startCol = { 0.8, 0.01, 0.02,1 };
+					endCol = { 0.5, 0.0, 0.1, 1 };
+				}
+				r2d.DrawLine(pin0Pos, pin1Pos, 2.5, 2, startCol, endCol);
+			}
+		}
+	}
 	return true;
 }
 
