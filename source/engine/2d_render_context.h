@@ -13,6 +13,7 @@ namespace Engine
 		void Reset(glm::vec2 dimensions);
 		void DrawTriangle(const glm::vec2 pos[3], int zIndex, const glm::vec2 uv[3], const glm::vec4 colour[3], TextureHandle t);
 		void DrawQuad(glm::vec2 origin, int zIndex, glm::vec2 dimensions, glm::vec2 uv0, glm::vec2 uv1, glm::vec4 colour, TextureHandle texture);
+		void DrawLine(glm::vec2 p0, glm::vec2 p1, float width, int zIndex, glm::vec4 c0, glm::vec4 c1);
 		void Render(Render::Device& d);
 		glm::vec2 GetDimensions() const { return m_viewportDimensions; }
 
@@ -28,6 +29,8 @@ namespace Engine
 
 		void Initialise(glm::vec2 dimensions);
 		void Shutdown();
+
+		TextureHandle m_whiteTexture;
 
 		glm::vec2 m_viewportDimensions = { 0,0 };
 		std::vector<Triangle> m_thisFrameTriangles;

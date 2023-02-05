@@ -51,6 +51,45 @@ namespace Engine
 		m_thisFrameTriangles.emplace_back(newTriangle);
 	}
 
+	void RenderContext2D::DrawLine(glm::vec2 p0, glm::vec2 p1, float width, int zIndex, glm::vec4 c0, glm::vec4 c1)
+	{
+		glm::vec2 direction = glm::normalize(p1 - p0);
+		glm::vec2 perpendicularCCW = { -direction.y, direction.x };	// quick 2d perpendicular trick
+
+		const glm::vec2 t0array[3] = {
+			p0 + perpendicularCCW * (width/2),
+			p1 + perpendicularCCW * (width / 2),
+			p0 - perpendicularCCW * (width / 2)
+		};
+		const glm::vec2 t1array[3] = {
+			p0 - perpendicularCCW * (width / 2),
+			p1 + perpendicularCCW * (width / 2),
+			p1 - perpendicularCCW * (width / 2),
+		};
+		const glm::vec2 uv0array[3] = {
+			{0,1},
+			{1,1},
+			{0,0}
+		};
+		const glm::vec2 uv1array[3] = {
+			{0,0},
+			{1,1},
+			{1,0}
+		};
+		const glm::vec4 c0array[3] = {
+			c0, 
+			c1, 
+			c0
+		};
+		const glm::vec4 c1array[3] = {
+			c0,
+			c1,
+			c1
+		};
+		DrawTriangle(t0array, zIndex, uv0array, c0array, m_whiteTexture);
+		DrawTriangle(t1array, zIndex, uv1array, c1array, m_whiteTexture);
+	}
+
 	void RenderContext2D::DrawQuad(glm::vec2 origin, int zIndex, glm::vec2 dimensions, glm::vec2 uv0, glm::vec2 uv1, glm::vec4 colour, TextureHandle texture)
 	{
 		const glm::vec4 col[3] = {
@@ -163,6 +202,9 @@ namespace Engine
 
 		ShaderManager* sm = Engine::GetSystem<ShaderManager>("Shaders");
 		m_shader = sm->LoadShader("RenderContext2D", "engine/shaders/render_context_2d.vs", "engine/shaders/render_context_2d.fs");
+
+		TextureManager* tm = Engine::GetSystem<TextureManager>("Textures");
+		m_whiteTexture = tm->LoadTexture("white.bmp");
 	}
 
 	void RenderContext2D::Shutdown()
