@@ -103,9 +103,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -1228.671142578125,
+              -1202.0693359375,
               184.5,
-              234.36184692382813
+              242.16281127929688
             ],
             "Scale": [
               1.0,
@@ -285,9 +285,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -1228.671142578125,
+              -1202.0693359375,
               0.0,
-              419.1118469238281
+              426.9128112792969
             ],
             "Scale": [
               4.0,
@@ -2210,9 +2210,69 @@
         }
       ],
       "ID": 12215
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/defaultMat_baseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/defaultMat_normal.png"
+                },
+                "Shininess": [
+                  64.30000305175781,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "SkullBossDamaged"
+              }
+            ]
+          },
+          "Type": "Tags"
+        }
+      ],
+      "ID": 12216
     }
   ],
-  "EntityCount": 19,
+  "EntityCount": 20,
   "EntityIDs": [
     0,
     3,
@@ -2232,7 +2292,8 @@
     12212,
     12213,
     12214,
-    12215
+    12215,
+    12216
   ],
   "SceneName": "Survivors"
 }
