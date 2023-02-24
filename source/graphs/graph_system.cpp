@@ -9,6 +9,7 @@
 #include "engine/texture_manager.h"
 #include "engine/2d_render_context.h"
 #include "engine/system_manager.h"
+#include "engine/text_system.h"
 
 class ConstantNode : public Graphs::Node
 {
@@ -216,19 +217,19 @@ bool GraphSystem::Initialise()
 	uint16_t printGtId = g_testGraph.AddNode(new PrintIntNode("which is greater than "));
 	uint16_t printNotGtId = g_testGraph.AddNode(new PrintIntNode("which is not greater than "));
 
-	AddEditorData(c0id, { 0.2,0.2,1.0,1.0 }, { 150, 300 }, { 64, 70 });
-	AddEditorData(c1id, { 0.2,0.2,1.0,1.0 }, { 256, 160 }, { 64, 70 });
+	AddEditorData(c0id, { 0.2,0.2,1.0,1.0 }, { 150, 300 }, { 150, 100 });
+	AddEditorData(c1id, { 0.2,0.2,1.0,1.0 }, { 256, 160 }, { 150, 100 });
 
-	AddEditorData(printC0Id, { 0.5,0.5,0.5,1.0 }, { 260, 400 }, { 96, 84 });
-	AddEditorData(printC1Id, { 0.5,0.5,0.5,1.0 }, { 420, 400 }, { 96, 84 });
+	AddEditorData(printC0Id, { 0.5,0.5,0.5,1.0 }, { 350, 400 }, { 150, 84 });
+	AddEditorData(printC1Id, { 0.5,0.5,0.5,1.0 }, { 550, 400 }, { 150, 84 });
 
-	AddEditorData(addIntId, { 0.8, 0.5, 0.5, 1 }, { 550, 300 }, { 80, 116 });
-	AddEditorData(printResultId, { 0.5,0.5,0.5,1.0 }, { 680, 400 }, { 96, 84 });
+	AddEditorData(addIntId, { 0.8, 0.5, 0.5, 1 }, { 750, 250 }, { 150, 116 });
+	AddEditorData(printResultId, { 0.5,0.5,0.5,1.0 }, { 900, 400 }, { 150, 84 });
 
-	AddEditorData(igtId, { 0.8,0.8,1.0,1.0 }, { 850, 350 }, { 96, 100 });
+	AddEditorData(igtId, { 0.8,0.8,1.0,1.0 }, { 1100, 350 }, { 150, 100 });
 
-	AddEditorData(printGtId, { 0.5,0.5,0.5,1.0 }, { 1000, 370 }, { 96, 84 });
-	AddEditorData(printNotGtId, { 0.5,0.5,0.5,1.0 }, { 1000, 240 }, { 96, 84 });
+	AddEditorData(printGtId, { 0.5,0.5,0.5,1.0 }, { 1300, 370 }, { 150, 84 });
+	AddEditorData(printNotGtId, { 0.5,0.5,0.5,1.0 }, { 1300, 240 }, { 150, 84 });
 
 	// exec flow
 	g_testGraph.AddConnection(-1, 0, printC0Id, 0);				// graph execute -> c0 print
@@ -284,10 +285,13 @@ bool GraphSystem::Tick(float timeDelta)
 	auto whiteTex = textures->LoadTexture("white.bmp");
 	auto circleTex = textures->LoadTexture("circle_64x64.png");
 	auto& r2d = graphics->GetRender2D();
+	auto textRender = Engine::GetSystem<Engine::TextSystem>("Text");
 	constexpr float c_nodeHeaderHeight = 24;
 	constexpr float c_pinSize = 12;
 	constexpr float c_pinXOffset = -6;
 	constexpr float c_pinYShift = 20;
+
+	Engine::TextSystem::FontData nodeHeaderFont	{ "arial.ttf", 72};
 
 	auto GetInputPinPos = [&](const Graphs::Node* n, const Graphs::NodeEditorData* ned, uint8_t pinID) {
 		float inputPinsY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight - c_pinYShift;
@@ -331,11 +335,14 @@ bool GraphSystem::Tick(float timeDelta)
 				const glm::vec2 borderOffset(2, 2);
 				r2d.DrawQuad(ned->m_position - borderOffset, -1, ned->m_dimensions + (borderOffset * 2.0f), { 0,0 }, { 1,1 }, ned->m_borderColour, whiteTex);
 				r2d.DrawQuad(ned->m_position, 0, ned->m_dimensions, { 0,0 }, { 1,1 }, ned->m_backgroundColour, whiteTex);
-				
+
 				float nodeHeaderY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight;
 				r2d.DrawLine({ ned->m_position.x, nodeHeaderY }, 
 							 { ned->m_position.x + ned->m_dimensions.x, nodeHeaderY },
 							 2, 1, ned->m_borderColour, ned->m_borderColour);
+
+				const auto trd = textRender->GetRenderData(node->GetName(), nodeHeaderFont);
+				textRender->DrawText(r2d, trd, { ned->m_position.x + 4, ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight + 6 }, 2, { 1,1 }, { 1,1,1,1 });
 				
 				float inputPinsY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight - c_pinYShift;
 				float outputPinsY = inputPinsY;

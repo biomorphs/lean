@@ -27,6 +27,15 @@ namespace Render
 	{
 	}
 
+	inline TextureSource::TextureSource(uint32_t w, uint32_t h, Format f, std::vector<MipDesc>& mips, const uint8_t* data, size_t dataSize)
+		: m_width(w)
+		, m_height(h)
+		, m_format(f)
+		, m_mipDescriptors(mips)
+	{
+		m_rawBuffer.insert(m_rawBuffer.begin(), data, data + dataSize);
+	}
+
 	inline TextureSource::TextureSource(uint32_t w, uint32_t h, Format f, std::vector<MipDesc>& mips, std::vector<uint32_t>& data)
 		: m_width(w)
 		, m_height(h)

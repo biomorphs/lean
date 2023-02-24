@@ -50,6 +50,7 @@ namespace Render
 		TextureSource(uint32_t w, uint32_t h, Format f);	// empty texture with no mips
 		TextureSource(uint32_t w, uint32_t h, Format f, std::vector<MipDesc>& mips, std::vector<uint8_t>& data);
 		TextureSource(uint32_t w, uint32_t h, Format f, std::vector<MipDesc>& mips, std::vector<uint32_t>& data);
+		TextureSource(uint32_t w, uint32_t h, Format f, std::vector<MipDesc>& mips, const uint8_t* data, size_t dataSize);
 		~TextureSource();
 		TextureSource(const TextureSource&) = delete;
 		TextureSource(TextureSource&&) = default;
@@ -73,9 +74,12 @@ namespace Render
 		inline bool ContainsSourceData() const { return m_rawBuffer.size() > 0; }
 		inline bool& UseNearestFiltering() { return m_useNearestFiltering; }
 		inline const bool& UseNearestFiltering() const { return m_useNearestFiltering; }
+		inline uint8_t GetDataRowAlignment() const { return m_rowAlignment; }
+		inline void SetDataRowAlignment(int8_t v) { m_rowAlignment = v; }	// 1,2,4,8 are valid
 
 	private:
 		bool m_is3d = false;
+		uint8_t m_rowAlignment = 4;
 		Antialiasing m_antiAliasing = Antialiasing::None;
 		WrapMode m_wrapModeS = WrapMode::Repeat;
 		WrapMode m_wrapModeT = WrapMode::Repeat;

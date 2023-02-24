@@ -523,53 +523,62 @@ namespace Engine
 		const auto viewMat = m_camera.ViewMatrix();
 		const glm::vec2 c_tileDims = glm::vec2(m_windowSize) / glm::vec2(m_lightTileCounts);
 
-		static std::vector<glm::vec4> viewSpaceBounds;
+		if (m_lights.size() == 0)
 		{
-			SDE_PROF_EVENT("FindBoundsViewSpace");
-			viewSpaceBounds.resize(m_lights.size());
-			for (uint32_t l = 0; l < m_lights.size(); ++l)
+			for (auto& it : m_lightTiles)
 			{
-				const Light& light = m_lights[l];
-				glm::vec4 bounds(0, 0, m_windowSize.x, m_windowSize.y);
-				if (light.m_position.w == 1.0f)	// point light
+				it.m_currentCount = 0;
+			}
+		}
+		else
+		{
+			static std::vector<glm::vec4> viewSpaceBounds;
+			{
+				SDE_PROF_EVENT("FindBoundsViewSpace");
+				viewSpaceBounds.resize(m_lights.size());
+				for (uint32_t l = 0; l < m_lights.size(); ++l)
 				{
-					glm::vec4 lightCenterWs = { glm::vec3(light.m_position), 1 };
-					glm::vec4 centerVs = viewMat * lightCenterWs;
-					glm::vec3 center = glm::vec3(centerVs) / centerVs.w;
-					glm::vec3 bMin(0), bMax(0);
-					ProjectedSphereAABB(center, light.m_maxDistance, m_camera.NearPlane(), projectionMat, bMin, bMax);
-					glm::vec2 origin = (glm::vec2(bMin.x, bMin.y) + 1.0f) * glm::vec2(m_windowSize) * 0.5f;
-					glm::vec2 dims = glm::vec2(bMax.x - bMin.x, bMax.y - bMin.y) * glm::vec2(m_windowSize) * 0.5f;
-					bounds = glm::vec4(origin.x, origin.y, dims.x, dims.y);
-				}
-				viewSpaceBounds[l] = bounds;
-			}
-		}
-
-		{
-			SDE_PROF_EVENT("BuildTileData");
-			for (uint32_t tY = 0; tY < m_lightTileCounts.y; ++tY)
-			{
-				m_jobSystem->ForEachAsync(0, m_lightTileCounts.x, 1, 1, [&](int32_t tX) {
-					const uint32_t tileIndex = tX + (tY * m_lightTileCounts.x);
-					const glm::vec2 tileOrigin = glm::vec2(tX, tY) * c_tileDims;
-					uint32_t lightCount = 0;
-					for (uint32_t l = 0; l < m_lights.size() && lightCount < c_maxLightsPerTile; ++l)
+					const Light& light = m_lights[l];
+					glm::vec4 bounds(0, 0, m_windowSize.x, m_windowSize.y);
+					if (light.m_position.w == 1.0f)	// point light
 					{
-						const Light& light = m_lights[l];
-						const glm::vec2 origin = { viewSpaceBounds[l].x, viewSpaceBounds[l].y };
-						const glm::vec2 dims = { viewSpaceBounds[l].z, viewSpaceBounds[l].w };
-						if (origin.x + dims.x >= tileOrigin.x && origin.y + dims.y >= tileOrigin.y
-							&& origin.x <= tileOrigin.x + c_tileDims.x && origin.y <= tileOrigin.y + c_tileDims.y)
-						{
-							m_lightTiles[tileIndex].m_lightIndices[lightCount++] = l;
-						}
+						glm::vec4 lightCenterWs = { glm::vec3(light.m_position), 1 };
+						glm::vec4 centerVs = viewMat * lightCenterWs;
+						glm::vec3 center = glm::vec3(centerVs) / centerVs.w;
+						glm::vec3 bMin(0), bMax(0);
+						ProjectedSphereAABB(center, light.m_maxDistance, m_camera.NearPlane(), projectionMat, bMin, bMax);
+						glm::vec2 origin = (glm::vec2(bMin.x, bMin.y) + 1.0f) * glm::vec2(m_windowSize) * 0.5f;
+						glm::vec2 dims = glm::vec2(bMax.x - bMin.x, bMax.y - bMin.y) * glm::vec2(m_windowSize) * 0.5f;
+						bounds = glm::vec4(origin.x, origin.y, dims.x, dims.y);
 					}
-					m_lightTiles[tileIndex].m_currentCount = lightCount;
-				});
+					viewSpaceBounds[l] = bounds;
+				}
+			}
+			{
+				SDE_PROF_EVENT("BuildTileData");
+				for (uint32_t tY = 0; tY < m_lightTileCounts.y; ++tY)
+				{
+					m_jobSystem->ForEachAsync(0, m_lightTileCounts.x, 1, 4, [&](int32_t tX) {
+						SDE_PROF_EVENT("ClassifyLightsForTile");
+						const uint32_t tileIndex = tX + (tY * m_lightTileCounts.x);
+						const glm::vec2 tileOrigin = glm::vec2(tX, tY) * c_tileDims;
+						uint32_t lightCount = 0;
+						for (uint32_t l = 0; l < m_lights.size() && lightCount < c_maxLightsPerTile; ++l)
+						{
+							const Light& light = m_lights[l];
+							const glm::vec2 origin = { viewSpaceBounds[l].x, viewSpaceBounds[l].y };
+							const glm::vec2 dims = { viewSpaceBounds[l].z, viewSpaceBounds[l].w };
+							if (origin.x + dims.x >= tileOrigin.x && origin.y + dims.y >= tileOrigin.y
+								&& origin.x <= tileOrigin.x + c_tileDims.x && origin.y <= tileOrigin.y + c_tileDims.y)
+							{
+								m_lightTiles[tileIndex].m_lightIndices[lightCount++] = l;
+							}
+						}
+						m_lightTiles[tileIndex].m_currentCount = lightCount;
+					});
+				}
 			}
 		}
-
 		{
 			SDE_PROF_EVENT("UploadBuffer");
 			m_lightTileData.SetData(0, m_lightTiles.size() * sizeof(LightTileInfo), m_lightTiles.data());
@@ -580,8 +589,8 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 		const uint32_t maxTiles = m_lightTileCounts.x * m_lightTileCounts.y;
-		const glm::vec4 c_lowCountColour = { 0,1,0,0.2 };
-		const glm::vec4 c_highCountColour = { 1,0,0,0.2 };
+		const glm::vec4 c_lowCountColour = { 0,1,0,0.5 };
+		const glm::vec4 c_highCountColour = { 1,0,0,0.5 };
 		const glm::vec2 c_tileDims = glm::vec2(m_windowSize) / glm::vec2(m_lightTileCounts);
 		auto defaultDiffuse = g_defaultTextures["DiffuseTexture"];
 		for (uint32_t tX = 0; tX < m_lightTileCounts.x; ++tX)

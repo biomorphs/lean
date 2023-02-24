@@ -424,6 +424,8 @@ namespace Render
 			return false;
 		}
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, static_cast<GLint>(src[0].GetDataRowAlignment()));
+
 		uint32_t glStorageFormat = SourceFormatToGLStorageFormat(src[0].SourceFormat());
 		uint32_t glInternalFormat = SourceFormatToGLInternalFormat(src[0].SourceFormat());
 		uint32_t glInternalType = SourceFormatToGLInternalType(src[0].SourceFormat());
@@ -440,6 +442,8 @@ namespace Render
 
 			glTextureSubImage2D(m_handle, m, 0, 0, w, h, glInternalFormat, glInternalType, mipData);
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 		return true;
 	}
@@ -458,6 +462,8 @@ namespace Render
 	{
 		SDE_PROF_EVENT();
 		SDE_RENDER_ASSERT(m_handle == -1);
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, static_cast<GLint>(src.GetDataRowAlignment()));
 
 		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_handle);
 
@@ -515,6 +521,8 @@ namespace Render
 			glGenerateTextureMipmap(m_handle);
 		}
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
 		if (makeResidentNow)
 		{
 			return MakeResidentHandle();
@@ -529,6 +537,8 @@ namespace Render
 		m_isArray = false;
 		bool createdOk = false;
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, static_cast<GLint>(src.GetDataRowAlignment()));
+
 		if (src.Is3D())
 		{
 			assert(!ShouldCreateCompressed(src.SourceFormat()));
@@ -542,6 +552,8 @@ namespace Render
 		{
 			createdOk = CreateSimpleUncompressedTexture2D(src);
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 		if (makeResidentNow)
 		{
@@ -560,6 +572,8 @@ namespace Render
 			SDE_LOGC("Source data not valid for this texture");
 			return false;
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, static_cast<GLint>(src[0].GetDataRowAlignment()));
 
 		bool createdOk = false;
 		if (ShouldCreateCompressed(src[0].SourceFormat()))
@@ -580,6 +594,8 @@ namespace Render
 			m_isArray = false;
 			createdOk = CreateSimpleUncompressedTexture2D(src[0]);
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 		if (makeResidentNow)
 		{

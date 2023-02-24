@@ -45,7 +45,8 @@ set(PysXIncludePaths
 set(PhysXLibPathRelease ${CMAKE_CURRENT_SOURCE_DIR}/../PhysX/physx/bin/win.x86_64.vc142.mt/checked/)
 set(PhysXLibPathDebug ${CMAKE_CURRENT_SOURCE_DIR}/../PhysX/physx/bin/win.x86_64.vc142.mt/debug/)
 
-set(FreeTypeLibPath "${CMAKE_CURRENT_SOURCE_DIR}/external/freetype-windows-binaries/release static/vs2015-2022/win64/freetype.lib")
+# set(FreeTypeLibPath "${CMAKE_CURRENT_SOURCE_DIR}/external/freetype-windows-binaries/release static/vs2015-2022/win64/freetype.lib")
+set(FreeTypeLibPath "${CMAKE_CURRENT_SOURCE_DIR}/external/freetype-windows-binaries/release dll/win64/freetype.lib")
 
 set(CommonCompilerOptions /WX /MP)
 
@@ -226,6 +227,8 @@ set(ENGINE_SOURCES
 	source/engine/camera_system.cpp
 	source/engine/graphics_system.h
 	source/engine/graphics_system.cpp
+	source/engine/text_system.h
+	source/engine/text_system.cpp
 	source/engine/components/component_script.h
 	source/engine/components/component_script.cpp
 	source/engine/components/component_camera.h

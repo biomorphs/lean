@@ -16,6 +16,7 @@
 #include "raycast_system.h"
 #include "character_controller_system.h"
 #include "time_system.h"
+#include "text_system.h"
 #include "entity/entity_system.h"
 #include "platform.h"
 #include "core/log.h"
@@ -52,6 +53,7 @@ namespace Engine
 		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
 		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
+		sysManager.RegisterSystem("Text", new TextSystem);
 		systemCreation();
 		sysManager.RegisterSystem("CharacterControllers", new CharacterControllerSystem());
 		sysManager.RegisterSystem("Entities", new EntitySystem);
