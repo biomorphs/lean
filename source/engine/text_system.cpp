@@ -59,31 +59,36 @@ namespace Engine
 				{
 					const uint32_t glyphWidth = face->glyph->bitmap.width;
 					const uint32_t glyphHeight = face->glyph->bitmap.rows;
-					std::vector<Render::TextureSource::MipDesc> mips;
-					std::vector<uint32_t> pixelData;
-					pixelData.resize(glyphWidth * glyphHeight);
-					for (int p = 0; p < glyphWidth * glyphHeight; ++p)
+					TextureHandle glyphTexture;
+					if (glyphWidth > 0 && glyphHeight > 0)
 					{
-						uint32_t value = static_cast<uint32_t>(face->glyph->bitmap.buffer[p]);
-						value = value | (value << 8);
-						value = value | (value << 8);
-						value = value | (value << 8);
-						pixelData[p] = value;
-					}
-					mips.push_back({ glyphWidth, glyphHeight, 0, glyphWidth * glyphHeight * 4 });
-					Render::TextureSource glyphTexData(glyphWidth, glyphHeight, Render::TextureSource::Format::RGBA8, mips, pixelData);
-					glyphTexData.SetGenerateMips(false);
-					glyphTexData.SetWrapMode(Render::TextureSource::WrapMode::ClampToEdge, Render::TextureSource::WrapMode::ClampToEdge);
-					glyphTexData.SetDataRowAlignment(1);
-					Render::Texture newTexture;
-					if (!newTexture.Create(glyphTexData))
-					{
-						SDE_LOG("Failed to create glyph '%c' texture", c);
-						return nullptr;
-					}
-					std::string glyphTexName = std::string(fontFullName) + "_" + std::to_string(c);
+						std::vector<Render::TextureSource::MipDesc> mips;
+						std::vector<uint32_t> pixelData;	// convert to rgba
+						pixelData.resize(glyphWidth * glyphHeight);
+						for (int p = 0; p < glyphWidth * glyphHeight; ++p)
+						{
+							uint32_t value = static_cast<uint32_t>(face->glyph->bitmap.buffer[p]);
+							value = value | (value << 8);
+							value = value | (value << 8);
+							value = value | (value << 8);
+							pixelData[p] = value;
+						}
+						mips.push_back({ glyphWidth, glyphHeight, 0, glyphWidth * glyphHeight * 4 });
+						Render::TextureSource glyphTexData(glyphWidth, glyphHeight, Render::TextureSource::Format::RGBA8, mips, pixelData);
+						glyphTexData.SetGenerateMips(false);
+						glyphTexData.SetWrapMode(Render::TextureSource::WrapMode::ClampToEdge, Render::TextureSource::WrapMode::ClampToEdge);
+						glyphTexData.SetDataRowAlignment(1);
+						auto newTexture = std::make_unique<Render::Texture>();
+						if (!newTexture->Create(glyphTexData))
+						{
+							SDE_LOG("Failed to create glyph '%c' texture", c);
+							return nullptr;
+						}
+						std::string glyphTexName = std::string(fontFullName) + "_" + std::to_string(c);
+						glyphTexture = textures->AddTexture(glyphTexName, std::move(newTexture));
+					}					
 					FreetypeLibData::Glyph newGlyph;
-					newGlyph.m_texture = textures->AddTexture(glyphTexName, std::move(newTexture));
+					newGlyph.m_texture = glyphTexture;
 					newGlyph.m_uv0 = { 0,1 };
 					newGlyph.m_uv1 = { 1,0 };
 					newGlyph.m_dimensions = { glyphWidth, glyphHeight };
@@ -160,15 +165,18 @@ namespace Engine
 			FreetypeLibData::Glyph* glyphData = m_freetype->GetGlyph(fontFullName, foundFont, c);
 			if (glyphData)
 			{
-				TextRenderData::Glyph newGlyph;
-				newGlyph.m_texture = glyphData->m_texture;
-				newGlyph.m_position = glm::vec2(xAdvance, yBaseline) + glm::vec2(glyphData->m_bearing);
-				newGlyph.m_size = glyphData->m_dimensions;
-				newGlyph.m_uv0 = glyphData->m_uv0;
-				newGlyph.m_uv1 = glyphData->m_uv1;
-				trd.m_boundsMin = glm::min(trd.m_boundsMin, newGlyph.m_position);
-				trd.m_boundsMax = glm::max(trd.m_boundsMax, newGlyph.m_position + newGlyph.m_size);
-				trd.m_glyphs.push_back(newGlyph);
+				if (glyphData->m_texture.m_index != -1)		// whitespace or invalid
+				{
+					TextRenderData::Glyph newGlyph;
+					newGlyph.m_texture = glyphData->m_texture;
+					newGlyph.m_position = glm::vec2(xAdvance, yBaseline) + glm::vec2(glyphData->m_bearing);
+					newGlyph.m_size = glyphData->m_dimensions;
+					newGlyph.m_uv0 = glyphData->m_uv0;
+					newGlyph.m_uv1 = glyphData->m_uv1;
+					trd.m_boundsMin = glm::min(trd.m_boundsMin, newGlyph.m_position);
+					trd.m_boundsMax = glm::max(trd.m_boundsMax, newGlyph.m_position + newGlyph.m_size);
+					trd.m_glyphs.push_back(newGlyph);
+				}
 				xAdvance += glyphData->m_advance;
 			}
 		}

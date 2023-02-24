@@ -607,10 +607,10 @@ namespace Render
 	void Texture::Destroy()
 	{
 		SDE_PROF_EVENT();
-		if (m_residentHandle != -1)
+		if (m_residentHandle != 0)
 		{
 			glMakeTextureHandleNonResidentARB(m_residentHandle);
-			m_residentHandle = -1;
+			m_residentHandle = 0;
 		}
 		if (m_handle != -1)
 		{

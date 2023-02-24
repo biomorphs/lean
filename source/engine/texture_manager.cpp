@@ -143,7 +143,7 @@ namespace Engine
 		}
 	}
 
-	TextureHandle TextureManager::AddTexture(std::string name, Render::Texture&& t)
+	TextureHandle TextureManager::AddTexture(std::string name, std::unique_ptr<Render::Texture>&& t)
 	{
 		// if one exists, return invalid handle
 		for (uint64_t i = 0; i < m_textures.size(); ++i)
@@ -155,7 +155,7 @@ namespace Engine
 		}
 
 		TextureDesc newTexture;
-		newTexture.m_texture = std::make_unique<Render::Texture>(std::move(t));
+		newTexture.m_texture = std::move(t);
 		newTexture.m_path = name;
 		m_textures.emplace_back(std::move(newTexture));
 		auto newHandle = TextureHandle{ static_cast<uint32_t>(m_textures.size() - 1) };

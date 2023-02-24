@@ -26,7 +26,7 @@ namespace Engine
 	class TextureManager : public System
 	{
 	public:
-		TextureHandle AddTexture(std::string name, Render::Texture&& t);	// take ownership of a texture
+		TextureHandle AddTexture(std::string name, std::unique_ptr<Render::Texture>&& t);	// take ownership of a texture
 		TextureHandle LoadTexture(std::string path, std::function<void(bool, TextureHandle)> onFinish = nullptr);
 		Render::Texture* GetTexture(const TextureHandle& h);
 		std::string GetTexturePath(const TextureHandle& h);
