@@ -60,8 +60,18 @@ namespace Engine
 					const uint32_t glyphWidth = face->glyph->bitmap.width;
 					const uint32_t glyphHeight = face->glyph->bitmap.rows;
 					std::vector<Render::TextureSource::MipDesc> mips;
-					mips.push_back({ glyphWidth, glyphHeight, 0, glyphWidth * glyphHeight });
-					Render::TextureSource glyphTexData(glyphWidth, glyphHeight, Render::TextureSource::Format::R8, mips, face->glyph->bitmap.buffer, glyphWidth * glyphHeight);
+					std::vector<uint32_t> pixelData;
+					pixelData.resize(glyphWidth * glyphHeight);
+					for (int p = 0; p < glyphWidth * glyphHeight; ++p)
+					{
+						uint32_t value = static_cast<uint32_t>(face->glyph->bitmap.buffer[p]);
+						value = value | (value << 8);
+						value = value | (value << 8);
+						value = value | (value << 8);
+						pixelData[p] = value;
+					}
+					mips.push_back({ glyphWidth, glyphHeight, 0, glyphWidth * glyphHeight * 4 });
+					Render::TextureSource glyphTexData(glyphWidth, glyphHeight, Render::TextureSource::Format::RGBA8, mips, pixelData);
 					glyphTexData.SetGenerateMips(false);
 					glyphTexData.SetWrapMode(Render::TextureSource::WrapMode::ClampToEdge, Render::TextureSource::WrapMode::ClampToEdge);
 					glyphTexData.SetDataRowAlignment(1);

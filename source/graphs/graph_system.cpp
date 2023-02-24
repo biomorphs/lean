@@ -223,8 +223,8 @@ bool GraphSystem::Initialise()
 	AddEditorData(printC0Id, { 0.5,0.5,0.5,1.0 }, { 350, 400 }, { 150, 84 });
 	AddEditorData(printC1Id, { 0.5,0.5,0.5,1.0 }, { 550, 400 }, { 150, 84 });
 
-	AddEditorData(addIntId, { 0.8, 0.5, 0.5, 1 }, { 750, 250 }, { 150, 116 });
-	AddEditorData(printResultId, { 0.5,0.5,0.5,1.0 }, { 900, 400 }, { 150, 84 });
+	AddEditorData(addIntId, { 0.8, 0.5, 0.5, 1 }, { 730, 250 }, { 150, 116 });
+	AddEditorData(printResultId, { 0.5,0.5,0.5,1.0 }, { 920, 400 }, { 150, 84 });
 
 	AddEditorData(igtId, { 0.8,0.8,1.0,1.0 }, { 1100, 350 }, { 150, 100 });
 
@@ -291,7 +291,8 @@ bool GraphSystem::Tick(float timeDelta)
 	constexpr float c_pinXOffset = -6;
 	constexpr float c_pinYShift = 20;
 
-	Engine::TextSystem::FontData nodeHeaderFont	{ "arial.ttf", 72};
+	Engine::TextSystem::FontData nodeHeaderFont	{ "arial.ttf", 18};
+	Engine::TextSystem::FontData pinNameFont{ "arial.ttf", 12 };
 
 	auto GetInputPinPos = [&](const Graphs::Node* n, const Graphs::NodeEditorData* ned, uint8_t pinID) {
 		float inputPinsY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight - c_pinYShift;
@@ -342,24 +343,29 @@ bool GraphSystem::Tick(float timeDelta)
 							 2, 1, ned->m_borderColour, ned->m_borderColour);
 
 				const auto trd = textRender->GetRenderData(node->GetName(), nodeHeaderFont);
-				textRender->DrawText(r2d, trd, { ned->m_position.x + 4, ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight + 6 }, 2, { 1,1 }, { 1,1,1,1 });
+				textRender->DrawText(r2d, trd, { ned->m_position.x + 4, ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight + 6 }, 2, { 1,1 }, { 0.0,0.0,0.0,1 });
 				
 				float inputPinsY = ned->m_position.y + ned->m_dimensions.y - c_nodeHeaderHeight - c_pinYShift;
 				float outputPinsY = inputPinsY;
 				for (const Graphs::PinDescriptor& pin : node->GetPins())
 				{
-					glm::vec2 pinPos;
+					const auto ptrd = textRender->GetRenderData(pin.m_name, pinNameFont);
+
+					glm::vec2 pinPos, pinTextPos;
 					if (pin.m_isOutput)
 					{
 						pinPos = { ned->m_position.x + ned->m_dimensions.x - c_pinXOffset - (c_pinSize / 2), outputPinsY };
+						pinTextPos = { pinPos.x - ptrd.m_boundsMax.x - 8, pinPos.y - 4};
 						outputPinsY -= c_pinYShift;
 					}
 					else
 					{
 						pinPos = { ned->m_position.x + c_pinXOffset + (c_pinSize / 2), inputPinsY };
+						pinTextPos = { pinPos.x + 8, pinPos.y - 4 };
 						inputPinsY -= c_pinYShift;
 					}
 					r2d.DrawQuad(pinPos - (c_pinSize / 2), 1, { c_pinSize,c_pinSize }, { 0,0 }, { 1,1 }, { 1,1,1,1 }, circleTex);
+					textRender->DrawText(r2d, ptrd, pinTextPos, 2, { 1,1 }, { 0.0,0.0,0.0,1 });
 				}
 			}
 		}

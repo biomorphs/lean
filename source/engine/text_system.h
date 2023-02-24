@@ -29,8 +29,8 @@ namespace Engine
 				glm::vec2 m_uv1;
 			};
 			std::vector<Glyph> m_glyphs;
-			glm::vec2 m_boundsMin = { -FLT_MAX, -FLT_MAX };
-			glm::vec2 m_boundsMax = { FLT_MAX, FLT_MAX };
+			glm::vec2 m_boundsMin = { FLT_MAX, FLT_MAX };
+			glm::vec2 m_boundsMax = { -FLT_MAX, -FLT_MAX };
 		};
 		TextRenderData GetRenderData(std::string_view text, const FontData& font);
 		void DrawText(RenderContext2D& r2d, const TextRenderData& trd, glm::vec2 position, int zIndex, glm::vec2 scale, glm::vec4 colour);
