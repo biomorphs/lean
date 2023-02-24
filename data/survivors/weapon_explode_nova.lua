@@ -1,5 +1,5 @@
 local lastNovaTime = -1
-local novaFrequency = 2.3
+local novaFrequency = 2.5
 local novaArea = 40
 local novaDamage = 40
 

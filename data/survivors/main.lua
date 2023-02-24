@@ -248,6 +248,14 @@ function DoStartGame()
 	explodeNovaActive = true
 	barrelBombActive = true
 	ResetPlayer()
+	
+	for i=0,400 do
+		SpawnEnemy(SpawnZombieAt)
+	end
+
+	for i=0,50 do
+		SpawnEnemy(SpawnSkeletonAt)
+	end
 end
 
 function DoStopGame()
@@ -379,6 +387,10 @@ function DrawHUD(playerCmp)
 	local healthBarDead = vec4.new(1,0.0,0,1)
 	Graphics2D.DrawSolidQuad(healthBarPos[1],healthBarPos[2],0,healthBarDims[1],healthBarDims[2],barBg.x,barBg.y,barBg.z,barBg.w)
 	
+	-- player text 
+	Graphics2D.DrawText(healthBarPos[1], healthBarPos[2] - 44, 0, "CLASS: WIZARD", "MedievalSharp/MedievalSharp-Regular.ttf", 48, 1, 1, 1, 1)
+	Graphics2D.DrawText(healthBarPos[1], healthBarPos[2] - 80, 0, "HP: " .. playerCmp:GetCurrentHealth() .. " / " .. playerCmp:GetMaximumHealth(), "MedievalSharp/MedievalSharp-Regular.ttf", 28, 1, 1, 1, 1)
+	
 	local hpRatio = playerCmp:GetCurrentHealth() / (playerCmp:GetMaximumHealth())
 	local barLength = (healthBarDims[1] - barBorder*2) * hpRatio
 	local barColour = LerpColour(healthBarHealthy, healthBarDead, hpRatio)
@@ -399,7 +411,7 @@ function DrawHUD(playerCmp)
 	Graphics2D.DrawSolidQuad(xpBarOffset[1] + barBorder,xpBarOffset[2] + barBorder,0,xpBarLength,xpBarDims[2]-barBorder*2,xpBarColour.x,xpBarColour.y,xpBarColour.z,xpBarColour.w)
 end
 
-function ShowEditor()
+function ShowEditor(entity)
 	DebugGui.BeginWindow(true, 'Survivors!')
 	local tileLoadRadius = Survivors.GetWorldTileLoadRadius()
 	tileLoadRadius = DebugGui.DragInt('Tile load radius', tileLoadRadius, 1, 0, 64)
@@ -501,7 +513,7 @@ function SurvivorsMain(entity)
 	DrawHUD(playerCmp);	
 	
 	if(Survivors.IsEditorActive()) then
-		ShowEditor()
+		ShowEditor(entity)
 	end
 end
 

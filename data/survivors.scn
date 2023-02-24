@@ -103,9 +103,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -575.214599609375,
+              -608.455322265625,
               184.5,
-              91.74880981445313
+              113.94952392578125
             ],
             "Scale": [
               1.0,
@@ -276,18 +276,18 @@
             "ClassName": "Transform",
             "Orientation": [
               0.0,
+              -0.7071068286895752,
               0.0,
-              0.0,
-              1.0
+              0.7071068286895752
             ],
             "Parent": {
               "ClassName": "EntityHandle",
               "ID": 4294967295
             },
             "Position": [
-              -575.214599609375,
+              -608.455322265625,
               0.0,
-              276.4988098144531
+              298.69952392578125
             ],
             "Scale": [
               4.0,
@@ -890,13 +890,13 @@
                   3.9215686321258545,
                   3.9215686321258545,
                   3.9215686321258545,
-                  0.7843137383460999
+                  1.0
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
-                  "Path": "survivors\\Fire texture seamless.jpg"
+                  "Path": "E:\\Git\\lean\\data\\survivors\\Fire texture seamless.jpg"
                 },
-                "IsTransparent": true,
+                "IsTransparent": false,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -908,10 +908,10 @@
                   0.0
                 ],
                 "Specular": [
-                  9.999999974752427e-07,
-                  9.803922011997201e-07,
-                  9.803922011997201e-07,
-                  0.25
+                  0.800000011920929,
+                  0.800000011920929,
+                  0.800000011920929,
+                  0.0
                 ],
                 "SpecularTexture": {
                   "ClassName": "TextureHandle",

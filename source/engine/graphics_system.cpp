@@ -13,6 +13,7 @@
 #include "engine/renderer.h"
 #include "engine/debug_render.h"
 #include "engine/frustum.h"
+#include "engine/text_system.h"
 #include "engine/2d_render_context.h"
 #include "render/render_pass.h"
 #include "engine/file_picker_dialog.h"
@@ -217,6 +218,14 @@ void GraphicsSystem::RegisterScripts()
 	};
 	graphics2d["GetDimensions"] = [this]() -> glm::vec2 {
 		return m_render2D->GetDimensions();
+	};
+	graphics2d["DrawText"] = [this](float px, float py, int zIndex, const char* text, const char* fontFace, int fontSizePx, float r, float g, float b, float a) {
+		auto ts = Engine::GetSystem<Engine::TextSystem>("Text");
+		Engine::TextSystem::FontData fd;
+		fd.m_fontPath = fontFace;
+		fd.m_heightInPixels = fontSizePx;
+		Engine::TextSystem::TextRenderData trd = ts->GetRenderData(text, fd);
+		ts->DrawText(*m_render2D, trd, { px,py }, zIndex, { 1,1 }, { r,g,b,a });
 	};
 }
 
