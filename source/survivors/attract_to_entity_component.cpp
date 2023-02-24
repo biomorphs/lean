@@ -8,6 +8,7 @@ COMPONENT_SCRIPTS(AttractToEntityComponent,
 	"SetAcceleration", &AttractToEntityComponent::SetAcceleration,
 	"SetMaxSpeed", &AttractToEntityComponent::SetMaxSpeed,
 	"SetTriggerRange", &AttractToEntityComponent::SetTriggerRange,
+	"SetActivationRange", &AttractToEntityComponent::SetActivationRange,
 	"SetTriggerCallback", &AttractToEntityComponent::SetTriggerCallback
 )
 

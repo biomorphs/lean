@@ -21,6 +21,8 @@ public:
 	float GetMaxSpeed() { return m_maxSpeed; }
 	void SetTriggerRange(float r) { m_triggerRange = r; }
 	float GetTriggerRange() { return m_triggerRange; }
+	void SetActivationRange(float r) { m_activationRange = r; }
+	float GetActivationRange() { return m_activationRange; }
 	using TriggerFn = std::function<void(EntityHandle)>;
 	void SetTriggerCallback(TriggerFn fn) { m_triggerFn = fn; }
 	const TriggerFn& GetTriggerCallback() {	return m_triggerFn;	}
@@ -33,6 +35,7 @@ private:
 	float m_acceleration = 1.0f;	// rate of attraction speed increase	
 	float m_maxSpeed = 1.0f;	
 	float m_triggerRange = 1.0f;	// trigger callbacks if this close
+	float m_activationRange = 64.0f;	// dont attract outside this radius
 	TriggerFn m_triggerFn;	// called when within trigger range
 	glm::vec3 m_velocity = { 0,0,0 };
 };

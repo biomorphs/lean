@@ -103,9 +103,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -608.455322265625,
+              -1228.671142578125,
               184.5,
-              113.94952392578125
+              234.36184692382813
             ],
             "Scale": [
               1.0,
@@ -275,19 +275,19 @@
           "Data": {
             "ClassName": "Transform",
             "Orientation": [
-              0.0,
-              -0.7071068286895752,
-              0.0,
-              0.7071068286895752
+              -0.0,
+              1.0,
+              -0.0,
+              -4.371138828673793e-08
             ],
             "Parent": {
               "ClassName": "EntityHandle",
               "ID": 4294967295
             },
             "Position": [
-              -608.455322265625,
+              -1228.671142578125,
               0.0,
-              298.69952392578125
+              419.1118469238281
             ],
             "Scale": [
               4.0,
@@ -1807,9 +1807,412 @@
         }
       ],
       "ID": 12205
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\mushroom_redTall.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12212
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.20000000298023224,
+            "Attenutation": 4.0,
+            "Brightness": 2.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.9999909400939941,
+              0.9999899864196777
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.0,
+                  6.008148193359375e-05,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.936274528503418,
+                  0.8182957172393799,
+                  0.7618704438209534,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  20.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  0.20000000298023224,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "MushroomTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              5.672035217285156,
+              8.72094440460205,
+              2.888348340988159
+            ],
+            "Scale": [
+              6.0,
+              6.0,
+              6.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12212
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\scene.gltf"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "BoxColliders": [],
+            "CapsuleColliders": [
+              {
+                "ClassName": "CapsuleCollider",
+                "HalfHeight": 6.400000095367432,
+                "Origin": [
+                  0.0,
+                  19.90999984741211,
+                  0.0
+                ],
+                "PitchYawRoll": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Radius": 17.899999618530273
+              }
+            ],
+            "ClassName": "Physics",
+            "Density": 1.0,
+            "DynamicFriction": 0.5,
+            "IsKinematic": true,
+            "IsStatic": false,
+            "PlaneColliders": [],
+            "Restitution": 0.6000000238418579,
+            "SphereColliders": [],
+            "StaticFriction": 0.5
+          },
+          "Type": "Physics"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "SkullBossTemplate"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              -28.5,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              180.0,
+              180.0,
+              180.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12213
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.00800000037997961,
+            "Attenutation": 4.0,
+            "Brightness": 6.0,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.05882352590560913,
+              0.0
+            ],
+            "Distance": 128.0,
+            "ShadowBias": 0.5,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "SkullBossTemplateLight0"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              -0.029999999329447746,
+              0.11999999731779099,
+              0.07000000029802322
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12214
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.00800000037997961,
+            "Attenutation": 4.0,
+            "Brightness": 6.0,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.05882352590560913,
+              0.0
+            ],
+            "Distance": 128.0,
+            "ShadowBias": 0.5,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "SkullBossTemplateLight1"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.029999999329447746,
+              0.11999999731779099,
+              0.07000000029802322
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12215
     }
   ],
-  "EntityCount": 15,
+  "EntityCount": 19,
   "EntityIDs": [
     0,
     3,
@@ -1825,7 +2228,11 @@
     12199,
     12200,
     12201,
-    12205
+    12205,
+    12212,
+    12213,
+    12214,
+    12215
   ],
   "SceneName": "Survivors"
 }

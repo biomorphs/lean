@@ -30,7 +30,7 @@ COMPONENT_INSPECTOR_IMPL(Model, Engine::DebugGuiSystem& gui)
 		std::string modelPath = models->GetModelPath(m.GetModel());
 		if (gui.Button(modelPath.c_str()))
 		{
-			std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
+			std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0(.gltf)\0*.gltf\0");
 			if (newFile != "")
 			{
 				auto loadedModel = models->LoadModel(newFile.c_str());

@@ -24,6 +24,10 @@ local skeletonsPerSecond = 0.0
 local skeletonsPerSecondIncrement = 0.0002
 local skeletonsSpawnTimer = 0
 local skeletonsSpawnEnabled = false
+local bossesPerSecond = 0
+local bossesPerSecondIncrement = 0.000001
+local bossesSpawnTimer = 0
+local bossesSpawnEnabled = false
 
 -- weapons
 local explodeNovaActive = false
@@ -56,6 +60,41 @@ function DoExplosionAt(pos, radius, damage)
 	newExplosion:SetDamageAtCenter(damage)
 	newExplosion:SetDamageAtEdge(damage / 2)
 	newExplosion:SetFadeoutSpeed(2)
+end
+
+function SpawnBossAt(pos)
+	
+	local template = World.GetFirstEntityWithTag(Tag.new("SkullBossTemplate"))
+	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("SkullBossDamaged"))
+	local newBoss = World.CloneEntity(template)
+	local newTags = World.GetComponent_Tags(newBoss)
+	newTags:ClearTags()
+	newTags:AddTag(Tag.new("BossInstance"))
+	local newTransform = World.GetComponent_Transform(newBoss)
+	if(newTransform ~= nil) then 
+		newTransform:SetPosition(pos.x, pos.y, pos.z)
+	end
+	local newMonsterCmp = World.AddComponent_MonsterComponent(newBoss)
+	newMonsterCmp:SetSpeed(20.0 + math.random() * 20.0)
+	newMonsterCmp:SetCollideRadius(18)
+	newMonsterCmp:SetRagdollChance(0.0)
+	newMonsterCmp:SetDamagedMaterialEntity(damageTemplate)
+	newMonsterCmp:SetAttackFrequency(0.25)
+	newMonsterCmp:SetAttackMinValue(15)
+	newMonsterCmp:SetAttackMaxValue(30)
+	newMonsterCmp:SetXPOnDeath(1000)
+	newMonsterCmp:SetCurrentHealth(1000)
+	
+	local lightTemplate0 = World.GetFirstEntityWithTag(Tag.new("SkullBossTemplateLight0"))
+	local lightTemplate1 = World.GetFirstEntityWithTag(Tag.new("SkullBossTemplateLight1"))
+	local newLight0 = World.CloneEntity(lightTemplate0)
+	local newLight1 = World.CloneEntity(lightTemplate1)
+	local transformLight0 = World.GetComponent_Transform(newLight0)
+	local transformLight1 = World.GetComponent_Transform(newLight1)
+	transformLight0:SetParent(newBoss)
+	transformLight1:SetParent(newBoss)
+	
+	print("A boss has spawned!")
 end
 
 function SpawnSkeletonAt(pos)
@@ -138,6 +177,18 @@ function SpawnEnemy(SpawnAtFn)
 		local rz = playerPos.z + math.cos(theta) * spawnDistance
 		SpawnAtFn(vec3.new(rx,ry,rz))
 	end
+end
+
+function SpawnBosses()
+	if(bossesSpawnEnabled == false or bossesPerSecond <= 0) then 
+		return 
+	end
+	bossesSpawnTimer = bossesSpawnTimer + Scripts.GetTimeDelta()
+	if(bossesSpawnTimer > (1.0 / bossesPerSecond)) then 
+		SpawnEnemy(SpawnBossAt)
+		bossesSpawnTimer = 0
+	end
+	bossesPerSecond = bossesPerSecond + bossesPerSecondIncrement
 end
 
 function SpawnSkeletons()
@@ -245,16 +296,14 @@ function DoStartGame()
 	zombiesPerSecond = 1.0
 	skeletonsSpawnEnabled = true
 	skeletonsPerSecond = 0.2
+	bossesSpawnEnabled = true 
+	bossesPerSecond = 0.000001
 	explodeNovaActive = true
 	barrelBombActive = true
 	ResetPlayer()
 	
-	for i=0,400 do
+	for i=0,100 do
 		SpawnEnemy(SpawnZombieAt)
-	end
-
-	for i=0,50 do
-		SpawnEnemy(SpawnSkeletonAt)
 	end
 end
 
@@ -265,6 +314,8 @@ function DoStopGame()
 	zombieSpawnEnabled = false
 	skeletonsPerSecond = 0.0
 	skeletonsSpawnEnabled = false
+	bossesPerSecond = 0.0
+	bossesSpawnEnabled = false
 	Survivors.StopGame()
 	explodeNovaActive = false
 	barrelBombActive = false
@@ -403,7 +454,7 @@ function DrawHUD(playerCmp)
 	
 	local xpThisLvl = playerCmp:GetCurrentXP() - playerCmp:GetThisLevelXP()
 	local xpNextLvl = playerCmp:GetNextLevelXP() - playerCmp:GetThisLevelXP()
-	local xpRatio = xpThisLvl / xpNextLvl
+	local xpRatio = math.min(xpThisLvl,xpNextLvl) / xpNextLvl
 	local xpLowColour = vec4.new(0,0.49,1,1)
 	local xpHighColour = vec4.new(0,0.8,1,1)
 	local xpBarColour = LerpColour(xpLowColour, xpHighColour, xpRatio)
@@ -458,12 +509,16 @@ function ShowEditor(entity)
 			SpawnEnemy(SpawnSkeletonAt)
 		end
 	end
+	if(DebugGui.Button('Spawn Boss')) then
+		SpawnEnemy(SpawnBossAt)
+	end
 	
 	spawnRadiusMin = DebugGui.DragFloat('Spawn min radius', spawnRadiusMin, 1.0, 2.0, 800)
 	spawnRadiusMax = DebugGui.DragFloat('Spawn ring size', spawnRadiusMax, 1.0, 0, 800.0)
 	zombiesPerSecond = DebugGui.DragFloat('Zombies/second', zombiesPerSecond, 1.0, 0.0, 128.0)
 	zombieChadsPerSecond = DebugGui.DragFloat('Zombie chads/second', zombieChadsPerSecond, 1.0, 0.0, 128.0)
 	skeletonsPerSecond = DebugGui.DragFloat('Skeletons/second', skeletonsPerSecond, 1.0, 0.0, 128.0)
+	bossesPerSecond = DebugGui.DragFloat('Bosses/second', bossesPerSecond, 1.0, 0.0, 128)
 	
 	if(DebugGui.Button('Reload Main Script')) then 
 		local myScriptCmp = World.GetComponent_Script(entity)
@@ -476,7 +531,9 @@ end
 
 function OnFirstRun()
 	local foundXPTemplate = World.GetFirstEntityWithTag(Tag.new("XPCrystalTemplate"))
+	local foundMushroomTemplate = World.GetFirstEntityWithTag(Tag.new("MushroomTemplate"))
 	Survivors.SetXPTemplateEntity(foundXPTemplate)
+	Survivors.SetMushroomTemplateEntity(foundMushroomTemplate)
 	if(Survivors.IsEditorActive() == false) then
 		DoStartGame()
 	end
@@ -507,6 +564,7 @@ function SurvivorsMain(entity)
 			SpawnZombies();
 			SpawnZombieChads();
 			SpawnSkeletons();
+			SpawnBosses();
 		end
 	end
 	

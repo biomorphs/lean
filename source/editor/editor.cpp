@@ -245,7 +245,7 @@ void Editor::UpdateMenubar()
 	rightClickBar.m_label = "Options";
 	auto& entityMenu = rightClickBar.AddSubmenu("Add Entity");
 	entityMenu.AddItem("From Mesh", [this]() {
-		std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0");
+		std::string newFile = Engine::ShowFilePicker("Select Model", "", "Model Files (.fbx)\0*.fbx\0(.obj)\0*.obj\0(.gltf)\0*.gltf\0");
 		if (newFile != "")
 		{
 			m_commands.Push(std::make_unique<EditorCreateEntityFromMeshCommand>(newFile));

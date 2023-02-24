@@ -11,7 +11,8 @@ COMPONENT_SCRIPTS(Transform,
 	"GetPosition", &Transform::GetPosition,
 	"GetRotationRadians", &Transform::GetRotationRadians,
 	"GetRotationDegrees", &Transform::GetRotationDegrees,
-	"RotateEuler", &Transform::RotateEuler
+	"RotateEuler", &Transform::RotateEuler,
+	"SetParent", &Transform::SetParent
 )
 
 SERIALISE_BEGIN(Transform)

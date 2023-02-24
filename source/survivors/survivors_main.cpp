@@ -108,6 +108,9 @@ namespace Survivors
 		survivors["SetXPTemplateEntity"] = [this](EntityHandle e) {
 			m_xpTemplateEntity = e;
 		};
+		survivors["SetMushroomTemplateEntity"] = [this](EntityHandle e) {
+			m_mushroomTemplateEntity = e;
+		};
 
 		// Todo Hacks to fix later 
 		auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
@@ -185,7 +188,7 @@ namespace Survivors
 		SDE_PROF_EVENT();
 
 		const double currentTime = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
-		const float c_attackerRadius = 16.0f;
+		const float c_attackerRadius = 32.0f;
 		const auto aabMin = playerPos - glm::vec3(c_attackerRadius, 0.0f, c_attackerRadius);
 		const auto aabMax = playerPos + glm::vec3(c_attackerRadius, 0.0f, c_attackerRadius);
 		m_activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
@@ -248,7 +251,7 @@ namespace Survivors
 			auto& monster = m_activeMonsters[m];
 			auto posToPlayer = (playerPos - monster.m_targetPosition) * glm::vec3(1.0f, 0.0f, 1.0f);
 			float distanceToPlayer = glm::length(posToPlayer);
-			if (distanceToPlayer > 360)	// todo - min collision radius
+			if (distanceToPlayer > m_avoidanceMaxDistance)
 			{
 				continue;
 			}
@@ -279,8 +282,8 @@ namespace Survivors
 						}
 						else if (neighbourRadius == collideRadius)
 						{
-							monster.m_targetPosition = monster.m_targetPosition - shift * 0.5f;
-							neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.5f;
+							monster.m_targetPosition = monster.m_targetPosition - shift * 0.501f;
+							neighbour.m_targetPosition = neighbour.m_targetPosition + shift * 0.501f;
 						}
 						else
 						{
@@ -366,6 +369,37 @@ namespace Survivors
 		});
 	}
 
+	void SurvivorsMain::SpawnMushroomAt(EntityHandle player, glm::vec3 p, int hpToAdd)
+	{
+		if (m_mushroomTemplateEntity.IsValid())
+		{
+			auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			auto world = entities->GetWorld();
+			EntityHandle newMushroom = entities->CloneEntity(m_mushroomTemplateEntity);
+			world->AddComponent(newMushroom, AttractToEntityComponent::GetType());
+			AttractToEntityComponent* attractor = world->GetComponent<AttractToEntityComponent>(newMushroom);
+			Transform* t = world->GetComponent<Transform>(newMushroom);
+			if (attractor && t)
+			{
+				t->SetPosition(p + glm::vec3(0,2,0));
+				attractor->SetTargetOffset(glm::vec3(0,2,0));
+				attractor->SetAcceleration(256.0f);
+				attractor->SetMaxSpeed(1000.0f);
+				attractor->SetTriggerRange(3.0f);
+				attractor->SetActivationRange(24.0f);	// player needs to be close
+				attractor->SetTarget(player);
+				attractor->SetTriggerCallback([player, world, hpToAdd](EntityHandle src) {
+					auto playerCmp = world->GetComponent<PlayerComponent>(player);
+					if (playerCmp)
+					{
+						playerCmp->SetCurrentHealth(glm::min(playerCmp->GetCurrentHealth() + hpToAdd, playerCmp->GetMaximumHealth()));
+						world->RemoveEntity(src);
+					}
+				});
+			}
+		}
+	}
+
 	void SurvivorsMain::SpawnXPAt(EntityHandle player, glm::vec3 p, int xpToAdd)
 	{
 		if (m_xpTemplateEntity.IsValid())
@@ -411,6 +445,10 @@ namespace Survivors
 			{
 				auto transform = world->GetComponent<Transform>(entity);
 				SpawnXPAt(player, transform->GetPosition(), mc->GetXPOnDeath());
+				if (Core::Random::GetInt(0, 100) < m_chanceToSpawnMushroom)
+				{
+					SpawnMushroomAt(player, transform->GetPosition(), 20);
+				}
 				if (Core::Random::GetFloat(0.0f, 1.0f) < mc->GetRagdollChance())
 				{
 					auto physics = world->GetComponent<Physics>(entity);
@@ -461,11 +499,11 @@ namespace Survivors
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 		static auto iterator = world->MakeIterator<AttractToEntityComponent, Transform>();
-		const float pickupRadius = m_baseXPPickupRange * playerCmp.GetPickupAreaMultiplier();
 		iterator.ForEach([&](AttractToEntityComponent& attract, Transform& t, EntityHandle parent) {
 			const Transform* target = attract.GetTarget();
 			if (target)
 			{
+				const float pickupRadius = attract.GetActivationRange() * playerCmp.GetPickupAreaMultiplier();
 				const auto meToTarget = target->GetPosition() + attract.GetTargetOffset() - t.GetPosition();
 				float distance = glm::length(meToTarget);
 				glm::vec3 velocity = attract.GetVelocity();

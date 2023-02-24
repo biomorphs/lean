@@ -35,6 +35,7 @@ namespace Survivors
 		void StopGame();
 		void LoadMainScene();
 		void SpawnXPAt(EntityHandle player, glm::vec3 p, int xpToAdd);
+		void SpawnMushroomAt(EntityHandle player, glm::vec3 p, int hpToAdd);
 
 		struct ActiveMonster
 		{
@@ -49,12 +50,14 @@ namespace Survivors
 		bool m_enemiesEnabled = false;
 		bool m_attractorsEnabled = false;
 		int m_avoidanceIterations = 1;				// increase for more stability but slower
+		float m_avoidanceMaxDistance = 350.0f;
 		WorldGrid<uint32_t> m_activeMonsterGrid;	// indexes into vector below
 		std::vector<ActiveMonster> m_activeMonsters;
 		std::vector<EntityHandle> m_monstersToDespawn;
 		std::vector<EntityHandle> m_monstersToKill;
 		EntityHandle m_xpTemplateEntity;
-		float m_baseXPPickupRange = 64.0f;
+		EntityHandle m_mushroomTemplateEntity;
+		int m_chanceToSpawnMushroom = 1;			// % chance to spawn mushroom on death
 		int m_tileLoadRadius = 12;
 		float m_monsterGridSize = 16.0f;
 		double m_deadMonsterTimeout = 60.0;			// remove corpses after this time
