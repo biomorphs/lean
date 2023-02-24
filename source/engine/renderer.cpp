@@ -89,7 +89,6 @@ namespace Engine
 		, m_windowSize(windowSize)
 		, m_mainFramebuffer(windowSize)
 		, m_mainFramebufferResolved(windowSize)
-		, m_mainDepthResolved(windowSize)
 		, m_bloomBrightnessBuffer(windowSize)
 	{
 		SDE_PROF_EVENT();
@@ -130,11 +129,6 @@ namespace Engine
 			if (!m_mainFramebufferResolved.Create())
 			{
 				SDE_LOG("Failed to create framebuffer!");
-			}
-			m_mainDepthResolved.AddDepthStencil();
-			if (!m_mainDepthResolved.Create())
-			{
-				SDE_LOG("Failed to create framebuffer");
 			}
 			m_bloomBrightnessBuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F16);
 			m_bloomBrightnessBuffer.Create();
@@ -558,7 +552,7 @@ namespace Engine
 				SDE_PROF_EVENT("BuildTileData");
 				for (uint32_t tY = 0; tY < m_lightTileCounts.y; ++tY)
 				{
-					m_jobSystem->ForEachAsync(0, m_lightTileCounts.x, 1, 4, [&](int32_t tX) {
+					m_jobSystem->ForEachAsync(0, m_lightTileCounts.x, 1, 8, [&](int32_t tX) {
 						SDE_PROF_EVENT("ClassifyLightsForTile");
 						const uint32_t tileIndex = tX + (tY * m_lightTileCounts.x);
 						const glm::vec2 tileOrigin = glm::vec2(tX, tY) * c_tileDims;
@@ -1130,7 +1124,6 @@ namespace Engine
 		if (m_mainFramebuffer.GetMSAASamples() > 1)
 		{
 			rtFn("MainResolved", m_mainFramebufferResolved);
-			rtFn("MainDepthResolved", m_mainDepthResolved);
 		}
 		rtFn("BloomBrightness", m_bloomBrightnessBuffer);
 		rtFn("BloomBlur0", *m_bloomBlurBuffers[0]);
@@ -1281,12 +1274,6 @@ namespace Engine
 				DrawInstances(d, m_opaqueInstances, visibleOpaques, baseInstance, true, nullptr);
 			}
 			m_frameStats.m_renderedOpaqueInstances = visibleOpaques.size();
-
-			// once opaques are all drawn we can resolve depth for later passes
-			if (m_mainFramebuffer.GetMSAASamples() > 1)
-			{
-				m_mainFramebuffer.Resolve(m_mainDepthResolved, Render::FrameBuffer::Depth);
-			}
 
 			// render transparents
 			d.SetDepthState(true, false);		// enable z-test, disable write
