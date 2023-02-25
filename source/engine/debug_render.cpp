@@ -90,7 +90,7 @@ namespace Engine
 		return true;
 	}
 
-	void DebugRender::AddLinesInternal(const __m128* posBuffer, const __m128* colBuffer, uint32_t count)
+	void DebugRender::AddLinesInternal(const __m128* __restrict posBuffer, const __m128* __restrict colBuffer, uint32_t count)
 	{
 		uint32_t toAdd = count;
 		if ((m_currentLines + count) > c_maxLines)
@@ -98,7 +98,7 @@ namespace Engine
 			toAdd = c_maxLines - m_currentLines;
 		}
 
-		if (count > 0)
+		if (toAdd > 0)
 		{
 			glm::vec4* posData = m_posBuffer.get() + (m_currentLines * 2);
 			glm::vec4* colData = m_colBuffer.get() + (m_currentLines * 2);

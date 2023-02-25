@@ -29,6 +29,7 @@ namespace Particles
 		m_lifetime.Create(maxParticles);
 		m_velocity.Create(maxParticles);
 		m_colour.Create(maxParticles);
+		m_emitterIDs.Create(maxParticles);
 	}
 
 	inline uint32_t ParticleContainer::Wake(uint32_t count)
@@ -48,6 +49,9 @@ namespace Particles
 		const uint32_t cIndex = m_colour.Wake(count);
 		assert(cIndex == newIndex);
 
+		const uint32_t eIndex = m_emitterIDs.Wake(count);
+		assert(eIndex == newIndex);
+
 		m_livingParticles += count;
 
 		return newIndex;
@@ -62,6 +66,7 @@ namespace Particles
 			m_lifetime.Kill(index);
 			m_velocity.Kill(index);
 			m_colour.Kill(index);
+			m_emitterIDs.Kill(index);
 
 			--m_livingParticles;
 		}

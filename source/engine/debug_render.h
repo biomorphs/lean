@@ -35,7 +35,7 @@ namespace Engine
 		void PushLinesToMesh(Render::Mesh& target);
 		void AddLinesInternal(const __m128* posBuffer, const __m128* colBuffer, uint32_t count);
 
-		static const uint32_t c_maxLines = 1024 * 512;
+		static const uint32_t c_maxLines = 1024 * 1024 * 4;
 		uint32_t m_currentLines = 0;
 		uint32_t m_currentWriteMesh = 0;
 		std::unique_ptr<glm::vec4[], std::function<void(glm::vec4*)>> m_posBuffer;

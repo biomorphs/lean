@@ -19,6 +19,8 @@
 #include "behaviours/debug_axis_renderer.h"
 #include "behaviours/euler_position_update.h"
 #include "behaviours/gravity_update.h"
+#include "behaviours/generate_spawn_emitter.h"
+#include "behaviours/update_attached_emitter.h"
 
 namespace Particles
 {
@@ -127,6 +129,8 @@ namespace Particles
 		RegisterBehaviour(std::make_unique<DebugAxisRenderer>());
 		RegisterBehaviour(std::make_unique<EulerPositionUpdater>());
 		RegisterBehaviour(std::make_unique<GravityUpdate>());
+		RegisterBehaviour(std::make_unique<GenerateSpawnEmitter>());
+		RegisterBehaviour(std::make_unique<UpdateAttachedEmitter>());
 	}
 
 	EmitterEditor::~EmitterEditor()
@@ -220,7 +224,7 @@ namespace Particles
 		{
 			gui.Text(bvs[b]->GetName().data());
 			bvs[b]->Inspect(i);
-			std::string deleteBtnText = "Delete?##" + std::to_string(b);
+			std::string deleteBtnText = "Delete?##" + std::to_string(b) + "_" + std::string(label);
 			if (gui.Button(deleteBtnText.c_str()))
 			{
 				auto cmd = std::make_unique<DeleteBehaviourCmd>();

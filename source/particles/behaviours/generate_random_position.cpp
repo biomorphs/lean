@@ -26,8 +26,9 @@ namespace Particles
 			float vY = ((float)rand() / (float)RAND_MAX);
 			float vZ = ((float)rand() / (float)RAND_MAX);
 
-			__declspec(align(16)) glm::vec4 newPos(m_boundsMin.x + (vX * range.x), m_boundsMin.y + (vY * range.y), m_boundsMin.z + (vZ * range.z), 0.0f);
-			__m128 posVec = _mm_load_ps(glm::value_ptr(newPos * emitterTransform));
+			__declspec(align(16)) glm::vec4 newPos(m_boundsMin.x + (vX * range.x), m_boundsMin.y + (vY * range.y), m_boundsMin.z + (vZ * range.z), 1.0f);
+			newPos = emitterTransform * newPos;
+			__m128 posVec = _mm_load_ps(glm::value_ptr(newPos));
 			_mm_stream_ps((float*)&container.Positions().GetValue(i), posVec);
 		}
 		_mm_sfence();

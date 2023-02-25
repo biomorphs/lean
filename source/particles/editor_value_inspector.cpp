@@ -3,9 +3,26 @@
 #include "engine/debug_gui_system.h"
 #include "editor/editor.h"
 #include "editor/commands/editor_set_value_cmd.h"
+#include "engine/file_picker_dialog.h"
 
 namespace Particles
 {
+	void EditorValueInspector::InspectFilePath(std::string_view label, std::string_view extension, std::string_view currentVal, std::function<void(std::string_view)> setValueFn)
+	{
+		std::string btnText = std::string(label) + ": " + std::string(currentVal);
+		if (m_dbgGui->Button(btnText.c_str()))
+		{
+			std::string filePickerFilter = "Files (." + std::string(extension) + ")\0*." + std::string(extension) + "\0";
+			std::string path = Engine::ShowFilePicker("Choose file", "", filePickerFilter.c_str(), false);
+			if (path != currentVal)
+			{
+				auto mainEditor = Engine::GetSystem<Editor>("Editor");
+				auto setValueCmd = std::make_unique<EditorSetValueCommand<std::string>>(label.data(), std::string(currentVal), path, setValueFn);
+				mainEditor->PushCommand(std::move(setValueCmd));
+			}
+		}
+	}
+
 	void EditorValueInspector::Inspect(std::string_view label, std::string_view currentVal, std::function<void(std::string_view)> setValueFn)
 	{
 		std::string oldValue(currentVal);

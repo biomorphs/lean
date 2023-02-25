@@ -18,6 +18,7 @@ namespace Particles
 		typedef __m128 VelocityType;
 		typedef __m128 ColourType;
 		typedef float LifetimeType;
+		typedef uint64_t EmitterID;
 
 		inline const ParticleBuffer<PositionType>& Positions() const { return m_position; }
 		inline ParticleBuffer<PositionType>& Positions() { return m_position; }
@@ -27,6 +28,8 @@ namespace Particles
 		inline ParticleBuffer<ColourType>& Colours() { return m_colour; }
 		inline const ParticleBuffer<LifetimeType>& Lifetimes() const { return m_lifetime; }
 		inline ParticleBuffer<LifetimeType>& Lifetimes() { return m_lifetime; }
+		inline const ParticleBuffer<EmitterID>& EmitterIDs() const { return m_emitterIDs; }
+		inline ParticleBuffer<EmitterID>& EmitterIDs() { return m_emitterIDs; }
 
 		uint32_t Wake(uint32_t count);
 		void Kill(uint32_t index);
@@ -42,6 +45,7 @@ namespace Particles
 		ParticleBuffer<VelocityType> m_velocity;
 		ParticleBuffer<ColourType> m_colour;
 		ParticleBuffer<LifetimeType> m_lifetime;
+		ParticleBuffer<EmitterID> m_emitterIDs;
 	};
 }
 #include "particle_container.inl"
