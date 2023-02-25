@@ -4,6 +4,8 @@
 #include "playground/playground.h"
 #include "playground/walkable_system.h"
 
+#include "particles/emitter_editor.h"
+
 #include "survivors/world_tile_system.h"
 #include "survivors/survivors_main.h"
 
@@ -28,6 +30,7 @@ void CreateSystems(const std::string& cmdLine)
 	if (cmdLine.find("-editor") != -1)
 	{
 		sysManager.RegisterSystem("Editor", new Editor());
+		sysManager.RegisterSystem("EmitterEditor", new Particles::EmitterEditor());
 	}
 }
 

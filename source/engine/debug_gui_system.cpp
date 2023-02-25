@@ -129,6 +129,18 @@ namespace Engine
 		}
 	}
 
+	void DebugGuiSystem::WindowMenuBar(MenuBar& bar)
+	{
+		if (ImGui::BeginMenuBar())
+		{
+			for (auto sm : bar.m_subMenus)
+			{
+				DoSubMenu(sm);
+			}
+			ImGui::EndMenuBar();
+		}
+	}
+
 	void DebugGuiSystem::MainMenuBar(MenuBar& bar)
 	{
 		if (ImGui::BeginMainMenuBar())
@@ -266,6 +278,10 @@ namespace Engine
 		if (flags & NoResize)
 		{
 			windowFlags |= ImGuiWindowFlags_NoResize;
+		}
+		if (flags & HasMenuBar)
+		{
+			windowFlags |= ImGuiWindowFlags_MenuBar;
 		}
 
 		bool ret = ImGui::Begin(windowName, &windowOpen, windowFlags);

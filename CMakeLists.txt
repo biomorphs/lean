@@ -293,6 +293,26 @@ target_include_directories(Entity PRIVATE ${CommonIncludePaths})
 target_include_directories(Entity PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Entity PRIVATE ${JSONIncludePaths})
 
+add_library(Particles STATIC)
+set(PARTICLES_SOURCES
+	source/particles/emitter_descriptor.h
+	source/particles/emitter_descriptor.cpp
+	source/particles/particle_emission_behaviour.h
+	source/particles/particle_emission_behaviour.cpp
+	source/particles/emitter_editor.h
+	source/particles/emitter_editor.cpp
+	source/particles/editor_value_inspector.h
+	source/particles/editor_value_inspector.cpp
+	source/particles/behaviours/emit_burst_repeater.h
+	source/particles/behaviours/emit_burst_repeater.cpp
+	source/particles/behaviours/emit_once.h
+	source/particles/behaviours/emit_once.cpp
+)
+target_sources(Particles PRIVATE ${PARTICLES_SOURCES})
+target_include_directories(Particles PRIVATE ${CommonIncludePaths})
+target_include_directories(Particles PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Particles PRIVATE ${JSONIncludePaths})
+
 add_library(Creatures STATIC)
 set(CREATURES_SOURCES
 	source/playground/creatures/creature_system.h
@@ -427,6 +447,7 @@ set_target_properties(Lean PROPERTIES VS_DPI_AWARE "ON")
 target_link_libraries(Lean PRIVATE Core)
 target_link_libraries(Lean PRIVATE Engine)
 target_link_libraries(Lean PRIVATE Entity)
+target_link_libraries(Lean PRIVATE Particles)
 target_link_libraries(Lean PRIVATE Playground)
 target_link_libraries(Lean PRIVATE Editor)
 target_link_libraries(Lean PRIVATE Creatures)

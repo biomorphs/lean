@@ -24,7 +24,8 @@ namespace Engine
 	{
 		NoMove = 1,
 		NoTitlebar = 2,
-		NoResize = 4
+		NoResize = 4,
+		HasMenuBar = 8
 	};
 	class DebugGuiSystem : public System
 	{
@@ -74,7 +75,8 @@ namespace Engine
 		void GraphLines(const char* label, glm::vec2 size, const std::vector<float>& values);
 		void GraphLines(const char* label, glm::vec2 size, GraphDataBuffer& buffer);
 		void GraphHistogram(const char* label, glm::vec2 size, GraphDataBuffer& buffer);
-		void MainMenuBar(MenuBar&);
+		void MainMenuBar(MenuBar&);		// main app menu bar
+		void WindowMenuBar(MenuBar&);	// per window/context/whatever
 		void ContextMenuVoid(SubMenu&);	// Context menu displayed when right clicking over no ui elements
 		bool TreeNode(const char* label, bool forceExpanded = false);
 		void TreePop();
