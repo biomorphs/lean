@@ -18,6 +18,7 @@
 #include "time_system.h"
 #include "text_system.h"
 #include "entity/entity_system.h"
+#include "particles/particle_system.h"
 #include "platform.h"
 #include "core/log.h"
 #include "core/timer.h"
@@ -55,6 +56,7 @@ namespace Engine
 		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
 		sysManager.RegisterSystem("Text", new TextSystem);
 		systemCreation();
+		sysManager.RegisterSystem("Particles", new Particles::ParticleSystem());
 		sysManager.RegisterSystem("CharacterControllers", new CharacterControllerSystem());
 		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);

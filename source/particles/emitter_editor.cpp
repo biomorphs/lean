@@ -2,6 +2,7 @@
 #include "emitter_descriptor.h"
 #include "particle_emission_behaviour.h"
 #include "editor_value_inspector.h"
+#include "particle_system.h"
 #include "core/file_io.h"
 #include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
@@ -13,6 +14,11 @@
 
 #include "behaviours/emit_burst_repeater.h"
 #include "behaviours/emit_once.h"
+#include "behaviours/generate_random_position.h"
+#include "behaviours/generate_random_velocity.h"
+#include "behaviours/debug_axis_renderer.h"
+#include "behaviours/euler_position_update.h"
+#include "behaviours/gravity_update.h"
 
 namespace Particles
 {
@@ -26,29 +32,31 @@ namespace Particles
 		}
 	};
 
-	class NewEmissionBehaviourCmd : public Command {
+	template<class BV>
+	class NewBehaviourCmd : public Command {
 	public:
 		int m_targetEmitter;
-		std::unique_ptr<EmissionBehaviour> m_behaviour;
+		std::unique_ptr<BV> m_behaviour;
 
-		const char* GetName() { return "New Emission Behaviour"; }
+		const char* GetName() { return "New Behaviour"; }
 		bool CanUndoRedo() { return false; }
 		Result Execute() {
 			auto editor = Engine::GetSystem<EmitterEditor>("EmitterEditor");
-			editor->AddEmissionBehaviour(m_targetEmitter, std::move(m_behaviour));
+			editor->AddBehaviourToEmitter(m_targetEmitter, std::move(m_behaviour));
 			return Command::Result::Succeeded;
 		}
 	};
 
-	class DeleteEmissionBehaviourCmd : public Command {
+	class DeleteBehaviourCmd : public Command {
 	public:
 		int m_targetEmitter;
 		int m_index;
-		const char* GetName() { return "Delete Emission Behaviour"; }
+		EmitterEditor::BehaviourType m_type;
+		const char* GetName() { return "Delete Behaviour"; }
 		bool CanUndoRedo() { return false; }
 		Result Execute() {
 			auto editor = Engine::GetSystem<EmitterEditor>("EmitterEditor");
-			editor->DeleteEmissionBehaviour(m_targetEmitter, m_index);
+			editor->DeleteBehaviour(m_type, m_targetEmitter, m_index);
 			return Command::Result::Succeeded;
 		}
 	};
@@ -85,6 +93,7 @@ namespace Particles
 
 	EmitterEditor::EmitterEditor()
 	{	
+		SDE_PROF_EVENT();
 		auto& fileMenu = m_menuBar.AddSubmenu("File");
 		fileMenu.AddItem("New Emitter", []() {
 			auto mainEditor = Engine::GetSystem<Editor>("Editor");
@@ -111,8 +120,13 @@ namespace Particles
 			DoOnClose();
 		});
 
-		RegisterEmissionBehaviour(std::make_unique<EmitOnce>());
-		RegisterEmissionBehaviour(std::make_unique<EmitBurstRepeater>());
+		RegisterBehaviour(std::make_unique<EmitOnce>());
+		RegisterBehaviour(std::make_unique<EmitBurstRepeater>());
+		RegisterBehaviour(std::make_unique<GenerateRandomPosition>());
+		RegisterBehaviour(std::make_unique<GenerateRandomVelocity>());
+		RegisterBehaviour(std::make_unique<DebugAxisRenderer>());
+		RegisterBehaviour(std::make_unique<EulerPositionUpdater>());
+		RegisterBehaviour(std::make_unique<GravityUpdate>());
 	}
 
 	EmitterEditor::~EmitterEditor()
@@ -126,6 +140,7 @@ namespace Particles
 
 	int EmitterEditor::LoadEmitter(std::string_view path)
 	{
+		SDE_PROF_EVENT();
 		std::string fileText;
 		if (!Core::LoadTextFromFile(path.data(), fileText))
 		{
@@ -154,6 +169,7 @@ namespace Particles
 
 	bool EmitterEditor::SaveEmitter(int ID, std::string_view path)
 	{
+		SDE_PROF_EVENT();
 		auto foundEmt = FindEmitter(ID);
 		if (foundEmt)
 		{
@@ -164,6 +180,11 @@ namespace Particles
 			{
 				foundEmt->m_documentPath = path;
 			}
+
+			// let the particle system know this one changed
+			auto particles = Engine::GetSystem<ParticleSystem>("Particles");
+			particles->InvalidateEmitter(path);
+
 			return result;
 		}
 		return false;
@@ -171,6 +192,7 @@ namespace Particles
 
 	void EmitterEditor::DrawTabButtons(Engine::DebugGuiSystem& gui)
 	{
+		SDE_PROF_EVENT();
 		for (int emitter = 0; emitter < m_activeEmitters.size(); ++emitter)
 		{
 			const auto& em = m_activeEmitters[emitter];
@@ -187,8 +209,52 @@ namespace Particles
 		}
 	}
 
+	template<class BV>
+	void InspectBehaviours(Engine::DebugGuiSystem& gui, int emitterID, const char* label, EmitterEditor::BehaviourType type, 
+		std::vector<std::unique_ptr<BV>>& bvs, std::unordered_map<std::string, std::unique_ptr<BV>>& allBvs, EditorValueInspector& i)
+	{
+		SDE_PROF_EVENT();
+		auto mainEditor = Engine::GetSystem<Editor>("Editor");
+		gui.Text(label);
+		for (int b = 0; b < bvs.size(); ++b)
+		{
+			gui.Text(bvs[b]->GetName().data());
+			bvs[b]->Inspect(i);
+			std::string deleteBtnText = "Delete?##" + std::to_string(b);
+			if (gui.Button(deleteBtnText.c_str()))
+			{
+				auto cmd = std::make_unique<DeleteBehaviourCmd>();
+				cmd->m_targetEmitter = emitterID;
+				cmd->m_index = b;
+				cmd->m_type = type;
+				mainEditor->PushCommand(std::move(cmd));
+			}
+			gui.Separator();
+		}
+		std::vector<std::string> allBehaviours;
+		for (auto it = allBvs.begin(); it != allBvs.end(); ++it)
+		{
+			allBehaviours.push_back(it->first);
+		}
+		int currentItem = 0;
+		std::string lbl = "Add " + std::string(label) + " Behaviour";
+		if (gui.ComboBox(lbl.c_str(), allBehaviours, currentItem))
+		{
+			auto foundBv = allBvs.find(allBehaviours[currentItem]);
+			if (foundBv != allBvs.end())
+			{
+				auto nbh = std::make_unique<NewBehaviourCmd<BV>>();
+				nbh->m_targetEmitter = emitterID;
+				nbh->m_behaviour = std::move(foundBv->second->MakeNew());
+				mainEditor->PushCommand(std::move(nbh));
+			}
+		}
+		gui.Separator();
+	}
+
 	void EmitterEditor::ShowCurrentEmitter(Engine::DebugGuiSystem& gui)
 	{
+		SDE_PROF_EVENT();
 		auto activeEmitter = FindEmitter(m_currentEmitterID);
 		if (!activeEmitter)
 		{
@@ -201,46 +267,14 @@ namespace Particles
 		inspector.Inspect("Emitter Name", activeEmitter->m_emitter->GetName(), [activeEmitter](std::string_view n) {
 			activeEmitter->m_emitter->SetName(n);
 		});
+		inspector.Inspect("Max Particles", activeEmitter->m_emitter->GetMaxParticles(), [activeEmitter](int v) {
+			activeEmitter->m_emitter->SetMaxParticles(v);
+		});
 
-		gui.Text("Emission Behaviours:");
-		auto& bvs = activeEmitter->m_emitter->GetEmissionBehaviours();
-		for (int b = 0; b < bvs.size(); ++b)
-		{
-			gui.Text(bvs[b]->GetName().data());
-			bvs[b]->Inspect(inspector);
-			std::string deleteBtnText = "Delete?##" + std::to_string(b);
-			if (gui.Button(deleteBtnText.c_str()))
-			{
-				auto cmd = std::make_unique<DeleteEmissionBehaviourCmd>();
-				cmd->m_targetEmitter = m_currentEmitterID;
-				cmd->m_index = b;
-				mainEditor->PushCommand(std::move(cmd));
-			}
-			gui.Separator();
-		}
-
-		std::vector<std::string> allBehaviours;
-		for (auto it = m_emissionBehaviours.begin(); it != m_emissionBehaviours.end(); ++it)
-		{
-			allBehaviours.push_back(it->first);
-		}
-		int currentItem = 0;
-		if (gui.ComboBox("Add Emission Behaviour", allBehaviours, currentItem))
-		{
-			auto foundBv = m_emissionBehaviours.find(allBehaviours[currentItem]);
-			if (foundBv != m_emissionBehaviours.end())
-			{
-				auto nbh = std::make_unique<NewEmissionBehaviourCmd>();
-				nbh->m_targetEmitter = m_currentEmitterID;
-				nbh->m_behaviour = foundBv->second->MakeNew();
-				mainEditor->PushCommand(std::move(nbh));
-			}
-		}
-	}
-
-	void EmitterEditor::RegisterEmissionBehaviour(std::unique_ptr<EmissionBehaviour>&& b)
-	{
-		m_emissionBehaviours[std::string(b->GetName())] = std::move(b);
+		InspectBehaviours(gui, m_currentEmitterID, "Emitter", BehaviourType::Emitter, activeEmitter->m_emitter->GetEmissionBehaviours(), m_emissionBehaviours, inspector);
+		InspectBehaviours(gui, m_currentEmitterID, "Generator", BehaviourType::Generator, activeEmitter->m_emitter->GetGenerators(), m_generatorBehaviours, inspector);
+		InspectBehaviours(gui, m_currentEmitterID, "Updater", BehaviourType::Updater, activeEmitter->m_emitter->GetUpdaters(), m_updateBehaviours, inspector);
+		InspectBehaviours(gui, m_currentEmitterID, "Renderer", BehaviourType::Renderer, activeEmitter->m_emitter->GetRenderers(), m_renderBehaviours, inspector);
 	}
 
 	EmitterEditor::ActiveEmitter* EmitterEditor::FindEmitter(int id)
@@ -251,30 +285,47 @@ namespace Particles
 		return found == m_activeEmitters.end() ? nullptr : &(*found);
 	}
 
-	void EmitterEditor::AddEmissionBehaviour(int emitterID, std::unique_ptr<EmissionBehaviour>&& b)
+	void EmitterEditor::DeleteBehaviour(BehaviourType type, int emitterID, int behaviourIndex)
 	{
+		SDE_PROF_EVENT();
 		auto em = FindEmitter(emitterID);
-		if(em)
+		if (em && behaviourIndex >= 0)
 		{
-			em->m_emitter->GetEmissionBehaviours().emplace_back(std::move(b));
-		}
-	}
-
-	void EmitterEditor::DeleteEmissionBehaviour(int emitterID, int behaviourIndex)
-	{
-		auto em = FindEmitter(emitterID);
-		if (em)
-		{
-			auto& bv = em->m_emitter->GetEmissionBehaviours();
-			if (behaviourIndex < bv.size() && behaviourIndex >= 0)
+			switch (type)
 			{
-				bv.erase(bv.begin() + behaviourIndex);
+			case Emitter:
+				if (behaviourIndex < em->m_emitter->GetEmissionBehaviours().size())
+				{
+					em->m_emitter->GetEmissionBehaviours().erase(em->m_emitter->GetEmissionBehaviours().begin() + behaviourIndex);
+				}
+				break;
+			case Generator:
+				if (behaviourIndex < em->m_emitter->GetGenerators().size())
+				{
+					em->m_emitter->GetGenerators().erase(em->m_emitter->GetGenerators().begin() + behaviourIndex);
+				}
+				break;
+			case Updater:
+				if (behaviourIndex < em->m_emitter->GetUpdaters().size())
+				{
+					em->m_emitter->GetUpdaters().erase(em->m_emitter->GetUpdaters().begin() + behaviourIndex);
+				}
+				break;
+			case Renderer:
+				if (behaviourIndex < em->m_emitter->GetRenderers().size())
+				{
+					em->m_emitter->GetRenderers().erase(em->m_emitter->GetRenderers().begin() + behaviourIndex);
+				}
+				break;
+			default:
+				assert(false);
 			}
 		}
 	}
 
 	int EmitterEditor::NewEmitter()
 	{
+		SDE_PROF_EVENT();
 		int newID = m_nextActiveEmitterId++;
 
 		ActiveEmitter newEmitterDoc;
@@ -291,17 +342,16 @@ namespace Particles
 
 	bool EmitterEditor::Tick(float timeDelta)
 	{
+		SDE_PROF_EVENT();
 		const char* c_windowName = "Emitter Editor";
 		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 		if (m_windowOpen)
 		{
-			if (dbgGui->BeginWindow(m_windowOpen, c_windowName, Engine::GuiWindowFlags::HasMenuBar))
-			{
-				dbgGui->WindowMenuBar(m_menuBar);
-				DrawTabButtons(*dbgGui);
-				ShowCurrentEmitter(*dbgGui);
-				dbgGui->EndWindow();
-			}
+			dbgGui->BeginWindow(m_windowOpen, c_windowName, Engine::GuiWindowFlags::HasMenuBar);
+			dbgGui->WindowMenuBar(m_menuBar);
+			DrawTabButtons(*dbgGui);
+			ShowCurrentEmitter(*dbgGui);
+			dbgGui->EndWindow();
 		}
 		return true;
 	}

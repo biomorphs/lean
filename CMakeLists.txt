@@ -303,10 +303,28 @@ set(PARTICLES_SOURCES
 	source/particles/emitter_editor.cpp
 	source/particles/editor_value_inspector.h
 	source/particles/editor_value_inspector.cpp
+	source/particles/emitter_instance.h
+	source/particles/emitter_instance.cpp
+	source/particles/particle_buffer.h
+	source/particles/particle_buffer.inl
+	source/particles/particle_container.h
+	source/particles/particle_container.inl
+	source/particles/particle_system.h
+	source/particles/particle_system.cpp
 	source/particles/behaviours/emit_burst_repeater.h
 	source/particles/behaviours/emit_burst_repeater.cpp
 	source/particles/behaviours/emit_once.h
 	source/particles/behaviours/emit_once.cpp
+	source/particles/behaviours/generate_random_position.h
+	source/particles/behaviours/generate_random_position.cpp
+	source/particles/behaviours/generate_random_velocity.h
+	source/particles/behaviours/generate_random_velocity.cpp
+	source/particles/behaviours/debug_axis_renderer.h
+	source/particles/behaviours/debug_axis_renderer.cpp
+	source/particles/behaviours/euler_position_update.h
+	source/particles/behaviours/euler_position_update.cpp
+	source/particles/behaviours/gravity_update.h
+	source/particles/behaviours/gravity_update.cpp
 )
 target_sources(Particles PRIVATE ${PARTICLES_SOURCES})
 target_include_directories(Particles PRIVATE ${CommonIncludePaths})

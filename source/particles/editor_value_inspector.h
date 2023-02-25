@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <functional>
+#include "core/glm_headers.h"
 
 namespace Engine
 {
@@ -17,5 +18,6 @@ namespace Particles
 		void Inspect(std::string_view label, std::string_view currentVal, std::function<void(std::string_view)> setValueFn);
 		void Inspect(std::string_view label, int currentVal, std::function<void(int)> setValueFn);
 		void Inspect(std::string_view label, float currentVal, std::function<void(float)> setValueFn);
+		void Inspect(std::string_view label, glm::vec3 currentVal, std::function<void(glm::vec3)> setValueFn);
 	};
 }

@@ -7,6 +7,7 @@ namespace Particles
 	{
 	public:
 		SERIALISED_CLASS();
+		virtual int Emit(double emitterAge, float deltaTime);
 		std::unique_ptr<EmissionBehaviour> MakeNew() { return std::make_unique<EmitOnce>(); }
 		std::string_view GetName() { return "Burst Once"; }
 		void Inspect(EditorValueInspector& v);

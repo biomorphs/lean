@@ -12,10 +12,24 @@ namespace Particles
 
 	}
 
+	void EmitterDescriptor::Reset()
+	{
+		m_name = "";
+		m_maxParticles = 256;
+		m_emissionBehaviours.clear();
+		m_generatorBehaviours.clear();
+		m_updateBehaviours.clear();
+		m_renderBehaviours.clear();
+	}
+
 	SERIALISE_BEGIN(EmitterDescriptor)
 	{
 		SERIALISE_PROPERTY("Name", m_name);
+		SERIALISE_PROPERTY("MaxParticles", m_maxParticles);
 		SERIALISE_PROPERTY("EmissionBehaviours", m_emissionBehaviours);
+		SERIALISE_PROPERTY("GeneratorBehaviours", m_generatorBehaviours);
+		SERIALISE_PROPERTY("UpdateBehaviours", m_updateBehaviours);
+		SERIALISE_PROPERTY("RenderBehaviours", m_renderBehaviours);
 	}
 	SERIALISE_END()
 }
