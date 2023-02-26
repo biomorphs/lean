@@ -16,12 +16,12 @@ namespace Particles
 	void UpdateAttachedEmitter::Update(glm::vec3 emitterPos, glm::quat orientation, double emitterAge, float deltaTime, ParticleContainer& container)
 	{
 		SDE_PROF_EVENT();
-		auto particles = Engine::GetSystem<ParticleSystem>("Particles");
+		static auto particles = Engine::GetSystem<ParticleSystem>("Particles");
 		const uint32_t endIndex = container.AliveParticles();
 		__declspec(align(16)) glm::vec4 particlePos;
 		for (uint32_t i = 0; i < endIndex; ++i)
 		{
-			uint64_t emitterId = container.EmitterIDs().GetValue(i);
+			uint32_t emitterId = container.EmitterIDs().GetValue(i);
 			if (emitterId != -1)
 			{
 				_mm_store_ps(glm::value_ptr(particlePos), container.Positions().GetValue(i));

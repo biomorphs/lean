@@ -71,10 +71,7 @@ namespace Engine
 		dbgGui->MainMenuBar(mainMenu);
 		
 		// get global gravity value from world
-		glm::vec3 gravity(0.0f, -9.8f, 0.0f);
-		world->ForEachComponent<EnvironmentSettings>([&gravity](EnvironmentSettings& s, EntityHandle owner) {
-			gravity = s.GetGravity();
-		});
+		glm::vec3 gravity = physics->GetGlobalGravity();
 		
 		static auto s_it = world->MakeIterator<CharacterController, Transform>();
 		s_it.ForEach([this, graphics, physics, timeDelta, gravity](CharacterController& c, Transform& t, EntityHandle e) {

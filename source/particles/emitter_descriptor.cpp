@@ -26,6 +26,7 @@ namespace Particles
 	{
 		SERIALISE_PROPERTY("Name", m_name);
 		SERIALISE_PROPERTY("MaxParticles", m_maxParticles);
+		SERIALISE_PROPERTY("OwnsChildEmitters", m_ownsChildEmitters)
 		SERIALISE_PROPERTY("EmissionBehaviours", m_emissionBehaviours);
 		SERIALISE_PROPERTY("GeneratorBehaviours", m_generatorBehaviours);
 		SERIALISE_PROPERTY("UpdateBehaviours", m_updateBehaviours);

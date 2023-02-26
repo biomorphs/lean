@@ -25,12 +25,19 @@ namespace Particles
 	}
 
 	template<class ValueType>
-	inline void ParticleBuffer<ValueType>::Create(uint32_t maxValues)
+	inline void ParticleBuffer<ValueType>::Create(uint32_t maxValues, const ValueType* defaultValue)
 	{
 		void* rawBuffer = _aligned_malloc(maxValues * sizeof(ValueType), 16);
 		assert(rawBuffer);
 
 		ValueType* newValues = reinterpret_cast<ValueType*>(rawBuffer);
+		if (defaultValue != nullptr)
+		{
+			for (int i = 0; i < maxValues; ++i)
+			{
+				newValues[i] = *defaultValue;
+			}
+		}
 
 		m_maxValues = maxValues;
 		m_aliveCount = 0;

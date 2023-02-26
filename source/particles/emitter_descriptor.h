@@ -18,6 +18,9 @@ namespace Particles
 		int GetMaxParticles() const { return m_maxParticles; }
 		void SetMaxParticles(int v) { m_maxParticles = v; }
 
+		bool GetOwnsChildEmitters() const { return m_ownsChildEmitters; }
+		void SetOwnsChildEmitters(bool b) { m_ownsChildEmitters = b; }
+
 		SERIALISED_CLASS();
 
 		using EmissionBehaviours = std::vector<std::unique_ptr<EmissionBehaviour>>;
@@ -35,6 +38,7 @@ namespace Particles
 	private:
 		std::string m_name;
 		int m_maxParticles = 256;
+		bool m_ownsChildEmitters = true;	// determines if child emitters are stopped with the parent
 		EmissionBehaviours m_emissionBehaviours;
 		GeneratorBehaviours m_generatorBehaviours;
 		UpdateBehaviours m_updateBehaviours;

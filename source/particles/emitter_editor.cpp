@@ -21,6 +21,8 @@
 #include "behaviours/gravity_update.h"
 #include "behaviours/generate_spawn_emitter.h"
 #include "behaviours/update_attached_emitter.h"
+#include "behaviours/generate_random_lifetime.h"
+#include "behaviours/update_particle_lifetime.h"
 
 namespace Particles
 {
@@ -131,6 +133,8 @@ namespace Particles
 		RegisterBehaviour(std::make_unique<GravityUpdate>());
 		RegisterBehaviour(std::make_unique<GenerateSpawnEmitter>());
 		RegisterBehaviour(std::make_unique<UpdateAttachedEmitter>());
+		RegisterBehaviour(std::make_unique<UpdateParticleLifetime>());
+		RegisterBehaviour(std::make_unique<GenerateRandomLifetime>());
 	}
 
 	EmitterEditor::~EmitterEditor()
@@ -168,6 +172,8 @@ namespace Particles
 		m_activeEmitters.emplace_back(std::move(newEmitterDoc));
 		m_currentEmitterID = newID;
 
+		m_refreshPlayingEmitter = true;
+
 		return newID;
 	}
 
@@ -189,6 +195,8 @@ namespace Particles
 			auto particles = Engine::GetSystem<ParticleSystem>("Particles");
 			particles->InvalidateEmitter(path);
 
+			m_refreshPlayingEmitter = true;
+
 			return result;
 		}
 		return false;
@@ -205,6 +213,7 @@ namespace Particles
 			if (gui.Button(tabText.c_str()))
 			{
 				m_currentEmitterID = m_activeEmitters[emitter].m_id;
+				m_refreshPlayingEmitter = true;
 			}
 			if (emitter + 1 < m_activeEmitters.size())
 			{
@@ -273,6 +282,9 @@ namespace Particles
 		});
 		inspector.Inspect("Max Particles", activeEmitter->m_emitter->GetMaxParticles(), [activeEmitter](int v) {
 			activeEmitter->m_emitter->SetMaxParticles(v);
+		});
+		inspector.Inspect("Stop child emitters when stopped", activeEmitter->m_emitter->GetOwnsChildEmitters(), [activeEmitter](bool b) {
+			activeEmitter->m_emitter->SetOwnsChildEmitters(b);
 		});
 
 		InspectBehaviours(gui, m_currentEmitterID, "Emitter", BehaviourType::Emitter, activeEmitter->m_emitter->GetEmissionBehaviours(), m_emissionBehaviours, inspector);
@@ -349,6 +361,7 @@ namespace Particles
 		SDE_PROF_EVENT();
 		const char* c_windowName = "Emitter Editor";
 		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+		auto particles = Engine::GetSystem<ParticleSystem>("Particles");
 		if (m_windowOpen)
 		{
 			dbgGui->BeginWindow(m_windowOpen, c_windowName, Engine::GuiWindowFlags::HasMenuBar);
@@ -357,6 +370,21 @@ namespace Particles
 			ShowCurrentEmitter(*dbgGui);
 			dbgGui->EndWindow();
 		}
+
+		if (m_refreshPlayingEmitter)
+		{
+			if (m_currentPlayingEmitter != -1)
+			{
+				particles->StopEmitter(m_currentPlayingEmitter);
+			}
+			auto emt = FindEmitter(m_currentEmitterID);
+			if (emt)
+			{
+				m_currentPlayingEmitter = particles->StartEmitter(emt->m_documentPath);
+			}
+			m_refreshPlayingEmitter = false;
+		}
+
 		return true;
 	}
 }

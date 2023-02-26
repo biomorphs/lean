@@ -14,5 +14,6 @@ namespace Particles
 
 		int m_burstCount = 1;
 		float m_frequency = 0.5f;
+		float m_spawnDuration = -1;	// -1 = repeat forever
 	};
 }

@@ -10,6 +10,7 @@ namespace Particles
 	ParticleSystem::ParticleSystem()
 	{
 		m_activeEmitters.reserve(m_maxEmitters);
+		m_activeEmitterIDToIndex.reserve(m_maxEmitters);
 		m_emittersToStart.reserve(m_maxEmitters);
 	}
 
@@ -39,38 +40,50 @@ namespace Particles
 		return true;
 	}
 
-	void ParticleSystem::SetEmitterTransform(uint64_t emitterID, glm::vec3 pos, glm::quat rot)
+	void ParticleSystem::SetEmitterTransform(EmitterID emitterID, glm::vec3 pos, glm::quat rot)
 	{
-		auto foundInstance = std::find_if(m_activeEmitters.begin(), m_activeEmitters.end(), [&](const ActiveEmitter& am) {
-			return am.m_id == emitterID;
-		});
-		if (foundInstance != m_activeEmitters.end())
+		const auto foundInstance = m_activeEmitterIDToIndex.find(emitterID);
+		if (foundInstance != m_activeEmitterIDToIndex.end())
 		{
-			foundInstance->m_instance->m_position = pos;
-			foundInstance->m_instance->m_orientation = rot;
+			const uint32_t index = foundInstance->second;
+			m_activeEmitters[index].m_instance->m_position = pos;
+			m_activeEmitters[index].m_instance->m_orientation = rot;
 		}
 	}
 
-	uint64_t ParticleSystem::StartEmitter(std::string_view filename, glm::vec3 pos, glm::quat rot)
+	void ParticleSystem::StopEmitter(EmitterID emitterID)
+	{
+		Core::ScopedMutex lock(m_stopEmittersMutex);
+		m_emittersToStop.push_back(emitterID);
+	}
+
+	ParticleSystem::EmitterID ParticleSystem::StartEmitter(std::string_view filename, glm::vec3 pos, glm::quat rot)
 	{
 		SDE_PROF_EVENT();
 
 		std::string filenameStr(filename);
-		auto foundEmitter = m_loadedEmitters.find(filenameStr);
-		if (foundEmitter == m_loadedEmitters.end())
+		EmitterDescriptor* loadedEmitter = nullptr;
 		{
-			auto newEmitter = std::make_unique<EmitterDescriptor>();
-			if (LoadEmitter(filename, *newEmitter))
+			Core::ScopedMutex lock(m_loadedEmittersMutex);
+			auto foundEmitter = m_loadedEmitters.find(filenameStr);
+			if (foundEmitter != m_loadedEmitters.end())
 			{
-				m_loadedEmitters[filenameStr] = std::move(newEmitter);
-				foundEmitter = m_loadedEmitters.find(filenameStr);
+				loadedEmitter = (foundEmitter->second.get());
+			}
+			else
+			{
+				auto newEmitter = std::make_unique<EmitterDescriptor>();
+				if (LoadEmitter(filename, *newEmitter))
+				{
+					loadedEmitter = newEmitter.get();
+					m_loadedEmitters[filenameStr] = std::move(newEmitter);
+				}
 			}
 		}
-
-		if (foundEmitter != m_loadedEmitters.end())
+		if (loadedEmitter)
 		{
 			auto newInstance = new EmitterInstance();
-			newInstance->m_emitter = (*foundEmitter).second.get();
+			newInstance->m_emitter = loadedEmitter;
 			newInstance->m_particles.Create(newInstance->m_emitter->GetMaxParticles());
 			newInstance->m_position = pos;
 			newInstance->m_orientation = rot;
@@ -79,8 +92,10 @@ namespace Particles
 			ActiveEmitter activeEmitter;
 			activeEmitter.m_id = m_nextEmitterId++;
 			activeEmitter.m_instance = newInstance;
-			m_emittersToStart.emplace_back(activeEmitter);
-
+			{
+				Core::ScopedMutex lock(m_startEmittersMutex);
+				m_emittersToStart.emplace_back(activeEmitter);
+			}
 			return activeEmitter.m_id;
 		}
 
@@ -104,7 +119,6 @@ namespace Particles
 		emissionCount = glm::min(emissionCount, particles.MaxParticles() - particles.AliveParticles());
 		if (emissionCount > 0)
 		{
-			m_activeParticles += emissionCount;
 			const uint32_t startIndex = particles.Wake(emissionCount);
 			const uint32_t endIndex = particles.AliveParticles();
 			for (const auto& it : emitterDesc->GetGenerators())
@@ -126,12 +140,26 @@ namespace Particles
 	{
 		SDE_PROF_EVENT();
 
-		auto foundEmitter = m_loadedEmitters.find(std::string(filename));
-		if (foundEmitter != m_loadedEmitters.end())
+		Core::ScopedMutex lock(m_invalidatedEmitterMutex);
+		m_invalidatedEmitters.push_back(std::string(filename));
+	}
+
+	void ParticleSystem::ReloadInvalidatedEmitters()
+	{
+		SDE_PROF_EVENT();
+
+		Core::ScopedMutex lock(m_invalidatedEmitterMutex);
+		Core::ScopedMutex lock2(m_loadedEmittersMutex);
+		for (const auto& path : m_invalidatedEmitters)
 		{
-			foundEmitter->second->Reset();
-			LoadEmitter(filename, *foundEmitter->second);
+			auto foundEmitter = m_loadedEmitters.find(path);
+			if (foundEmitter != m_loadedEmitters.end())
+			{
+				foundEmitter->second->Reset();
+				LoadEmitter(path, *foundEmitter->second);
+			}
 		}
+		m_invalidatedEmitters.clear();
 	}
 
 	void ParticleSystem::ShowStats()
@@ -141,45 +169,117 @@ namespace Particles
 		dbgGui->BeginWindow(m_showStats, "Particle Stats");
 		std::string statText = "Active Emitters: " + std::to_string(m_activeEmitters.size());
 		dbgGui->Text(statText.c_str());
-		statText = "Active Particles: " + std::to_string(m_activeParticles.load());
+
+		uint64_t particleCount = 0;
+		for (const auto& it : m_activeEmitters)
+		{
+			particleCount += it.m_instance->m_particles.AliveParticles();
+		}
+		statText = "Active Particles: " + std::to_string(particleCount);
 		dbgGui->Text(statText.c_str());
 		dbgGui->EndWindow();
+	}
+
+	void ParticleSystem::StartNewEmitters()
+	{
+		SDE_PROF_EVENT();
+		Core::ScopedMutex lock(m_startEmittersMutex);
+		for (auto& toAdd : m_emittersToStart)
+		{
+			const EmitterID newId = toAdd.m_id;
+			m_activeEmitters.emplace_back(std::move(toAdd));
+			m_activeEmitterIDToIndex[newId] = m_activeEmitters.size() - 1;
+			assert(m_activeEmitterIDToIndex.size() == m_activeEmitters.size());
+		}
+		m_emittersToStart.clear();
+	}
+
+	void ParticleSystem::UpdateEmitters(float timeDelta)
+	{
+		SDE_PROF_EVENT();
+		auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
+		jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 64, [this, timeDelta](int32_t i) {
+			UpdateActiveInstance(m_activeEmitters[i], timeDelta);
+		});
+	}
+
+	void ParticleSystem::DoStopEmitter(EmitterInstance& i)
+	{
+		if (i.m_emitter->GetOwnsChildEmitters())
+		{
+			int ownedEmitters = i.m_particles.EmitterIDs().AliveCount();
+			for (int e = 0; e < ownedEmitters; ++e)
+			{
+				int emitterId = i.m_particles.EmitterIDs().GetValue(e);
+				if (emitterId != -1)
+				{
+					StopEmitter(emitterId);
+				}
+			}
+		}
+	}
+
+	void ParticleSystem::StopEmitters()
+	{
+		SDE_PROF_EVENT();
+		std::vector<EmitterID> emittersToStop;
+		{
+			Core::ScopedMutex lock(m_stopEmittersMutex);
+			emittersToStop = std::move(m_emittersToStop);
+		}
+		for (const EmitterID toStopID : emittersToStop)
+		{
+			auto foundIt = m_activeEmitterIDToIndex.find(toStopID);
+			if (foundIt != m_activeEmitterIDToIndex.end())
+			{
+				const uint32_t emitterIndex = foundIt->second;
+
+				DoStopEmitter(*m_activeEmitters[emitterIndex].m_instance);
+				delete m_activeEmitters[emitterIndex].m_instance;	// pool these
+
+				// swap back, update mappings
+				if (emitterIndex != m_activeEmitters.size() - 1)
+				{
+					m_activeEmitters[emitterIndex] = std::move(m_activeEmitters[m_activeEmitters.size() - 1]);
+				}
+				m_activeEmitters.resize(m_activeEmitters.size() - 1);
+				
+				m_activeEmitterIDToIndex.erase(toStopID);	// remove  old id
+				m_activeEmitterIDToIndex[m_activeEmitters[emitterIndex].m_id] = emitterIndex;
+				assert(m_activeEmitterIDToIndex.size() == m_activeEmitters.size());
+			}
+		}
+	}
+
+	void ParticleSystem::RenderEmitters(float timeDelta	)
+	{
+		SDE_PROF_EVENT();
+
+		for (const auto& em : m_activeEmitters)
+		{
+			for (const auto& render : em.m_instance->m_emitter->GetRenderers())
+			{
+				render->Draw(em.m_instance->m_timeActive, timeDelta, em.m_instance->m_particles);
+			}
+		}
 	}
 
 	bool ParticleSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
-
-		static bool firstRun = true;
-		if (firstRun)
-		{
-			StartEmitter("multiemit.emit");
-			firstRun = false;
-		}
-
-		for (auto& toAdd : m_emittersToStart)
-		{
-			m_activeEmitters.emplace_back(std::move(toAdd));
-		}
-		m_emittersToStart.clear();
-
+		
+		ReloadInvalidatedEmitters();
+		StartNewEmitters();
 		if (m_updateEmitters)
 		{
-			auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
-			jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 8, [this, timeDelta](int32_t i) {
-				UpdateActiveInstance(m_activeEmitters[i], timeDelta);
-			});
+			UpdateEmitters(timeDelta);
 		}
+		StopEmitters();
 		if (m_renderEmitters)
 		{
-			for (const auto& em : m_activeEmitters)
-			{
-				for (const auto& render : em.m_instance->m_emitter->GetRenderers())
-				{
-					render->Draw(em.m_instance->m_timeActive, timeDelta, em.m_instance->m_particles);
-				}
-			}
+			RenderEmitters(timeDelta);
 		}
+
 		if (m_showStats)
 		{
 			ShowStats();

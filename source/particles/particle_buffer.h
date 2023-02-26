@@ -18,7 +18,7 @@ namespace Particles
 			DataSize = sizeof(ValueType)
 		};
 
-		void Create(uint32_t maxValues);
+		void Create(uint32_t maxValues, const ValueType* defaultValue = nullptr);
 		uint32_t Wake(uint32_t count);
 		void Kill(uint32_t index);
 		void SetValue(uint32_t index, const ValueType& t);

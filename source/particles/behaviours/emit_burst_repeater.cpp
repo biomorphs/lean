@@ -8,11 +8,15 @@ namespace Particles
 	{
 		SERIALISE_PROPERTY("Burst Count", m_burstCount);
 		SERIALISE_PROPERTY("Frequency", m_frequency);
+		SERIALISE_PROPERTY("SpawnDuration", m_spawnDuration)
 	}
 	SERIALISE_END()
 
 	void EmitBurstRepeater::Inspect(EditorValueInspector& v)
 	{
+		v.Inspect("Spawn Duration", m_spawnDuration, [this](float v) {
+			m_spawnDuration = v;
+		});
 		v.Inspect("Burst Count", m_burstCount, [this](int v) {
 			m_burstCount = v;
 		});
@@ -24,10 +28,13 @@ namespace Particles
 	int EmitBurstRepeater::Emit(double emitterAge, float deltaTime)
 	{
 		SDE_PROF_EVENT();
-		float v = fmod(emitterAge, m_frequency);
-		if (v > -0.01f && v < 0.01f)
+		if (emitterAge >= m_frequency && (m_spawnDuration < 0.0f || emitterAge < m_spawnDuration))
 		{
-			return m_burstCount;
+			float v = fmod(emitterAge, m_frequency);
+			if (v > -0.01f && v < 0.01f)
+			{
+				return m_burstCount;
+			}
 		}
 		return 0;
 	}

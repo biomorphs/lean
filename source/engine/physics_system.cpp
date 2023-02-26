@@ -232,7 +232,7 @@ namespace Engine
 		const bool c_useCUDA = false;
 		g_dispatcher.m_jobs = m_jobSystem;
 		physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
-		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+		sceneDesc.gravity = physx::PxVec3(m_globalGravity.x, m_globalGravity.y, m_globalGravity.z);
 		sceneDesc.cpuDispatcher = &g_dispatcher;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;					// generate active actor list
 		sceneDesc.flags |= physx::PxSceneFlag::eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS;	// ... but don't include kinematics
@@ -262,6 +262,7 @@ namespace Engine
 		auto physics = m_scriptSystem->Globals()["Physics"].get_or_create<sol::table>();
 		physics["SetGravity"] = [this](float x, float y, float z) {
 			m_scene->setGravity({ x,y,z });
+			m_globalGravity = { x,y,z };
 		};
 		physics["SetSimulationEnabled"] = [this](bool enabled) {
 			SetSimulationEnabled(enabled);
@@ -469,6 +470,7 @@ namespace Engine
 			if (currentGravity != newGravity)
 			{
 				m_scene->setGravity(newGravity);
+				m_globalGravity = g;
 			}
 		});
 

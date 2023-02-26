@@ -54,6 +54,8 @@ namespace Particles
 			std::unique_ptr<Particles::EmitterDescriptor> m_emitter;
 			std::string m_documentPath;
 		};
+		bool m_refreshPlayingEmitter = false;
+		uint64_t m_currentPlayingEmitter = -1;
 		ActiveEmitter* FindEmitter(int id);
 		int m_nextActiveEmitterId = 0;
 		std::vector<ActiveEmitter> m_activeEmitters;

@@ -62,6 +62,7 @@ namespace Engine
 		EntityHandle Raycast(glm::vec3 start, glm::vec3 end, float& tHit, glm::vec3& hitNormal);
 		bool SweepCapsule(float radius, float halfHeight, glm::vec3 pos, glm::quat rot, glm::vec3 direction, float distance, 
 			glm::vec3& hitPos, glm::vec3& hitNormal, float& hitDistance, EntityHandle& hitEntity, EntityHandle ignoreEntity=-1);
+		glm::vec3 GetGlobalGravity() const { return m_globalGravity; }
 
 		void SetSimulationEnabled(bool enabled) { m_simEnabled = enabled; }
 		void ScheduleRebuild(EntityHandle e);
@@ -90,6 +91,7 @@ namespace Engine
 		float m_timeStep = 1.0f / 60.0f;	// fixed time step for now
 		bool m_hasTicked = false;
 		bool m_simEnabled = true;
+		glm::vec3 m_globalGravity = { 0,-9.81f,0 };	// keep track of the global gravity value
 
 		// Since physx has a 64k material limit, we will cache materials with the same values
 		// later on we probably want some kind of proper physics material exposed

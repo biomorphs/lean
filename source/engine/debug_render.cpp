@@ -66,12 +66,12 @@ namespace Engine
 			// init vertex streams and vertex array
 			streams.resize(2);
 			Render::RenderBuffer& posBuffer = streams[0], & colourBuffer = streams[1];
-			if (!posBuffer.Create(c_maxLines * sizeof(glm::vec4) * 2, Render::RenderBufferModification::Dynamic, true))
+			if (!posBuffer.Create(c_maxLines * sizeof(glm::vec4) * 2, Render::RenderBufferModification::Dynamic))
 			{
 				SDE_LOGC(SDE, "Failed to create debug pos buffer");
 				return false;
 			}
-			if (!colourBuffer.Create(c_maxLines * sizeof(glm::vec4) * 2, Render::RenderBufferModification::Dynamic, true))
+			if (!colourBuffer.Create(c_maxLines * sizeof(glm::vec4) * 2, Render::RenderBufferModification::Dynamic))
 			{
 				SDE_LOGC(SDE, "Failed to create debug colour buffer");
 				return false;
@@ -102,8 +102,8 @@ namespace Engine
 		{
 			glm::vec4* posData = m_posBuffer.get() + (m_currentLines * 2);
 			glm::vec4* colData = m_colBuffer.get() + (m_currentLines * 2);
-			memcpy(posData, posBuffer, toAdd * sizeof(glm::vec4) * 2);
-			memcpy(colData, colBuffer, toAdd * sizeof(glm::vec4) * 2);
+			memcpy(glm::value_ptr(*posData), posBuffer, toAdd * sizeof(glm::vec4) * 2);
+			memcpy(glm::value_ptr(*colData), colBuffer, toAdd * sizeof(glm::vec4) * 2);
 			m_currentLines += toAdd;
 		}
 		assert(m_currentLines < c_maxLines);

@@ -18,7 +18,7 @@ namespace Particles
 		typedef __m128 VelocityType;
 		typedef __m128 ColourType;
 		typedef float LifetimeType;
-		typedef uint64_t EmitterID;
+		typedef uint32_t EmitterID;
 
 		inline const ParticleBuffer<PositionType>& Positions() const { return m_position; }
 		inline ParticleBuffer<PositionType>& Positions() { return m_position; }

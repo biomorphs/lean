@@ -16,7 +16,7 @@ namespace Particles
 	void DebugAxisRenderer::Draw(double emitterAge, float deltaTime, ParticleContainer& container)
 	{
 		SDE_PROF_EVENT();
-		auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+		static auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
 		const uint32_t count = container.AliveParticles();
 		__declspec(align(16)) glm::vec4 position;
 		for (uint32_t p = 0; p < count; ++p)

@@ -29,7 +29,9 @@ namespace Particles
 		m_lifetime.Create(maxParticles);
 		m_velocity.Create(maxParticles);
 		m_colour.Create(maxParticles);
-		m_emitterIDs.Create(maxParticles);
+
+		uint32_t defaultEmitterId = -1;
+		m_emitterIDs.Create(maxParticles, &defaultEmitterId);
 	}
 
 	inline uint32_t ParticleContainer::Wake(uint32_t count)

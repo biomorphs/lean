@@ -2,7 +2,7 @@
 #include "particles/particle_container.h"
 #include "particles/editor_value_inspector.h"
 #include "engine/components/component_environment_settings.h"
-#include "entity/entity_system.h"
+#include "engine/physics_system.h"
 #include "engine/system_manager.h"
 
 namespace Particles
@@ -17,12 +17,8 @@ namespace Particles
 		SDE_PROF_EVENT();
 
 		// get global gravity value from world
-		auto entities = Engine::GetSystem<EntitySystem>("Entities");
-		auto world = entities->GetWorld();
-		glm::vec4 gravity(0.0f, -9.8f, 0.0f,0.0f);
-		world->ForEachComponent<EnvironmentSettings>([&gravity](EnvironmentSettings& s, EntityHandle owner) {
-			gravity = glm::vec4(s.GetGravity(),0);
-		});
+		static auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
+		glm::vec4 gravity = glm::vec4(physics->GetGlobalGravity(),0.0f);
 
 		__declspec(align(16)) const glm::vec4 c_deltaTime((float)deltaTime);
 		const __m128 c_gravity = _mm_load_ps(glm::value_ptr(gravity));
