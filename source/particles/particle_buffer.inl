@@ -50,11 +50,21 @@ namespace Particles
 	}
 
 	template<class ValueType>
-	inline uint32_t ParticleBuffer<ValueType>::Wake(uint32_t count)
+	inline uint32_t ParticleBuffer<ValueType>::Wake(uint32_t count, const ValueType* defaultValue)
 	{
 		assert(m_aliveCount + count <= m_maxValues);
 		const uint32_t alive = m_aliveCount;
 		m_aliveCount += count;
+
+		if (defaultValue != nullptr)
+		{
+			const uint32_t lastIndex = m_aliveCount;
+			for (int i = alive; i < m_aliveCount; ++i)
+			{
+				GetValue(i) = *defaultValue;
+			}
+		}
+
 		return alive;
 	}
 

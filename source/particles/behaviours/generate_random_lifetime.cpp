@@ -21,7 +21,7 @@ namespace Particles
 		for (uint32_t i = startIndex; i < endIndex; ++i)
 		{
 			float v = ((float)rand() / (float)RAND_MAX);
-			float particleLife = m_minLifetime + (m_maxLifetime * v);
+			float particleLife = m_minLifetime + (m_maxLifetime- m_minLifetime) * v;
 			container.Lifetimes().GetValue(i) = particleLife;
 		}
 		_mm_sfence();

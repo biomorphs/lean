@@ -23,6 +23,8 @@
 #include "behaviours/update_attached_emitter.h"
 #include "behaviours/generate_random_lifetime.h"
 #include "behaviours/update_particle_lifetime.h"
+#include "behaviours/kill_emitter_on_zero_particles.h"
+#include "behaviours/update_spawn_emitter.h"
 
 namespace Particles
 {
@@ -135,6 +137,8 @@ namespace Particles
 		RegisterBehaviour(std::make_unique<UpdateAttachedEmitter>());
 		RegisterBehaviour(std::make_unique<UpdateParticleLifetime>());
 		RegisterBehaviour(std::make_unique<GenerateRandomLifetime>());
+		RegisterBehaviour(std::make_unique<KillOnZeroParticles>());
+		RegisterBehaviour(std::make_unique<UpdateSpawnEmitter>());
 	}
 
 	EmitterEditor::~EmitterEditor()
@@ -291,6 +295,7 @@ namespace Particles
 		InspectBehaviours(gui, m_currentEmitterID, "Generator", BehaviourType::Generator, activeEmitter->m_emitter->GetGenerators(), m_generatorBehaviours, inspector);
 		InspectBehaviours(gui, m_currentEmitterID, "Updater", BehaviourType::Updater, activeEmitter->m_emitter->GetUpdaters(), m_updateBehaviours, inspector);
 		InspectBehaviours(gui, m_currentEmitterID, "Renderer", BehaviourType::Renderer, activeEmitter->m_emitter->GetRenderers(), m_renderBehaviours, inspector);
+		InspectBehaviours(gui, m_currentEmitterID, "Emitter lifetime", BehaviourType::Lifetime, activeEmitter->m_emitter->GetLifetimeBehaviours(), m_lifetimeBehaviours, inspector);
 	}
 
 	EmitterEditor::ActiveEmitter* EmitterEditor::FindEmitter(int id)
@@ -352,6 +357,7 @@ namespace Particles
 		
 		m_activeEmitters.emplace_back(std::move(newEmitterDoc));
 		m_currentEmitterID = newID;
+		m_refreshPlayingEmitter = true;
 
 		return newID;
 	}

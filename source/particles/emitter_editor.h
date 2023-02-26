@@ -19,6 +19,7 @@ namespace Particles
 	class GeneratorBehaviour;
 	class UpdateBehaviour;
 	class RenderBehaviour;
+	class EmitterLifetimeBehaviour;
 	class EmitterEditor : public Engine::System
 	{
 	public:
@@ -33,7 +34,7 @@ namespace Particles
 		int LoadEmitter(std::string_view path);	// returns -1 on failure, ID otherwise
 
 		enum BehaviourType {
-			Emitter, Generator, Updater, Renderer
+			Emitter, Generator, Updater, Renderer, Lifetime
 		};
 		template<class Behaviour>
 		void AddBehaviourToEmitter(int emitterID, std::unique_ptr<Behaviour>&& b);
@@ -63,6 +64,7 @@ namespace Particles
 		std::unordered_map<std::string, std::unique_ptr<GeneratorBehaviour>> m_generatorBehaviours;
 		std::unordered_map<std::string, std::unique_ptr<UpdateBehaviour>> m_updateBehaviours;
 		std::unordered_map<std::string, std::unique_ptr<RenderBehaviour>> m_renderBehaviours;
+		std::unordered_map<std::string, std::unique_ptr<EmitterLifetimeBehaviour>> m_lifetimeBehaviours;
 		
 		int m_currentEmitterID = -1;		// references m_activeEmitters
 	};
@@ -89,6 +91,10 @@ namespace Particles
 			{
 				em->m_emitter->GetRenderers().emplace_back(std::move(b));
 			}
+			else if constexpr (std::is_base_of<EmitterLifetimeBehaviour, Behaviour>::value)
+			{
+				em->m_emitter->GetLifetimeBehaviours().emplace_back(std::move(b));
+			}
 			else
 			{
 				static_assert(false);
@@ -114,6 +120,10 @@ namespace Particles
 		else if constexpr (std::is_base_of<RenderBehaviour, Behaviour>::value)
 		{
 			m_renderBehaviours[std::string(b->GetName())] = std::move(b);
+		}
+		else if constexpr (std::is_base_of<EmitterLifetimeBehaviour, Behaviour>::value)
+		{
+			m_lifetimeBehaviours[std::string(b->GetName())] = std::move(b);
 		}
 		else
 		{

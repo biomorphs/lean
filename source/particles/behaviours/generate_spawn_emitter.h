@@ -15,5 +15,6 @@ namespace Particles
 		void Inspect(EditorValueInspector& v);
 
 		std::string m_emitterFile;
+		bool m_attachToParticle = true;
 	};
 }

@@ -20,6 +20,7 @@ namespace Particles
 		m_generatorBehaviours.clear();
 		m_updateBehaviours.clear();
 		m_renderBehaviours.clear();
+		m_lifetimeBehaviours.clear();
 	}
 
 	SERIALISE_BEGIN(EmitterDescriptor)
@@ -31,6 +32,7 @@ namespace Particles
 		SERIALISE_PROPERTY("GeneratorBehaviours", m_generatorBehaviours);
 		SERIALISE_PROPERTY("UpdateBehaviours", m_updateBehaviours);
 		SERIALISE_PROPERTY("RenderBehaviours", m_renderBehaviours);
+		SERIALISE_PROPERTY("LifetimeBehaviours", m_lifetimeBehaviours);
 	}
 	SERIALISE_END()
 }

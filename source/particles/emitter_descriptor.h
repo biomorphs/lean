@@ -35,6 +35,9 @@ namespace Particles
 		using RenderBehaviours = std::vector<std::unique_ptr<RenderBehaviour>>;
 		RenderBehaviours& GetRenderers() { return m_renderBehaviours; }
 
+		using LifetimeBehaviours = std::vector<std::unique_ptr<EmitterLifetimeBehaviour>>;
+		LifetimeBehaviours& GetLifetimeBehaviours() { return m_lifetimeBehaviours; }
+
 	private:
 		std::string m_name;
 		int m_maxParticles = 256;
@@ -43,5 +46,6 @@ namespace Particles
 		GeneratorBehaviours m_generatorBehaviours;
 		UpdateBehaviours m_updateBehaviours;
 		RenderBehaviours m_renderBehaviours;
+		LifetimeBehaviours m_lifetimeBehaviours;
 	};
 }

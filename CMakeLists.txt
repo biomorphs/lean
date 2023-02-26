@@ -333,6 +333,10 @@ set(PARTICLES_SOURCES
 	source/particles/behaviours/generate_random_lifetime.cpp
 	source/particles/behaviours/update_particle_lifetime.h
 	source/particles/behaviours/update_particle_lifetime.cpp
+	source/particles/behaviours/update_spawn_emitter.h
+	source/particles/behaviours/update_spawn_emitter.cpp
+	source/particles/behaviours/kill_emitter_on_zero_particles.h
+	source/particles/behaviours/kill_emitter_on_zero_particles.cpp
 )
 target_sources(Particles PRIVATE ${PARTICLES_SOURCES})
 target_include_directories(Particles PRIVATE ${CommonIncludePaths})

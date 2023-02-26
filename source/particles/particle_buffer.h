@@ -19,7 +19,7 @@ namespace Particles
 		};
 
 		void Create(uint32_t maxValues, const ValueType* defaultValue = nullptr);
-		uint32_t Wake(uint32_t count);
+		uint32_t Wake(uint32_t count, const ValueType* defaultValue = nullptr);
 		void Kill(uint32_t index);
 		void SetValue(uint32_t index, const ValueType& t);
 		ValueType& GetValue(uint32_t index);

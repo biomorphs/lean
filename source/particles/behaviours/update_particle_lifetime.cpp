@@ -10,8 +10,16 @@ namespace Particles
 {
 	SERIALISE_BEGIN_WITH_PARENT(UpdateParticleLifetime, UpdateBehaviour)
 	{
+		SERIALISE_PROPERTY("KillAttachedEmitters", m_killAttachedEmitters);
 	}
 	SERIALISE_END();
+
+	void UpdateParticleLifetime::Inspect(EditorValueInspector& v)
+	{
+		v.Inspect("Kill attached emitter on particle death", m_killAttachedEmitters, [this](bool v) {
+			m_killAttachedEmitters = v;
+		});
+	}
 
 	void UpdateParticleLifetime::Update(glm::vec3 emitterPos, glm::quat orientation, double emitterAge, float deltaTime, ParticleContainer& container)
 	{
@@ -20,21 +28,23 @@ namespace Particles
 		uint32_t currentP = 0;
 		while (currentP < container.AliveParticles())
 		{
-			float currentLife = container.Lifetimes().GetValue(currentP);
-			currentLife -= deltaTime;
-			if (currentLife > 0.0f)
+			float currentAge = emitterAge - container.SpawnTimes().GetValue(currentP);
+			float maxLifetime = container.Lifetimes().GetValue(currentP);
+			if (currentAge >= maxLifetime)
 			{
-				container.Lifetimes().GetValue(currentP) = currentLife;
-				++currentP;
+				if (m_killAttachedEmitters)
+				{
+					uint32_t attachedEmitter = container.EmitterIDs().GetValue(currentP);
+					if (attachedEmitter != -1)
+					{
+						particles->StopEmitter(attachedEmitter);
+					}
+				}
+				container.Kill(currentP);
 			}
 			else
 			{
-				uint32_t attachedEmitter = container.EmitterIDs().GetValue(currentP);
-				if (attachedEmitter != -1)
-				{
-					particles->StopEmitter(attachedEmitter);
-				}
-				container.Kill(currentP);
+				currentP++;
 			}
 		}
 	}

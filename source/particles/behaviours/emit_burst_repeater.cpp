@@ -28,10 +28,10 @@ namespace Particles
 	int EmitBurstRepeater::Emit(double emitterAge, float deltaTime)
 	{
 		SDE_PROF_EVENT();
-		if (emitterAge >= m_frequency && (m_spawnDuration < 0.0f || emitterAge < m_spawnDuration))
+		if (emitterAge >= m_frequency && (m_spawnDuration < 0.0f || emitterAge <= m_spawnDuration))
 		{
 			float v = fmod(emitterAge, m_frequency);
-			if (v > -0.01f && v < 0.01f)
+			if (v <= 0.016f)
 			{
 				return m_burstCount;
 			}

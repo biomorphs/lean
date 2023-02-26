@@ -7,6 +7,17 @@ namespace Particles
 	class EditorValueInspector;
 	class ParticleContainer;
 
+	// This is responsible for determining if a playing emitter should be stopped
+	class EmitterLifetimeBehaviour
+	{
+	public:
+		virtual SERIALISED_CLASS() {}
+		virtual bool ShouldStop(double emitterAge, float deltaTime, ParticleContainer& container) = 0;
+		virtual std::unique_ptr<EmitterLifetimeBehaviour> MakeNew() = 0;
+		virtual std::string_view GetName() = 0;
+		virtual void Inspect(EditorValueInspector&) = 0;
+	};
+
 	// This is responsible for determining WHEN particles spawn
 	class EmissionBehaviour
 	{

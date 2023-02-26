@@ -11,6 +11,8 @@ namespace Particles
 		std::string_view GetName() { return "Update particle lifetime"; }
 
 		void Update(glm::vec3 emitterPos, glm::quat orientation, double emitterAge, float deltaTime, ParticleContainer& container);
-		void Inspect(EditorValueInspector&) {}
+		void Inspect(EditorValueInspector&);
+
+		bool m_killAttachedEmitters = true;
 	};
 }

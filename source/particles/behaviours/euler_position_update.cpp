@@ -19,11 +19,10 @@ namespace Particles
 		const uint32_t endIndex = container.AliveParticles();
 		for (uint32_t i = 0; i < endIndex; ++i)
 		{
-			const __m128 p = container.Positions().GetValue(i);
-			const __m128 v = container.Velocities().GetValue(i);
+			__m128& p = container.Positions().GetValue(i);
+			const __m128& v = container.Velocities().GetValue(i);
 			const __m128 vMulDelta = _mm_mul_ps(v, c_deltaVec);
-
-			_mm_stream_ps((float*)&container.Positions().GetValue(i), _mm_add_ps(p, vMulDelta));
+			p = _mm_add_ps(p, vMulDelta);
 		}
 		_mm_sfence();
 	}

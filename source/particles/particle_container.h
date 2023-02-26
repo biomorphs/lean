@@ -18,6 +18,7 @@ namespace Particles
 		typedef __m128 VelocityType;
 		typedef __m128 ColourType;
 		typedef float LifetimeType;
+		typedef float SpawnTimeType;
 		typedef uint32_t EmitterID;
 
 		inline const ParticleBuffer<PositionType>& Positions() const { return m_position; }
@@ -26,12 +27,14 @@ namespace Particles
 		inline ParticleBuffer<VelocityType>& Velocities() { return m_velocity; }
 		inline const ParticleBuffer<ColourType>& Colours() const { return m_colour; }
 		inline ParticleBuffer<ColourType>& Colours() { return m_colour; }
+		inline const ParticleBuffer<SpawnTimeType>& SpawnTimes() const { return m_spawntime; }
+		inline ParticleBuffer<SpawnTimeType>& SpawnTimes() { return m_spawntime; }
 		inline const ParticleBuffer<LifetimeType>& Lifetimes() const { return m_lifetime; }
 		inline ParticleBuffer<LifetimeType>& Lifetimes() { return m_lifetime; }
 		inline const ParticleBuffer<EmitterID>& EmitterIDs() const { return m_emitterIDs; }
 		inline ParticleBuffer<EmitterID>& EmitterIDs() { return m_emitterIDs; }
 
-		uint32_t Wake(uint32_t count);
+		uint32_t Wake(uint32_t count, float spawnTime);
 		void Kill(uint32_t index);
 		inline uint32_t MaxParticles() const { return m_maxParticles; }
 		inline uint32_t AliveParticles() const { return m_livingParticles; }
@@ -45,6 +48,7 @@ namespace Particles
 		ParticleBuffer<VelocityType> m_velocity;
 		ParticleBuffer<ColourType> m_colour;
 		ParticleBuffer<LifetimeType> m_lifetime;
+		ParticleBuffer<SpawnTimeType> m_spawntime;;
 		ParticleBuffer<EmitterID> m_emitterIDs;
 	};
 }

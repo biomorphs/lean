@@ -51,5 +51,7 @@ namespace Particles
 		std::vector<std::string> m_invalidatedEmitters;
 		int m_maxEmitters = 1024 * 64;
 		std::atomic<EmitterID> m_nextEmitterId = 0;
+		double m_lastUpdateTime = 0.0;
+		double m_lastRenderTime = 0.0;
 	};
 }

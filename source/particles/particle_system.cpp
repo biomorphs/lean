@@ -4,6 +4,7 @@
 #include "engine/job_system.h"
 #include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
+#include "core/timer.h"
 
 namespace Particles
 {
@@ -110,6 +111,16 @@ namespace Particles
 		auto& particles = em.m_instance->m_particles;
 		double emitterAge = em.m_instance->m_timeActive;
 
+		// Lifetime before spawning anything
+		for(const auto& it : emitterDesc->GetLifetimeBehaviours())
+		{
+			if (it->ShouldStop(emitterAge, timeDelta, particles))
+			{
+				StopEmitter(em.m_id);
+				return;
+			}
+		}
+
 		// Emission pass, calculate emission count, generate particles
 		uint32_t emissionCount = 0;
 		for (const auto& it : emitterDesc->GetEmissionBehaviours())
@@ -119,7 +130,7 @@ namespace Particles
 		emissionCount = glm::min(emissionCount, particles.MaxParticles() - particles.AliveParticles());
 		if (emissionCount > 0)
 		{
-			const uint32_t startIndex = particles.Wake(emissionCount);
+			const uint32_t startIndex = particles.Wake(emissionCount, emitterAge);
 			const uint32_t endIndex = particles.AliveParticles();
 			for (const auto& it : emitterDesc->GetGenerators())
 			{
@@ -177,6 +188,14 @@ namespace Particles
 		}
 		statText = "Active Particles: " + std::to_string(particleCount);
 		dbgGui->Text(statText.c_str());
+
+		float updateMs = float(m_lastUpdateTime * 1000.0);
+		float renderMs = float(m_lastRenderTime * 1000.0);
+		statText = "Update Time(ms): " + std::to_string(updateMs);
+		dbgGui->Text(statText.c_str());
+		statText = "Render Time(ms): " + std::to_string(renderMs);
+		dbgGui->Text(statText.c_str());
+
 		dbgGui->EndWindow();
 	}
 
@@ -197,9 +216,10 @@ namespace Particles
 	void ParticleSystem::UpdateEmitters(float timeDelta)
 	{
 		SDE_PROF_EVENT();
+		Core::ScopedTimer timeUpdate(m_lastUpdateTime);
 		auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
 		jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 64, [this, timeDelta](int32_t i) {
-			UpdateActiveInstance(m_activeEmitters[i], timeDelta);
+			UpdateActiveInstance(m_activeEmitters[i], 0.016f);
 		});
 	}
 
@@ -236,16 +256,16 @@ namespace Particles
 
 				DoStopEmitter(*m_activeEmitters[emitterIndex].m_instance);
 				delete m_activeEmitters[emitterIndex].m_instance;	// pool these
+				m_activeEmitters[emitterIndex].m_instance = nullptr;
 
 				// swap back, update mappings
+				m_activeEmitterIDToIndex.erase(toStopID);	// remove  old id
 				if (emitterIndex != m_activeEmitters.size() - 1)
 				{
 					m_activeEmitters[emitterIndex] = std::move(m_activeEmitters[m_activeEmitters.size() - 1]);
+					m_activeEmitterIDToIndex[m_activeEmitters[emitterIndex].m_id] = emitterIndex;
 				}
 				m_activeEmitters.resize(m_activeEmitters.size() - 1);
-				
-				m_activeEmitterIDToIndex.erase(toStopID);	// remove  old id
-				m_activeEmitterIDToIndex[m_activeEmitters[emitterIndex].m_id] = emitterIndex;
 				assert(m_activeEmitterIDToIndex.size() == m_activeEmitters.size());
 			}
 		}
@@ -254,7 +274,7 @@ namespace Particles
 	void ParticleSystem::RenderEmitters(float timeDelta	)
 	{
 		SDE_PROF_EVENT();
-
+		Core::ScopedTimer timeUpdate(m_lastRenderTime);
 		for (const auto& em : m_activeEmitters)
 		{
 			for (const auto& render : em.m_instance->m_emitter->GetRenderers())

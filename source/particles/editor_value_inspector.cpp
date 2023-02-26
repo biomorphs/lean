@@ -36,6 +36,18 @@ namespace Particles
 		}
 	}
 
+	void EditorValueInspector::Inspect(std::string_view label, bool currentVal, std::function<void(bool)> setValueFn)
+	{
+		std::string lblText = std::string(label) + "##" + std::to_string(m_lblIndexCounter++);
+		bool val = m_dbgGui->Checkbox(lblText.data(), currentVal);
+		if (val != currentVal)
+		{
+			auto mainEditor = Engine::GetSystem<Editor>("Editor");
+			auto setValueCmd = std::make_unique<EditorSetValueCommand<bool>>(label.data(), currentVal, val, setValueFn);
+			mainEditor->PushCommand(std::move(setValueCmd));
+		}
+	}
+
 	void EditorValueInspector::Inspect(std::string_view label, int currentVal, std::function<void(int)> setValueFn)
 	{
 		std::string lblText = std::string(label) + "##" + std::to_string(m_lblIndexCounter++);

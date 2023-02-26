@@ -12,6 +12,9 @@ namespace Particles
 		v.InspectFilePath("Emitter to spawn", "emit", m_emitterFile, [this](std::string_view val) {
 			m_emitterFile = val;
 		});
+		v.Inspect("Attach to particle", m_attachToParticle, [this](bool val) {
+			m_attachToParticle = val;
+		});
 	}
 
 	void GenerateSpawnEmitter::Generate(glm::vec3 emitterPos, glm::quat orientation, double emitterAge, float deltaTime, ParticleContainer& container, uint32_t startIndex, uint32_t endIndex)
@@ -25,7 +28,10 @@ namespace Particles
 			// needs to go After position is set!
 			_mm_store_ps(glm::value_ptr(particlePos), container.Positions().GetValue(i));
 			uint32_t newEmitter = particles->StartEmitter(m_emitterFile, glm::vec3(particlePos));
-			container.EmitterIDs().GetValue(i) = newEmitter;
+			if (m_attachToParticle)
+			{
+				container.EmitterIDs().GetValue(i) = newEmitter;
+			}
 		}
 		_mm_sfence();
 	}
@@ -33,6 +39,7 @@ namespace Particles
 	SERIALISE_BEGIN_WITH_PARENT(GenerateSpawnEmitter, GeneratorBehaviour)
 	{
 		SERIALISE_PROPERTY("EmitterFile", m_emitterFile);
+		SERIALISE_PROPERTY("AttachToParticle", m_attachToParticle)
 	}
 	SERIALISE_END()
 }
