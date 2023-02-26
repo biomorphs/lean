@@ -319,6 +319,8 @@ set(PARTICLES_SOURCES
 	source/particles/behaviours/generate_random_position.cpp
 	source/particles/behaviours/generate_random_velocity.h
 	source/particles/behaviours/generate_random_velocity.cpp
+	source/particles/behaviours/generate_random_velocity_sphere.h
+	source/particles/behaviours/generate_random_velocity_sphere.cpp
 	source/particles/behaviours/debug_axis_renderer.h
 	source/particles/behaviours/debug_axis_renderer.cpp
 	source/particles/behaviours/euler_position_update.h

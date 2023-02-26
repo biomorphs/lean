@@ -218,7 +218,7 @@ namespace Particles
 		SDE_PROF_EVENT();
 		Core::ScopedTimer timeUpdate(m_lastUpdateTime);
 		auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
-		jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 64, [this, timeDelta](int32_t i) {
+		jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 32, [this, timeDelta](int32_t i) {
 			UpdateActiveInstance(m_activeEmitters[i], 0.016f);
 		});
 	}
