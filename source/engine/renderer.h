@@ -51,6 +51,7 @@ namespace Engine
 		// Note the most optimal way to draw a LOT of different meshes is via PerInstanceData
 		// Treat the per-mesh/per-instance materials as PUSH constants that force a pipeline switch!
 		//	(i.e. they are really useful for general use, but use PerInstanceData if you generate a lot of material switches)
+		void SubmitInstances(const __m128* positions, int count, const struct ModelHandle& model, const struct ShaderHandle& shader);
 		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader);

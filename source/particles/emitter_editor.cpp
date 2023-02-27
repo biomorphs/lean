@@ -26,6 +26,7 @@
 #include "behaviours/kill_emitter_on_zero_particles.h"
 #include "behaviours/update_spawn_emitter.h"
 #include "behaviours/generate_random_velocity_sphere.h"
+#include "behaviours/mesh_renderer.h"
 
 namespace Particles
 {
@@ -141,6 +142,7 @@ namespace Particles
 		RegisterBehaviour(std::make_unique<KillOnZeroParticles>());
 		RegisterBehaviour(std::make_unique<UpdateSpawnEmitter>());
 		RegisterBehaviour(std::make_unique<GenerateRandomVelocitySphere>());
+		RegisterBehaviour(std::make_unique<MeshRenderer>());
 	}
 
 	EmitterEditor::~EmitterEditor()

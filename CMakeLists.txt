@@ -323,6 +323,8 @@ set(PARTICLES_SOURCES
 	source/particles/behaviours/generate_random_velocity_sphere.cpp
 	source/particles/behaviours/debug_axis_renderer.h
 	source/particles/behaviours/debug_axis_renderer.cpp
+	source/particles/behaviours/mesh_renderer.h
+	source/particles/behaviours/mesh_renderer.cpp
 	source/particles/behaviours/euler_position_update.h
 	source/particles/behaviours/euler_position_update.cpp
 	source/particles/behaviours/gravity_update.h

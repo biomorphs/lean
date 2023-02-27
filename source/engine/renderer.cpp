@@ -338,6 +338,62 @@ namespace Engine
 		SubmitInstance(transform, mesh, shader, { -FLT_MAX, -FLT_MAX, -FLT_MAX }, { FLT_MAX, FLT_MAX, FLT_MAX }, instanceMat);
 	}
 
+	void Renderer::SubmitInstances(const __m128* positions, int count, const struct ModelHandle& model, const struct ShaderHandle& shader)
+	{
+		SDE_PROF_EVENT();
+		const auto theModel = m_modelManager->GetModel(model);
+		const auto theShader = m_shaderManager->GetShader(shader);
+		if (theModel != nullptr && theShader != nullptr)
+		{
+			ShaderHandle shadowShader = m_shaderManager->GetShadowsShader(shader);
+			const Render::VertexArray* va = m_modelManager->GetVertexArray();
+			const Render::RenderBuffer* ib = m_modelManager->GetIndexBuffer();
+			const int partCount = theModel->MeshParts().size();
+			for (int partIndex = 0; partIndex < partCount; ++partIndex)
+			{
+				const auto& meshPart = theModel->MeshParts()[partIndex];
+				const Model::MeshPart::DrawData& partDrawData = meshPart.m_drawData;
+				auto diffuse = m_textureManager->GetTexture(partDrawData.m_diffuseTexture);
+				auto normal = m_textureManager->GetTexture(partDrawData.m_normalsTexture);
+				auto specular = m_textureManager->GetTexture(partDrawData.m_specularTexture);
+
+				PerInstanceData pid;
+				pid.m_diffuseOpacity = partDrawData.m_diffuseOpacity;
+				pid.m_specular = partDrawData.m_specular;
+				pid.m_shininess = partDrawData.m_shininess;
+				pid.m_diffuseTexture = diffuse ? diffuse->GetResidentHandle() : m_defaultDiffuseResidentHandle;
+				pid.m_normalsTexture = normal ? normal->GetResidentHandle() : m_defaultNormalResidentHandle;
+				pid.m_specularTexture = specular ? specular->GetResidentHandle() : m_defaultSpecularResidentHandle;
+				const glm::vec3 boundsMin = meshPart.m_boundsMin, boundsMax = meshPart.m_boundsMax;
+				const auto shadowSortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), nullptr);
+				const auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_chunks.data(), nullptr, nullptr);
+				__declspec(align(16)) glm::vec4 instancePos;
+				for (int i = 0; i < count; ++i)
+				{
+					_mm_store_ps(glm::value_ptr(instancePos), positions[i]);
+					const glm::mat4 instanceTransform = glm::translate(glm::vec3(instancePos)) * meshPart.m_transform;
+					if (partDrawData.m_castsShadows && shadowShader.m_index != (uint32_t)-1)
+					{
+						SubmitInstance(m_allShadowCasterInstances, shadowSortKey, instanceTransform, boundsMin, boundsMax,
+							shadowShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+					}
+					if (partDrawData.m_isTransparent || pid.m_diffuseOpacity.a != 1.0f)
+					{
+						const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
+						auto sortKey = TransparentSortKey(shader, va, meshPart.m_chunks.data(), nullptr, distanceToCamera);
+						SubmitInstance(m_transparentInstances, sortKey, instanceTransform, boundsMin, boundsMax,
+							shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+					}
+					else
+					{
+						SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, boundsMin, boundsMax,
+							shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+					}
+				}
+			}
+		}
+	}
+
 	void Renderer::SubmitInstance(const glm::mat4& transform, const struct ModelHandle& model, const struct ShaderHandle& shader, const Model::MeshPart::DrawData* partOverride, uint32_t overrideCount)
 	{
 		const auto theModel = m_modelManager->GetModel(model);
