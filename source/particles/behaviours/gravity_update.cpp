@@ -31,6 +31,5 @@ namespace Particles
 			__m128& v = container.Velocities().GetValue(i);
 			v = _mm_add_ps(v, c_gravMulDelta);
 		}
-		_mm_sfence();
 	}
 }

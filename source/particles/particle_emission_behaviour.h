@@ -56,7 +56,7 @@ namespace Particles
 	{
 	public:
 		virtual SERIALISED_CLASS() {}
-		virtual void Draw(double emitterAge, float deltaTime, ParticleContainer& container) = 0;
+		virtual void Draw(glm::vec3 emitterPos, glm::quat orientation, double emitterAge, float deltaTime, ParticleContainer& container) = 0;
 		virtual std::unique_ptr<RenderBehaviour> MakeNew() = 0;
 		virtual std::string_view GetName() = 0;
 		virtual void Inspect(EditorValueInspector&) = 0;

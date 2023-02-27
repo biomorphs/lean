@@ -279,7 +279,7 @@ namespace Particles
 		{
 			for (const auto& render : em.m_instance->m_emitter->GetRenderers())
 			{
-				render->Draw(em.m_instance->m_timeActive, timeDelta, em.m_instance->m_particles);
+				render->Draw(em.m_instance->m_position, em.m_instance->m_orientation, em.m_instance->m_timeActive, timeDelta, em.m_instance->m_particles);
 			}
 		}
 	}

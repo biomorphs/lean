@@ -29,9 +29,8 @@ namespace Particles
 
 			__declspec(align(16)) glm::vec4 newVel(m_minimum.x + (vX * range.x), m_minimum.y + (vY * range.y), m_minimum.z + (vZ * range.z), 0.0f);
 			__m128 velVec = _mm_load_ps(glm::value_ptr(newVel * emitterTransform));
-			_mm_stream_ps((float*)&container.Velocities().GetValue(i), velVec);
+			container.Velocities().GetValue(i) = velVec;
 		}
-		_mm_sfence();
 	}
 
 	SERIALISE_BEGIN_WITH_PARENT(GenerateRandomVelocity, GeneratorBehaviour)

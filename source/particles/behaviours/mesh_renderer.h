@@ -9,7 +9,7 @@ namespace Particles
 	{
 	public:
 		SERIALISED_CLASS();
-		virtual void Draw(double emitterAge, float deltaTime, ParticleContainer& container);
+		virtual void Draw(glm::vec3 emitterPos, glm::quat orientation, double emitterAge, float deltaTime, ParticleContainer& container);
 		virtual std::unique_ptr<RenderBehaviour> MakeNew() { return std::make_unique<MeshRenderer>(); }
 		virtual std::string_view GetName() { return "Mesh Renderer"; }
 		virtual void Inspect(EditorValueInspector&);

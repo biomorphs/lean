@@ -13,7 +13,7 @@ namespace Particles
 	}
 	SERIALISE_END()
 
-	void DebugAxisRenderer::Draw(double emitterAge, float deltaTime, ParticleContainer& container)
+	void DebugAxisRenderer::Draw(glm::vec3 emitterPos, glm::quat orientation, double emitterAge, float deltaTime, ParticleContainer& container)
 	{
 		SDE_PROF_EVENT();
 		static auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");

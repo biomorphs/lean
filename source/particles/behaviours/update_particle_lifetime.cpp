@@ -28,8 +28,8 @@ namespace Particles
 		uint32_t currentP = 0;
 		while (currentP < container.AliveParticles())
 		{
-			float currentAge = emitterAge - container.SpawnTimes().GetValue(currentP);
-			float maxLifetime = container.Lifetimes().GetValue(currentP);
+			const float currentAge = emitterAge - container.SpawnTimes().GetValue(currentP);
+			const float maxLifetime = container.Lifetimes().GetValue(currentP);
 			if (currentAge >= maxLifetime)
 			{
 				if (m_killAttachedEmitters)

@@ -7,6 +7,21 @@
 
 namespace Particles
 {
+	void EditorValueInspector::InspectColour(std::string_view label, glm::vec3 currentVal, std::function<void(glm::vec3)> setValueFn)
+	{
+		m_dbgGui->AlignToNextControl();
+		m_dbgGui->Text(label.data());
+		m_dbgGui->SameLine(100);
+		std::string inputId = std::string("##") + std::string(label) + "_value";
+		glm::vec3 newValue = m_dbgGui->ColourEdit(inputId.c_str(), currentVal);
+		if (newValue != currentVal)
+		{
+			auto mainEditor = Engine::GetSystem<Editor>("Editor");
+			auto setValueCmd = std::make_unique<EditorSetValueCommand<glm::vec3>>(label.data(), currentVal, newValue, setValueFn);
+			mainEditor->PushCommand(std::move(setValueCmd));
+		}
+	}
+
 	void EditorValueInspector::InspectFilePath(std::string_view label, std::string_view extension, std::string_view currentVal, std::function<void(std::string_view)> setValueFn)
 	{
 		std::string btnText = std::string(label) + ": " + std::string(currentVal);
