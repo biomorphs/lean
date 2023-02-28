@@ -606,26 +606,44 @@ namespace Engine
 			}
 			{
 				SDE_PROF_EVENT("BuildTileData");
+				std::atomic<int> jobsRemaining = 0;
+				const int stepsPerJob = 8;
 				for (uint32_t tY = 0; tY < m_lightTileCounts.y; ++tY)
 				{
-					m_jobSystem->ForEachAsync(0, m_lightTileCounts.x, 1, 8, [&](int32_t tX) {
-						SDE_PROF_EVENT("ClassifyLightsForTile");
-						const uint32_t tileIndex = tX + (tY * m_lightTileCounts.x);
-						const glm::vec2 tileOrigin = glm::vec2(tX, tY) * c_tileDims;
-						uint32_t lightCount = 0;
-						for (uint32_t l = 0; l < m_lights.size() && lightCount < c_maxLightsPerTile; ++l)
-						{
-							const Light& light = m_lights[l];
-							const glm::vec2 origin = { viewSpaceBounds[l].x, viewSpaceBounds[l].y };
-							const glm::vec2 dims = { viewSpaceBounds[l].z, viewSpaceBounds[l].w };
-							if (origin.x + dims.x >= tileOrigin.x && origin.y + dims.y >= tileOrigin.y
-								&& origin.x <= tileOrigin.x + c_tileDims.x && origin.y <= tileOrigin.y + c_tileDims.y)
+					for (int32_t i = 0; i < m_lightTileCounts.x; i += stepsPerJob)
+					{
+						const int startIndex = i;
+						const int endIndex = std::min(i + stepsPerJob, m_lightTileCounts.x);
+						auto runJob = [this, c_tileDims, tY, startIndex, endIndex, &jobsRemaining](void*) {
+							SDE_PROF_EVENT("ClassifyLightsForTile");
+							for (int32_t tX = startIndex; tX < endIndex; ++tX)
 							{
-								m_lightTiles[tileIndex].m_lightIndices[lightCount++] = l;
+								const uint32_t tileIndex = tX + (tY * m_lightTileCounts.x);
+								const glm::vec2 tileOrigin = glm::vec2(tX, tY) * c_tileDims;
+								uint32_t lightCount = 0;
+								for (uint32_t l = 0; l < m_lights.size() && lightCount < c_maxLightsPerTile; ++l)
+								{
+									const Light& light = m_lights[l];
+									const glm::vec2 origin = { viewSpaceBounds[l].x, viewSpaceBounds[l].y };
+									const glm::vec2 dims = { viewSpaceBounds[l].z, viewSpaceBounds[l].w };
+									if (origin.x + dims.x >= tileOrigin.x && origin.y + dims.y >= tileOrigin.y
+										&& origin.x <= tileOrigin.x + c_tileDims.x && origin.y <= tileOrigin.y + c_tileDims.y)
+									{
+										m_lightTiles[tileIndex].m_lightIndices[lightCount++] = l;
+									}
+								}
+								m_lightTiles[tileIndex].m_currentCount = lightCount;
 							}
-						}
-						m_lightTiles[tileIndex].m_currentCount = lightCount;
-					});
+							jobsRemaining--;
+
+						};
+						jobsRemaining++;
+						m_jobSystem->PushJob(runJob);
+					}
+				}
+				while (jobsRemaining > 0)
+				{
+					m_jobSystem->ProcessJobThisThread();
 				}
 			}
 		}
@@ -1024,7 +1042,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		auto jobs = Engine::GetSystem<JobSystem>("Jobs");
-		const uint32_t partsPerJob = 2000;
+		const uint32_t partsPerJob = 5000;
 		const uint32_t jobCount = src.m_entries.size() < partsPerJob ? 1 : src.m_entries.size() / partsPerJob;
 		if (src.m_entries.size() == 0)
 		{
