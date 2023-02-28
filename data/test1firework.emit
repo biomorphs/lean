@@ -1,0 +1,99 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "ClassName": "EmitOnce",
+      "Emission Count": 1
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "BoundsMax": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "BoundsMin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "BoundsMax": [
+        10.0,
+        60.0,
+        10.0
+      ],
+      "BoundsMin": [
+        -10.0,
+        40.0,
+        -10.0
+      ],
+      "ClassName": "GenerateRandomVelocity"
+    },
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 5.0,
+      "MinLife": 4.5
+    },
+    {
+      "AttachToParticle": true,
+      "ClassName": "GenerateSpawnEmitter",
+      "EmitterFile": "E:\\Git\\lean\\data\\test1trail.emit"
+    }
+  ],
+  "LifetimeBehaviours": [
+    {
+      "ClassName": "KillOnZeroParticles"
+    }
+  ],
+  "MaxParticles": 1,
+  "Name": "Test1Firework",
+  "OwnsChildEmitters": true,
+  "RenderBehaviours": [
+    {
+      "AxisScale": 1.0,
+      "ClassName": "DebugAxisRenderer"
+    },
+    {
+      "Ambient": 0.10000000149011612,
+      "AttachToEmitter": false,
+      "AttachToParticles": true,
+      "Attenuation": 2.0,
+      "Brightness": 8.0,
+      "ClassName": "AttachedLightBehaviour",
+      "Colour": [
+        1.0,
+        0.20588237047195435,
+        0.0
+      ],
+      "Distance": 64.0
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "EulerPositionUpdater"
+    },
+    {
+      "ClassName": "GravityUpdate"
+    },
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": false
+    },
+    {
+      "ClassName": "UpdateAttachedEmitter"
+    },
+    {
+      "AttachToParticle": false,
+      "ClassName": "UpdateSpawnEmitter",
+      "EmitterCount": 1,
+      "EmitterFile": "E:\\Git\\lean\\data\\test1explode.emit",
+      "SpawnEndAge": 4.0320000648498535,
+      "SpawnFrequency": 0.01600000075995922,
+      "SpawnStartAge": 4.0
+    }
+  ]
+}

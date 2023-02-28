@@ -1,0 +1,80 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "Burst Count": 4,
+      "ClassName": "EmitBurstRepeater",
+      "Frequency": 0.029999999329447746,
+      "SpawnDuration": 4.25
+    },
+    {
+      "ClassName": "EmitOnce",
+      "Emission Count": 1
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "BoundsMax": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "BoundsMin": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "BoundsMax": [
+        1.5000001192092896,
+        1.5000001192092896,
+        1.5000001192092896
+      ],
+      "BoundsMin": [
+        -1.5000001192092896,
+        -1.5000001192092896,
+        -1.5000001192092896
+      ],
+      "ClassName": "GenerateRandomVelocity"
+    },
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 3.0,
+      "MinLife": 1.5
+    }
+  ],
+  "LifetimeBehaviours": [
+    {
+      "ClassName": "KillOnZeroParticles"
+    }
+  ],
+  "MaxParticles": 1000,
+  "Name": "Test1Trail",
+  "OwnsChildEmitters": false,
+  "RenderBehaviours": [
+    {
+      "ClassName": "MeshRenderer",
+      "Model": {
+        "ClassName": "ModelHandle",
+        "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+      },
+      "Shader": {
+        "ClassName": "ShaderHandle",
+        "FS": "simplediffuse.fs",
+        "Name": "diffuse",
+        "VSCS": "simplediffuse.vs"
+      }
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "EulerPositionUpdater"
+    },
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": true
+    }
+  ]
+}

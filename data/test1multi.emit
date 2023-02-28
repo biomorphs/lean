@@ -1,0 +1,52 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "Burst Count": 1,
+      "ClassName": "EmitBurstRepeater",
+      "Frequency": 0.07000000029802322,
+      "SpawnDuration": -1.0
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "BoundsMax": [
+        256.0,
+        0.0,
+        256.0
+      ],
+      "BoundsMin": [
+        -256.0,
+        0.0,
+        -256.0
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "AttachToParticle": false,
+      "ClassName": "GenerateSpawnEmitter",
+      "EmitterFile": "E:\\Git\\lean\\data\\test1firework.emit"
+    },
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 1.0,
+      "MinLife": 1.0
+    }
+  ],
+  "LifetimeBehaviours": [],
+  "MaxParticles": 100,
+  "Name": "Test1 Multi",
+  "OwnsChildEmitters": false,
+  "RenderBehaviours": [
+    {
+      "AxisScale": 1.0,
+      "ClassName": "DebugAxisRenderer"
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": false
+    }
+  ]
+}

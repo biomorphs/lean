@@ -1,0 +1,89 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "ClassName": "EmitOnce",
+      "Emission Count": 1
+    },
+    {
+      "Burst Count": 100,
+      "ClassName": "EmitBurstRepeater",
+      "Frequency": 0.01600000075995922,
+      "SpawnDuration": 0.25
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 4.0,
+      "MinLife": 2.0
+    },
+    {
+      "BoundsMax": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "BoundsMin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "BoundsMax": 30.0,
+      "BoundsMin": 5.0,
+      "ClassName": "GenerateRandomVelocitySphere"
+    }
+  ],
+  "LifetimeBehaviours": [
+    {
+      "ClassName": "KillOnZeroParticles"
+    }
+  ],
+  "MaxParticles": 100,
+  "Name": "Test1Explode",
+  "OwnsChildEmitters": true,
+  "RenderBehaviours": [
+    {
+      "ClassName": "MeshRenderer",
+      "Model": {
+        "ClassName": "ModelHandle",
+        "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+      },
+      "Shader": {
+        "ClassName": "ShaderHandle",
+        "FS": "simplediffuse.fs",
+        "Name": "diffuse",
+        "VSCS": "simplediffuse.vs"
+      }
+    },
+    {
+      "Ambient": 0.009999999776482582,
+      "AttachToEmitter": true,
+      "AttachToParticles": false,
+      "Attenuation": 8.0,
+      "Brightness": 6.0,
+      "ClassName": "AttachedLightBehaviour",
+      "Colour": [
+        1.0,
+        0.38235294818878174,
+        0.0
+      ],
+      "Distance": 128.0
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "EulerPositionUpdater"
+    },
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": true
+    },
+    {
+      "ClassName": "GravityUpdate"
+    }
+  ]
+}
