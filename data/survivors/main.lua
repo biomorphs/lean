@@ -163,6 +163,7 @@ function SpawnZombieAt(pos)
 	newMonsterCmp:SetAttackMinValue(3)
 	newMonsterCmp:SetAttackMaxValue(15)
 	newMonsterCmp:SetXPOnDeath(5)
+	newMonsterCmp:SetDamageEffectPath("zombiedamagedeffect.emit")
 end
 
 function SpawnEnemy(SpawnAtFn)
@@ -278,7 +279,7 @@ function ResetPlayer()
 	playerCmp:SetDamageMultiplier(1)
 	playerCmp:SetCooldownMultiplier(1)
 	playerCmp:SetMoveSpeedMultiplier(1)
-	playerCmp:SetProjectileCount(1)
+	playerCmp:SetProjectileCount(2)
 	
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	playerTransform:SetPosition(playerStartPosition[1], playerStartPosition[2], playerStartPosition[3])

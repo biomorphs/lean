@@ -182,10 +182,6 @@ bool Playground::PreInit()
 bool Playground::PostInit()
 {
 	LoadConfig();
-	if (g_playgroundConfig.m_lastLoadedScene.length() > 0)
-	{
-		LoadScene(g_playgroundConfig.m_lastLoadedScene);
-	}
 
 	return true;
 }
@@ -232,6 +228,13 @@ void Playground::ShowSystemProfiler()
 bool Playground::Tick(float timeDelta)
 {
 	SDE_PROF_EVENT();
+
+	static bool firstRun = true;
+	if (firstRun && g_playgroundConfig.m_lastLoadedScene.length() > 0)
+	{
+		LoadScene(g_playgroundConfig.m_lastLoadedScene);
+	}
+	firstRun = false;
 
 	m_debugGui->MainMenuBar(g_menuBar);
 	if (m_showProfiler)

@@ -34,13 +34,12 @@ float CalculateShadows(vec3 normal, vec3 position, float shadowIndex, mat4 light
 	// simple pcf
 	float currentDepth = projCoords.z;
 	float shadow = 0.0;
-	float mul = 0.25;
 	vec2 texelSize = 1.0 / textureSize(ShadowMaps[int(shadowIndex)], 0);
 	for(int x = -1; x <= 1; ++x)
 	{
 		for(int y = -1; y <= 1; ++y)
 		{
-			float pcfDepth = texture(ShadowMaps[int(shadowIndex)], projCoords.xy + vec2(x, y) * texelSize * mul).r; 
+			float pcfDepth = texture(ShadowMaps[int(shadowIndex)], projCoords.xy + vec2(x, y) * texelSize).r; 
 			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
 		}    
 	}
@@ -63,7 +62,7 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	// pcf
 	float shadow = 0.0;
 	int samples  = 20;
-	float diskRadius = 0.05;
+	float diskRadius = 0.1;
 	float currentDepth = length(fragToLight);
 	for(int i = 0; i < samples; ++i)
 	{
@@ -77,59 +76,59 @@ float CalculateCubeShadows(vec3 normal, vec3 pixelWorldSpace, vec3 lightPosition
 	return shadow;
 }
 
-float CalculateShadow(int i, vec3 normal)
+float CalculateShadow(uint i, vec3 normal)
 {
 	float shadow = 0.0;
-	if(Lights[i].Position.w == 1.0)		// point light
+	if(AllLights[i].Position.w == 1.0)		// point light
 	{
-		shadow = CalculateCubeShadows(normal,vs_out_position, Lights[i].Position.xyz, Lights[i].DistanceAttenuation.x, Lights[i].ShadowParams.y, Lights[i].ShadowParams.z);
+		shadow = CalculateCubeShadows(normal,vs_out_position, AllLights[i].Position.xyz, AllLights[i].DistanceAttenuation.x, AllLights[i].ShadowParams.y, AllLights[i].ShadowParams.z);
 	}
-	else if(Lights[i].Position.w == 0.0)	// directional
+	else if(AllLights[i].Position.w == 0.0)	// directional
 	{
-		shadow = CalculateShadows(normal, vs_out_position, Lights[i].ShadowParams.y, Lights[i].LightspaceTransform, Lights[i].ShadowParams.z);
+		shadow = CalculateShadows(normal, vs_out_position, AllLights[i].ShadowParams.y, AllLights[i].LightspaceTransform, AllLights[i].ShadowParams.z);
 	}
 	else
 	{
-		shadow = CalculateShadows(normal, vs_out_position, Lights[i].ShadowParams.y, Lights[i].LightspaceTransform, Lights[i].ShadowParams.z);
+		shadow = CalculateShadows(normal, vs_out_position, AllLights[i].ShadowParams.y, AllLights[i].LightspaceTransform, AllLights[i].ShadowParams.z);
 	} 
 	return shadow;
 }
 
-float CalculateAttenuation(int i, vec3 lightDir)
+float CalculateAttenuation(uint i, vec3 lightDir)
 {
-	if(Lights[i].Position.w == 0.0)		// directional
+	if(AllLights[i].Position.w == 0.0)		// directional
 	{
 		return 1.0;
 	}
-	else if(Lights[i].Position.w == 2.0)		// spot
+	else if(AllLights[i].Position.w == 2.0)		// spot
 	{
-		float distance = length(Lights[i].Position.xyz - vs_out_position);			
-		float attenuation = pow(smoothstep(Lights[i].DistanceAttenuation.x, 0, distance),Lights[i].DistanceAttenuation.y);
+		float distance = length(AllLights[i].Position.xyz - vs_out_position);			
+		float attenuation = pow(smoothstep(AllLights[i].DistanceAttenuation.x, 0, distance),AllLights[i].DistanceAttenuation.y);
 		
-		float theta = dot(lightDir, normalize(Lights[i].Position.xyz - vs_out_position)); 
-		float outerAngle = Lights[i].SpotlightAngles.y;
-		float innerAngle = Lights[i].SpotlightAngles.x;
+		float theta = dot(lightDir, normalize(AllLights[i].Position.xyz - vs_out_position)); 
+		float outerAngle = AllLights[i].SpotlightAngles.y;
+		float innerAngle = AllLights[i].SpotlightAngles.x;
 		attenuation *= clamp((theta - outerAngle) / (outerAngle - innerAngle), 0.0, 1.0);    
 		
 		return attenuation;
 	}
 	else	
 	{
-		float distance = length(Lights[i].Position.xyz - vs_out_position);			
-		float attenuation = pow(smoothstep(Lights[i].DistanceAttenuation.x, 0, distance),Lights[i].DistanceAttenuation.y);
+		float distance = length(AllLights[i].Position.xyz - vs_out_position);			
+		float attenuation = pow(smoothstep(AllLights[i].DistanceAttenuation.x, 0, distance),AllLights[i].DistanceAttenuation.y);
 		return attenuation;
 	}
 }
 
-vec3 CalculateDirection(int i)
+vec3 CalculateDirection(uint i)
 {
-	if(Lights[i].Position.w == 1.0)		// point light
+	if(AllLights[i].Position.w == 1.0)		// point light
 	{
-		return normalize(Lights[i].Position.xyz - vs_out_position);
+		return normalize(AllLights[i].Position.xyz - vs_out_position);
 	}
 	else
 	{
-		return normalize(-Lights[i].Direction);
+		return normalize(-AllLights[i].Direction);
 	}
 }
  
@@ -154,27 +153,29 @@ void main()
 	vec4 diffuseTex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 	
 	vec3 viewDir = normalize(CameraPosition.xyz - vs_out_position);
-	
-	for(int i=0;i<LightCount;++i)
+	uint lightTileIndex = GetLightTileIndex(GetScreenTileIndices(gl_FragCoord.xy));
+	uint lightCount = LightTiles[lightTileIndex].Count;
+	for(int i=0;i<lightCount;++i)
 	{
-		vec3 lightDir = CalculateDirection(i);
-		float attenuation = CalculateAttenuation(i, lightDir);
+		uint lightIndex = LightTiles[lightTileIndex].Indices[i];
+		vec3 lightDir = CalculateDirection(lightIndex);
+		float attenuation = CalculateAttenuation(lightIndex, lightDir);
 		float shadow = 0.0;
 		if(attenuation > 0.0)
 		{	
-			if(Lights[i].ShadowParams.x != 0.0)
+			if(AllLights[lightIndex].ShadowParams.x != 0.0)
 			{
-				shadow = CalculateShadow(i, finalNormal);
+				shadow = CalculateShadow(lightIndex, finalNormal);
 			}
 			
-			vec3 matColour = MeshDiffuseOpacity.rgb * diffuseTex.rgb * Lights[i].ColourAndAmbient.rgb;
+			vec3 matColour = MeshDiffuseOpacity.rgb * diffuseTex.rgb * AllLights[lightIndex].ColourAndAmbient.rgb;
 
 			// diffuse light
 			float diffuseFactor = max(dot(finalNormal, lightDir),0.0);
 			vec3 diffuse = matColour * diffuseFactor * (1.0 - vs_out_ao * 0.5);
 
 			// ambient light
-			vec3 ambient = matColour * Lights[i].ColourAndAmbient.a * (1.0 - vs_out_ao);
+			vec3 ambient = matColour * AllLights[lightIndex].ColourAndAmbient.a * (1.0 - vs_out_ao);
 
 			// specular light (blinn phong)
 			vec3 specular = vec3(0.0);
@@ -182,7 +183,7 @@ void main()
 			{
 				vec3 halfwayDir = normalize(lightDir + viewDir);  
 				float specFactor = pow(max(dot(finalNormal, halfwayDir), 0.0), max(MeshShininess,0.000000001));
-				vec3 specularColour = MeshSpecular.rgb * Lights[i].ColourAndAmbient.rgb;
+				vec3 specularColour = MeshSpecular.rgb * AllLights[lightIndex].ColourAndAmbient.rgb;
 				specular = MeshSpecular.a * specFactor * specularColour; 
 			}
 			
@@ -193,6 +194,4 @@ void main()
 	
 	// apply exposure here, assuming next pass is postfx
 	fs_out_colour = vec4(finalColour.rgb * HDRExposure,1.0);
-	//fs_out_colour = vec4(clamp(finalNormal,0.0,1.0),1.0);
-	//fs_out_colour = vec4(vec3(1.0-vs_out_ao),1.0);
 }
