@@ -1,0 +1,77 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "ClassName": "EmitOnce",
+      "Emission Count": 64
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "BoundsMax": [
+        0.0,
+        2.0,
+        0.0
+      ],
+      "BoundsMin": [
+        0.0,
+        2.0,
+        0.0
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "BoundsMax": [
+        20.0,
+        20.0,
+        20.0
+      ],
+      "BoundsMin": [
+        -20.0,
+        10.0,
+        -20.0
+      ],
+      "ClassName": "GenerateRandomVelocity"
+    },
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 1.0,
+      "MinLife": 0.5
+    }
+  ],
+  "LifetimeBehaviours": [
+    {
+      "ClassName": "KillOnZeroParticles"
+    }
+  ],
+  "MaxParticles": 64,
+  "Name": "ZombieDamageEffect",
+  "OwnsChildEmitters": true,
+  "RenderBehaviours": [
+    {
+      "ClassName": "MeshRenderer",
+      "Model": {
+        "ClassName": "ModelHandle",
+        "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+      },
+      "Shader": {
+        "ClassName": "ShaderHandle",
+        "FS": "simplediffuse.fs",
+        "Name": "diffuse",
+        "VSCS": "simplediffuse.vs"
+      }
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "EulerPositionUpdater"
+    },
+    {
+      "ClassName": "GravityUpdate"
+    },
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": true
+    }
+  ]
+}

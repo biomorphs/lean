@@ -21,6 +21,7 @@
 #include "engine/components/component_physics.h"
 #include "entity_grid.h"
 #include "editor/editor.h"
+#include "particles/particle_system.h"
 
 namespace Survivors
 {
@@ -141,6 +142,38 @@ namespace Survivors
 		entities->SerialiseEntities(sceneJson, true);
 	}
 
+	void SurvivorsMain::DamageMonster(SurvivorsMain::ActiveMonster& monster, double currentTime, float damage, glm::vec2 knockback)
+	{
+		static auto timeSys = Engine::GetSystem<Engine::TimeSystem>("Time");
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto world = entities->GetWorld();
+
+		if (monster.m_cc->GetCurrentHealth() <= damage)
+		{
+			const std::string& damageEffect = monster.m_cc->GetDamageEffectPath();
+			if (damageEffect.size() > 0)
+			{
+				auto particles = Engine::GetSystem<Particles::ParticleSystem>("Particles");
+				glm::quat orientation;
+				glm::vec3 position, scale;
+				monster.m_transform->GetWorldSpaceTransform(position, orientation, scale);
+				particles->StartEmitter(damageEffect, position, orientation);
+			}
+
+			m_monstersToKill.push_back(monster.m_entity);
+		}
+		monster.m_cc->SetCurrentHealth(monster.m_cc->GetCurrentHealth() - damage);
+		monster.m_cc->AddKnockback(knockback);
+		monster.m_cc->SetLastDamagedTime(currentTime);
+
+		EntityHandle damagedMaterial = monster.m_cc->GetDamagedMaterialEntity();
+		if (damagedMaterial.IsValid())
+		{
+			auto modelCmp = world->GetComponent<Model>(monster.m_entity);
+			modelCmp->SetPartMaterialsEntity(damagedMaterial);
+		}
+	}
+
 	void SurvivorsMain::DoDamageInRadius(glm::vec3 pos, float radius, float damageAtCenter, float damageAtEdge)
 	{
 		SDE_PROF_EVENT();
@@ -148,8 +181,8 @@ namespace Survivors
 		const double currentTime = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
 		const auto aabMin = pos - glm::vec3(radius, 0.0f, radius);
 		const auto aabMax = pos + glm::vec3(radius, 0.0f, radius);
-		auto entities = Engine::GetSystem<EntitySystem>("Entities");
-		auto world = entities->GetWorld();
+		
+		
 		m_activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
 			auto& enemy = m_activeMonsters[index];
 			const glm::vec3 explosionToEnemy = pos - enemy.m_targetPosition;
@@ -158,21 +191,8 @@ namespace Survivors
 			if (d < (enemyRadius + radius))
 			{
 				float damage = damageAtCenter;	// todo scaling
-				if (enemy.m_cc->GetCurrentHealth() <= damageAtCenter)
-				{
-					m_monstersToKill.push_back(enemy.m_entity);	
-				}
-				enemy.m_cc->SetCurrentHealth(enemy.m_cc->GetCurrentHealth() - damage);
 				glm::vec2 knockBack = -glm::normalize(glm::vec2(explosionToEnemy.x, explosionToEnemy.z)) * damage * 3.0f;
-				enemy.m_cc->AddKnockback(knockBack);
-				enemy.m_cc->SetLastDamagedTime(currentTime);
-
-				EntityHandle damagedMaterial = enemy.m_cc->GetDamagedMaterialEntity();
-				if (damagedMaterial.IsValid())
-				{
-					auto modelCmp = world->GetComponent<Model>(enemy.m_entity);
-					modelCmp->SetPartMaterialsEntity(damagedMaterial);
-				}
+				DamageMonster(enemy, currentTime, damage, knockBack);
 			}
 		});
 	}

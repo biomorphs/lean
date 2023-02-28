@@ -103,9 +103,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -1202.0693359375,
+              -1354.679931640625,
               184.5,
-              242.16281127929688
+              312.2451171875
             ],
             "Scale": [
               1.0,
@@ -275,19 +275,19 @@
           "Data": {
             "ClassName": "Transform",
             "Orientation": [
-              -0.0,
-              1.0,
-              -0.0,
-              -4.371138828673793e-08
+              0.0,
+              -0.7071068286895752,
+              0.0,
+              0.7071068286895752
             ],
             "Parent": {
               "ClassName": "EntityHandle",
               "ID": 4294967295
             },
             "Position": [
-              -1202.0693359375,
+              -1354.679931640625,
               0.0,
-              426.9128112792969
+              496.9951171875
             ],
             "Scale": [
               4.0,
@@ -2075,17 +2075,24 @@
       "Components": [
         {
           "Data": {
+            "ClassName": "ComponentParticleEmitter",
+            "EmitterFile": "E:\\Git\\lean\\data\\skullbosseyeeffect.emit"
+          },
+          "Type": "ComponentParticleEmitter"
+        },
+        {
+          "Data": {
             "Ambient": 0.00800000037997961,
             "Attenutation": 4.0,
-            "Brightness": 6.0,
-            "CastShadows": true,
+            "Brightness": 8.0,
+            "CastShadows": false,
             "ClassName": "Light",
             "Colour": [
               1.0,
               0.05882352590560913,
               0.0
             ],
-            "Distance": 128.0,
+            "Distance": 24.0,
             "ShadowBias": 0.5,
             "ShadowMapSize": [
               1024,
@@ -2145,17 +2152,24 @@
       "Components": [
         {
           "Data": {
+            "ClassName": "ComponentParticleEmitter",
+            "EmitterFile": "E:\\Git\\lean\\data\\skullbosseyeeffect.emit"
+          },
+          "Type": "ComponentParticleEmitter"
+        },
+        {
+          "Data": {
             "Ambient": 0.00800000037997961,
             "Attenutation": 4.0,
-            "Brightness": 6.0,
-            "CastShadows": true,
+            "Brightness": 8.0,
+            "CastShadows": false,
             "ClassName": "Light",
             "Colour": [
               1.0,
               0.05882352590560913,
               0.0
             ],
-            "Distance": 128.0,
+            "Distance": 24.0,
             "ShadowBias": 0.5,
             "ShadowMapSize": [
               1024,

@@ -26,7 +26,9 @@ COMPONENT_SCRIPTS(MonsterComponent,
 	"SetAttackMinValue", &MonsterComponent::SetAttackMinValue,
 	"SetAttackMaxValue", &MonsterComponent::SetAttackMaxValue,
 	"GetXPOnDeath", &MonsterComponent::GetXPOnDeath,
-	"SetXPOnDeath", &MonsterComponent::SetXPOnDeath
+	"SetXPOnDeath", &MonsterComponent::SetXPOnDeath,
+	"SetDamageEffectPath", &MonsterComponent::SetDamageEffectPath,
+	"GetDamageEffectPath", &MonsterComponent::GetDamageEffectPath
 )
 SERIALISE_BEGIN(MonsterComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
@@ -41,6 +43,7 @@ SERIALISE_PROPERTY("DamagedMaterialEntity", m_damagedMaterial)
 SERIALISE_PROPERTY("AttackFrequency", m_attackFrequency)
 SERIALISE_PROPERTY("DamageMinValue", m_damageMinValue)
 SERIALISE_PROPERTY("DamageMaxValue", m_damageMaxValue)
+SERIALISE_PROPERTY("DamageEffectPath", m_damageEffectPath);
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(MonsterComponent)
@@ -61,6 +64,9 @@ COMPONENT_INSPECTOR_IMPL(MonsterComponent)
 		i.Inspect("Ragdoll chance", a.GetRagdollChance(), InspectFn(e, &MonsterComponent::SetRagdollChance));
 		i.Inspect("Damaged Material Entity", a.GetDamagedMaterialEntity(), InspectFn(e, &MonsterComponent::SetDamagedMaterialEntity), [entities](const EntityHandle& p) {
 			return entities->GetWorld()->GetComponent<ModelPartMaterials>(p) != nullptr;
+		});
+		i.InspectFilePath("Damaged effect to play", "emit", a.GetDamageEffectPath(), [&](std::string val) {
+			a.SetDamageEffectPath(val);
 		});
 		if (gui->Button("Random knockback"))
 		{

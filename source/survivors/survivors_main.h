@@ -21,6 +21,15 @@ namespace Survivors
 		virtual void Shutdown();
 
 	private:
+		struct ActiveMonster
+		{
+			glm::vec3 m_targetPosition;
+			float m_radius;
+			MonsterComponent* m_cc;
+			Transform* m_transform;
+			EntityHandle m_entity;
+		};
+
 		void UpdateAttractors(PlayerComponent& playerCmp, float timeDelta);
 		void DoDamageInRadius(glm::vec3 pos, float radius, float damageAtCenter, float damageAtEdge);
 		void UpdateExplosions(float timeDelta);
@@ -36,15 +45,8 @@ namespace Survivors
 		void LoadMainScene();
 		void SpawnXPAt(EntityHandle player, glm::vec3 p, int xpToAdd);
 		void SpawnMushroomAt(EntityHandle player, glm::vec3 p, int hpToAdd);
+		void DamageMonster(ActiveMonster& monster, double curentTime, float damage, glm::vec2 knockback = glm::vec2(0.0f));
 
-		struct ActiveMonster
-		{
-			glm::vec3 m_targetPosition;
-			float m_radius;
-			MonsterComponent* m_cc;
-			Transform* m_transform;
-			EntityHandle m_entity;
-		};
 		bool m_firstFrame = true;
 		double m_damagedMaterialTime = 0.25;			// time that a monster will show damaged material
 		bool m_enemiesEnabled = false;

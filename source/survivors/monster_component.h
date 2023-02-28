@@ -41,6 +41,8 @@ public:
 	int GetAttackMaxValue() { return m_damageMaxValue; }
 	int GetXPOnDeath() { return m_xpGranted; }
 	void SetXPOnDeath(int g) { m_xpGranted = g; };
+	std::string GetDamageEffectPath() { return m_damageEffectPath; }
+	void SetDamageEffectPath(std::string val) { m_damageEffectPath = val; }
 
 private:
 	// active state
@@ -50,6 +52,7 @@ private:
 	glm::vec2 m_knockBack = { 0.0f,0.0f };
 
 	// parameters
+	std::string m_damageEffectPath;
 	float m_ragdollChance = 0.1f;
 	float m_speed = 4.0f;
 	float m_visionRadius = 450.0f;

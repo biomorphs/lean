@@ -1,0 +1,80 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "ClassName": "EmitOnce",
+      "Emission Count": 1
+    },
+    {
+      "Burst Count": 8,
+      "ClassName": "EmitBurstRepeater",
+      "Frequency": 0.01600000075995922,
+      "SpawnDuration": -1.0
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "BoundsMax": [
+        10.0,
+        -20.0,
+        60.0
+      ],
+      "BoundsMin": [
+        -10.0,
+        -20.0,
+        60.0
+      ],
+      "ClassName": "GenerateRandomVelocity"
+    },
+    {
+      "BoundsMax": [
+        2.0,
+        3.5,
+        4.0
+      ],
+      "BoundsMin": [
+        -3.0000009536743164,
+        0.0,
+        2.9999990463256836
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 1.0,
+      "MinLife": 0.20000000298023224
+    }
+  ],
+  "LifetimeBehaviours": [
+    {
+      "ClassName": "KillOnZeroParticles"
+    }
+  ],
+  "MaxParticles": 256,
+  "Name": "SkullBossEyesBeam",
+  "OwnsChildEmitters": true,
+  "RenderBehaviours": [
+    {
+      "ClassName": "MeshRenderer",
+      "Model": {
+        "ClassName": "ModelHandle",
+        "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+      },
+      "Shader": {
+        "ClassName": "ShaderHandle",
+        "FS": "simplediffuse.fs",
+        "Name": "diffuse",
+        "VSCS": "simplediffuse.vs"
+      }
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "EulerPositionUpdater"
+    },
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": true
+    }
+  ]
+}
