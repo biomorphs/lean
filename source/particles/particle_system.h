@@ -19,7 +19,8 @@ namespace Particles
 		void InvalidateEmitter(std::string_view filename);	// force reload
 		EmitterID StartEmitter(std::string_view filename, glm::vec3 pos = glm::vec3(0, 0, 0), glm::quat rot = glm::quat());
 		void StopEmitter(EmitterID emitterID);
-		void SetEmitterTransform(EmitterID emitterID, glm::vec3 pos = glm::vec3(0, 0, 0), glm::quat rot = glm::quat());
+		bool SetEmitterTransform(EmitterID emitterID, glm::vec3 pos = glm::vec3(0, 0, 0), glm::quat rot = glm::quat());
+		virtual bool PostInit();
 		virtual bool Tick(float timeDelta);
 	private:
 		struct ActiveEmitter {
@@ -35,6 +36,7 @@ namespace Particles
 		void RenderEmitters(float timeDelta);
 		void ReloadInvalidatedEmitters();
 		void DoStopEmitter(EmitterInstance& i);
+		void UpdateEmitterComponents();
 
 		Core::Mutex m_loadedEmittersMutex;
 		std::unordered_map<std::string, std::unique_ptr<EmitterDescriptor>> m_loadedEmitters;

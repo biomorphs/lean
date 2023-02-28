@@ -30,6 +30,7 @@ public:
 	glm::vec3 GetScale() const { return m_scale; }
 	glm::mat4 GetMatrix() const { return m_matrix; }
 	glm::mat4 GetWorldspaceMatrix();
+	void GetWorldSpaceTransform(glm::vec3& position, glm::quat& orientation, glm::vec3& scale);
 	void SetParent(EntityHandle parent);
 	ComponentHandle<Transform>& GetParent() { return m_parent; }
 	const ComponentHandle<Transform>& GetParent() const { return m_parent; }

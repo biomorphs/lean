@@ -20,7 +20,7 @@ public:
 	virtual bool Inspect(const char* label, double currentValue, std::function<void(double)> setFn, double step, double minv, double maxv);
 	virtual bool Inspect(const char* label, glm::vec3 currentValue, std::function<void(glm::vec3)> setFn, float step, float minv, float maxv);
 	virtual bool InspectColour(const char* label, glm::vec3 currentValue, std::function<void(glm::vec3)> setFn);
-
+	void InspectFilePath(const char* label, std::string_view extension, std::string_view currentVal, std::function<void(std::string)> setValueFn);
 private:
 	Editor* m_editor = nullptr;
 	Engine::DebugGuiSystem* m_dbgGui = nullptr;

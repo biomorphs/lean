@@ -344,6 +344,12 @@ namespace Particles
 					em->m_emitter->GetRenderers().erase(em->m_emitter->GetRenderers().begin() + behaviourIndex);
 				}
 				break;
+			case Lifetime:
+				if (behaviourIndex < em->m_emitter->GetLifetimeBehaviours().size())
+				{
+					em->m_emitter->GetLifetimeBehaviours().erase(em->m_emitter->GetLifetimeBehaviours().begin() + behaviourIndex);
+				}
+				break;
 			default:
 				assert(false);
 			}

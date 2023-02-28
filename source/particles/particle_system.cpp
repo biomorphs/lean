@@ -4,6 +4,9 @@
 #include "engine/job_system.h"
 #include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
+#include "engine/components/component_transform.h"
+#include "entity/entity_system.h"
+#include "components/component_particle_emitter.h"
 #include "core/timer.h"
 
 namespace Particles
@@ -17,6 +20,14 @@ namespace Particles
 
 	ParticleSystem::~ParticleSystem()
 	{
+	}
+
+	bool ParticleSystem::PostInit()
+	{
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		entities->RegisterComponentType<ComponentParticleEmitter>();
+		entities->RegisterInspector<ComponentParticleEmitter>(ComponentParticleEmitter::MakeInspector());
+		return true;
 	}
 
 	bool ParticleSystem::LoadEmitter(std::string_view path, EmitterDescriptor& result)
@@ -41,7 +52,7 @@ namespace Particles
 		return true;
 	}
 
-	void ParticleSystem::SetEmitterTransform(EmitterID emitterID, glm::vec3 pos, glm::quat rot)
+	bool ParticleSystem::SetEmitterTransform(EmitterID emitterID, glm::vec3 pos, glm::quat rot)
 	{
 		const auto foundInstance = m_activeEmitterIDToIndex.find(emitterID);
 		if (foundInstance != m_activeEmitterIDToIndex.end())
@@ -49,7 +60,9 @@ namespace Particles
 			const uint32_t index = foundInstance->second;
 			m_activeEmitters[index].m_instance->m_position = pos;
 			m_activeEmitters[index].m_instance->m_orientation = rot;
+			return true;
 		}
+		return false;
 	}
 
 	void ParticleSystem::StopEmitter(EmitterID emitterID)
@@ -284,6 +297,39 @@ namespace Particles
 		}
 	}
 
+	void ParticleSystem::UpdateEmitterComponents()
+	{
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto world = entities->GetWorld();
+		static auto emitterIterator = world->MakeIterator<ComponentParticleEmitter, Transform>();
+		emitterIterator.ForEach([this](ComponentParticleEmitter & em, Transform & t, EntityHandle owner) {
+			uint32_t playingID = em.GetPlayingEmitterID();
+			glm::quat orientation;
+			glm::vec3 position, scale;
+			t.GetWorldSpaceTransform(position, orientation, scale);
+			if (em.NeedsRestart())
+			{				
+				if (playingID != -1)
+				{
+					StopEmitter(playingID);
+					playingID = -1;
+				}
+				if (em.GetEmitter().size() > 0)
+				{
+					playingID = StartEmitter(em.GetEmitter(), position, orientation);
+				}
+				em.SetPlayingEmitterID(playingID);
+			}
+			else if (playingID != -1)
+			{
+				if (!SetEmitterTransform(playingID, position, orientation))
+				{
+					em.SetPlayingEmitterID(-1);
+				}
+			}
+		});
+	}
+
 	bool ParticleSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
@@ -299,6 +345,7 @@ namespace Particles
 		{
 			RenderEmitters(timeDelta);
 		}
+		UpdateEmitterComponents();
 
 		if (m_showStats)
 		{

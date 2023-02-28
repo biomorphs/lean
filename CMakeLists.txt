@@ -343,6 +343,8 @@ set(PARTICLES_SOURCES
 	source/particles/behaviours/kill_emitter_on_zero_particles.cpp
 	source/particles/behaviours/attached_light_behaviour.h
 	source/particles/behaviours/attached_light_behaviour.cpp
+	source/particles/components/component_particle_emitter.h
+	source/particles/components/component_particle_emitter.cpp
 )
 target_sources(Particles PRIVATE ${PARTICLES_SOURCES})
 target_include_directories(Particles PRIVATE ${CommonIncludePaths})

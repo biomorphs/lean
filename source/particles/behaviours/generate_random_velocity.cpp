@@ -28,7 +28,7 @@ namespace Particles
 			float vZ = ((float)rand() / (float)RAND_MAX);
 
 			__declspec(align(16)) glm::vec4 newVel(m_minimum.x + (vX * range.x), m_minimum.y + (vY * range.y), m_minimum.z + (vZ * range.z), 0.0f);
-			__m128 velVec = _mm_load_ps(glm::value_ptr(newVel * emitterTransform));
+			__m128 velVec = _mm_load_ps(glm::value_ptr(emitterTransform * newVel));
 			container.Velocities().GetValue(i) = velVec;
 		}
 	}

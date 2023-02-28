@@ -26,6 +26,21 @@ SERIALISE_BEGIN(Transform)
 	}
 SERIALISE_END()
 
+void Transform::GetWorldSpaceTransform(glm::vec3 & position, glm::quat & orientation, glm::vec3 & scale)
+{
+	auto mat = GetWorldspaceMatrix();
+	position = glm::vec3(mat[3]);
+	for (int i = 0; i < 3; i++)
+	{
+		scale[i] = glm::length(glm::vec3(mat[i]));
+	}
+	const glm::mat3 rotMtx(
+		glm::vec3(mat[0]) / scale[0],
+		glm::vec3(mat[1]) / scale[1],
+		glm::vec3(mat[2]) / scale[2]);
+	orientation = glm::quat_cast(rotMtx);
+}
+
 void Transform::SetParent(EntityHandle parent)
 {
 	m_parent = parent;

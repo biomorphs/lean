@@ -34,4 +34,5 @@ public:
 	virtual bool Inspect(const char* label, double currentValue, std::function<void(double)> setFn, double step = 1.0, double minv = -DBL_MAX, double maxv = DBL_MAX) = 0;
 	virtual bool Inspect(const char* label, glm::vec3 currentValue, std::function<void(glm::vec3)> setFn, float step = 1.0f, float minv = -FLT_MAX, float maxv = FLT_MAX) = 0;
 	virtual bool InspectColour(const char* label, glm::vec3 currentValue, std::function<void(glm::vec3)> setFn) = 0;
+	virtual void InspectFilePath(const char* label, std::string_view extension, std::string_view currentVal, std::function<void(std::string)> setValueFn) = 0;
 };

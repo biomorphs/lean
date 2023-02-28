@@ -2,12 +2,27 @@
 #include "editor.h"	
 #include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
+#include "engine/file_picker_dialog.h"
 #include "commands/editor_set_value_cmd.h"
 
 EditorComponentInspector::EditorComponentInspector()
 {
 	m_dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 	m_editor = Engine::GetSystem<Editor>("Editor");
+}
+
+void EditorComponentInspector::InspectFilePath(const char* label, std::string_view extension, std::string_view currentVal, std::function<void(std::string)> setValueFn)
+{
+	std::string btnText = std::string(label) + ": " + std::string(currentVal);
+	if (m_dbgGui->Button(btnText.c_str()))
+	{
+		std::string filePickerFilter = "Files (." + std::string(extension) + ")\0*." + std::string(extension) + "\0";
+		std::string path = Engine::ShowFilePicker("Choose file", "", filePickerFilter.c_str(), false);
+		if (path != currentVal)
+		{
+			m_editor->PushCommand(std::make_unique<EditorSetValueCommand<std::string>>(label, std::string(currentVal), path, setValueFn));
+		}
+	}
 }
 
 bool EditorComponentInspector::Inspect(const char* label, EntityHandle current, std::function<void(EntityHandle)> setFn, std::function<bool(const EntityHandle&)> filter)
