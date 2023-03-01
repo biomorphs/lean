@@ -450,11 +450,11 @@ void GraphicsSystem::ShowRTGui()
 			{
 				for (int c = 0; c < fb.GetColourAttachmentCount(); ++c)
 				{
-					m_debugGui->Image(fb.GetColourAttachment(c), glm::vec2(fb.Dimensions()) * 0.5f);
+					m_debugGui->Image(fb.GetColourAttachment(c), glm::vec2(fb.Dimensions()) * 0.5f, { 0,1 }, { 1,0 });
 				}
 				if (fb.GetDepthStencil() != nullptr)
 				{
-					m_debugGui->Image(*fb.GetDepthStencil(), glm::vec2(fb.Dimensions()) * 0.5f);
+					m_debugGui->Image(*fb.GetDepthStencil(), glm::vec2(fb.Dimensions()) * 0.5f, { 0,1 }, { 1,0 });
 				}
 			}
 		};

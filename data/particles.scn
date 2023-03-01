@@ -149,9 +149,9 @@
             "CastShadows": true,
             "ClassName": "Light",
             "Colour": [
-              1.0,
-              1.0,
-              0.9999899864196777
+              0.08919644355773926,
+              0.10425528138875961,
+              0.14215683937072754
             ],
             "Distance": 1500.0,
             "ShadowBias": 9.999999974752427e-07,
@@ -529,7 +529,7 @@
         {
           "Data": {
             "ClassName": "ComponentParticleEmitter",
-            "EmitterFile": "E:\\Git\\lean\\data\\orientationtest.emit"
+            "EmitterFile": "E:\\Git\\lean\\data\\test1multi.emit"
           },
           "Type": "ComponentParticleEmitter"
         },
@@ -623,13 +623,13 @@
             },
             "Position": [
               51.76618576049805,
-              71.05047607421875,
+              3.9601593017578125,
               -50.03627395629883
             ],
             "Scale": [
               8.0,
               8.0,
-              32.0
+              8.0
             ]
           },
           "Type": "Transform"

@@ -50,7 +50,6 @@ namespace Engine
 			while (jobsRemaining > 0)
 			{
 				ProcessJobThisThread();
-				Core::Thread::Sleep(0);
 			}
 		}
 	}
@@ -175,7 +174,6 @@ namespace Engine
 			while (waitForFinish > 0)
 			{
 				ProcessJobThisThread();
-				Core::Thread::Sleep(0);
 			}
 		}
 	}

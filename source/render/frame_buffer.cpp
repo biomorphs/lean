@@ -65,6 +65,7 @@ namespace Render
 		}
 		TextureSource ts(m_dimensions.x, m_dimensions.y, textureFormat);
 		ts.SetAA(GetAAMode(m_msaaSamples));
+		ts.SetWrapMode(TextureSource::WrapMode::ClampToEdge, TextureSource::WrapMode::ClampToEdge);
 		auto newTexture = std::make_unique<Render::Texture>();
 		if (newTexture->Create(ts))
 		{

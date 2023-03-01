@@ -4,6 +4,7 @@
 #include "engine/job_system.h"
 #include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
+#include "engine/debug_gui_menubar.h"
 #include "engine/components/component_transform.h"
 #include "entity/entity_system.h"
 #include "components/component_particle_emitter.h"
@@ -27,6 +28,7 @@ namespace Particles
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		entities->RegisterComponentType<ComponentParticleEmitter>();
 		entities->RegisterInspector<ComponentParticleEmitter>(ComponentParticleEmitter::MakeInspector());
+
 		return true;
 	}
 
@@ -330,6 +332,23 @@ namespace Particles
 		});
 	}
 
+	void ParticleSystem::ShowMenubar()
+	{
+		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
+		Engine::MenuBar mainMenu;
+		auto& particlesMenu = mainMenu.AddSubmenu(ICON_FK_SNOWFLAKE_O " Particles");
+		particlesMenu.AddItem(m_updateEmitters ? "Disable update" : "Enable Update", [this]() {
+			m_updateEmitters = !m_updateEmitters;
+		});
+		particlesMenu.AddItem(m_renderEmitters ? "Disable render" : "Enable render", [this]() {
+			m_renderEmitters = !m_renderEmitters;
+		});
+		particlesMenu.AddItem("Show stats", [this]() {
+			m_showStats = true;
+		});
+		dbgGui->MainMenuBar(mainMenu);
+	}
+
 	bool ParticleSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();
@@ -347,6 +366,7 @@ namespace Particles
 		}
 		UpdateEmitterComponents();
 
+		ShowMenubar();
 		if (m_showStats)
 		{
 			ShowStats();

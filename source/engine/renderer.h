@@ -151,9 +151,9 @@ namespace Engine
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns,
 			const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
-			const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
+			Render::ShaderProgram* shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat = nullptr);
 		void SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const glm::vec3& aabbMin, const glm::vec3& aabbMax,
-			const struct ShaderHandle& shader, const Render::VertexArray* va, const Render::RenderBuffer* ib, 
+			Render::ShaderProgram* shader, const Render::VertexArray* va, const Render::RenderBuffer* ib,
 			const Render::MeshChunk* chunks, uint32_t chunkCount, const PerInstanceData& pid);
 
 		int PopulateInstanceBuffers(InstanceList& list, const EntryList& entries);	// returns offset to start of index data in global gpu buffers

@@ -76,7 +76,6 @@ void LinearComponentStorage<ComponentType>::ForEachAsync(std::function<void(Comp
 		while (jobsRemaining > 0)
 		{
 			js.ProcessJobThisThread();
-			Core::Thread::Sleep(0);
 		}
 	}
 

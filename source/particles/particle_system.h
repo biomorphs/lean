@@ -30,6 +30,7 @@ namespace Particles
 		void UpdateActiveInstance(ActiveEmitter& em, float timeDelta);
 		bool LoadEmitter(std::string_view path, EmitterDescriptor& result);
 		void ShowStats();
+		void ShowMenubar();
 		void StartNewEmitters();
 		void UpdateEmitters(float timeDelta);
 		void StopEmitters();
@@ -42,7 +43,7 @@ namespace Particles
 		std::unordered_map<std::string, std::unique_ptr<EmitterDescriptor>> m_loadedEmitters;
 		bool m_updateEmitters = true;
 		bool m_renderEmitters = true;
-		bool m_showStats = true;
+		bool m_showStats = false;
 		robin_hood::unordered_map<EmitterID, uint32_t> m_activeEmitterIDToIndex;
 		std::vector<ActiveEmitter> m_activeEmitters;
 		Core::Mutex m_startEmittersMutex;

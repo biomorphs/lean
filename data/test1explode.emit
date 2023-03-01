@@ -67,9 +67,9 @@
       "Brightness": 6.0,
       "ClassName": "AttachedLightBehaviour",
       "Colour": [
-        1.0,
-        0.38235294818878174,
-        0.0
+        0.0,
+        0.35298752784729004,
+        1.0
       ],
       "Distance": 128.0
     }

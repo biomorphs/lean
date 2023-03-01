@@ -58,15 +58,15 @@
       "ClassName": "DebugAxisRenderer"
     },
     {
-      "Ambient": 0.10000000149011612,
+      "Ambient": 0.05000000074505806,
       "AttachToEmitter": false,
       "AttachToParticles": true,
       "Attenuation": 2.0,
-      "Brightness": 8.0,
+      "Brightness": 4.0,
       "ClassName": "AttachedLightBehaviour",
       "Colour": [
         1.0,
-        0.20588237047195435,
+        0.1764705777168274,
         0.0
       ],
       "Distance": 64.0

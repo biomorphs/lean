@@ -380,6 +380,14 @@ namespace Particles
 		const char* c_windowName = "Emitter Editor";
 		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 		auto particles = Engine::GetSystem<ParticleSystem>("Particles");
+
+		Engine::MenuBar mainMenu;
+		auto& particlesMenu = mainMenu.AddSubmenu(ICON_FK_SNOWFLAKE_O " Particles");
+		particlesMenu.AddItem("Open Emitter Editor", [this]() {
+			m_windowOpen = true;
+		});
+		dbgGui->MainMenuBar(mainMenu);
+
 		if (m_windowOpen)
 		{
 			dbgGui->BeginWindow(m_windowOpen, c_windowName, Engine::GuiWindowFlags::HasMenuBar);

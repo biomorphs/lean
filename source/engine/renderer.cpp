@@ -269,34 +269,33 @@ namespace Engine
 	}
 
 	inline void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const glm::vec3& aabbMin, const glm::vec3& aabbMax,
-		const struct ShaderHandle& shader, const Render::VertexArray* va, const Render::RenderBuffer* ib,
+		Render::ShaderProgram* shader, const Render::VertexArray* va, const Render::RenderBuffer* ib,
 		const Render::MeshChunk* chunks, uint32_t chunkCount, const PerInstanceData& pid)
 	{
-		const auto foundShader = m_shaderManager->GetShader(shader);
 		const uint64_t dataIndex = list.m_entries.size();
+		list.m_entries.emplace_back(InstanceList::Entry{ sortKey, dataIndex });
 		list.m_transformBounds.emplace_back(InstanceList::TransformBounds{trns, aabbMin, aabbMax});
-		list.m_drawData.push_back({ foundShader, va, ib, nullptr, nullptr, chunks, chunkCount});
+		list.m_drawData.push_back({ shader, va, ib, nullptr, nullptr, chunks, chunkCount});
 		list.m_perInstanceData.emplace_back(pid);
-		list.m_entries.emplace_back(InstanceList::Entry{sortKey, dataIndex});
 	}
 
 	inline void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, 
 		const Render::VertexArray* va, const Render::RenderBuffer* ib, const Render::MeshChunk* chunks, uint32_t chunkCount, const Render::Material* meshMaterial,
-		const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
+		Render::ShaderProgram* shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
-		const auto foundShader = m_shaderManager->GetShader(shader);
 		const uint64_t dataIndex = list.m_entries.size();
-		list.m_transformBounds.emplace_back(InstanceList::TransformBounds{ trns, aabbMin, aabbMax });
-		list.m_drawData.emplace_back(InstanceList::DrawData{ foundShader, va, ib, meshMaterial, instanceMat, chunks, chunkCount });
-		list.m_perInstanceData.emplace_back(PerInstanceData{});
 		list.m_entries.emplace_back(InstanceList::Entry{ sortKey, dataIndex });
+		list.m_transformBounds.emplace_back(InstanceList::TransformBounds{ trns, aabbMin, aabbMax });
+		list.m_drawData.emplace_back(InstanceList::DrawData{ shader, va, ib, meshMaterial, instanceMat, chunks, chunkCount });
+		list.m_perInstanceData.emplace_back(PerInstanceData{});
 	}
 
 	void Renderer::SubmitInstance(InstanceList& list, __m128i sortKey, const glm::mat4& trns, const Render::Mesh& mesh, const struct ShaderHandle& shader, const glm::vec3& aabbMin, const glm::vec3& aabbMax, const Render::Material* instanceMat)
 	{
+		auto foundShader = m_shaderManager->GetShader(shader);
 		SubmitInstance(list, sortKey, trns, 
 			&mesh.GetVertexArray(), mesh.GetIndexBuffer().get(), &mesh.GetChunks()[0], mesh.GetChunks().size(), &mesh.GetMaterial(),
-			shader, aabbMin, aabbMax, instanceMat);
+			foundShader, aabbMin, aabbMax, instanceMat);
 	}
 
 	void Renderer::SubmitInstance(const glm::mat4& transform, const Render::Mesh& mesh, const struct ShaderHandle& shader, glm::vec3 boundsMin, glm::vec3 boundsMax, const Render::Material* instanceMat)
@@ -346,6 +345,7 @@ namespace Engine
 		if (theModel != nullptr && theShader != nullptr)
 		{
 			ShaderHandle shadowShader = m_shaderManager->GetShadowsShader(shader);
+			auto shadowShaderPtr = m_shaderManager->GetShader(shadowShader);
 			const Render::VertexArray* va = m_modelManager->GetVertexArray();
 			const Render::RenderBuffer* ib = m_modelManager->GetIndexBuffer();
 			const int partCount = theModel->MeshParts().size();
@@ -372,22 +372,22 @@ namespace Engine
 				{
 					_mm_store_ps(glm::value_ptr(instancePos), positions[i]);
 					const glm::mat4 instanceTransform = glm::translate(glm::vec3(instancePos)) * meshPart.m_transform;
-					if (partDrawData.m_castsShadows && shadowShader.m_index != (uint32_t)-1)
+					if (partDrawData.m_castsShadows && shadowShaderPtr != nullptr)
 					{
 						SubmitInstance(m_allShadowCasterInstances, shadowSortKey, instanceTransform, boundsMin, boundsMax,
-							shadowShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+							shadowShaderPtr, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
 					}
 					if (partDrawData.m_isTransparent || pid.m_diffuseOpacity.a != 1.0f)
 					{
 						const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
 						auto sortKey = TransparentSortKey(shader, va, meshPart.m_chunks.data(), nullptr, distanceToCamera);
 						SubmitInstance(m_transparentInstances, sortKey, instanceTransform, boundsMin, boundsMax,
-							shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+							theShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
 					}
 					else
 					{
 						SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, boundsMin, boundsMax,
-							shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+							theShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
 					}
 				}
 			}
@@ -401,6 +401,7 @@ namespace Engine
 		if (theModel != nullptr && theShader != nullptr)
 		{
 			ShaderHandle shadowShader = m_shaderManager->GetShadowsShader(shader);
+			auto shadowShaderPtr = m_shaderManager->GetShader(shadowShader);
 			const Render::VertexArray* va = m_modelManager->GetVertexArray();
 			const Render::RenderBuffer* ib = m_modelManager->GetIndexBuffer();
 			const int partCount = theModel->MeshParts().size();
@@ -426,7 +427,7 @@ namespace Engine
 				{
 					auto sortKey = ShadowCasterSortKey(shadowShader, va, meshPart.m_chunks.data(), nullptr);
 					SubmitInstance(m_allShadowCasterInstances, sortKey, instanceTransform, boundsMin, boundsMax,
-						shadowShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+						shadowShaderPtr, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
 				}
 
 				if (partDrawData.m_isTransparent || pid.m_diffuseOpacity.a != 1.0f)
@@ -434,13 +435,13 @@ namespace Engine
 					const float distanceToCamera = glm::length(glm::vec3(instanceTransform[3]) - m_camera.Position());
 					auto sortKey = TransparentSortKey(shader, va, meshPart.m_chunks.data(), nullptr, distanceToCamera);
 					SubmitInstance(m_transparentInstances, sortKey, instanceTransform, boundsMin, boundsMax,
-						shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+						theShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
 				}
 				else
 				{
 					auto opaqueSortKey = OpaqueSortKey(shader, va, meshPart.m_chunks.data(), nullptr, nullptr);
 					SubmitInstance(m_opaqueInstances, opaqueSortKey, instanceTransform, boundsMin, boundsMax,
-						shader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
+						theShader, va, ib, &meshPart.m_chunks[0], (uint32_t)meshPart.m_chunks.size(), pid);
 				}
 			}
 		}
@@ -501,31 +502,53 @@ namespace Engine
 	int Renderer::PopulateInstanceBuffers(InstanceList& list, const EntryList& entries)
 	{
 		SDE_PROF_EVENT();
-		static std::vector<RenderPerInstanceData> instanceData;
+		constexpr bool useOldMethod = false;
+		if constexpr (useOldMethod)
 		{
-			SDE_PROF_EVENT("Reserve");
-			instanceData.reserve(entries.size());
-			instanceData.resize(0);
-		}
-
-		{
-			SDE_PROF_EVENT("Copy");
-			for (int e = 0; e < entries.size(); ++e)
+			static std::vector<RenderPerInstanceData> instanceData;
 			{
-				const auto index = entries[e].m_dataIndex;
-				instanceData.emplace_back(RenderPerInstanceData{ list.m_transformBounds[index].m_transform, list.m_perInstanceData[index] });
+				SDE_PROF_EVENT("Reserve");
+				instanceData.reserve(entries.size());
+				instanceData.resize(0);
 			}
-		}
 
-		// copy the instance buffers to gpu
-		int instanceIndex = -1;
-		if (instanceData.size() > 0 && m_nextInstance + instanceData.size() < c_maxInstances)
-		{
-			m_perInstanceData.SetData(m_nextInstance * sizeof(RenderPerInstanceData), instanceData.size() * sizeof(RenderPerInstanceData), instanceData.data());
-			instanceIndex = m_nextInstance;
-			m_nextInstance += instanceData.size();
+			{
+				SDE_PROF_EVENT("Copy");
+				for (int e = 0; e < entries.size(); ++e)
+				{
+					const auto index = entries[e].m_dataIndex;
+					instanceData.emplace_back(RenderPerInstanceData{ list.m_transformBounds[index].m_transform, list.m_perInstanceData[index] });
+				}
+			}
+
+			// copy the instance buffers to gpu
+			int instanceIndex = -1;
+			if (instanceData.size() > 0 && m_nextInstance + instanceData.size() < c_maxInstances)
+			{
+				m_perInstanceData.SetData(m_nextInstance * sizeof(RenderPerInstanceData), instanceData.size() * sizeof(RenderPerInstanceData), instanceData.data());
+				instanceIndex = m_nextInstance;
+				m_nextInstance += instanceData.size();
+			}
+			return instanceIndex;
 		}
-		return instanceIndex;
+		else
+		{
+			int instanceIndex = -1;
+			if (entries.size() > 0 && m_nextInstance + entries.size() < c_maxInstances)
+			{
+				void* bufferPtr = m_perInstanceData.Map(Render::RenderBufferMapHint::Write, 0, entries.size() * sizeof(RenderPerInstanceData));
+				RenderPerInstanceData* gpuPIDs = static_cast<RenderPerInstanceData*>(bufferPtr) + m_nextInstance;
+				for (int e = 0; e < entries.size(); ++e)
+				{
+					const auto index = entries[e].m_dataIndex;
+					gpuPIDs[e] = { list.m_transformBounds[index].m_transform, list.m_perInstanceData[index] };
+				}
+				m_perInstanceData.Unmap();
+				instanceIndex = m_nextInstance;
+				m_nextInstance += entries.size();
+			}
+			return instanceIndex;
+		}
 	}
 
 	// returns the screen-space (normalized device coordinates) bounds of a projected sphere
@@ -595,11 +618,14 @@ namespace Engine
 						glm::vec4 lightCenterWs = { glm::vec3(light.m_position), 1 };
 						glm::vec4 centerVs = viewMat * lightCenterWs;
 						glm::vec3 center = glm::vec3(centerVs) / centerVs.w;
-						glm::vec3 bMin(0), bMax(0);
-						ProjectedSphereAABB(center, light.m_maxDistance, m_camera.NearPlane(), projectionMat, bMin, bMax);
-						glm::vec2 origin = (glm::vec2(bMin.x, bMin.y) + 1.0f) * glm::vec2(m_windowSize) * 0.5f;
-						glm::vec2 dims = glm::vec2(bMax.x - bMin.x, bMax.y - bMin.y) * glm::vec2(m_windowSize) * 0.5f;
-						bounds = glm::vec4(origin.x, origin.y, dims.x, dims.y);
+						if (glm::length(center) >= light.m_maxDistance)	// if the light intersects the camera just shove it in all tiles
+						{
+							glm::vec3 bMin(-1), bMax(1);
+							ProjectedSphereAABB(center, light.m_maxDistance, m_camera.NearPlane(), projectionMat, bMin, bMax);
+							glm::vec2 origin = (glm::vec2(bMin.x, bMin.y) + 1.0f) * glm::vec2(m_windowSize) * 0.5f;
+							glm::vec2 dims = glm::vec2(bMax.x - bMin.x, bMax.y - bMin.y) * glm::vec2(m_windowSize) * 0.5f;
+							bounds = glm::vec4(origin.x, origin.y, dims.x, dims.y);
+						}
 					}
 					viewSpaceBounds[l] = bounds;
 				}
@@ -1236,7 +1262,6 @@ namespace Engine
 					{
 						++shadowsInFlight;
 						Frustum shadowFrustum(m_lights[l].m_lightspaceMatrix);
-						visibleShadowCasters[shadowCasterListId]->resize(0);
 						FindVisibleInstancesAsync(shadowFrustum, m_allShadowCasterInstances,
 							*visibleShadowCasters[shadowCasterListId], [shadowCasterListId, &shadowsInFlight](size_t count) {
 								--shadowsInFlight;
@@ -1277,11 +1302,9 @@ namespace Engine
 			visibleOpaques.reserve(m_opaqueInstances.m_entries.size());
 			visibleTransparents.reserve(m_transparentInstances.m_entries.size());
 			Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
-			visibleOpaques.resize(0);
 			FindVisibleInstancesAsync(viewFrustum, m_opaqueInstances, visibleOpaques, [&](size_t resultCount) {
 				opaquesReady = true;
 			});
-			visibleTransparents.resize(0);
 			FindVisibleInstancesAsync(viewFrustum, m_transparentInstances, visibleTransparents, [&](size_t resultCount) {
 				transparentsReady = true;
 			});
@@ -1302,7 +1325,7 @@ namespace Engine
 			SDE_PROF_EVENT("Wait for shadow lists");
 			while (shadowsInFlight > 0)
 			{
-				Core::Thread::Sleep(0);
+				m_jobSystem->ProcessJobThisThread();
 			}
 		}
 		int startIndex = 0;

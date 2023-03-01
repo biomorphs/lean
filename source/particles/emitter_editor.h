@@ -45,7 +45,7 @@ namespace Particles
 		void ShowCurrentEmitter(Engine::DebugGuiSystem& gui);
 		void DrawTabButtons(Engine::DebugGuiSystem& gui);
 		void DoOnClose();
-		bool m_windowOpen = true;
+		bool m_windowOpen = false;
 
 		Engine::MenuBar m_menuBar;
 
