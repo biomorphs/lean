@@ -11,7 +11,8 @@ namespace Engine
 {
 	uint32_t RenderInstanceList::AddInstances(int instanceCount)
 	{
-		uint32_t oldCount = m_count.fetch_add(instanceCount);
+		// memory_order_relaxed since we dont care about order of operations around this really
+		uint32_t oldCount = m_count.fetch_add(instanceCount, std::memory_order_relaxed);
 		if (oldCount + instanceCount < m_maxInstances)
 		{
 			return oldCount;

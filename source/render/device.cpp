@@ -237,6 +237,11 @@ namespace Render
 		glNamedFramebufferTextureLayer(fb.GetHandle(), GL_DEPTH_ATTACHMENT, fb.GetDepthStencil()->GetHandle(), 0, cubeFace);
 	}
 
+	void Device::WaitForGpu()
+	{
+		glFinish();
+	}
+
 	void Device::FlushContext()
 	{
 		glFlush();	// Ensures any writes in shared contexts are pushed to all of them
@@ -257,7 +262,6 @@ namespace Render
 	{
 		SDE_PROF_EVENT();
 		SDL_GL_SwapWindow(m_window.GetWindowHandle());
-		glFinish();
 	}
 
 	SDL_GLContext Device::GetGLContext()

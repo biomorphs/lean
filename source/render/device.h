@@ -82,6 +82,7 @@ namespace Render
 		Fence MakeFence();
 		void DestroyFence(Fence& f);
 		FenceResult WaitOnFence(Fence& f, uint32_t timeoutNanoseconds);		// destroys the fence on completion
+		void WaitForGpu();	// gross
 		void Present();
 		void* CreateSharedGLContext();
 		void* GetGLContext();

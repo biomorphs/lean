@@ -104,6 +104,11 @@ namespace Engine
 	{
 		SDE_PROF_EVENT();
 
+		{
+			SDE_PROF_EVENT("Wait for gpu");
+			m_device->WaitForGpu();
+		}
+
 		// bind backbuffer for drawing
 		m_device->DrawToBackbuffer();
 		m_device->SetViewport({ 0,0 }, { m_config.m_windowWidth, m_config.m_windowHeight });
