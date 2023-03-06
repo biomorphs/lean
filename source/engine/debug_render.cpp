@@ -41,7 +41,7 @@ namespace Engine
 		SDE_PROF_EVENT();
 
 		// update current, draw current-1
-		auto lineCount = m_currentLines;
+		auto lineCount = m_currentLines.load();
 		PushLinesToMesh(*m_renderMesh[m_currentWriteMesh]);
 		auto meshToDraw = (m_currentWriteMesh - 1) % c_meshBuffers;
 		if (lineCount > 0)
@@ -92,38 +92,26 @@ namespace Engine
 
 	void DebugRender::AddLinesInternal(const __m128* __restrict posBuffer, const __m128* __restrict colBuffer, uint32_t count)
 	{
-		uint32_t toAdd = count;
-		if ((m_currentLines + count) > c_maxLines)
+		uint32_t addIndex = m_currentLines.fetch_add(count);
+		if (count > 0 && (addIndex + count) < c_maxLines)
 		{
-			toAdd = c_maxLines - m_currentLines;
-		}
-
-		if (toAdd > 0)
-		{
-			glm::vec4* posData = m_posBuffer.get() + (m_currentLines * 2);
-			glm::vec4* colData = m_colBuffer.get() + (m_currentLines * 2);
-			memcpy(glm::value_ptr(*posData), posBuffer, toAdd * sizeof(glm::vec4) * 2);
-			memcpy(glm::value_ptr(*colData), colBuffer, toAdd * sizeof(glm::vec4) * 2);
-			m_currentLines += toAdd;
+			glm::vec4* posData = m_posBuffer.get() + (addIndex * 2);
+			glm::vec4* colData = m_colBuffer.get() + (addIndex * 2);
+			memcpy(glm::value_ptr(*posData), posBuffer, count * sizeof(glm::vec4) * 2);
+			memcpy(glm::value_ptr(*colData), colBuffer, count * sizeof(glm::vec4) * 2);
 		}
 		assert(m_currentLines < c_maxLines);
 	}
 
 	void DebugRender::AddLines(const glm::vec4* v, const glm::vec4* c, uint32_t count)
 	{
-		uint32_t toAdd = count;
-		if ((m_currentLines + count) > c_maxLines)
+		uint32_t addIndex = m_currentLines.fetch_add(count);
+		if (count > 0 && (addIndex + count) < c_maxLines)
 		{
-			toAdd = c_maxLines - m_currentLines;
-		}
-
-		if (count > 0)
-		{
-			glm::vec4* posData = m_posBuffer.get() + (m_currentLines * 2);
-			glm::vec4* colData = m_colBuffer.get() + (m_currentLines * 2);
-			memcpy(posData, v, toAdd * sizeof(glm::vec4) * 2);
-			memcpy(colData, c, toAdd * sizeof(glm::vec4) * 2);
-			m_currentLines += toAdd;
+			glm::vec4* posData = m_posBuffer.get() + (addIndex * 2);
+			glm::vec4* colData = m_colBuffer.get() + (addIndex * 2);
+			memcpy(posData, v, count * sizeof(glm::vec4) * 2);
+			memcpy(colData, c, count * sizeof(glm::vec4) * 2);
 		}
 		assert(m_currentLines < c_maxLines);
 	}
