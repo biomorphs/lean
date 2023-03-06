@@ -5,6 +5,8 @@
 #include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
+#include "engine/graphics_system.h"
+#include "engine/renderer.h"
 #include "engine/components/component_transform.h"
 #include "entity/entity_system.h"
 #include "components/component_particle_emitter.h"
@@ -233,9 +235,19 @@ namespace Particles
 		SDE_PROF_EVENT();
 		Core::ScopedTimer timeUpdate(m_lastUpdateTime);
 		auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
-		jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 32, [this, timeDelta](int32_t i) {
-			UpdateActiveInstance(m_activeEmitters[i], 0.016f);
-		});
+		if (m_updateEmittersAsync)
+		{
+			jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 8, [this, timeDelta](int32_t i) {
+				UpdateActiveInstance(m_activeEmitters[i], 0.016f);
+			});
+		}
+		else
+		{
+			for (int i = 0; i < m_activeEmitters.size(); ++i)
+			{
+				UpdateActiveInstance(m_activeEmitters[i], 0.016f);
+			}
+		}
 	}
 
 	void ParticleSystem::DoStopEmitter(EmitterInstance& i)
@@ -286,15 +298,31 @@ namespace Particles
 		}
 	}
 
-	void ParticleSystem::RenderEmitters(float timeDelta	)
+	void ParticleSystem::RenderEmitters(float timeDelta)
 	{
 		SDE_PROF_EVENT();
 		Core::ScopedTimer timeUpdate(m_lastRenderTime);
-		for (const auto& em : m_activeEmitters)
+		auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
+
+		if (m_renderEmittersAsync)
 		{
-			for (const auto& render : em.m_instance->m_emitter->GetRenderers())
+			jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 8, [this, timeDelta](int32_t i) {
+				auto& em = m_activeEmitters[i];
+				for (const auto& render : em.m_instance->m_emitter->GetRenderers())
+				{
+					render->Draw(em.m_instance->m_position, em.m_instance->m_orientation, em.m_instance->m_timeActive, timeDelta, em.m_instance->m_particles);
+				}
+			});
+		}
+		else
+		{
+			for(int i=0;i<m_activeEmitters.size();++i)
 			{
-				render->Draw(em.m_instance->m_position, em.m_instance->m_orientation, em.m_instance->m_timeActive, timeDelta, em.m_instance->m_particles);
+				auto& em = m_activeEmitters[i];
+				for (const auto& render : em.m_instance->m_emitter->GetRenderers())
+				{
+					render->Draw(em.m_instance->m_position, em.m_instance->m_orientation, em.m_instance->m_timeActive, timeDelta, em.m_instance->m_particles);
+				}
 			}
 		}
 	}
@@ -342,6 +370,12 @@ namespace Particles
 		});
 		particlesMenu.AddItem(m_renderEmitters ? "Disable render" : "Enable render", [this]() {
 			m_renderEmitters = !m_renderEmitters;
+		});
+		particlesMenu.AddItem(m_updateEmittersAsync ? "Disable async update" : "Enable async update", [this]() {
+			m_updateEmittersAsync = !m_updateEmittersAsync;
+		});
+		particlesMenu.AddItem(m_renderEmittersAsync ? "Disable async render" : "Enable async render", [this]() {
+			m_renderEmittersAsync = !m_renderEmittersAsync;
 		});
 		particlesMenu.AddItem("Show stats", [this]() {
 			m_showStats = true;

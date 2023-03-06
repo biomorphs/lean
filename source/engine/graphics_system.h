@@ -49,6 +49,7 @@ private:
 	bool m_showTargets = false;
 	bool m_useNewRender = false;
 	bool m_showLightTiles = false;
+	bool m_submitEntitiesAsync = true;
 	std::unique_ptr<Engine::DebugRender> m_debugRender;
 	std::unique_ptr<Engine::Renderer> m_renderer;
 	std::unique_ptr<Engine::RenderContext2D> m_render2D;

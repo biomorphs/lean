@@ -137,8 +137,6 @@ add_library(Engine STATIC)
 set(ENGINE_SOURCES
 	source/engine/2d_render_context.h
 	source/engine/2d_render_context.cpp
-	source/engine/new_render.h
-	source/engine/new_render.cpp
 	source/engine/material_helpers.h
 	source/engine/material_helpers.cpp
 	source/engine/physics_handle.h
@@ -207,7 +205,6 @@ set(ENGINE_SOURCES
 	source/engine/renderer.h
 	source/engine/renderer.cpp
 	source/engine/light.h
-	source/engine/mesh_instance.h
 	source/engine/debug_render.cpp
 	source/engine/debug_render.h
 	source/engine/serialisation.inl
@@ -229,6 +226,8 @@ set(ENGINE_SOURCES
 	source/engine/graphics_system.cpp
 	source/engine/text_system.h
 	source/engine/text_system.cpp
+	source/engine/render_instance_list.h
+	source/engine/render_instance_list.cpp
 	source/engine/components/component_script.h
 	source/engine/components/component_script.cpp
 	source/engine/components/component_camera.h

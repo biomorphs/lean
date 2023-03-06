@@ -358,20 +358,40 @@ void GraphicsSystem::ProcessEntities()
 	{
 		SDE_PROF_EVENT("SubmitEntities");
 		static auto modelIterator = world->MakeIterator<Model, Transform>();
-		modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
-			if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
-			{
-				ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
-				if (partOverrides == nullptr)
+		if (m_submitEntitiesAsync)
+		{
+			modelIterator.ForEachAsync(1000, [this, &materials](Model& m, Transform& t, EntityHandle h) {
+				if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
 				{
-					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
+					ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
+					if (partOverrides == nullptr)
+					{
+						m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
+					}
+					else
+					{
+						m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
+					}
 				}
-				else
+			});
+		}
+		else
+		{
+			modelIterator.ForEach([this, &materials](Model& m, Transform& t, EntityHandle h) {
+				if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
 				{
-					m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
+					ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();
+					if (partOverrides == nullptr)
+					{
+						m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader());
+					}
+					else
+					{
+						m_renderer->SubmitInstance(t.GetWorldspaceMatrix(), m.GetModel(), m.GetShader(), partOverrides->Materials().data(), partOverrides->Materials().size());
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	if(m_showBounds)
@@ -478,6 +498,7 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		const auto& fs = m_renderer->GetStats();
 		char statText[1024] = { '\0' };
 		m_debugGui->BeginWindow(m_showStats, "Render Stats");
+		m_submitEntitiesAsync = m_debugGui->Checkbox("Use async entity submit", m_submitEntitiesAsync);
 		m_renderer->SetUseDrawIndirect(m_debugGui->Checkbox("Use draw indirect", m_renderer->GetUseDrawIndirect()));
 		sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);
