@@ -15,5 +15,9 @@ namespace Particles
 
 		float m_minMagnitude = 0.0f;
 		float m_maxMagnitude = 1.0f;
+		float m_minTheta = 0.0f;
+		float m_maxTheta = glm::pi<float>() * 2.0f;
+		float m_minPhi = 0.0f;
+		float m_maxPhi = glm::pi<float>() * 2.0f;
 	};
 }

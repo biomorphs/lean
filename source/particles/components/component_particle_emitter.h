@@ -7,6 +7,7 @@
 class ComponentParticleEmitter
 {
 public:
+	~ComponentParticleEmitter();
 	COMPONENT(ComponentParticleEmitter);
 	COMPONENT_INSPECTOR();
 

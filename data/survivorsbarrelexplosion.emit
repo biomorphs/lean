@@ -1,0 +1,69 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "ClassName": "EmitOnce",
+      "Emission Count": 512
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "BoundsMax": 60.0,
+      "BoundsMin": 20.0,
+      "ClassName": "GenerateRandomVelocitySphere",
+      "MaxPhi": 6.2831854820251465,
+      "MaxTheta": 6.2829999923706055,
+      "MinPhi": 0.0,
+      "MinTheta": 0.0
+    },
+    {
+      "BoundsMax": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "BoundsMin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 2.0,
+      "MinLife": 0.5
+    }
+  ],
+  "LifetimeBehaviours": [],
+  "MaxParticles": 512,
+  "Name": "SurvivorsBarrelExplosion",
+  "OwnsChildEmitters": true,
+  "RenderBehaviours": [
+    {
+      "ClassName": "MeshRenderer",
+      "Model": {
+        "ClassName": "ModelHandle",
+        "Path": "E:\\Git\\lean\\data\\sphere_low.fbx"
+      },
+      "Shader": {
+        "ClassName": "ShaderHandle",
+        "FS": "simplediffuse.fs",
+        "Name": "diffuse",
+        "VSCS": "simplediffuse.vs"
+      }
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "EulerPositionUpdater"
+    },
+    {
+      "ClassName": "GravityUpdate"
+    },
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": true
+    }
+  ]
+}

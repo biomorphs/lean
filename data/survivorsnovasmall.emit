@@ -1,0 +1,71 @@
+{
+  "ClassName": "EmitterDescriptor",
+  "EmissionBehaviours": [
+    {
+      "Burst Count": 32,
+      "ClassName": "EmitBurstRepeater",
+      "Frequency": 0.06400000303983688,
+      "SpawnDuration": 0.12800000607967377
+    },
+    {
+      "ClassName": "EmitOnce",
+      "Emission Count": 32
+    }
+  ],
+  "GeneratorBehaviours": [
+    {
+      "BoundsMax": [
+        0.0,
+        4.0,
+        0.0
+      ],
+      "BoundsMin": [
+        0.0,
+        4.0,
+        0.0
+      ],
+      "ClassName": "GenerateRandomPosition"
+    },
+    {
+      "BoundsMax": 200.0,
+      "BoundsMin": 100.0,
+      "ClassName": "GenerateRandomVelocitySphere",
+      "MaxPhi": 6.2831854820251465,
+      "MaxTheta": 3.140000104904175,
+      "MinPhi": 0.0,
+      "MinTheta": 3.140000104904175
+    },
+    {
+      "ClassName": "GenerateRandomLifetime",
+      "MaxLife": 0.5,
+      "MinLife": 0.25
+    },
+    {
+      "AttachToParticle": true,
+      "ClassName": "GenerateSpawnEmitter",
+      "EmitterFile": "E:\\Git\\lean\\data\\survivorsnovasmalltrail.emit"
+    }
+  ],
+  "LifetimeBehaviours": [],
+  "MaxParticles": 1000,
+  "Name": "SurvivorsNovaSmall",
+  "OwnsChildEmitters": true,
+  "RenderBehaviours": [
+    {
+      "AxisScale": 1.0,
+      "ClassName": "DebugAxisRenderer"
+    }
+  ],
+  "UpdateBehaviours": [
+    {
+      "ClassName": "EulerPositionUpdater"
+    },
+    {
+      "ClassName": "UpdateParticleLifetime",
+      "KillAttachedEmitters": false
+    },
+    {
+      "ClassName": "UpdateAttachedEmitter"
+    }
+  ]
+}

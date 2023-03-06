@@ -6,6 +6,7 @@
 #include "engine/debug_gui_system.h"
 #include "engine/debug_gui_menubar.h"
 #include "engine/graphics_system.h"
+#include "engine/script_system.h"
 #include "engine/renderer.h"
 #include "engine/components/component_transform.h"
 #include "entity/entity_system.h"
@@ -28,8 +29,14 @@ namespace Particles
 	bool ParticleSystem::PostInit()
 	{
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto scripts = Engine::GetSystem<Engine::ScriptSystem>("Script");
 		entities->RegisterComponentType<ComponentParticleEmitter>();
 		entities->RegisterInspector<ComponentParticleEmitter>(ComponentParticleEmitter::MakeInspector());
+
+		auto particles = scripts->Globals()["Particles"].get_or_create<sol::table>();
+		particles["StartEmitter"] = [this](const char* emitterFile, glm::vec3 position) {
+			StartEmitter(emitterFile, position);
+		};
 
 		return true;
 	}

@@ -5,7 +5,7 @@ local baseExplosionArea = 24
 local baseExplosionDamage = 80
 local baseBarrelForceXZ = 400000
 local baseBarrelForceY = 100000
-local barrelXZSpawnOffset = 12
+local barrelXZSpawnOffset = 4
 local spawnedBarrels = {}	-- {entity, spawn time, time before explosion, explosion area, explosion damage, force to apply to body
 
 function RandomFloat(minv,maxv) 
@@ -47,9 +47,11 @@ function UpdateSpawnedBarrels(playerCmp, currentTime)
 			local barrelTransform = World.GetComponent_Transform(entity)
 			local explodeArea = spawnedBarrels[i][4]
 			local explodeDamage = spawnedBarrels[i][5]
-			DoExplosionAt(barrelTransform:GetPosition(), explodeArea, explodeDamage)
-			World.RemoveEntity(entity)
+			
+			Particles.StartEmitter('survivorsbarrelexplosion.emit', barrelTransform:GetPosition())
+			Survivors.DoDamageInArea(barrelTransform:GetPosition(), explodeArea, explodeDamage, explodeDamage)
 
+			World.RemoveEntity(entity)
 			spawnedBarrels[i] = spawnedBarrels[#spawnedBarrels]
 			spawnedBarrels[#spawnedBarrels] = nil
 		else

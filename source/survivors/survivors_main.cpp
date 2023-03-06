@@ -112,6 +112,9 @@ namespace Survivors
 		survivors["SetMushroomTemplateEntity"] = [this](EntityHandle e) {
 			m_mushroomTemplateEntity = e;
 		};
+		survivors["DoDamageInArea"] = [this](glm::vec3 center, float radius, float damageAtCenter, float damageAtEdge) {
+			m_damageAreas.push_back({center, radius, damageAtCenter, damageAtEdge});
+		};
 
 		// Todo Hacks to fix later 
 		auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
@@ -181,7 +184,6 @@ namespace Survivors
 		const double currentTime = Engine::GetSystem<Engine::TimeSystem>("Time")->GetElapsedTime();
 		const auto aabMin = pos - glm::vec3(radius, 0.0f, radius);
 		const auto aabMax = pos + glm::vec3(radius, 0.0f, radius);
-		
 		
 		m_activeMonsterGrid.ForEachNearby(aabMin, aabMax, [&](uint32_t& index) {
 			auto& enemy = m_activeMonsters[index];
@@ -500,6 +502,7 @@ namespace Survivors
 		m_monstersToDespawn.clear();
 		m_monstersToKill.clear();
 		CollectActiveAndDespawning(playerPos, timeDelta);
+		ApplyDamageAreas();
 		DoEnemyAvoidance(playerPos, timeDelta);
 		UpdateAttackingMonsters(playerCmp, playerPos);
 		UpdateExplosions(timeDelta);
@@ -546,6 +549,15 @@ namespace Survivors
 				t.SetPosition(t.GetPosition() + velocity * timeDelta);
 			}
 		});
+	}
+
+	void SurvivorsMain::ApplyDamageAreas()
+	{
+		for (const auto& it : m_damageAreas)
+		{
+			DoDamageInRadius(it.m_center, it.m_radius, it.m_damageAtCenter, it.m_damageAtEdge);
+		}
+		m_damageAreas.clear();
 	}
 
 	bool SurvivorsMain::Tick(float timeDelta)

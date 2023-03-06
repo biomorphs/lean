@@ -46,6 +46,7 @@ namespace Survivors
 		void SpawnXPAt(EntityHandle player, glm::vec3 p, int xpToAdd);
 		void SpawnMushroomAt(EntityHandle player, glm::vec3 p, int hpToAdd);
 		void DamageMonster(ActiveMonster& monster, double curentTime, float damage, glm::vec2 knockback = glm::vec2(0.0f));
+		void ApplyDamageAreas();
 
 		bool m_firstFrame = true;
 		double m_damagedMaterialTime = 0.25;			// time that a monster will show damaged material
@@ -54,6 +55,13 @@ namespace Survivors
 		int m_avoidanceIterations = 1;				// increase for more stability but slower
 		float m_avoidanceMaxDistance = 350.0f;
 		WorldGrid<uint32_t> m_activeMonsterGrid;	// indexes into vector below
+		struct DamageArea {
+			glm::vec3 m_center;
+			float m_radius;
+			float m_damageAtCenter;
+			float m_damageAtEdge;
+		};
+		std::vector<DamageArea> m_damageAreas;
 		std::vector<ActiveMonster> m_activeMonsters;
 		std::vector<EntityHandle> m_monstersToDespawn;
 		std::vector<EntityHandle> m_monstersToKill;

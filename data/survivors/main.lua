@@ -28,6 +28,7 @@ local bossesPerSecond = 0
 local bossesPerSecondIncrement = 0.000001
 local bossesSpawnTimer = 0
 local bossesSpawnEnabled = false
+local godMode = false
 
 -- weapons
 local explodeNovaActive = false
@@ -279,7 +280,7 @@ function ResetPlayer()
 	playerCmp:SetDamageMultiplier(1)
 	playerCmp:SetCooldownMultiplier(1)
 	playerCmp:SetMoveSpeedMultiplier(1)
-	playerCmp:SetProjectileCount(2)
+	playerCmp:SetProjectileCount(1)
 	
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	playerTransform:SetPosition(playerStartPosition[1], playerStartPosition[2], playerStartPosition[3])
@@ -520,6 +521,7 @@ function ShowEditor(entity)
 	zombieChadsPerSecond = DebugGui.DragFloat('Zombie chads/second', zombieChadsPerSecond, 1.0, 0.0, 128.0)
 	skeletonsPerSecond = DebugGui.DragFloat('Skeletons/second', skeletonsPerSecond, 1.0, 0.0, 128.0)
 	bossesPerSecond = DebugGui.DragFloat('Bosses/second', bossesPerSecond, 1.0, 0.0, 128)
+	godMode = DebugGui.Checkbox('God Mode', godMode)
 	
 	if(DebugGui.Button('Reload Main Script')) then 
 		local myScriptCmp = World.GetComponent_Script(entity)
@@ -549,6 +551,10 @@ function SurvivorsMain(entity)
 	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
 	local playerCmp = World.GetComponent_PlayerComponent(foundPlayer)
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
+	if godMode then
+		playerCmp:SetCurrentHealth(playerCmp:GetMaximumHealth())
+	end
+	
 	if(playerCmp:GetCurrentHealth() <= 0) then 
 		OnPlayerDead()
 	else 

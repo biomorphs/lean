@@ -1,6 +1,16 @@
 #include "component_particle_emitter.h"
+#include "particles/particle_system.h"
 #include "entity/component_inspector.h"
 #include "engine/debug_gui_system.h"
+
+ComponentParticleEmitter::~ComponentParticleEmitter()
+{
+	if (m_playingEmitterID != -1)
+	{
+		static auto particles = Engine::GetSystem<Particles::ParticleSystem>("Particles");
+		particles->StopEmitter(m_playingEmitterID);
+	}
+}
 
 COMPONENT_SCRIPTS(ComponentParticleEmitter,
 	"SetEmitter", &ComponentParticleEmitter::SetEmitter,
