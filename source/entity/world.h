@@ -62,6 +62,7 @@ public:
 	public:
 		EntityIterator(World* w) : m_world(w) {}
 		void ForEach(std::function<void(Cmp1&, Cmp2&, EntityHandle)> fn);
+		void ForEachAsync(int32_t componentsPerJob, std::function<void(Cmp1&, Cmp2&, EntityHandle)> fn);
 	private:
 		World* m_world;
 		uint64_t m_lastGeneration1 = 0;
@@ -80,6 +81,42 @@ private:
 	std::vector<uint32_t> m_pendingDelete;	// all entities to be deleted
 	robin_hood::unordered_map<ComponentType, std::unique_ptr<ComponentStorage>> m_components;	// all active component data
 };
+
+template<class Cmp1, class Cmp2>
+void World::EntityIterator<Cmp1, Cmp2>::ForEachAsync(int32_t componentsPerJob, std::function<void(Cmp1&, Cmp2&, EntityHandle)> fn)
+{
+	const uint64_t currentGen1 = m_world->GetStorage(Cmp1::GetType())->GetGeneration();
+	const uint64_t currentGen2 = m_world->GetStorage(Cmp2::GetType())->GetGeneration();
+	const bool listsDirty = m_lastGeneration1 != currentGen1 || m_lastGeneration2 != currentGen2;
+	
+	// Slow path
+	if (listsDirty)
+	{
+		SDE_PROF_EVENT("EnumerateEntities");
+		m_cmp1.clear();
+		m_cmp2.clear();
+		m_entities.clear();
+		m_world->ForEachComponent<Cmp1>([this, &fn](Cmp1& c1, EntityHandle h) {
+			Cmp2* c2 = m_world->GetComponent<Cmp2>(h);
+			if (c2 != nullptr)
+			{
+				m_cmp1.push_back(&c1);
+				m_cmp2.push_back(c2);
+				m_entities.push_back(h);
+			}
+			});
+		m_lastGeneration1 = currentGen1;
+		m_lastGeneration2 = currentGen2;
+	}
+
+	auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
+	{
+		SDE_PROF_EVENT("DoWork");
+		jobs->ForEachAsync(0, m_entities.size(), 1, componentsPerJob, [&](int32_t i) {
+			fn(*m_cmp1[i], *m_cmp2[i], m_entities[i]);
+		});
+	}
+}
 
 template<class Cmp1, class Cmp2>
 void World::EntityIterator<Cmp1,Cmp2>::ForEach(std::function<void(Cmp1&, Cmp2&, EntityHandle)> fn)
