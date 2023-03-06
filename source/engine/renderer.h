@@ -28,6 +28,7 @@ namespace Engine
 	class Frustum;
 	class RenderInstances;
 	const uint32_t c_maxLightsPerTile = 128;
+	const uint32_t c_maxFramesAhead = 3;
 
 	class Renderer : public Render::RenderPass
 	{
@@ -121,6 +122,7 @@ namespace Engine
 		void UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat);
 		void CullLights();
 		void ClassifyLightTiles();
+		void UploadLightTiles();
 
 		using OnFindVisibleComplete = std::function<void(size_t)>;	// param = num. results found (note the result vector is NOT resized!)
 		void FindVisibleInstancesAsync(const Frustum& f, const RenderInstanceList& src, EntryList& result, OnFindVisibleComplete onComplete);
@@ -136,8 +138,6 @@ namespace Engine
 		Core::Mutex m_addLightMutex;		// note adding lights is not safe once render has started!
 		std::vector<Light> m_lights;
 		RenderInstances m_allInstances;
-		Render::RenderBuffer m_perInstanceData;	// global instance data
-		Render::RenderBuffer m_drawIndirectBuffer;
 		int m_nextInstance = 0;				// index into buffers above
 		int m_nextDrawCall = 0;
 		bool m_cullingEnabled = true;
@@ -154,19 +154,22 @@ namespace Engine
 		};
 		glm::ivec2 m_lightTileCounts = { 32, 16 };
 		std::vector<LightTileInfo> m_lightTiles;
-		Render::RenderBuffer m_allLightsData;
-		Render::RenderBuffer m_lightTileData;
+		Render::RenderBuffer m_allLightsData[c_maxFramesAhead];
+		Render::RenderBuffer m_lightTileData[c_maxFramesAhead];
+		Render::RenderBuffer m_perInstanceData[c_maxFramesAhead];	// global instance data
+		Render::RenderBuffer m_drawIndirectBuffer[c_maxFramesAhead];
+		Render::RenderBuffer m_globalsUniformBuffer[c_maxFramesAhead];
 		Render::RenderTargetBlitter m_targetBlitter;
 		Engine::ShaderHandle m_blitShader;
 		Engine::ShaderHandle m_tonemapShader;
 		Engine::ShaderHandle m_bloomBrightnessShader;
 		Engine::ShaderHandle m_bloomBlurShader;
 		Engine::ShaderHandle m_bloomCombineShader;
-		Render::RenderBuffer m_globalsUniformBuffer;
 		Render::FrameBuffer m_mainFramebuffer;
 		Render::FrameBuffer m_mainFramebufferResolved;
 		Render::FrameBuffer m_bloomBrightnessBuffer;
 		std::unique_ptr<Render::FrameBuffer> m_bloomBlurBuffers[2];
+		int m_currentBuffer = 0;	// max = c_maxFramesAhead
 		Render::Camera m_camera;
 		glm::ivec2 m_windowSize;
 	};

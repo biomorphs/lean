@@ -78,12 +78,15 @@ namespace Engine
 		m_tonemapShader = m_shaderManager->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
-			m_perInstanceData.Create(c_maxInstances * sizeof(RenderPerInstanceData), Render::RenderBufferModification::Dynamic, true);
-			m_globalsUniformBuffer.Create(sizeof(GlobalUniforms), Render::RenderBufferModification::Dynamic, true);
-			m_drawIndirectBuffer.Create(c_maxDrawCalls * sizeof(Render::DrawIndirectIndexedParams), Render::RenderBufferModification::Dynamic, true);
 			const uint32_t maxLightTileData = (c_maxLightsPerTile + 1) * m_lightTileCounts.x * m_lightTileCounts.y;
-			m_lightTileData.Create(sizeof(uint32_t) * maxLightTileData, Render::RenderBufferModification::Dynamic, true);
-			m_allLightsData.Create(sizeof(LightInfo) * c_maxLights, Render::RenderBufferModification::Dynamic, true);
+			for (int i = 0; i < c_maxFramesAhead; ++i)
+			{
+				m_perInstanceData[i].Create(c_maxInstances * sizeof(RenderPerInstanceData), Render::RenderBufferModification::Dynamic, true);
+				m_globalsUniformBuffer[i].Create(sizeof(GlobalUniforms), Render::RenderBufferModification::Dynamic, true);
+				m_drawIndirectBuffer[i].Create(c_maxDrawCalls * sizeof(Render::DrawIndirectIndexedParams), Render::RenderBufferModification::Dynamic, true);
+				m_lightTileData[i].Create(sizeof(uint32_t) * maxLightTileData, Render::RenderBufferModification::Dynamic, true);
+				m_allLightsData[i].Create(sizeof(LightInfo) * c_maxLights, Render::RenderBufferModification::Dynamic, true);
+			}		
 		}
 		{
 			SDE_PROF_EVENT("Create render targets");
@@ -136,6 +139,10 @@ namespace Engine
 		m_defaultNormalResidentHandle = defaultNormal ? defaultNormal->GetResidentHandle() : 0;
 		auto defaultSpecular = m_textureManager->GetTexture(g_defaultTextures["SpecularTexture"]);
 		m_defaultSpecularResidentHandle = defaultSpecular ? defaultSpecular->GetResidentHandle() : 0;
+		if (++m_currentBuffer >= c_maxFramesAhead)
+		{
+			m_currentBuffer = 0;
+		}
 	}
 
 	void Renderer::SetCamera(const Render::Camera& c)
@@ -255,14 +262,14 @@ namespace Engine
 		int instanceIndex = -1;
 		if (entries.size() > 0 && m_nextInstance + entries.size() < c_maxInstances)
 		{
-			void* bufferPtr = m_perInstanceData.Map(Render::RenderBufferMapHint::Write, 0, entries.size() * sizeof(RenderPerInstanceData));
+			void* bufferPtr = m_perInstanceData[m_currentBuffer].Map(Render::RenderBufferMapHint::Write, 0, entries.size() * sizeof(RenderPerInstanceData));
 			RenderPerInstanceData* gpuPIDs = static_cast<RenderPerInstanceData*>(bufferPtr) + m_nextInstance;
 			for (int e = 0; e < entries.size(); ++e)
 			{
 				const auto index = entries[e].m_dataIndex;
 				gpuPIDs[e] = { list.m_transformBounds[index].m_transform, list.m_perInstanceData[index] };
 			}
-			m_perInstanceData.Unmap();
+			m_perInstanceData[m_currentBuffer].Unmap();
 			instanceIndex = m_nextInstance;
 			m_nextInstance += entries.size();
 		}
@@ -391,10 +398,13 @@ namespace Engine
 				}
 			}
 		}
-		{
-			SDE_PROF_EVENT("UploadBuffer");
-			m_lightTileData.SetData(0, m_lightTiles.size() * sizeof(LightTileInfo), m_lightTiles.data());
-		}
+	
+	}
+
+	void Renderer::UploadLightTiles()
+	{
+		SDE_PROF_EVENT("UploadBuffer");
+		m_lightTileData[m_currentBuffer].SetData(0, m_lightTiles.size() * sizeof(LightTileInfo), m_lightTiles.data());
 	}
 
 	void Renderer::DrawLightTilesDebug(RenderContext2D& r2d)
@@ -479,10 +489,10 @@ namespace Engine
 			}
 		}
 		const auto totalLights = static_cast<int>(std::min(m_lights.size(), c_maxLights));
-		m_allLightsData.SetData(0, sizeof(LightInfo) * totalLights, &allLights);
+		m_allLightsData[m_currentBuffer].SetData(0, sizeof(LightInfo) * totalLights, &allLights);
 		globals.m_cameraPosition = glm::vec4(m_camera.Position(), 0.0);
 		globals.m_hdrExposure = m_hdrExposure;
-		m_globalsUniformBuffer.SetData(0, sizeof(globals), &globals);
+		m_globalsUniformBuffer[m_currentBuffer].SetData(0, sizeof(globals), &globals);
 	}
 
 	uint32_t Renderer::BindShadowmaps(Render::Device& d, Render::ShaderProgram& shader, uint32_t textureUnit)
@@ -606,7 +616,7 @@ namespace Engine
 		if (tmpDrawList.size() > 0 && drawUploadIndex + tmpDrawList.size() < m_nextDrawCall + c_maxInstances)
 		{
 			SDE_PROF_EVENT("Upload draw calls");
-			m_drawIndirectBuffer.SetData(drawUploadIndex * sizeof(Render::DrawIndirectIndexedParams),
+			m_drawIndirectBuffer[m_currentBuffer].SetData(drawUploadIndex * sizeof(Render::DrawIndirectIndexedParams),
 				tmpDrawList.size() * sizeof(Render::DrawIndirectIndexedParams), tmpDrawList.data());
 		}
 	}
@@ -627,11 +637,11 @@ namespace Engine
 				m_frameStats.m_shaderBinds++;
 				d.BindShaderProgram(*b.m_shader);
 				d.BindUniformBufferIndex(*b.m_shader, "Globals", 0);
-				d.SetUniforms(*b.m_shader, m_globalsUniformBuffer, 0);
-				d.BindStorageBuffer(0, m_perInstanceData);		// bind instancing data once per shader
-				d.BindStorageBuffer(1, m_allLightsData);
-				d.BindStorageBuffer(2, m_lightTileData);
-				d.BindDrawIndirectBuffer(m_drawIndirectBuffer);
+				d.SetUniforms(*b.m_shader, m_globalsUniformBuffer[m_currentBuffer], 0);
+				d.BindStorageBuffer(0, m_perInstanceData[m_currentBuffer]);		// bind instancing data once per shader
+				d.BindStorageBuffer(1, m_allLightsData[m_currentBuffer]);
+				d.BindStorageBuffer(2, m_lightTileData[m_currentBuffer]);
+				d.BindDrawIndirectBuffer(m_drawIndirectBuffer[m_currentBuffer]);
 				if (uniforms != nullptr)
 				{
 					uniforms->Apply(d, *b.m_shader);
@@ -705,10 +715,10 @@ namespace Engine
 					m_frameStats.m_shaderBinds++;
 					d.BindShaderProgram(*theShader);
 					d.BindUniformBufferIndex(*theShader, "Globals", 0);
-					d.SetUniforms(*theShader, m_globalsUniformBuffer, 0);
-					d.BindStorageBuffer(0, m_perInstanceData);		// bind instancing data once per shader
-					d.BindStorageBuffer(1, m_allLightsData);
-					d.BindStorageBuffer(2, m_lightTileData);
+					d.SetUniforms(*theShader, m_globalsUniformBuffer[m_currentBuffer], 0);
+					d.BindStorageBuffer(0, m_perInstanceData[m_currentBuffer]);		// bind instancing data once per shader
+					d.BindStorageBuffer(1, m_allLightsData[m_currentBuffer]);
+					d.BindStorageBuffer(2, m_lightTileData[m_currentBuffer]);
 					if (uniforms != nullptr)
 					{
 						uniforms->Apply(d, *theShader);
@@ -831,21 +841,6 @@ namespace Engine
 						std::sort(result.begin(), result.begin() + jobData->m_count,
 							[&](const RenderInstanceList::Entry& s1, const RenderInstanceList::Entry& s2) {
 								return SortKeyLessThan(s1.m_sortKey, s2.m_sortKey);
-								//if (SortKeyLessThan(s1.m_sortKey, s2.m_sortKey))
-								//{
-								//	++shuffleSortKeyCount;
-								//	return true;
-								//}
-								//else if (SortKeyEqual(s1.m_sortKey, s2.m_sortKey))
-								//{
-								//	shuffleDataIndexCount += s1.m_dataIndex < s2.m_dataIndex ? 1 : 0;
-								//	return s1.m_dataIndex < s2.m_dataIndex;
-								//}
-								//else
-								//{
-								//	nonShuffleCount++;
-								//	return false;
-								//}
 							});
 					}
 					{
@@ -1047,6 +1042,9 @@ namespace Engine
 				m_jobSystem->ProcessJobThisThread();
 			}
 		}
+
+		UploadLightTiles();
+
 		int startIndex = 0;
 		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
