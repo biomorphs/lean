@@ -37,6 +37,9 @@ namespace Particles
 		particles["StartEmitter"] = [this](const char* emitterFile, glm::vec3 position) {
 			StartEmitter(emitterFile, position);
 		};
+		particles["SetUpdateEnabled"] = [this](bool v) {
+			m_updateEmitters = v;
+		};
 
 		return true;
 	}

@@ -61,13 +61,13 @@ namespace Render
 						SDE_RENDER_ASSERT(false, "Failed to include shader source from %s", includeSrc.c_str());
 						return;
 					}
-					std::string prefix = src.substr(0, secondQuote + 1);
+					std::string prefix = src.substr(0, foundInclude);
 					std::string postfix = src.substr(secondQuote + 1);
 					src = prefix + "\n" + includeSrc + postfix;
 					includedFiles.push_back(includePath);
 				}
 			}
-			foundInclude = secondQuote;
+			foundInclude = 0;
 		}
 	}
 

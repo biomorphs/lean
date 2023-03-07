@@ -30,14 +30,15 @@ namespace Core
 			return false;
 		}
 
-		fileStream.seekg(0, std::ios::end);
+		fileStream.seekg(0, fileStream.end);
 		const size_t fileSize = fileStream.tellg();
+		fileStream.seekg(0, fileStream.beg);
 
-		std::unique_ptr<char[]> buf(new char[fileSize]);
-		std::memset(buf.get(), 0, fileSize);
-		fileStream.seekg(0, std::ios::beg);
-		fileStream.read(buf.get(), fileSize);
-		resultBuffer = buf.get();		
+		resultBuffer.resize(fileSize);
+		fileStream.read(resultBuffer.data(), fileSize);
+
+		size_t actualSize = strlen(resultBuffer.data());
+		resultBuffer.resize(actualSize);
 
 		return true;
 	}
@@ -50,9 +51,9 @@ namespace Core
 			return false;
 		}
 
-		fileStream.seekg(0, std::ios::end);
-		int fileSize = fileStream.tellg();
-		fileStream.seekg(0, std::ios::beg);
+		fileStream.seekg(0, fileStream.end);
+		const size_t fileSize = fileStream.tellg();
+		fileStream.seekg(0, fileStream.beg);
 
 		resultBuffer.resize(fileSize);
 		fileStream.read(reinterpret_cast<char*>(resultBuffer.data()), fileSize);

@@ -109,7 +109,8 @@ namespace Engine
 		static auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		static auto textures = Engine::GetSystem<TextureManager>("Textures");
 		static auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
-		const auto& mainCam = Engine::GetSystem<Engine::CameraSystem>("Cameras")->MainCamera();	// careful if async
+		static auto cameras = Engine::GetSystem<Engine::CameraSystem>("Cameras");
+		const auto& mainCam = cameras->MainCamera();	// careful if async
 		const auto theShader = shaders->GetShader(shader);
 		const auto& renderer = graphics->Renderer();
 		if (theShader != nullptr)
@@ -134,7 +135,7 @@ namespace Engine
 				if (baseIndex != -1)
 				{
 					m_shadowCasters.SetInstance(baseIndex, shadowSortKey, trns, va, ib, mesh.GetChunks().data(), mesh.GetChunks().size(),
-						nullptr, shadowShaderPtr, boundsMin, boundsMax, pid);
+						mat, shadowShaderPtr, boundsMin, boundsMax, pid);
 				}
 			}
 			if (mat->GetIsTransparent())
@@ -145,7 +146,7 @@ namespace Engine
 					const float distanceToCamera = glm::length(glm::vec3(trns[3]) - mainCam.Position());
 					auto sortKey = TransparentKey(shader, va, mesh.GetChunks().data(), distanceToCamera);
 					m_transparents.SetInstance(baseIndex, sortKey, trns, va, ib, mesh.GetChunks().data(), mesh.GetChunks().size(),
-						nullptr, theShader, boundsMin, boundsMax, pid);
+						mat, theShader, boundsMin, boundsMax, pid);
 				}
 			}
 			else
@@ -155,7 +156,7 @@ namespace Engine
 				if (baseIndex != -1)
 				{
 					m_opaques.SetInstance(baseIndex, opaqueSortKey, trns, va, ib, mesh.GetChunks().data(), mesh.GetChunks().size(),
-						nullptr, theShader, boundsMin, boundsMax, pid);
+						mat, theShader, boundsMin, boundsMax, pid);
 				}
 			}
 		}
@@ -167,7 +168,8 @@ namespace Engine
 		static auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		static auto textures = Engine::GetSystem<TextureManager>("Textures");
 		static auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
-		const auto& mainCam = Engine::GetSystem<Engine::CameraSystem>("Cameras")->MainCamera();	// careful if async
+		static auto cameras = Engine::GetSystem<Engine::CameraSystem>("Cameras");
+		const auto& mainCam = cameras->MainCamera();	// careful if async
 		const auto theModel = models->GetModel(model);
 		const auto theShader = shaders->GetShader(shader);
 		const auto& renderer = graphics->Renderer();
@@ -236,7 +238,8 @@ namespace Engine
 		static auto shaders = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		static auto textures = Engine::GetSystem<TextureManager>("Textures");
 		static auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
-		const auto& mainCam = Engine::GetSystem<Engine::CameraSystem>("Cameras")->MainCamera();	// careful if async
+		static auto cameras = Engine::GetSystem<Engine::CameraSystem>("Cameras");
+		const auto& mainCam = cameras->MainCamera();	// careful if async
 		const auto theModel = models->GetModel(model);
 		const auto theShader = shaders->GetShader(shader);
 		const auto& renderer = graphics->Renderer();

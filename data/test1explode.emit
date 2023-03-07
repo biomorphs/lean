@@ -6,16 +6,16 @@
       "Emission Count": 1
     },
     {
-      "Burst Count": 100,
+      "Burst Count": 128,
       "ClassName": "EmitBurstRepeater",
       "Frequency": 0.01600000075995922,
-      "SpawnDuration": 0.25
+      "SpawnDuration": 0.125
     }
   ],
   "GeneratorBehaviours": [
     {
       "ClassName": "GenerateRandomLifetime",
-      "MaxLife": 4.0,
+      "MaxLife": 5.0,
       "MinLife": 2.0
     },
     {
@@ -34,7 +34,11 @@
     {
       "BoundsMax": 30.0,
       "BoundsMin": 5.0,
-      "ClassName": "GenerateRandomVelocitySphere"
+      "ClassName": "GenerateRandomVelocitySphere",
+      "MaxPhi": 6.2831854820251465,
+      "MaxTheta": 6.2831854820251465,
+      "MinPhi": 0.0,
+      "MinTheta": 0.0
     }
   ],
   "LifetimeBehaviours": [
@@ -42,7 +46,7 @@
       "ClassName": "KillOnZeroParticles"
     }
   ],
-  "MaxParticles": 100,
+  "MaxParticles": 512,
   "Name": "Test1Explode",
   "OwnsChildEmitters": true,
   "RenderBehaviours": [

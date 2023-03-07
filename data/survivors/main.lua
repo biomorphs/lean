@@ -307,6 +307,8 @@ function DoStartGame()
 	for i=0,100 do
 		SpawnEnemy(SpawnZombieAt)
 	end
+	
+	Particles.SetUpdateEnabled(true)
 end
 
 function DoStopGame()
@@ -321,6 +323,7 @@ function DoStopGame()
 	Survivors.StopGame()
 	explodeNovaActive = false
 	barrelBombActive = false
+	Particles.SetUpdateEnabled(false)
 end
 
 function OnPlayerDead()
@@ -343,6 +346,7 @@ function OnLevelUp(playerCmp)
 	Survivors.SetEnemiesEnabled(false)
 	Survivors.SetAttractorsEnabled(false)
 	Physics.SetSimulationEnabled(false)
+	Particles.SetUpdateEnabled(false)
 	DebugGui.BeginWindow(true, 'Level Up!')
 	local hasLeveledUp = false
 	if(DebugGui.Button("AREA++")) then 
@@ -387,6 +391,7 @@ function OnLevelUp(playerCmp)
 		Survivors.SetEnemiesEnabled(true)
 		Survivors.SetAttractorsEnabled(true)
 		Physics.SetSimulationEnabled(true)
+		Particles.SetUpdateEnabled(true)
 	end
 end
 
