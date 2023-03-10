@@ -30,6 +30,8 @@ public:
 	void SetMoveSpeedMultiplier(float a) { m_multiMoveSpeed = a; }
 	void SetProjectileCount(int c) { m_projectileCount = c; }
 	int GetProjectileCount() { return m_projectileCount; }
+	int GetLevel() { return m_level; }
+	void SetLevel(int l) { m_level = l; }
 
 private:
 	// active state
@@ -38,6 +40,7 @@ private:
 	int m_currentXP = 0;
 	int m_thisLevelXP = 0;
 	int m_nextLevelXP = 100;
+	int m_level = 1;
 
 	// weapon stats
 	int m_projectileCount = 1;

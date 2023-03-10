@@ -387,6 +387,8 @@ set(SURVIVORS_SOURCES
 	source/survivors/world_tile_system.cpp
 	source/survivors/world_tile_component.h
 	source/survivors/world_tile_component.cpp
+	source/survivors/projectile_component.h
+	source/survivors/projectile_component.cpp
 )
 target_sources(Survivors PRIVATE ${SURVIVORS_SOURCES})
 target_include_directories(Survivors PRIVATE ${CommonIncludePaths})

@@ -30,6 +30,7 @@ namespace Survivors
 			EntityHandle m_entity;
 		};
 
+		void UpdateProjectiles(float timeDelta);
 		void UpdateAttractors(PlayerComponent& playerCmp, float timeDelta);
 		void DoDamageInRadius(glm::vec3 pos, float radius, float damageAtCenter, float damageAtEdge);
 		void UpdateExplosions(float timeDelta);
@@ -45,13 +46,14 @@ namespace Survivors
 		void LoadMainScene();
 		void SpawnXPAt(EntityHandle player, glm::vec3 p, int xpToAdd);
 		void SpawnMushroomAt(EntityHandle player, glm::vec3 p, int hpToAdd);
-		void DamageMonster(ActiveMonster& monster, double curentTime, float damage, glm::vec2 knockback = glm::vec2(0.0f));
+		void DamageMonster(ActiveMonster& monster, float damage, glm::vec2 knockback = glm::vec2(0.0f));
 		void ApplyDamageAreas();
 
 		bool m_firstFrame = true;
 		double m_damagedMaterialTime = 0.25;			// time that a monster will show damaged material
 		bool m_enemiesEnabled = false;
 		bool m_attractorsEnabled = false;
+		bool m_projectilesEnabled = true;
 		int m_avoidanceIterations = 1;				// increase for more stability but slower
 		float m_avoidanceMaxDistance = 350.0f;
 		WorldGrid<uint32_t> m_activeMonsterGrid;	// indexes into vector below

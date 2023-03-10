@@ -1,5 +1,6 @@
 require "survivors/weapon_explode_nova"
 require "survivors/weapon_barrel_bomb"
+require "survivors/weapon_fireball"
 
 local isFirstRun = true
 local playerStartPosition = {5000,0,5000}
@@ -33,6 +34,7 @@ local godMode = false
 -- weapons
 local explodeNovaActive = false
 local barrelBombActive = false
+local fireballActive = false
 
 -- hud
 local barBg = vec4.new(0.2,0.2,0.2,1)
@@ -281,6 +283,7 @@ function ResetPlayer()
 	playerCmp:SetCooldownMultiplier(1)
 	playerCmp:SetMoveSpeedMultiplier(1)
 	playerCmp:SetProjectileCount(1)
+	playerCmp:SetLevel(1)
 	
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	playerTransform:SetPosition(playerStartPosition[1], playerStartPosition[2], playerStartPosition[3])
@@ -300,8 +303,10 @@ function DoStartGame()
 	skeletonsPerSecond = 0.2
 	bossesSpawnEnabled = true 
 	bossesPerSecond = 0.000001
-	explodeNovaActive = true
+	weaponsActive = true
+	explodeNovaActive = false
 	barrelBombActive = true
+	fireballActive = true
 	ResetPlayer()
 	
 	for i=0,100 do
@@ -321,8 +326,7 @@ function DoStopGame()
 	bossesPerSecond = 0.0
 	bossesSpawnEnabled = false
 	Survivors.StopGame()
-	explodeNovaActive = false
-	barrelBombActive = false
+	weaponsActive = false
 	Particles.SetUpdateEnabled(false)
 end
 
@@ -344,6 +348,7 @@ end
 
 function OnLevelUp(playerCmp)
 	Survivors.SetEnemiesEnabled(false)
+	Survivors.SetProjectilesEnabled(false)
 	Survivors.SetAttractorsEnabled(false)
 	Physics.SetSimulationEnabled(false)
 	Particles.SetUpdateEnabled(false)
@@ -388,7 +393,9 @@ function OnLevelUp(playerCmp)
 		local nextLvlIncrease = (playerCmp:GetNextLevelXP() - playerCmp:GetThisLevelXP()) * playerXpIncreasePerLevel
 		playerCmp:SetThisLevelXP(playerCmp:GetNextLevelXP())
 		playerCmp:SetNextLevelXP(playerCmp:GetNextLevelXP() + nextLvlIncrease)
+		playerCmp:SetLevel(playerCmp:GetLevel() + 1)
 		Survivors.SetEnemiesEnabled(true)
+		Survivors.SetProjectilesEnabled(true)
 		Survivors.SetAttractorsEnabled(true)
 		Physics.SetSimulationEnabled(true)
 		Particles.SetUpdateEnabled(true)
@@ -429,6 +436,8 @@ end
 
 function DrawHUD(playerCmp)
 	local windowDims = Graphics2D.GetDimensions()
+
+	local fontPath = "MedievalSharp/MedievalSharp-Regular.ttf"
 	
 	-- thumbnail
 	local thumbOffset = {32,32}
@@ -446,8 +455,10 @@ function DrawHUD(playerCmp)
 	Graphics2D.DrawSolidQuad(healthBarPos[1],healthBarPos[2],0,healthBarDims[1],healthBarDims[2],barBg.x,barBg.y,barBg.z,barBg.w)
 	
 	-- player text 
-	Graphics2D.DrawText(healthBarPos[1], healthBarPos[2] - 44, 0, "CLASS: WIZARD", "MedievalSharp/MedievalSharp-Regular.ttf", 48, 1, 1, 1, 1)
-	Graphics2D.DrawText(healthBarPos[1], healthBarPos[2] - 80, 0, "HP: " .. playerCmp:GetCurrentHealth() .. " / " .. playerCmp:GetMaximumHealth(), "MedievalSharp/MedievalSharp-Regular.ttf", 28, 1, 1, 1, 1)
+	Graphics2D.DrawText(thumbPos[1] + 20, thumbPos[2] + 20, 1, "" .. playerCmp:GetLevel(), fontPath, 48, 1, 1, 1, 1)
+	Graphics2D.DrawText(healthBarPos[1], healthBarPos[2] - 44, 0, "CLASS: WIZARD", fontPath, 48, 1, 1, 1, 1)
+	Graphics2D.DrawText(healthBarPos[1], healthBarPos[2] - 70, 0, "HP: " .. playerCmp:GetCurrentHealth() .. " / " .. playerCmp:GetMaximumHealth(), fontPath, 24, 1, 1, 1, 1)
+	Graphics2D.DrawText(healthBarPos[1], healthBarPos[2] - 95, 0, "PROJECTILES: " .. playerCmp:GetProjectileCount(), fontPath, 24, 1, 1, 1, 1)
 	
 	local hpRatio = playerCmp:GetCurrentHealth() / (playerCmp:GetMaximumHealth())
 	local barLength = (healthBarDims[1] - barBorder*2) * hpRatio
@@ -469,11 +480,42 @@ function DrawHUD(playerCmp)
 	Graphics2D.DrawSolidQuad(xpBarOffset[1] + barBorder,xpBarOffset[2] + barBorder,0,xpBarLength,xpBarDims[2]-barBorder*2,xpBarColour.x,xpBarColour.y,xpBarColour.z,xpBarColour.w)
 end
 
+function TestProjectile()
+	local newEntity = World.AddEntity()
+	local newProjectile = World.AddComponent_ProjectileComponent(newEntity)
+	local newTransform = World.AddComponent_Transform(newEntity)
+	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
+	local playerCmp = World.GetComponent_PlayerComponent(foundPlayer)
+	local playerTransform = World.GetComponent_Transform(foundPlayer)
+	local playerPos = playerTransform:GetPosition()
+	newTransform:SetPosition(playerPos.x, playerPos.y + 4, playerPos.z)
+	newProjectile:SetMaxDistance(500)
+	local dir = { -1 + math.random() * 2, -1 + math.random() * 2 }
+	local speed = 250 + math.random() * 100
+	newProjectile:SetVelocity(vec3.new(dir[1] * speed,0,dir[2] * speed))
+	newProjectile:SetDamageRange(50,100)
+	newProjectile:SetRadius(4)
+	local projPhysics = World.AddComponent_Physics(newEntity)
+	projPhysics:SetStatic(false)
+	projPhysics:SetKinematic(true)
+	projPhysics:AddSphereCollider(vec3.new(0,0,0), 3)
+	projPhysics:Rebuild()
+	local particles = World.AddComponent_ComponentParticleEmitter(newEntity);
+	particles:SetEmitter("survivorsfireball.emit")
+end
+
 function ShowEditor(entity)
 	DebugGui.BeginWindow(true, 'Survivors!')
 	local tileLoadRadius = Survivors.GetWorldTileLoadRadius()
 	tileLoadRadius = DebugGui.DragInt('Tile load radius', tileLoadRadius, 1, 0, 64)
 	Survivors.SetWorldTileLoadRadius(tileLoadRadius)
+
+	if(DebugGui.Button("Proj")) then 
+		for i=1,10 do
+			TestProjectile()
+		end
+	end
+
 	if(DebugGui.Button('Spawn fields')) then 
 		Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicFields)
 	end
@@ -557,7 +599,14 @@ function SurvivorsMain(entity)
 	local playerCmp = World.GetComponent_PlayerComponent(foundPlayer)
 	local playerTransform = World.GetComponent_Transform(foundPlayer)
 	if godMode then
+		playerCmp:SetMaximumHealth(1000)
 		playerCmp:SetCurrentHealth(playerCmp:GetMaximumHealth())
+		playerCmp:SetPickupAreaMultiplier(2.0)
+		playerCmp:SetMoveSpeedMultiplier(1.8)
+		playerCmp:SetNextLevelXP(1000000)
+		playerCmp:SetAreaMultiplier(1.5)
+		playerCmp:SetCooldownMultiplier(0.8)
+		playerCmp:SetProjectileCount(20)
 	end
 	
 	if(playerCmp:GetCurrentHealth() <= 0) then 
@@ -567,11 +616,16 @@ function SurvivorsMain(entity)
 			OnLevelUp(playerCmp)
 		else
 			PlayerUpdate(playerCmp, playerTransform);
-			if(explodeNovaActive) then 
-				UpdateWeaponExplodeNova(playerCmp, playerTransform)
-			end
-			if(barrelBombActive) then 
-				UpdateWeaponBarrelBomb(playerCmp, playerTransform)
+			if(weaponsActive) then
+				if(explodeNovaActive) then 
+					UpdateWeaponExplodeNova(playerCmp, playerTransform)
+				end
+				if(barrelBombActive) then 
+					UpdateWeaponBarrelBomb(playerCmp, playerTransform)
+				end
+				if(fireballActive) then
+					UpdateWeaponFireball(playerCmp, playerTransform)
+				end
 			end
 			SpawnZombies();
 			SpawnZombieChads();

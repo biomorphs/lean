@@ -25,7 +25,9 @@ COMPONENT_SCRIPTS(PlayerComponent,
 	"SetProjectileCount", &PlayerComponent::SetProjectileCount,
 	"GetProjectileCount", &PlayerComponent::GetProjectileCount,
 	"GetPickupAreaMultiplier", &PlayerComponent::GetPickupAreaMultiplier,
-	"SetPickupAreaMultiplier", &PlayerComponent::SetPickupAreaMultiplier
+	"SetPickupAreaMultiplier", &PlayerComponent::SetPickupAreaMultiplier,
+	"GetLevel", &PlayerComponent::GetLevel,
+	"SetLevel", &PlayerComponent::SetLevel
 )
 SERIALISE_BEGIN(PlayerComponent)
 SERIALISE_PROPERTY("CurrentHP", m_currentHP)
@@ -39,6 +41,7 @@ SERIALISE_PROPERTY("DamageMulti", m_multiDamage)
 SERIALISE_PROPERTY("CooldownMulti", m_multiCooldown)
 SERIALISE_PROPERTY("MoveSpeedMulti", m_multiMoveSpeed)
 SERIALISE_PROPERTY("ProjectileCount", m_projectileCount)
+SERIALISE_PROPERTY("Level", m_level)
 SERIALISE_END()
 
 COMPONENT_INSPECTOR_IMPL(PlayerComponent)
@@ -47,11 +50,14 @@ COMPONENT_INSPECTOR_IMPL(PlayerComponent)
 	auto fn = [gui](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
 	{
 		auto& a = *static_cast<StorageType&>(cs).Find(e);
+		i.Inspect("Level", a.GetLevel(), [&](int i) {
+			a.SetLevel(i);
+		});
 		i.Inspect("Max HP", a.GetMaximumHealth(), InspectFn(e, &PlayerComponent::SetMaximumHealth));
 		i.Inspect("Current HP", a.GetCurrentHealth(), InspectFn(e, &PlayerComponent::SetCurrentHealth));
 		i.Inspect("Current XP", a.GetCurrentXP(), InspectFn(e, &PlayerComponent::SetCurrentXP));
 		i.Inspect("This Level XP", a.GetThisLevelXP(), InspectFn(e, &PlayerComponent::SetThisLevelXP));
-		i.Inspect("Next Level XP", a.GetNextLevelXP(), InspectFn(e, &PlayerComponent::SetNextLevelXP));
+		i.Inspect("Next Level XP", a.GetNextLevelXP(), InspectFn(e, &PlayerComponent::SetNextLevelXP), 1, a.GetThisLevelXP());
 		i.Inspect("Area Multi", a.GetAreaMultiplier(), InspectFn(e, &PlayerComponent::SetAreaMultiplier));
 		i.Inspect("Pickup Area Multi", a.GetPickupAreaMultiplier(), InspectFn(e, &PlayerComponent::SetPickupAreaMultiplier));
 		i.Inspect("Damage Multi", a.GetDamageMultiplier(), InspectFn(e, &PlayerComponent::SetDamageMultiplier));

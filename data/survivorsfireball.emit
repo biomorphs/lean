@@ -3,41 +3,47 @@
   "EmissionBehaviours": [
     {
       "ClassName": "EmitOnce",
-      "Emission Count": 512
+      "Emission Count": 1
+    },
+    {
+      "Burst Count": 32,
+      "ClassName": "EmitBurstRepeater",
+      "Frequency": 0.0010000000474974513,
+      "SpawnDuration": -1.0
     }
   ],
   "GeneratorBehaviours": [
     {
-      "BoundsMax": 60.0,
-      "BoundsMin": 20.0,
+      "BoundsMax": 12.0,
+      "BoundsMin": 0.0,
       "ClassName": "GenerateRandomVelocitySphere",
       "MaxPhi": 6.2831854820251465,
-      "MaxTheta": 6.2829999923706055,
+      "MaxTheta": 6.2831854820251465,
       "MinPhi": 0.0,
       "MinTheta": 0.0
     },
     {
       "BoundsMax": [
-        0.0,
-        0.0,
-        0.0
+        1.0,
+        1.0,
+        1.0
       ],
       "BoundsMin": [
-        0.0,
-        0.0,
-        0.0
+        -1.0,
+        -1.0,
+        -1.0
       ],
       "ClassName": "GenerateRandomPosition"
     },
     {
       "ClassName": "GenerateRandomLifetime",
-      "MaxLife": 2.0,
-      "MinLife": 0.5
+      "MaxLife": 0.699999988079071,
+      "MinLife": 0.20000000298023224
     }
   ],
   "LifetimeBehaviours": [],
-  "MaxParticles": 512,
-  "Name": "SurvivorsBarrelExplosion",
+  "MaxParticles": 1000,
+  "Name": "SurvivorsFireball",
   "OwnsChildEmitters": true,
   "RenderBehaviours": [
     {
@@ -52,14 +58,25 @@
         "Name": "diffuse",
         "VSCS": "simplediffuse.vs"
       }
+    },
+    {
+      "Ambient": 0.10000000149011612,
+      "AttachToEmitter": true,
+      "AttachToParticles": false,
+      "Attenuation": 2.0,
+      "Brightness": 16.0,
+      "ClassName": "AttachedLightBehaviour",
+      "Colour": [
+        1.0,
+        0.23809516429901123,
+        0.0
+      ],
+      "Distance": 32.0
     }
   ],
   "UpdateBehaviours": [
     {
       "ClassName": "EulerPositionUpdater"
-    },
-    {
-      "ClassName": "GravityUpdate"
     },
     {
       "ClassName": "UpdateParticleLifetime",

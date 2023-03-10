@@ -247,7 +247,7 @@ namespace Particles
 		auto jobs = Engine::GetSystem<Engine::JobSystem>("Jobs");
 		if (m_updateEmittersAsync)
 		{
-			jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 8, [this, timeDelta](int32_t i) {
+			jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 32, [this, timeDelta](int32_t i) {
 				UpdateActiveInstance(m_activeEmitters[i], 0.016f);
 			});
 		}
@@ -316,7 +316,7 @@ namespace Particles
 
 		if (m_renderEmittersAsync)
 		{
-			jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 8, [this, timeDelta](int32_t i) {
+			jobs->ForEachAsync(0, m_activeEmitters.size(), 1, 32, [this, timeDelta](int32_t i) {
 				auto& em = m_activeEmitters[i];
 				for (const auto& render : em.m_instance->m_emitter->GetRenderers())
 				{

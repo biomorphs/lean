@@ -4,6 +4,8 @@
 #include "engine/system_manager.h"
 #include "engine/script_system.h"
 #include "engine/debug_gui_system.h"
+#include "engine/debug_render.h"
+#include "engine/graphics_system.h"
 #include "engine/components/component_transform.h"
 #include "engine/physics_system.h"
 #include "entity/entity_system.h"
@@ -12,6 +14,7 @@
 #include "dead_monster_component.h"
 #include "explosion_component.h"
 #include "attract_to_entity_component.h"
+#include "projectile_component.h"
 #include "world_tile_system.h"
 #include "engine/character_controller_system.h"
 #include "engine/time_system.h"
@@ -31,12 +34,66 @@ namespace Survivors
 
 	}
 
+	float DistanceToLine(glm::vec3 point, glm::vec3 l0, glm::vec3 l1)
+	{
+		const glm::vec3 direction = glm::normalize(l1 - l0);
+		return glm::length(glm::cross(direction, point - l0));
+	}
+
+	void SurvivorsMain::UpdateProjectiles(float timeDelta)
+	{
+		SDE_PROF_EVENT();
+		auto entities = Engine::GetSystem<EntitySystem>("Entities");
+		auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
+		auto world = entities->GetWorld();
+		static auto iterator = world->MakeIterator<ProjectileComponent, Transform>();
+		iterator.ForEach([&](ProjectileComponent& pc, Transform& t, EntityHandle e) {
+			const float speed = glm::length(pc.GetVelocity());
+			const glm::vec3 direction = pc.GetVelocity() / speed;
+			const glm::vec3 oldPos = t.GetPosition();
+			const glm::vec3 targetPos = t.GetPosition() + pc.GetVelocity() * timeDelta;
+			const glm::vec3 radius3 = glm::vec3(pc.GetRadius());
+			const glm::vec3 collideBoundsMin = glm::min(oldPos - radius3, targetPos - radius3);
+			const glm::vec3 collideBoundsMax = glm::max(oldPos + radius3, targetPos + radius3);
+			const glm::vec3 collideRayEnd = targetPos + direction * pc.GetRadius();
+			// graphics->DebugRenderer().DrawBox(collideBoundsMin, collideBoundsMax, glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+			// graphics->DebugRenderer().DrawLine(oldPos, targetPos + direction * pc.GetRadius(), glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+			// graphics->DebugRenderer().DrawSphere(targetPos, pc.GetRadius(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			m_activeMonsterGrid.ForEachNearby(collideBoundsMin, collideBoundsMax, [&](uint32_t e) {
+				auto& enemy = m_activeMonsters[e];
+				float distanceToEnemy = DistanceToLine(enemy.m_targetPosition, oldPos, collideRayEnd);
+				if (distanceToEnemy <= (enemy.m_radius + pc.GetRadius()))
+				{
+					auto alreadyHit = std::find(pc.GetHitObjects().begin(), pc.GetHitObjects().end(), enemy.m_entity);
+					if (alreadyHit == pc.GetHitObjects().end())
+					{
+						const float damage = Core::Random::GetFloat(pc.GetMinDamage(), pc.GetMaxDamage());
+						const glm::vec3 monsterToFront = targetPos - enemy.m_targetPosition;
+						const glm::vec2 knockBack = -glm::normalize(glm::vec2(monsterToFront.x, monsterToFront.z)) * damage * 3.0f;
+						DamageMonster(enemy, damage, knockBack);
+						pc.GetHitObjects().push_back(enemy.m_entity);
+					}
+				}
+			});
+			pc.AddDistanceTravelled(speed * timeDelta);
+			if (pc.GetDistanceTravelled() >= pc.GetMaxDistance())
+			{
+				world->RemoveEntity(e);
+			}
+			else
+			{
+				t.SetPosition(targetPos);
+			}
+		});
+	}
+
 	void SurvivorsMain::StartGame()
 	{
 		SDE_PROF_EVENT();
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
 		m_enemiesEnabled = true;
 		m_attractorsEnabled = true;
+		m_projectilesEnabled = true;
 		physics->SetSimulationEnabled(true);
 
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
@@ -50,6 +107,9 @@ namespace Survivors
 		world->ForEachComponent<AttractToEntityComponent>([&](AttractToEntityComponent& m, EntityHandle e) {
 			world->RemoveEntity(e);
 		});
+		world->ForEachComponent<ProjectileComponent>([&](ProjectileComponent& m, EntityHandle e) {
+			world->RemoveEntity(e);
+		});
 	}
 
 	void SurvivorsMain::StopGame()
@@ -58,6 +118,7 @@ namespace Survivors
 		auto physics = Engine::GetSystem<Engine::PhysicsSystem>("Physics");
 		m_enemiesEnabled = false;
 		m_attractorsEnabled = false;
+		m_projectilesEnabled = false;
 		physics->SetSimulationEnabled(false);
 	}
 
@@ -75,6 +136,7 @@ namespace Survivors
 		entities->RegisterComponentType<ExplosionComponent>();
 		entities->RegisterInspector<AttractToEntityComponent>(AttractToEntityComponent::MakeInspector());
 		entities->RegisterComponentType<AttractToEntityComponent>();
+		entities->RegisterComponentType<ProjectileComponent>();
 
 		auto scripts = Engine::GetSystem<Engine::ScriptSystem>("Script");
 		auto survivors = scripts->Globals()["Survivors"].get_or_create<sol::table>();
@@ -96,6 +158,9 @@ namespace Survivors
 		};
 		survivors["SetAttractorsEnabled"] = [this](bool e) {
 			m_attractorsEnabled = e;
+		};
+		survivors["SetProjectilesEnabled"] = [this](bool e) {
+			m_projectilesEnabled = e;
 		};
 		survivors["StartGame"] = [this]() {
 			StartGame();
@@ -145,9 +210,10 @@ namespace Survivors
 		entities->SerialiseEntities(sceneJson, true);
 	}
 
-	void SurvivorsMain::DamageMonster(SurvivorsMain::ActiveMonster& monster, double currentTime, float damage, glm::vec2 knockback)
+	void SurvivorsMain::DamageMonster(SurvivorsMain::ActiveMonster& monster, float damage, glm::vec2 knockback)
 	{
 		static auto timeSys = Engine::GetSystem<Engine::TimeSystem>("Time");
+		const double currentTime = timeSys->GetElapsedTime();
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		auto world = entities->GetWorld();
 
@@ -194,7 +260,7 @@ namespace Survivors
 			{
 				float damage = damageAtCenter;	// todo scaling
 				glm::vec2 knockBack = -glm::normalize(glm::vec2(explosionToEnemy.x, explosionToEnemy.z)) * damage * 3.0f;
-				DamageMonster(enemy, currentTime, damage, knockBack);
+				DamageMonster(enemy, damage, knockBack);
 			}
 		});
 	}
@@ -506,6 +572,10 @@ namespace Survivors
 		DoEnemyAvoidance(playerPos, timeDelta);
 		UpdateAttackingMonsters(playerCmp, playerPos);
 		UpdateExplosions(timeDelta);
+		if (m_projectilesEnabled)
+		{
+			UpdateProjectiles(timeDelta);
+		}
 		KillEnemies(player, playerCmp);
 		CleanupDeadEnemies(playerPos);
 
