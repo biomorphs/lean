@@ -63,3 +63,6 @@ data/heavy.scn
 data/benchmark.scn
 data/explosion.scn
 external/freetype-windows-binaries/
+*.usda
+*.max
+*.tga

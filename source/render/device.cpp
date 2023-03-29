@@ -229,6 +229,17 @@ namespace Render
 	void Device::DrawToFramebuffer(const FrameBuffer& fb)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, fb.GetHandle());
+		constexpr int c_maxAttachments = 16;
+		const int attachCount = fb.GetColourAttachmentCount();
+		if (attachCount > 0 && attachCount < c_maxAttachments)
+		{
+			uint32_t attachments[c_maxAttachments];
+			for (int i = 0; i < attachCount; ++i)
+			{
+				attachments[i] = GL_COLOR_ATTACHMENT0 + i;
+			}
+			glNamedFramebufferDrawBuffers(fb.GetHandle(), attachCount, attachments);
+		}
 	}
 
 	void Device::DrawToFramebuffer(const FrameBuffer& fb, uint32_t cubeFace)

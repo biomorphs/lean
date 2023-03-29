@@ -30,6 +30,8 @@ namespace Engine
 		bool GetShaderPaths(const ShaderHandle& h, std::string& vs, std::string& fs);
 		void SetShadowsShader(ShaderHandle lightingShader, ShaderHandle shadowShader);
 		ShaderHandle GetShadowsShader(ShaderHandle lightingShader);
+		void SetGBufferShader(ShaderHandle lightingShader, ShaderHandle gBufferShader);
+		ShaderHandle GetGBufferShader(ShaderHandle lightingShader);
 
 		class HotReloader : public System
 		{
@@ -53,6 +55,7 @@ namespace Engine
 		};
 		std::vector<ShaderDesc> m_shaders;
 		robin_hood::unordered_map<uint32_t, ShaderHandle> m_shadowShaders;	// map of lighting shader handle index -> shadow shader
+		robin_hood::unordered_map<uint32_t, ShaderHandle> m_gBufferShaders;	// map of lighting shader handle index -> gbuffer shader
 		bool m_shouldReloadAll = false;
 	};
 }

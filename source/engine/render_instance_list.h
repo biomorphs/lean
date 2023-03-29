@@ -78,7 +78,8 @@ namespace Engine
 		void Reset();
 		void Reserve(size_t count);
 
-		RenderInstanceList m_opaques;
+		RenderInstanceList m_opaquesDeferred;
+		RenderInstanceList m_opaquesForward;
 		RenderInstanceList m_transparents;
 		RenderInstanceList m_shadowCasters;
 	};

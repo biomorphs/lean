@@ -184,8 +184,10 @@ namespace Survivors
 		// Todo Hacks to fix later 
 		auto sm = Engine::GetSystem<Engine::ShaderManager>("Shaders");
 		auto lightingShader = sm->LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs");
+		auto gBufferShader = sm->LoadShader("gbuffer", "simplediffuse.vs", "simplegbuffer.fs");
 		auto shadowShader = sm->LoadShader("shadow", "simpleshadow.vs", "simpleshadow.fs");
 		sm->SetShadowsShader(lightingShader, shadowShader);
+		sm->SetGBufferShader(lightingShader, gBufferShader);
 
 		return true;
 	}

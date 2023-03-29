@@ -46,10 +46,32 @@ namespace Render
 		d.SetViewport(glm::ivec2(0), dimensions);
 		d.BindShaderProgram(shader);
 		d.BindVertexArray(m_quadMesh->GetVertexArray());
+		d.SetWireframeDrawing(false);
 		auto sampler = shader.GetUniformHandle("SourceTexture");
 		if (sampler != -1)
 		{
 			d.SetSampler(sampler, src.GetColourAttachment(0).GetResidentHandle());
+		}
+		for (const auto& chunk : m_quadMesh->GetChunks())
+		{
+			d.DrawPrimitives(chunk.m_primitiveType, chunk.m_firstVertex, chunk.m_vertexCount);
+		}
+	}
+
+	void RenderTargetBlitter::RunOnTarget(Render::Device& d, Render::FrameBuffer& target, Render::ShaderProgram& shader, UniformBuffer* u)
+	{
+		SDE_PROF_EVENT();
+		if (target.GetHandle() == -1 || shader.GetHandle() == -1)
+		{
+			return;
+		}
+		d.DrawToFramebuffer(target);
+		d.SetViewport(glm::ivec2(0), target.Dimensions());
+		d.BindShaderProgram(shader);
+		d.BindVertexArray(m_quadMesh->GetVertexArray());
+		if (u != nullptr)
+		{
+			u->Apply(d, shader);
 		}
 		for (const auto& chunk : m_quadMesh->GetChunks())
 		{

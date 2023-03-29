@@ -29,6 +29,7 @@ namespace Engine
 	class RenderInstances;
 	const uint32_t c_maxLightsPerTile = 128;
 	const uint32_t c_maxFramesAhead = 3;
+	const int c_msaaSamples = 1;
 
 	class Renderer : public Render::RenderPass
 	{
@@ -123,9 +124,25 @@ namespace Engine
 		void CullLights();
 		void ClassifyLightTiles();
 		void UploadLightTiles();
+		void BeginCullingAsync();
+		void RenderShadowMaps(Render::Device& d);
+		void RenderOpaquesDeferred(Render::Device& d);
+		void RenderOpaquesForward(Render::Device& d);
+		void RenderTransparents(Render::Device& d);
+		void RenderPostFx(Render::Device& d, Render::FrameBuffer& src);
 
 		using OnFindVisibleComplete = std::function<void(size_t)>;	// param = num. results found (note the result vector is NOT resized!)
 		void FindVisibleInstancesAsync(const Frustum& f, const RenderInstanceList& src, EntryList& result, OnFindVisibleComplete onComplete);
+
+		// culling 
+		EntryList m_visibleOpaquesFwd;
+		EntryList m_visibleOpaquesDeferred;
+		EntryList m_visibleTransparents;
+		std::vector<std::unique_ptr<EntryList>> m_visibleShadowCasters;
+		std::atomic<bool> m_opaquesFwdReady = false;
+		std::atomic<bool> m_opaquesDeferredReady = false;
+		std::atomic<bool> m_transparentsReady = false;
+		std::atomic<int> m_shadowsInFlight = 0;
 
 		FrameStats m_frameStats;
 		class ModelManager* m_modelManager = nullptr;
@@ -165,7 +182,9 @@ namespace Engine
 		Engine::ShaderHandle m_bloomBrightnessShader;
 		Engine::ShaderHandle m_bloomBlurShader;
 		Engine::ShaderHandle m_bloomCombineShader;
+		Engine::ShaderHandle m_deferredLightingShader;
 		Render::FrameBuffer m_mainFramebuffer;
+		Render::FrameBuffer m_gBuffer;
 		Render::FrameBuffer m_mainFramebufferResolved;
 		Render::FrameBuffer m_bloomBrightnessBuffer;
 		std::unique_ptr<Render::FrameBuffer> m_bloomBlurBuffers[2];

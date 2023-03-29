@@ -26,7 +26,6 @@ namespace Engine
 	const uint32_t c_maxShadowMaps = 16;
 	const int32_t c_bloomBufferSizeDivider = 2;	// windowsize/divider
 	const uint32_t c_bloomBlurIterations = 10;
-	const int c_msaaSamples = 4;
 
 	struct LightInfo					// passed to shaders
 	{
@@ -61,6 +60,7 @@ namespace Engine
 		, m_windowSize(windowSize)
 		, m_mainFramebuffer(windowSize)
 		, m_mainFramebufferResolved(windowSize)
+		, m_gBuffer(windowSize)
 		, m_bloomBrightnessBuffer(windowSize)
 	{
 		SDE_PROF_EVENT();
@@ -76,6 +76,7 @@ namespace Engine
 		m_bloomBlurShader = m_shaderManager->LoadShader("BloomBlur", "basic_blit.vs", "bloom_blur.fs");
 		m_bloomCombineShader = m_shaderManager->LoadShader("BloomCombine", "basic_blit.vs", "bloom_combine.fs");
 		m_tonemapShader = m_shaderManager->LoadShader("Tonemap", "basic_blit.vs", "tonemap.fs");
+		m_deferredLightingShader = m_shaderManager->LoadShader("DeferredLighting", "basic_blit.vs", "deferredlight.fs");
 		{
 			SDE_PROF_EVENT("Create Buffers");
 			const uint32_t maxLightTileData = (c_maxLightsPerTile + 1) * m_lightTileCounts.x * m_lightTileCounts.y;
@@ -101,6 +102,18 @@ namespace Engine
 			if (!m_mainFramebufferResolved.Create())
 			{
 				SDE_LOG("Failed to create framebuffer!");
+			}
+			if (c_msaaSamples <= 1)
+			{
+				m_gBuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F32);	// world space position
+				m_gBuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F32);	// world space normal, shininess
+				m_gBuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F32);	// albedo
+				m_gBuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F32);	// specular colour, amount
+				m_gBuffer.AddDepthStencil();									// needs to match main fb
+				if (!m_gBuffer.Create())
+				{
+					SDE_LOG("Failed to create gbuffer");
+				}
 			}
 			m_bloomBrightnessBuffer.AddColourAttachment(Render::FrameBuffer::RGBA_F16);
 			m_bloomBrightnessBuffer.Create();
@@ -872,6 +885,7 @@ namespace Engine
 			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 			d.SetBlending(false);
 			d.SetScissorEnabled(false);
+			d.SetWireframeDrawing(false);
 			if (m_useDrawIndirect)
 			{
 				static std::vector<DrawBucket> drawBuckets;
@@ -911,6 +925,7 @@ namespace Engine
 				d.SetBackfaceCulling(true, true);	// backface culling, ccw order
 				d.SetBlending(false);
 				d.SetScissorEnabled(false);
+				d.SetWireframeDrawing(false);
 				uniforms.SetValue("ShadowLightSpaceMatrix", shadowTransforms[cubeFace]);
 				uniforms.SetValue("ShadowLightIndex", (int32_t)(&l - &m_lights[0]));
 				if (m_useDrawIndirect)
@@ -939,199 +954,244 @@ namespace Engine
 		{
 			rtFn("MainResolved", m_mainFramebufferResolved);
 		}
+		else
+		{
+			rtFn("GBuffer", m_gBuffer);
+		}
 		rtFn("BloomBrightness", m_bloomBrightnessBuffer);
 		rtFn("BloomBlur0", *m_bloomBlurBuffers[0]);
 		rtFn("BloomBlur1", *m_bloomBlurBuffers[1]);
 	}
 
-	void Renderer::RenderAll(Render::Device& d)
+	void Renderer::BeginCullingAsync()
 	{
 		SDE_PROF_EVENT();
-		m_frameStats = {};
-		m_frameStats.m_instancesSubmitted = m_allInstances.m_opaques.m_count + m_allInstances.m_transparents.m_count;
-		m_frameStats.m_activeLights = std::min(m_lights.size(), c_maxLights);
+		m_opaquesFwdReady = false;
+		m_opaquesDeferredReady = false;
+		m_transparentsReady = false;
+		m_shadowsInFlight = 0;
 
-		CullLights();
-
-		static EntryList visibleOpaques, visibleTransparents;
-		static std::vector<std::unique_ptr<EntryList>> visibleShadowCasters;
-		std::atomic<bool> opaquesReady = false, transparentsReady = false;
-		std::atomic<int> shadowsInFlight = 0;
+		// Kick off the shadow caster culling first
+		int shadowCasterListId = 0;	// tracks the current result list to write to
+		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
-			SDE_PROF_EVENT("BeginCulling");
-
-			// Kick off the shadow caster culling first, we need the results asap!
-			int shadowCasterListId = 0;	// tracks the current result list to write to
-			for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
+			if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
 			{
-				if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
+				while (m_visibleShadowCasters.size() < shadowCasterListId + 1)
 				{
-					while(visibleShadowCasters.size() < shadowCasterListId + 1)
+					auto newInstanceList = std::make_unique<EntryList>();
+					newInstanceList->reserve(m_allInstances.m_shadowCasters.m_count);
+					m_visibleShadowCasters.emplace_back(std::move(newInstanceList));
+				}
+				if (m_lights[l].m_position.w == 0.0f || m_lights[l].m_position.w == 2.0f)		// directional / spot
+				{
+					++m_shadowsInFlight;
+					Frustum shadowFrustum(m_lights[l].m_lightspaceMatrix);
+					FindVisibleInstancesAsync(shadowFrustum, m_allInstances.m_shadowCasters,
+						*m_visibleShadowCasters[shadowCasterListId], [shadowCasterListId, this](size_t count) {
+							--m_shadowsInFlight;
+						});
+					shadowCasterListId++;
+				}
+				else
+				{
+					while (m_visibleShadowCasters.size() < shadowCasterListId + 6)
 					{
 						auto newInstanceList = std::make_unique<EntryList>();
 						newInstanceList->reserve(m_allInstances.m_shadowCasters.m_count);
-						visibleShadowCasters.emplace_back(std::move(newInstanceList));
+						m_visibleShadowCasters.emplace_back(std::move(newInstanceList));
 					}
-					if (m_lights[l].m_position.w == 0.0f || m_lights[l].m_position.w == 2.0f)		// directional / spot
+					const auto pos3 = glm::vec3(m_lights[l].m_position);
+					const glm::mat4 shadowTransforms[] = {
+						m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+						m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
+						m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)),
+						m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)),
+						m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
+						m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
+					};
+					for (int cubeSide = 0; cubeSide < 6; ++cubeSide)
 					{
-						++shadowsInFlight;
-						Frustum shadowFrustum(m_lights[l].m_lightspaceMatrix);
+						Frustum shadowFrustum(shadowTransforms[cubeSide]);
+						++m_shadowsInFlight;
 						FindVisibleInstancesAsync(shadowFrustum, m_allInstances.m_shadowCasters,
-							*visibleShadowCasters[shadowCasterListId], [shadowCasterListId, &shadowsInFlight](size_t count) {
-								--shadowsInFlight;
-						});
+							*m_visibleShadowCasters[shadowCasterListId], [shadowCasterListId, this](size_t count) {
+								--m_shadowsInFlight;
+							});
 						shadowCasterListId++;
-					}
-					else
-					{
-						while (visibleShadowCasters.size() < shadowCasterListId + 6)
-						{
-							auto newInstanceList = std::make_unique<EntryList>();
-							newInstanceList->reserve(m_allInstances.m_shadowCasters.m_count);
-							visibleShadowCasters.emplace_back(std::move(newInstanceList));
-						}
-						const auto pos3 = glm::vec3(m_lights[l].m_position);
-						const glm::mat4 shadowTransforms[] = {
-							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
-							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)),
-							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)),
-							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)),
-							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)),
-							m_lights[l].m_lightspaceMatrix * glm::lookAt(pos3, pos3 + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0,0.0f))
-						};
-						for (int cubeSide = 0; cubeSide < 6; ++cubeSide)
-						{
-							Frustum shadowFrustum(shadowTransforms[cubeSide]);
-							++shadowsInFlight;
-							FindVisibleInstancesAsync(shadowFrustum, m_allInstances.m_shadowCasters,
-								*visibleShadowCasters[shadowCasterListId], [shadowCasterListId, &shadowsInFlight](size_t count) {
-									--shadowsInFlight;
-								});
-							shadowCasterListId++;
-						}
 					}
 				}
 			}
-
-			visibleOpaques.reserve(m_allInstances.m_opaques.m_count);
-			visibleTransparents.reserve(m_allInstances.m_transparents.m_count);
-			Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
-			FindVisibleInstancesAsync(viewFrustum, m_allInstances.m_opaques, visibleOpaques, [&](size_t resultCount) {
-				opaquesReady = true;
-			});
-			FindVisibleInstancesAsync(viewFrustum, m_allInstances.m_transparents, visibleTransparents, [&](size_t resultCount) {
-				transparentsReady = true;
-			});
 		}
 
-		{
-			SDE_PROF_EVENT("Clear main framebuffer");
-			d.SetDepthState(true, true);	// make sure depth write is enabled before clearing!
-			d.ClearFramebufferColourDepth(m_mainFramebuffer, m_clearColour, FLT_MAX);
-		}
+		m_visibleOpaquesDeferred.reserve(m_allInstances.m_opaquesDeferred.m_count);
+		m_visibleOpaquesFwd.reserve(m_allInstances.m_opaquesForward.m_count);
+		m_visibleTransparents.reserve(m_allInstances.m_transparents.m_count);
+		Frustum viewFrustum(m_camera.ProjectionMatrix() * m_camera.ViewMatrix());
+		FindVisibleInstancesAsync(viewFrustum, m_allInstances.m_opaquesForward, m_visibleOpaquesFwd, [&](size_t resultCount) {
+			m_opaquesFwdReady = true;
+		});
+		FindVisibleInstancesAsync(viewFrustum, m_allInstances.m_opaquesDeferred, m_visibleOpaquesDeferred, [&](size_t r) {
+			m_opaquesDeferredReady = true;
+		});
+		FindVisibleInstancesAsync(viewFrustum, m_allInstances.m_transparents, m_visibleTransparents, [&](size_t resultCount) {
+			m_transparentsReady = true;
+		});
+	}
 
-		// setup global constants
-		const auto projectionMat = m_camera.ProjectionMatrix();
-		const auto viewMat = m_camera.ViewMatrix();
-		UpdateGlobals(projectionMat, viewMat);
-
+	void Renderer::RenderShadowMaps(Render::Device& d)
+	{
+		SDE_PROF_EVENT();
 		{
 			SDE_PROF_EVENT("Wait for shadow lists");
-			while (shadowsInFlight > 0)
+			while (m_shadowsInFlight > 0)
 			{
 				m_jobSystem->ProcessJobThisThread();
 			}
 		}
-
-		UploadLightTiles();
-
 		int startIndex = 0;
 		for (int l = 0; l < m_lights.size() && l < c_maxLights; ++l)
 		{
 			if (m_lights[l].m_shadowMap != nullptr && m_lights[l].m_updateShadowmap)
 			{
-				startIndex = RenderShadowmap(d, m_lights[l], visibleShadowCasters, startIndex);
+				startIndex = RenderShadowmap(d, m_lights[l], m_visibleShadowCasters, startIndex);
 			}
 		}
+	}
 
-		// lighting to main frame buffer
+	void Renderer::RenderOpaquesDeferred(Render::Device& d)
+	{
+		SDE_PROF_EVENT();
 		{
-			SDE_PROF_EVENT("RenderMainBuffer");
+			SDE_PROF_EVENT("Wait for opaques");
+			while (!m_opaquesDeferredReady)
+			{
+				m_jobSystem->ProcessJobThisThread();
+			}
+		}
+		// gbuffer
+		d.SetWireframeDrawing(m_showWireframe);
+		d.DrawToFramebuffer(m_gBuffer);
+		d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
+		d.SetBackfaceCulling(true, true);	// backface culling, ccw order
+		d.SetBlending(false);				// no blending for opaques
+		d.SetScissorEnabled(false);			// (don't) scissor me timbers
+		int baseInstance = PopulateInstanceBuffers(m_allInstances.m_opaquesDeferred, m_visibleOpaquesDeferred);
+		if (m_useDrawIndirect)
+		{
+			static std::vector<DrawBucket> drawBuckets;
+			drawBuckets.reserve(2000);
+			drawBuckets.resize(0);
+			PrepareDrawBuckets(m_allInstances.m_opaquesDeferred, m_visibleOpaquesDeferred, baseInstance, drawBuckets);
+			DrawBuckets(d, drawBuckets, true, nullptr);
+		}
+		else
+		{
+			DrawInstances(d, m_allInstances.m_opaquesDeferred, m_visibleOpaquesDeferred, baseInstance, true, nullptr);
+		}
 
-			// render opaques
-			d.SetWireframeDrawing(m_showWireframe);
+		// lighting pass -> main fb
+		auto lightShader = m_shaderManager->GetShader(m_deferredLightingShader);
+		if (lightShader != nullptr)
+		{
+			d.SetWireframeDrawing(false);
 			d.DrawToFramebuffer(m_mainFramebuffer);
 			d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
-			d.SetBackfaceCulling(true, true);	// backface culling, ccw order
-			d.SetBlending(false);				// no blending for opaques
-			d.SetScissorEnabled(false);			// (don't) scissor me timbers
+			d.SetBackfaceCulling(false, true);	// backface culling, ccw order
+			d.SetBlending(false);				// no blending
+			d.SetScissorEnabled(false);
+			d.BindShaderProgram(*lightShader);		// must be set before uniforms
+			d.SetDepthState(false, false);			// dont read/write depth here, we blit it later via resolve
+			d.BindUniformBufferIndex(*lightShader, "Globals", 0);
+			d.SetUniforms(*lightShader, m_globalsUniformBuffer[m_currentBuffer], 0);
+			d.BindStorageBuffer(1, m_allLightsData[m_currentBuffer]);
+			d.BindStorageBuffer(2, m_lightTileData[m_currentBuffer]);
+			uint32_t gbufferPosHandle = lightShader->GetUniformHandle("GBuffer_Pos");
+			uint32_t gbufferNormHandle = lightShader->GetUniformHandle("GBuffer_NormalShininess");
+			uint32_t gbufferAlbedoHandle = lightShader->GetUniformHandle("GBuffer_Albedo");
+			uint32_t gbufferSpecHandle = lightShader->GetUniformHandle("GBuffer_Specular");
+			if(gbufferPosHandle != -1)
+				d.SetSampler(gbufferPosHandle, m_gBuffer.GetColourAttachment(0).GetResidentHandle());
+			if (gbufferNormHandle != -1)
+				d.SetSampler(gbufferNormHandle, m_gBuffer.GetColourAttachment(1).GetResidentHandle());
+			if (gbufferAlbedoHandle != -1)
+				d.SetSampler(gbufferAlbedoHandle, m_gBuffer.GetColourAttachment(2).GetResidentHandle());
+			if (gbufferSpecHandle != -1)
+				d.SetSampler(gbufferSpecHandle, m_gBuffer.GetColourAttachment(3).GetResidentHandle());
+			BindShadowmaps(d, *lightShader, 0);
+			m_targetBlitter.RunOnTarget(d, m_mainFramebuffer, *lightShader);
 
-			{
-				SDE_PROF_EVENT("Wait for opaques");
-				while (!opaquesReady)
-				{
-					m_jobSystem->ProcessJobThisThread();
-				}
-			}
-			m_frameStats.m_totalOpaqueInstances = m_allInstances.m_opaques.m_count;
-			int baseInstance = PopulateInstanceBuffers(m_allInstances.m_opaques, visibleOpaques);
-			if (m_useDrawIndirect)
-			{
-				static std::vector<DrawBucket> drawBuckets;
-				drawBuckets.reserve(2000);
-				drawBuckets.resize(0);	
-				PrepareDrawBuckets(m_allInstances.m_opaques, visibleOpaques, baseInstance, drawBuckets);
-				DrawBuckets(d, drawBuckets, true, nullptr);
-			}
-			else
-			{
-				DrawInstances(d, m_allInstances.m_opaques, visibleOpaques, baseInstance, true, nullptr);
-			}
-			m_frameStats.m_renderedOpaqueInstances = visibleOpaques.size();
-
-			// render transparents
-			d.SetDepthState(true, false);		// enable z-test, disable write
-			d.SetBlending(true);
-			{
-				SDE_PROF_EVENT("Wait for transparents");
-				while (!transparentsReady)
-				{
-					m_jobSystem->ProcessJobThisThread();
-				}
-			}
-			m_frameStats.m_totalTransparentInstances = m_allInstances.m_transparents.m_count;
-			baseInstance = PopulateInstanceBuffers(m_allInstances.m_transparents, visibleTransparents);
-			if (m_useDrawIndirect)
-			{
-				static std::vector<DrawBucket> drawBuckets;
-				drawBuckets.reserve(2000);
-				drawBuckets.resize(0);
-				PrepareDrawBuckets(m_allInstances.m_transparents, visibleTransparents, baseInstance, drawBuckets);
-				DrawBuckets(d, drawBuckets, true, nullptr);
-			}
-			else
-			{
-				DrawInstances(d, m_allInstances.m_transparents, visibleTransparents, baseInstance, true, nullptr);
-			}
-			m_frameStats.m_renderedTransparentInstances = visibleTransparents.size();
-
-			if (m_showWireframe)
-			{
-				d.SetWireframeDrawing(false);
-			}
+			// blit depth from gbuffer to main buffer
+			m_gBuffer.Resolve(m_mainFramebuffer, Render::FrameBuffer::ResolveType::Depth);
 		}
+	}
 
-		Render::FrameBuffer* mainFb = &m_mainFramebuffer;
-		if(m_mainFramebuffer.GetMSAASamples() > 1)
+	void Renderer::RenderOpaquesForward(Render::Device& d)
+	{
+		SDE_PROF_EVENT();
 		{
-			SDE_PROF_EVENT("ResolveMSAA");
-			m_mainFramebuffer.Resolve(m_mainFramebufferResolved);
-			mainFb = &m_mainFramebufferResolved;
+			SDE_PROF_EVENT("Wait for opaques");
+			while (!m_opaquesFwdReady)
+			{
+				m_jobSystem->ProcessJobThisThread();
+			}
 		}
 
-		// blit to bloom brightness buffer
+		d.DrawToFramebuffer(m_mainFramebuffer);
+		d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
+		d.SetBackfaceCulling(true, true);	// backface culling, ccw order
+		d.SetBlending(false);				// no blending for opaques
+		d.SetScissorEnabled(false);			// (don't) scissor me timbers
+		d.SetWireframeDrawing(m_showWireframe);
+		int baseInstance = PopulateInstanceBuffers(m_allInstances.m_opaquesForward, m_visibleOpaquesFwd);
+		if (m_useDrawIndirect)
+		{
+			static std::vector<DrawBucket> drawBuckets;
+			drawBuckets.reserve(2000);
+			drawBuckets.resize(0);
+			PrepareDrawBuckets(m_allInstances.m_opaquesForward, m_visibleOpaquesFwd, baseInstance, drawBuckets);
+			DrawBuckets(d, drawBuckets, true, nullptr);
+		}
+		else
+		{
+			DrawInstances(d, m_allInstances.m_opaquesForward, m_visibleOpaquesFwd, baseInstance, true, nullptr);
+		}
+	}
+
+	void Renderer::RenderTransparents(Render::Device& d)
+	{
+		d.SetDepthState(true, false);		// enable z-test, disable write
+		d.SetBlending(true);
+		d.SetWireframeDrawing(m_showWireframe);
+		{
+			SDE_PROF_EVENT("Wait for transparents");
+			while (!m_transparentsReady)
+			{
+				m_jobSystem->ProcessJobThisThread();
+			}
+		}
+		m_frameStats.m_totalTransparentInstances = m_allInstances.m_transparents.m_count;
+		int baseInstance = PopulateInstanceBuffers(m_allInstances.m_transparents, m_visibleTransparents);
+		if (m_useDrawIndirect)
+		{
+			static std::vector<DrawBucket> drawBuckets;
+			drawBuckets.reserve(2000);
+			drawBuckets.resize(0);
+			PrepareDrawBuckets(m_allInstances.m_transparents, m_visibleTransparents, baseInstance, drawBuckets);
+			DrawBuckets(d, drawBuckets, true, nullptr);
+		}
+		else
+		{
+			DrawInstances(d, m_allInstances.m_transparents, m_visibleTransparents, baseInstance, true, nullptr);
+		}
+	}
+
+	void Renderer::RenderPostFx(Render::Device& d, Render::FrameBuffer& src)
+	{
+		// bloom brightness pass
 		d.SetDepthState(false, false);
 		d.SetBlending(false);
+		d.SetWireframeDrawing(false);
 		auto brightnessShader = m_shaderManager->GetShader(m_bloomBrightnessShader);
 		if (brightnessShader)
 		{
@@ -1143,10 +1203,10 @@ namespace Engine
 			auto multi = brightnessShader->GetUniformHandle("BrightnessMulti");
 			if (multi != -1)
 				d.SetUniformValue(multi, m_bloomMultiplier);
-			m_targetBlitter.TargetToTarget(d, *mainFb, m_bloomBrightnessBuffer, *brightnessShader);
+			m_targetBlitter.TargetToTarget(d, src, m_bloomBrightnessBuffer, *brightnessShader);
 		}
 
-		// gaussian blur 
+		// bloom gaussian blur ping-pong
 		auto blurShader = m_shaderManager->GetShader(m_bloomBlurShader);
 		if (blurShader)
 		{
@@ -1173,19 +1233,74 @@ namespace Engine
 			if (sampler != -1)
 			{
 				// force texture unit 1 since 0 is used by blitter
-				d.SetSampler(sampler, mainFb->GetColourAttachment(0).GetResidentHandle());
+				d.SetSampler(sampler, src.GetColourAttachment(0).GetResidentHandle());
 			}
 			m_targetBlitter.TargetToTarget(d, *m_bloomBlurBuffers[0], m_bloomBrightnessBuffer, *combineShader);
 		}
 
-		// blit main buffer to backbuffer + tonemap
+		// blit to main buffer + tonemap
 		d.SetDepthState(false, false);
 		d.SetBlending(true);
 		auto tonemapShader = m_shaderManager->GetShader(m_tonemapShader);
-		auto blitShader = m_shaderManager->GetShader(m_blitShader);
-		if (blitShader && tonemapShader)
+		if (tonemapShader)
 		{
-			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, *mainFb, *tonemapShader);
+			m_targetBlitter.TargetToTarget(d, m_bloomBrightnessBuffer, src, *tonemapShader);
+		}
+	}
+
+	void Renderer::RenderAll(Render::Device& d)
+	{
+		SDE_PROF_EVENT();
+		m_frameStats = {};
+		m_frameStats.m_instancesSubmitted = m_allInstances.m_opaquesDeferred.m_count + m_allInstances.m_opaquesForward.m_count + m_allInstances.m_transparents.m_count;
+		m_frameStats.m_activeLights = std::min(m_lights.size(), c_maxLights);
+
+		CullLights();
+		BeginCullingAsync();
+
+		{
+			SDE_PROF_EVENT("Clear framebuffers");
+			d.SetDepthState(true, true);	// make sure depth write is enabled before clearing!
+			d.ClearFramebufferColourDepth(m_mainFramebuffer, m_clearColour, FLT_MAX);
+			d.ClearFramebufferColourDepth(m_gBuffer, { 0,0,0,0 }, FLT_MAX);
+		}
+
+		// upload global constants while waiting for culling + clears
+		const auto projectionMat = m_camera.ProjectionMatrix();
+		const auto viewMat = m_camera.ViewMatrix();
+		UpdateGlobals(projectionMat, viewMat);
+		UploadLightTiles();
+
+		// shadow maps first to be drawn
+		RenderShadowMaps(d);
+
+		// main geometry passes
+		if (c_msaaSamples <= 1)
+		{
+			RenderOpaquesDeferred(d);
+		}
+		RenderOpaquesForward(d);
+		m_frameStats.m_renderedOpaqueInstances = m_visibleOpaquesDeferred.size() + m_visibleOpaquesFwd.size();
+		m_frameStats.m_totalOpaqueInstances = m_allInstances.m_opaquesDeferred.m_count + m_allInstances.m_opaquesForward.m_count;
+
+		RenderTransparents(d);
+		m_frameStats.m_renderedTransparentInstances = m_visibleTransparents.size();
+
+		Render::FrameBuffer* mainFb = &m_mainFramebuffer;
+		if(m_mainFramebuffer.GetMSAASamples() > 1)
+		{
+			SDE_PROF_EVENT("ResolveMSAA");
+			m_mainFramebuffer.Resolve(m_mainFramebufferResolved);
+			mainFb = &m_mainFramebufferResolved;
+		}
+		RenderPostFx(d, *mainFb);
+
+		// blit main buffer to backbuffer
+		d.SetDepthState(false, false);
+		d.SetBlending(true);
+		auto blitShader = m_shaderManager->GetShader(m_blitShader);
+		if (blitShader)
+		{
 			m_targetBlitter.TargetToBackbuffer(d, *mainFb, *blitShader, m_windowSize);
 		}
 	}

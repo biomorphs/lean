@@ -116,7 +116,9 @@ namespace Engine
 		if (theShader != nullptr)
 		{
 			ShaderHandle shadowShader = shaders->GetShadowsShader(shader);
+			ShaderHandle gBufferShader = shaders->GetGBufferShader(shader);
 			Render::ShaderProgram* shadowShaderPtr = shaders->GetShader(shadowShader);
+			Render::ShaderProgram* gBufferShaderPtr = c_msaaSamples <= 1 ? shaders->GetShader(gBufferShader) : nullptr;
 			const Render::VertexArray* va = &mesh.GetVertexArray();
 			const Render::RenderBuffer* ib = mesh.GetIndexBuffer().get();
 			const Render::Material* mat = matOverride != nullptr ? matOverride : &mesh.GetMaterial();
@@ -151,12 +153,13 @@ namespace Engine
 			}
 			else
 			{
-				int baseIndex = m_opaques.AddInstances(1);
-				const auto opaqueSortKey = OpaqueKey(shader, va, mesh.GetChunks().data(), nullptr);
+				auto& instances = gBufferShaderPtr != nullptr ? m_opaquesDeferred : m_opaquesForward;
+				const int baseIndex = instances.AddInstances(1);
 				if (baseIndex != -1)
 				{
-					m_opaques.SetInstance(baseIndex, opaqueSortKey, trns, va, ib, mesh.GetChunks().data(), mesh.GetChunks().size(),
-						mat, theShader, boundsMin, boundsMax, pid);
+					const auto opaqueSortKey = OpaqueKey(shader, va, mesh.GetChunks().data(), nullptr);
+					instances.SetInstance(baseIndex, opaqueSortKey, trns, va, ib, mesh.GetChunks().data(), mesh.GetChunks().size(),
+						mat, gBufferShaderPtr ? gBufferShaderPtr : theShader, boundsMin, boundsMax, pid);
 				}
 			}
 		}
@@ -176,7 +179,9 @@ namespace Engine
 		if (theModel != nullptr && theShader != nullptr)
 		{
 			ShaderHandle shadowShader = shaders->GetShadowsShader(shader);
+			ShaderHandle gBufferShader = shaders->GetGBufferShader(shader);
 			Render::ShaderProgram* shadowShaderPtr = shaders->GetShader(shadowShader);
+			Render::ShaderProgram* gBufferShaderPtr = c_msaaSamples <= 1 ? shaders->GetShader(gBufferShader) : nullptr;
 			const Render::VertexArray* va = models->GetVertexArray();
 			const Render::RenderBuffer* ib = models->GetIndexBuffer();
 			const int partCount = theModel->MeshParts().size();
@@ -219,12 +224,13 @@ namespace Engine
 				}
 				else
 				{
-					int baseIndex = m_opaques.AddInstances(1);
-					const auto opaqueSortKey = OpaqueKey(shader, va, meshPart.m_chunks.data(), nullptr);
+					auto& instances = gBufferShaderPtr != nullptr ? m_opaquesDeferred : m_opaquesForward;
+					int baseIndex = instances.AddInstances(1);
 					if(baseIndex != -1)
 					{
-						m_opaques.SetInstance(baseIndex, opaqueSortKey, partTrns, va, ib, meshPart.m_chunks.data(), meshPart.m_chunks.size(),
-							nullptr, theShader, boundsMin, boundsMax, pid);
+						const auto opaqueSortKey = OpaqueKey(shader, va, meshPart.m_chunks.data(), nullptr);
+						instances.SetInstance(baseIndex, opaqueSortKey, partTrns, va, ib, meshPart.m_chunks.data(), meshPart.m_chunks.size(),
+							nullptr, gBufferShaderPtr ? gBufferShaderPtr : theShader, boundsMin, boundsMax, pid);
 					}
 				}
 			}
@@ -246,7 +252,9 @@ namespace Engine
 		if (theModel != nullptr && theShader != nullptr && count > 0)
 		{
 			ShaderHandle shadowShader = shaders->GetShadowsShader(shader);
+			ShaderHandle gBufferShader = shaders->GetGBufferShader(shader);
 			Render::ShaderProgram* shadowShaderPtr = shaders->GetShader(shadowShader);
+			Render::ShaderProgram* gBufferShaderPtr = c_msaaSamples <= 1 ? shaders->GetShader(gBufferShader) : nullptr;
 			const Render::VertexArray* va = models->GetVertexArray();
 			const Render::RenderBuffer* ib = models->GetIndexBuffer();
 			const int partCount = theModel->MeshParts().size();
@@ -295,14 +303,15 @@ namespace Engine
 				}
 				else
 				{
-					int baseIndex = m_opaques.AddInstances(count);
+					auto& instances = gBufferShaderPtr != nullptr ? m_opaquesDeferred : m_opaquesForward;
+					int baseIndex = instances.AddInstances(count);
 					const auto opaqueSortKey = OpaqueKey(shader, va, meshPart.m_chunks.data(), nullptr);
 					for (int i = 0; i < count && baseIndex != -1; ++i)
 					{
 						_mm_store_ps(glm::value_ptr(instancePos), positions[i]);
 						const glm::mat4 instanceTransform = glm::translate(glm::vec3(instancePos)) * meshPart.m_transform;
-						m_opaques.SetInstance(baseIndex + i, opaqueSortKey, instanceTransform, va, ib, meshPart.m_chunks.data(), meshPart.m_chunks.size(),
-							nullptr, theShader, boundsMin, boundsMax, pid);
+						instances.SetInstance(baseIndex + i, opaqueSortKey, instanceTransform, va, ib, meshPart.m_chunks.data(), meshPart.m_chunks.size(),
+							nullptr, gBufferShaderPtr ? gBufferShaderPtr : theShader, boundsMin, boundsMax, pid);
 					}
 				}
 			}
@@ -311,14 +320,16 @@ namespace Engine
 
 	void RenderInstances::Reset()
 	{
-		m_opaques.Reset();
+		m_opaquesDeferred.Reset();
+		m_opaquesForward.Reset();
 		m_transparents.Reset();
 		m_shadowCasters.Reset();
 	}
 
 	void RenderInstances::Reserve(size_t count)
 	{
-		m_opaques.Reserve(count);
+		m_opaquesDeferred.Reserve(count);
+		m_opaquesForward.Reserve(count);
 		m_transparents.Reserve(count);
 		m_shadowCasters.Reserve(count);
 	}

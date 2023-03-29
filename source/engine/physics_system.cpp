@@ -229,7 +229,7 @@ namespace Engine
 		physx::PxCudaContextManagerDesc cudaContextManagerDesc;
 		m_cudaManager = PxCreateCudaContextManager(*m_foundation.Get(), cudaContextManagerDesc, PxGetProfilerCallback());
 
-		const bool c_useCUDA = false;
+		const bool c_useCUDA = true;
 		g_dispatcher.m_jobs = m_jobSystem;
 		physx::PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(m_globalGravity.x, m_globalGravity.y, m_globalGravity.z);

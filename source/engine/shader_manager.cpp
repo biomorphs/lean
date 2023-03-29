@@ -44,6 +44,24 @@ namespace Engine
 		}
 	SERIALISE_END()
 
+	ShaderHandle ShaderManager::GetGBufferShader(ShaderHandle lightingShader)
+	{
+		const auto& foundShader = m_gBufferShaders.find(lightingShader.m_index);
+		if (foundShader != m_gBufferShaders.end())
+		{
+			return foundShader->second;
+		}
+		else
+		{
+			return ShaderHandle::Invalid();
+		}
+	}
+
+	void ShaderManager::SetGBufferShader(ShaderHandle lightingShader, ShaderHandle shadowShader)
+	{
+		m_gBufferShaders[lightingShader.m_index] = shadowShader;
+	}
+
 	ShaderHandle ShaderManager::GetShadowsShader(ShaderHandle lightingShader)
 	{
 		const auto& foundShadowShader = m_shadowShaders.find(lightingShader.m_index);
