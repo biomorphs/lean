@@ -140,6 +140,12 @@ void main()
 	vec4 albedo = texture(GBuffer_Albedo, uv);
 	vec4 meshspecular = texture(GBuffer_Specular, uv);
 
+	if(wsNormalShininess.xyz == vec3(0.0))
+	{
+		discard;
+		return;
+	}
+
 	vec3 viewDir = normalize(CameraPosition.xyz - wsPos.xyz);
 	vec3 finalColour = vec3(0.0);
 	uint lightTileIndex = GetLightTileIndex(GetScreenTileIndices(gl_FragCoord.xy));
@@ -173,7 +179,7 @@ void main()
 				vec3 halfwayDir = normalize(lightDir + viewDir);  
 				float specFactor = pow(max(dot(wsNormalShininess.xyz, halfwayDir), 0.0), max(wsNormalShininess.a,0.000000001));
 				vec3 specularColour = meshspecular.rgb * AllLights[lightIndex].ColourAndAmbient.rgb;
-				specular = meshspecular.a * specFactor * meshspecular.rgb; 
+				specular = meshspecular.a * specFactor * specularColour; 
 			}
 			
 			vec3 diffuseSpec = (1.0-shadow) * (diffuse + specular);

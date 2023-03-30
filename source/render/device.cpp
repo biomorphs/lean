@@ -198,6 +198,14 @@ namespace Render
 		}
 	}
 
+	void Device::ClearFramebufferColour(const FrameBuffer& fb, int attachmentIndex, const glm::vec4& colour)
+	{
+		if (attachmentIndex >= 0 && attachmentIndex < fb.GetColourAttachmentCount())
+		{
+			glClearNamedFramebufferfv(fb.GetHandle(), GL_COLOR, attachmentIndex, glm::value_ptr(colour));
+		}
+	}
+
 	void Device::ClearFramebufferColour(const FrameBuffer& fb, const glm::vec4& colour)
 	{
 		int colourAttachments = fb.GetColourAttachmentCount();

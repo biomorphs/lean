@@ -499,6 +499,7 @@ void GraphicsSystem::ShowGui(int framesPerSecond)
 		char statText[1024] = { '\0' };
 		m_debugGui->BeginWindow(m_showStats, "Render Stats");
 		m_submitEntitiesAsync = m_debugGui->Checkbox("Use async entity submit", m_submitEntitiesAsync);
+		m_renderer->SetDeferredRenderEnabled(m_debugGui->Checkbox("Enable deferred rendering", m_renderer->GetDeferredRenderEnabled()));
 		m_renderer->SetUseDrawIndirect(m_debugGui->Checkbox("Use draw indirect", m_renderer->GetUseDrawIndirect()));
 		sprintf_s(statText, "Total Instances Submitted: %zu", fs.m_instancesSubmitted);	m_debugGui->Text(statText);
 		sprintf_s(statText, "\tOpaques: %zu (%zu visible)", fs.m_totalOpaqueInstances, fs.m_renderedOpaqueInstances);	m_debugGui->Text(statText);

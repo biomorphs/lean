@@ -20,7 +20,7 @@
 
 namespace Engine
 {
-	const uint64_t c_maxInstances = 1024 * 256;		// this needs to include all passes/shadowmap updates
+	const uint64_t c_maxInstances = 1024 * 384;		// this needs to include all passes/shadowmap updates
 	const uint64_t c_maxDrawCalls = c_maxInstances;
 	const uint64_t c_maxLights = 4096;
 	const uint32_t c_maxShadowMaps = 16;
@@ -467,8 +467,6 @@ namespace Engine
 			return false;
 		}), m_lights.end());
 		m_frameStats.m_visibleLights = m_lights.size();
-
-		ClassifyLightTiles();
 	}
 
 	void Renderer::UpdateGlobals(glm::mat4 projectionMat, glm::mat4 viewMat)
@@ -954,7 +952,7 @@ namespace Engine
 		{
 			rtFn("MainResolved", m_mainFramebufferResolved);
 		}
-		else
+		else if(m_drawDeferred)
 		{
 			rtFn("GBuffer", m_gBuffer);
 		}
@@ -1097,9 +1095,7 @@ namespace Engine
 			d.SetWireframeDrawing(false);
 			d.DrawToFramebuffer(m_mainFramebuffer);
 			d.SetViewport(glm::ivec2(0, 0), m_mainFramebuffer.Dimensions());
-			d.SetBackfaceCulling(false, true);	// backface culling, ccw order
-			d.SetBlending(false);				// no blending
-			d.SetScissorEnabled(false);
+			d.SetBackfaceCulling(false, true);	// backface culling off, ccw order
 			d.BindShaderProgram(*lightShader);		// must be set before uniforms
 			d.SetDepthState(false, false);			// dont read/write depth here, we blit it later via resolve
 			d.BindUniformBufferIndex(*lightShader, "Globals", 0);
@@ -1239,7 +1235,6 @@ namespace Engine
 		}
 
 		// blit to main buffer + tonemap
-		d.SetDepthState(false, false);
 		d.SetBlending(true);
 		auto tonemapShader = m_shaderManager->GetShader(m_tonemapShader);
 		if (tonemapShader)
@@ -1256,6 +1251,7 @@ namespace Engine
 		m_frameStats.m_activeLights = std::min(m_lights.size(), c_maxLights);
 
 		CullLights();
+		ClassifyLightTiles();
 		BeginCullingAsync();
 
 		{
@@ -1275,7 +1271,7 @@ namespace Engine
 		RenderShadowMaps(d);
 
 		// main geometry passes
-		if (c_msaaSamples <= 1)
+		if (m_drawDeferred && c_msaaSamples <= 1)
 		{
 			RenderOpaquesDeferred(d);
 		}

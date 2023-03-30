@@ -27,7 +27,7 @@ namespace Engine
 	class JobSystem;
 	class Frustum;
 	class RenderInstances;
-	const uint32_t c_maxLightsPerTile = 128;
+	const uint32_t c_maxLightsPerTile = 256;
 	const uint32_t c_maxFramesAhead = 3;
 	const int c_msaaSamples = 1;
 
@@ -96,6 +96,8 @@ namespace Engine
 		void SetCullingEnabled(bool b) { m_cullingEnabled = b; }
 		void SetWireframeMode(bool m) { m_showWireframe = m; }
 		bool GetWireframeMode() { return m_showWireframe; }
+		void SetDeferredRenderEnabled(bool m) { m_drawDeferred = m; }
+		bool GetDeferredRenderEnabled() const { return m_drawDeferred; }
 	private:
 		using EntryList = std::vector<RenderInstanceList::Entry>;
 		using ShadowShaders = std::unordered_map<uint32_t, ShaderHandle>;
@@ -160,6 +162,7 @@ namespace Engine
 		bool m_cullingEnabled = true;
 		bool m_useDrawIndirect = false;
 		bool m_showWireframe = false;
+		bool m_drawDeferred = true;
 		glm::vec4 m_clearColour = { 0.0f,0.0f,0.0f,1.0f };
 		JobSystem* m_jobSystem = nullptr;
 		float m_bloomThreshold = 1.0f;

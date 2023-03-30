@@ -118,7 +118,7 @@ namespace Engine
 			ShaderHandle shadowShader = shaders->GetShadowsShader(shader);
 			ShaderHandle gBufferShader = shaders->GetGBufferShader(shader);
 			Render::ShaderProgram* shadowShaderPtr = shaders->GetShader(shadowShader);
-			Render::ShaderProgram* gBufferShaderPtr = c_msaaSamples <= 1 ? shaders->GetShader(gBufferShader) : nullptr;
+			Render::ShaderProgram* gBufferShaderPtr = renderer.GetDeferredRenderEnabled() ? shaders->GetShader(gBufferShader) : nullptr;
 			const Render::VertexArray* va = &mesh.GetVertexArray();
 			const Render::RenderBuffer* ib = mesh.GetIndexBuffer().get();
 			const Render::Material* mat = matOverride != nullptr ? matOverride : &mesh.GetMaterial();
@@ -181,7 +181,7 @@ namespace Engine
 			ShaderHandle shadowShader = shaders->GetShadowsShader(shader);
 			ShaderHandle gBufferShader = shaders->GetGBufferShader(shader);
 			Render::ShaderProgram* shadowShaderPtr = shaders->GetShader(shadowShader);
-			Render::ShaderProgram* gBufferShaderPtr = c_msaaSamples <= 1 ? shaders->GetShader(gBufferShader) : nullptr;
+			Render::ShaderProgram* gBufferShaderPtr = renderer.GetDeferredRenderEnabled() ? shaders->GetShader(gBufferShader) : nullptr;
 			const Render::VertexArray* va = models->GetVertexArray();
 			const Render::RenderBuffer* ib = models->GetIndexBuffer();
 			const int partCount = theModel->MeshParts().size();
@@ -254,7 +254,7 @@ namespace Engine
 			ShaderHandle shadowShader = shaders->GetShadowsShader(shader);
 			ShaderHandle gBufferShader = shaders->GetGBufferShader(shader);
 			Render::ShaderProgram* shadowShaderPtr = shaders->GetShader(shadowShader);
-			Render::ShaderProgram* gBufferShaderPtr = c_msaaSamples <= 1 ? shaders->GetShader(gBufferShader) : nullptr;
+			Render::ShaderProgram* gBufferShaderPtr = renderer.GetDeferredRenderEnabled() ? shaders->GetShader(gBufferShader) : nullptr;
 			const Render::VertexArray* va = models->GetVertexArray();
 			const Render::RenderBuffer* ib = models->GetIndexBuffer();
 			const int partCount = theModel->MeshParts().size();

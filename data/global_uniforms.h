@@ -23,7 +23,7 @@ layout(std140, binding = 0) uniform Globals
 struct LightTileData
 {
 	uint Count;
-	uint Indices[128];
+	uint Indices[256];
 };
 
 layout(std430, binding = 1) buffer AllLightsBuffer
