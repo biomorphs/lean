@@ -1,0 +1,4150 @@
+{
+  "Entities": [
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "EnvironmentSettings",
+            "ClearColour": [
+              0.034313738346099854,
+              0.034313395619392395,
+              0.034313395619392395
+            ],
+            "Gravity": [
+              0.0,
+              -9.8100004196167,
+              0.0
+            ]
+          },
+          "Type": "EnvironmentSettings"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Global Settings"
+              }
+            ]
+          },
+          "Type": "Tags"
+        }
+      ],
+      "ID": 0
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "Ambient": 0.1120000034570694,
+            "Attenutation": 1.0,
+            "Brightness": 1.0,
+            "CastShadows": true,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "Distance": 384.0,
+            "ShadowBias": 1.0,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 256.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Sun Light"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.14452651143074036,
+              -0.014171004295349121,
+              -0.09654853492975235,
+              0.9846774339675903
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              18.0,
+              181.25,
+              6.0
+            ],
+            "Scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 2
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\NewSponza_Main_glTF_002.gltf"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 3
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/arch_stone_wall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/arch_stone_wall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/arch_stone_wall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/arch_stone_wall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/arch_stone_wall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/arch_stone_wall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/metal_door_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/metal_door_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/metal_door_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/metal_door_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/metal_door_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/metal_door_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stones_2ndfloor_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stones_2ndfloor_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stones_2ndfloor_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stones_2ndfloor_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stones_2ndfloor_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stones_2ndfloor_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_trims_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/window_frame_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/window_frame_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/window_frame_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/window_frame_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/window_frame_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/window_frame_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_01_tile_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_01_tile_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_01_tile_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_01_tile_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_01_tile_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/stone_01_tile_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_1stfloor_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_1stfloor_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_1stfloor_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_1stfloor_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_1stfloor_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_1stfloor_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_1stfloor_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_1stfloor_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.60999995470047,
+                  0.60999995470047,
+                  0.60999995470047,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  372.1000061035156,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.60999995470047,
+                  0.60999995470047,
+                  0.60999995470047,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  372.1000061035156,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  1000.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  1000.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  1000.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  1000.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  1000.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/door_stoneframe_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/brickwall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_door_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_door_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_door_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_door_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_tile_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_tile_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_tile_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/wood_tile_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/floor_tiles_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/floor_tiles_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/floor_tiles_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/floor_tiles_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/floor_tiles_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/floor_tiles_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/lionhead_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/lionhead_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/lionhead_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/lionhead_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/dirt_decal_01_dirt_decal_01_mask_gltf_alpha_dirt_decal_Opacity.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": false,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/dirt_decal_01_dirt_decal_01_mask_gltf_alpha_dirt_decal_Opacity.png"
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": false,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/dirt_decal_01_dirt_decal_01_mask_gltf_alpha_dirt_decal_Opacity.png"
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_02_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_02_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_brickwall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_brickwall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_brickwall_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_brickwall_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_03_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_03_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_03_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/col_head_2ndfloor_03_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ceiling_plaster_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/roof_tiles_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/roof_tiles_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/roof_tiles_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/roof_tiles_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ornament_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ornament_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ornament_01_BaseColor.png"
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": "textures/ornament_01_Normal.png"
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\NewSponza_Main_glTF_002.gltf"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              8.0,
+              8.0,
+              8.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 3
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\NewSponza_Curtains_glTF.gltf"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\NewSponza_Curtains_glTF.gltf"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              8.0,
+              8.0,
+              8.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 4
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\NewSponza_IvyGrowth_glTF.gltf"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\NewSponza_IvyGrowth_glTF.gltf"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Scale": [
+              8.0,
+              8.0,
+              8.0
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 6
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 7
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  1.0
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": false,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              9.656679153442383,
+              4.452247619628906,
+              0.0
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 7
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 8
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  0.37254902720451355
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  0.24313725531101227
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              9.656679153442383,
+              4.452247619628906,
+              13.082669258117676
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 8
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 9
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  0.37254902720451355
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  0.24313725531101227
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              29.147335052490234,
+              4.452247619628906,
+              13.082669258117676
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 9
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 10
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  0.37254902720451355
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  0.24313725531101227
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              29.147335052490234,
+              4.452247619628906,
+              -2.9098987579345703
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 10
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 11
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  0.37254902720451355
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  0.24313725531101227
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              29.147335052490234,
+              4.452247619628906,
+              -17.42910385131836
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 11
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 12
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  0.37254902720451355
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  0.24313725531101227
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              48.380149841308594,
+              4.452247619628906,
+              -17.42910385131836
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 12
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 13
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  0.37254902720451355
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  0.24313725531101227
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              48.380149841308594,
+              4.452247619628906,
+              -3.470458984375
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 13
+    },
+    {
+      "Components": [
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 14
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
+            "Ambient": 0.0,
+            "Attenutation": 2.0,
+            "Brightness": 4.0,
+            "CastShadows": false,
+            "ClassName": "Light",
+            "Colour": [
+              1.0,
+              0.37829697132110596,
+              0.2696078419685364
+            ],
+            "Distance": 32.0,
+            "ShadowBias": 0.05000000074505806,
+            "ShadowMapSize": [
+              1024,
+              1024
+            ],
+            "ShadowOrthoScale": 400.0,
+            "SpotAngles": [
+              0.4000000059604645,
+              0.800000011920929
+            ],
+            "Type": 1
+          },
+          "Type": "Light"
+        },
+        {
+          "Data": {
+            "ClassName": "ModelPartMaterials",
+            "Parts": [
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  1.0,
+                  0.47058823704719543,
+                  0.0,
+                  0.37254902720451355
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              },
+              {
+                "CastShadows": true,
+                "ClassName": "ModelPartMaterialOverride",
+                "DiffuseOpacity": [
+                  0.0,
+                  0.2705882489681244,
+                  0.4431372582912445,
+                  0.24313725531101227
+                ],
+                "DiffuseTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "IsTransparent": true,
+                "NormalTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                },
+                "Shininess": [
+                  32.7599983215332,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "Specular": [
+                  1.0,
+                  0.9999899864196777,
+                  0.9999899864196777,
+                  1.0
+                ],
+                "SpecularTexture": {
+                  "ClassName": "TextureHandle",
+                  "Path": ""
+                }
+              }
+            ]
+          },
+          "Type": "ModelPartMaterials"
+        },
+        {
+          "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "E:\\Git\\lean\\data\\Knight_USD_002.fbx"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Transform",
+            "Orientation": [
+              1.0871303857129533e-11,
+              0.7070347666740417,
+              1.0871303857129533e-11,
+              0.7071787714958191
+            ],
+            "Parent": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Position": [
+              48.380149841308594,
+              4.452247619628906,
+              12.89853286743164
+            ],
+            "Scale": [
+              0.125,
+              0.125,
+              0.125
+            ]
+          },
+          "Type": "Transform"
+        }
+      ],
+      "ID": 14
+    }
+  ],
+  "EntityCount": 13,
+  "EntityIDs": [
+    0,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "SceneName": "New Scene"
+}

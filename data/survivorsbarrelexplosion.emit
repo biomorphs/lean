@@ -35,7 +35,11 @@
       "MinLife": 0.5
     }
   ],
-  "LifetimeBehaviours": [],
+  "LifetimeBehaviours": [
+    {
+      "ClassName": "KillOnZeroParticles"
+    }
+  ],
   "MaxParticles": 512,
   "Name": "SurvivorsBarrelExplosion",
   "OwnsChildEmitters": true,

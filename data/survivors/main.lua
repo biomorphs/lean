@@ -7,9 +7,6 @@ local playerStartPosition = {5000,0,5000}
 local playerBaseMoveSpeed = 24
 local playerXpIncreasePerLevel = 1.2
 
--- game state
-local isWaitingOnLevelUp = false
-
 -- monster spawning
 local spawnRadiusMin = 360
 local spawnRadiusMax = 40
@@ -66,7 +63,6 @@ function DoExplosionAt(pos, radius, damage)
 end
 
 function SpawnBossAt(pos)
-	
 	local template = World.GetFirstEntityWithTag(Tag.new("SkullBossTemplate"))
 	local damageTemplate = World.GetFirstEntityWithTag(Tag.new("SkullBossDamaged"))
 	local newBoss = World.CloneEntity(template)
@@ -96,7 +92,6 @@ function SpawnBossAt(pos)
 	local transformLight1 = World.GetComponent_Transform(newLight1)
 	transformLight0:SetParent(newBoss)
 	transformLight1:SetParent(newBoss)
-	
 	print("A boss has spawned!")
 end
 
@@ -304,7 +299,7 @@ function DoStartGame()
 	bossesSpawnEnabled = true 
 	bossesPerSecond = 0.000001
 	weaponsActive = true
-	explodeNovaActive = false
+	explodeNovaActive = true
 	barrelBombActive = true
 	fireballActive = true
 	ResetPlayer()
@@ -480,41 +475,11 @@ function DrawHUD(playerCmp)
 	Graphics2D.DrawSolidQuad(xpBarOffset[1] + barBorder,xpBarOffset[2] + barBorder,0,xpBarLength,xpBarDims[2]-barBorder*2,xpBarColour.x,xpBarColour.y,xpBarColour.z,xpBarColour.w)
 end
 
-function TestProjectile()
-	local newEntity = World.AddEntity()
-	local newProjectile = World.AddComponent_ProjectileComponent(newEntity)
-	local newTransform = World.AddComponent_Transform(newEntity)
-	local foundPlayer = World.GetFirstEntityWithTag(Tag.new("PlayerCharacter"))
-	local playerCmp = World.GetComponent_PlayerComponent(foundPlayer)
-	local playerTransform = World.GetComponent_Transform(foundPlayer)
-	local playerPos = playerTransform:GetPosition()
-	newTransform:SetPosition(playerPos.x, playerPos.y + 4, playerPos.z)
-	newProjectile:SetMaxDistance(500)
-	local dir = { -1 + math.random() * 2, -1 + math.random() * 2 }
-	local speed = 250 + math.random() * 100
-	newProjectile:SetVelocity(vec3.new(dir[1] * speed,0,dir[2] * speed))
-	newProjectile:SetDamageRange(50,100)
-	newProjectile:SetRadius(4)
-	local projPhysics = World.AddComponent_Physics(newEntity)
-	projPhysics:SetStatic(false)
-	projPhysics:SetKinematic(true)
-	projPhysics:AddSphereCollider(vec3.new(0,0,0), 3)
-	projPhysics:Rebuild()
-	local particles = World.AddComponent_ComponentParticleEmitter(newEntity);
-	particles:SetEmitter("survivorsfireball.emit")
-end
-
 function ShowEditor(entity)
 	DebugGui.BeginWindow(true, 'Survivors!')
 	local tileLoadRadius = Survivors.GetWorldTileLoadRadius()
 	tileLoadRadius = DebugGui.DragInt('Tile load radius', tileLoadRadius, 1, 0, 64)
 	Survivors.SetWorldTileLoadRadius(tileLoadRadius)
-
-	if(DebugGui.Button("Proj")) then 
-		for i=1,10 do
-			TestProjectile()
-		end
-	end
 
 	if(DebugGui.Button('Spawn fields')) then 
 		Survivors.SetWorldTileSpawnFn(SpawnWorldTiles_BasicFields)
