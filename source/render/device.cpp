@@ -415,6 +415,12 @@ namespace Render
 		glUniformMatrix4fv(uniformHandle, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
+	void Device::SetUniformValue(uint32_t uniformHandle, const glm::vec2& val)
+	{
+		assert(uniformHandle != -1);
+		glUniform2fv(uniformHandle, 1, glm::value_ptr(val));
+	}
+
 	void Device::SetUniformValue(uint32_t uniformHandle, const glm::vec4& val)
 	{
 		assert(uniformHandle != -1);

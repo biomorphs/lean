@@ -98,6 +98,7 @@ namespace Render
 		case TextureSource::Format::RF16:
 			return GL_HALF_FLOAT;
 		case TextureSource::Format::RF32:
+		case TextureSource::Format::RGBAF32:
 			return GL_FLOAT;
 		default:
 			return -1;
@@ -113,6 +114,7 @@ namespace Render
 		case TextureSource::Format::RGB8:
 			return GL_RGB;
 		case TextureSource::Format::RGBA8:
+		case TextureSource::Format::RGBAF32:
 			return GL_RGBA;
 		default:
 			return -1;

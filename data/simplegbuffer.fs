@@ -17,6 +17,11 @@ void main()
 {
 	vec4 diffuseOpacity = instance_data[vs_out_instanceID].m_diffuseOpacity;
 	vec4 diffuseTex = srgbToLinear(texture(sampler2D(instance_data[vs_out_instanceID].m_diffuseTexture), vs_out_uv));	
+	if(diffuseTex.a < 0.5)
+	{
+		discard;
+		return;
+	}
 	vec4 meshSpecular = instance_data[vs_out_instanceID].m_specular;
 	float specularTex = texture(sampler2D(instance_data[vs_out_instanceID].m_specularTexture), vs_out_uv).r;
 	float shininess = instance_data[vs_out_instanceID].m_shininess.r;
@@ -26,7 +31,8 @@ void main()
 	finalNormal = normalize(finalNormal * 2.0 - 1.0);   
 	finalNormal = normalize(vs_out_tbnMatrix * finalNormal);
 	
-	fs_out_position = vec4(vs_out_position, 1.0);
+	vec4 viewSpacePos = ProjectionViewMatrix * vec4(vs_out_position,1); 
+	fs_out_position = vec4(vs_out_position, viewSpacePos.z);
 	fs_out_normal = vec4(finalNormal, shininess);
 	fs_out_albedo = diffuseOpacity * diffuseTex;
 	fs_out_specular = vec4(meshSpecular.xyz * specularTex, meshSpecular.a);

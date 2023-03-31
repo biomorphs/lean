@@ -138,6 +138,8 @@ namespace Engine
 		m_lightTiles.resize(maxTiles);
 
 		m_allInstances.Reserve(c_maxInstances);
+		m_ssao = std::make_unique<SSAO>();
+		m_ssao->Init();
 	}
 
 	void Renderer::Reset() 
@@ -947,14 +949,15 @@ namespace Engine
 
 	void Renderer::ForEachUsedRT(std::function<void(const char*, Render::FrameBuffer&)> rtFn)
 	{
+		if (m_drawDeferred)
+		{
+			rtFn("GBuffer", m_gBuffer);
+			rtFn("SSAO", m_ssao->GetSSAOFramebuffer());
+		}
 		rtFn("MainColourDepth", m_mainFramebuffer);
 		if (m_mainFramebuffer.GetMSAASamples() > 1)
 		{
 			rtFn("MainResolved", m_mainFramebufferResolved);
-		}
-		else if(m_drawDeferred)
-		{
-			rtFn("GBuffer", m_gBuffer);
 		}
 		rtFn("BloomBrightness", m_bloomBrightnessBuffer);
 		rtFn("BloomBlur0", *m_bloomBlurBuffers[0]);
@@ -1088,6 +1091,9 @@ namespace Engine
 			DrawInstances(d, m_allInstances.m_opaquesDeferred, m_visibleOpaquesDeferred, baseInstance, true, nullptr);
 		}
 
+		// ssao
+		m_ssao->Update(d, m_targetBlitter, m_gBuffer, m_globalsUniformBuffer[m_currentBuffer]);
+
 		// lighting pass -> main fb
 		auto lightShader = m_shaderManager->GetShader(m_deferredLightingShader);
 		if (lightShader != nullptr)
@@ -1106,6 +1112,7 @@ namespace Engine
 			uint32_t gbufferNormHandle = lightShader->GetUniformHandle("GBuffer_NormalShininess");
 			uint32_t gbufferAlbedoHandle = lightShader->GetUniformHandle("GBuffer_Albedo");
 			uint32_t gbufferSpecHandle = lightShader->GetUniformHandle("GBuffer_Specular");
+			uint32_t ssaoTexHandle = lightShader->GetUniformHandle("SSAO_Texture");
 			if(gbufferPosHandle != -1)
 				d.SetSampler(gbufferPosHandle, m_gBuffer.GetColourAttachment(0).GetResidentHandle());
 			if (gbufferNormHandle != -1)
@@ -1114,6 +1121,8 @@ namespace Engine
 				d.SetSampler(gbufferAlbedoHandle, m_gBuffer.GetColourAttachment(2).GetResidentHandle());
 			if (gbufferSpecHandle != -1)
 				d.SetSampler(gbufferSpecHandle, m_gBuffer.GetColourAttachment(3).GetResidentHandle());
+			if (ssaoTexHandle != -1)
+				d.SetSampler(ssaoTexHandle, m_ssao->GetSSAOTexture().GetResidentHandle());
 			BindShadowmaps(d, *lightShader, 0);
 			m_targetBlitter.RunOnTarget(d, m_mainFramebuffer, *lightShader);
 

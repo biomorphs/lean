@@ -18,7 +18,6 @@ namespace Render
 
 	void FrameBuffer::Resolve(FrameBuffer& target, ResolveType type)
 	{
-		assert(m_msaaSamples != 1);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboHandle);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.GetHandle());
 		if (type == Colour)

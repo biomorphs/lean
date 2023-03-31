@@ -204,6 +204,8 @@ set(ENGINE_SOURCES
 	source/engine/model_asset.cpp
 	source/engine/renderer.h
 	source/engine/renderer.cpp
+	source/engine/ssao.h
+	source/engine/ssao.cpp
 	source/engine/light.h
 	source/engine/debug_render.cpp
 	source/engine/debug_render.h

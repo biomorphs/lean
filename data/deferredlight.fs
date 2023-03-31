@@ -4,6 +4,7 @@
 
 in vec2 vs_out_position;
 
+uniform sampler2D SSAO_Texture;
 uniform sampler2D GBuffer_Pos;
 uniform sampler2D GBuffer_NormalShininess;
 uniform sampler2D GBuffer_Albedo;
@@ -134,18 +135,16 @@ out vec4 fs_out_colour;
 void main()
 {
 	vec2 uv = (vs_out_position + 1.0) * 0.5;
-
 	vec4 wsPos = texture(GBuffer_Pos, uv);
 	vec4 wsNormalShininess = texture(GBuffer_NormalShininess, uv);
 	vec4 albedo = texture(GBuffer_Albedo, uv);
 	vec4 meshspecular = texture(GBuffer_Specular, uv);
-
+	float ssaoAmount = texture(SSAO_Texture, uv).r;
 	if(wsNormalShininess.xyz == vec3(0.0))
 	{
 		discard;
 		return;
 	}
-
 	vec3 viewDir = normalize(CameraPosition.xyz - wsPos.xyz);
 	vec3 finalColour = vec3(0.0);
 	uint lightTileIndex = GetLightTileIndex(GetScreenTileIndices(gl_FragCoord.xy));
@@ -162,16 +161,12 @@ void main()
 			{
 				shadow = CalculateShadow(lightIndex, wsNormalShininess.xyz, wsPos.xyz);
 			}
-			
 			vec3 matColour = albedo.rgb * AllLights[lightIndex].ColourAndAmbient.rgb;
-
 			// diffuse light
 			float diffuseFactor = max(dot(wsNormalShininess.xyz, lightDir),0.0);
 			vec3 diffuse = matColour * diffuseFactor;
-
 			// ambient light
-			vec3 ambient = matColour * AllLights[lightIndex].ColourAndAmbient.a;
-
+			vec3 ambient = matColour * AllLights[lightIndex].ColourAndAmbient.a * ssaoAmount;
 			// specular light (blinn phong)
 			vec3 specular = vec3(0.0);
 			if(meshspecular.a > 0.0)
@@ -181,7 +176,6 @@ void main()
 				vec3 specularColour = meshspecular.rgb * AllLights[lightIndex].ColourAndAmbient.rgb;
 				specular = meshspecular.a * specFactor * specularColour; 
 			}
-			
 			vec3 diffuseSpec = (1.0-shadow) * (diffuse + specular);
 			finalColour += attenuation * (ambient + diffuseSpec);
 		}

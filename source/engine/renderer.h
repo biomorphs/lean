@@ -27,6 +27,7 @@ namespace Engine
 	class JobSystem;
 	class Frustum;
 	class RenderInstances;
+	class SSAO;
 	const uint32_t c_maxLightsPerTile = 256;
 	const uint32_t c_maxFramesAhead = 3;
 	const int c_msaaSamples = 1;
@@ -191,6 +192,7 @@ namespace Engine
 		Render::FrameBuffer m_mainFramebufferResolved;
 		Render::FrameBuffer m_bloomBrightnessBuffer;
 		std::unique_ptr<Render::FrameBuffer> m_bloomBlurBuffers[2];
+		std::unique_ptr<SSAO> m_ssao;
 		int m_currentBuffer = 0;	// max = c_maxFramesAhead
 		Render::Camera m_camera;
 		glm::ivec2 m_windowSize;
