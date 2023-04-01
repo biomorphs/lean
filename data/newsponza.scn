@@ -20,6 +20,16 @@
         },
         {
           "Data": {
+            "Bias": 0.20000000298023224,
+            "ClassName": "SSAOSettings",
+            "CutoffMulti": 0.5,
+            "Power": 1.0,
+            "Radius": 8.0
+          },
+          "Type": "SSAOSettings"
+        },
+        {
+          "Data": {
             "ClassName": "Tags",
             "Tags": [
               {

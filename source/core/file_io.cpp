@@ -2,9 +2,25 @@
 #include "profiler.h"
 #include <cassert>
 #include <fstream>
+#include <filesystem>
+#include <SDL_filesystem.h>
 
 namespace Core
 {
+	std::string c_baseDirectory = "";
+	std::string c_exeDirectory = "";
+
+	void InitialisePaths()
+	{
+		c_baseDirectory = std::filesystem::current_path().u8string();
+		c_exeDirectory = SDL_GetBasePath();
+	}
+
+    const std::string_view GetBasePath()
+	{
+		return c_baseDirectory;
+	}
+
 	bool SaveTextToFile(const std::string& filePath, const std::string& src)
 	{
 		SDE_PROF_EVENT();

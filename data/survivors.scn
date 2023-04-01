@@ -20,6 +20,16 @@
         },
         {
           "Data": {
+            "Bias": 0.5,
+            "ClassName": "SSAOSettings",
+            "CutoffMulti": 0.5,
+            "Power": 2.0,
+            "Radius": 8.0
+          },
+          "Type": "SSAOSettings"
+        },
+        {
+          "Data": {
             "ClassName": "Tags",
             "Tags": [
               {
@@ -103,9 +113,9 @@
               "ID": 4294967295
             },
             "Position": [
-              -1354.679931640625,
+              5000.0,
               184.5,
-              312.2451171875
+              4815.25
             ],
             "Scale": [
               1.0,
@@ -122,9 +132,9 @@
       "Components": [
         {
           "Data": {
-            "Ambient": 0.10000000149011612,
+            "Ambient": 0.4000000059604645,
             "Attenutation": 1.0,
-            "Brightness": 0.8999999761581421,
+            "Brightness": 0.699999988079071,
             "CastShadows": true,
             "ClassName": "Light",
             "Colour": [
@@ -218,6 +228,7 @@
             "CurrentHP": 100,
             "CurrentXP": 0,
             "DamageMulti": 1.0,
+            "Level": 1,
             "MaxHP": 100,
             "MoveSpeedMulti": 1.0,
             "NextLevelXP": 100,
@@ -275,19 +286,19 @@
           "Data": {
             "ClassName": "Transform",
             "Orientation": [
-              0.0,
-              -0.7071068286895752,
-              0.0,
-              0.7071068286895752
+              -0.0,
+              1.0,
+              -0.0,
+              -4.371138828673793e-08
             ],
             "Parent": {
               "ClassName": "EntityHandle",
               "ID": 4294967295
             },
             "Position": [
-              -1354.679931640625,
+              5000.0,
               0.0,
-              496.9951171875
+              5000.0
             ],
             "Scale": [
               4.0,

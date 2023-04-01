@@ -8,7 +8,7 @@ layout(std140, binding = 1) uniform SSAO_HemisphereSamples
 {
 	vec3 Samples[32];
 };
-const int SSAO_KernelSize = 32;
+const int SSAO_KernelSize = 16;
 uniform float SSAO_Radius = 8.0f;
 uniform float SSAO_Bias = 0.2;
 uniform float SSAO_RangeMulti = 0.5;
@@ -26,13 +26,6 @@ void main()
 	vec4 wsPos = texture(GBuffer_Pos, uv);
 	vec3 wsNormal = texture(GBuffer_NormalShininess, uv).xyz;
 	vec3 randomNoise = texture(SSAO_Noise, uv * SSAO_NoiseScale).xyz;  
-	
-	vec3 viewSpaceNormal = vec3(ProjectionViewMatrix * vec4(wsNormal,0));
-	if(viewSpaceNormal == vec3(0.0))
-	{
-		fs_out_colour = vec4(0.0);
-		return;
-	}
 
 	// gramm-schmit to create tbn from jittered current normal
 	vec3 tangent   = normalize(randomNoise - wsNormal * dot(randomNoise, wsNormal));

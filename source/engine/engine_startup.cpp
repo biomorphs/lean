@@ -23,6 +23,7 @@
 #include "core/log.h"
 #include "core/timer.h"
 #include "core/random.h"
+#include "core/file_io.h"
 #include <cassert>
 
 namespace Engine
@@ -38,6 +39,9 @@ namespace Engine
 			return 1;
 		}
 
+		// Init file system
+		Core::InitialisePaths();
+
 		// Init random number generator
 		Core::Random::ResetGlobalSeed();
 
@@ -52,11 +56,11 @@ namespace Engine
 		sysManager.RegisterSystem("Input", new InputSystem);
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
 		sysManager.RegisterSystem("Script", new ScriptSystem);
-		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
-		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
 		sysManager.RegisterSystem("Text", new TextSystem);
 		systemCreation();
 		sysManager.RegisterSystem("Particles", new Particles::ParticleSystem());
+		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
+		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
 		sysManager.RegisterSystem("CharacterControllers", new CharacterControllerSystem());
 		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);

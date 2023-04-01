@@ -43,8 +43,8 @@ namespace Engine
 	public:
 		bool Init();
 		void ApplySettings(const SSAOSettings& s);
-		Render::FrameBuffer& GetSSAOFramebuffer() { return *m_ssaoFb[m_currentBuffer]; }
-		Render::Texture& GetSSAOTexture() { return m_ssaoFb[m_currentBuffer]->GetColourAttachment(0); }
+		Render::FrameBuffer& GetSSAOFramebuffer() { return *m_blurFb[m_currentBuffer]; }
+		Render::Texture& GetSSAOTexture() { return m_blurFb[m_currentBuffer]->GetColourAttachment(0); }
 		bool Update(Render::Device& d, Render::RenderTargetBlitter& blitter, Render::FrameBuffer& gBuffer, Render::RenderBuffer& globals);
 		void SetRadius(float r) { m_aoRadius = r; }
 		float GetRadius() const { return m_aoRadius; }
@@ -55,7 +55,7 @@ namespace Engine
 	private:
 		bool GenerateHemisphereSamples();
 		bool GenerateSampleNoise();
-		static constexpr int c_totalHemisphereSamples = 32;
+		static constexpr int c_totalHemisphereSamples = 16;
 		static constexpr int c_sampleNoiseDimensions = 4;
 		static constexpr int c_maxSSAOBuffers = 2;
 		float m_aoRadius = 8.0f;
@@ -64,8 +64,10 @@ namespace Engine
 		float m_aoPower = 1.0f;
 		int m_currentBuffer = 0;
 		std::unique_ptr<Render::FrameBuffer> m_ssaoFb[c_maxSSAOBuffers];
+		std::unique_ptr<Render::FrameBuffer> m_blurFb[c_maxSSAOBuffers];
 		Render::Texture m_sampleNoiseTexture;
 		Render::RenderBuffer m_hemisphereSamples;
 		ShaderHandle m_ssaoShader;
+		ShaderHandle m_blurShader;
 	};
 }

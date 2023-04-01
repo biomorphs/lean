@@ -364,7 +364,7 @@ void GraphicsSystem::ProcessEntities()
 		static auto modelIterator = world->MakeIterator<Model, Transform>();
 		if (m_submitEntitiesAsync)
 		{
-			modelIterator.ForEachAsync(1000, [this, &materials](Model& m, Transform& t, EntityHandle h) {
+			modelIterator.ForEachAsync(250, [this, &materials](Model& m, Transform& t, EntityHandle h) {
 				if (m.GetModel().m_index != -1 && m.GetShader().m_index != -1)
 				{
 					ModelPartMaterials* partOverrides = m.GetPartMaterialsComponent();

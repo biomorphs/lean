@@ -1271,7 +1271,7 @@ namespace Engine
 			SDE_PROF_EVENT("Clear framebuffers");
 			d.SetDepthState(true, true);	// make sure depth write is enabled before clearing!
 			d.ClearFramebufferColourDepth(m_mainFramebuffer, m_clearColour, FLT_MAX);
-			d.ClearFramebufferColourDepth(m_gBuffer, { 0,0,0,0 }, FLT_MAX);
+			d.ClearFramebufferColourDepth(m_gBuffer, { 0,0,0,FLT_MAX }, FLT_MAX);
 		}
 
 		// upload global constants while waiting for culling + clears

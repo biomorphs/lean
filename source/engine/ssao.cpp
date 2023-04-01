@@ -64,6 +64,7 @@ namespace Engine
 
 		auto shaders = Engine::GetSystem<ShaderManager>("Shaders");
 		auto ssaoShader = shaders->GetShader(m_ssaoShader);
+		auto blurShader = shaders->GetShader(m_blurShader);
 		if (ssaoShader)
 		{
 			d.BindShaderProgram(*ssaoShader);		// must be set before uniforms
@@ -97,8 +98,12 @@ namespace Engine
 			glm::vec2 noiseScale = glm::vec2(windowSize) / float(c_sampleNoiseDimensions);
 			if (noiseScaleHandle != -1)
 				d.SetUniformValue(noiseScaleHandle, noiseScale);
-
 			blitter.RunOnTarget(d, *ssaoFB, *ssaoShader);
+		}
+
+		if (blurShader)
+		{
+			blitter.TargetToTarget(d, *ssaoFB, *m_blurFb[m_currentBuffer], *blurShader);
 		}
 
 		return true;
@@ -126,6 +131,12 @@ namespace Engine
 			SDE_LOG("Failed to load ssao shader");
 			return false;
 		}
+		m_blurShader = shaders->LoadShader("SSAO_Blur", "basic_blit.vs", "ssao_blur.fs");
+		if (m_blurShader.m_index == -1)
+		{
+			SDE_LOG("Failed to load ssao blur shader");
+			return false;
+		}
 
 		const auto windowSize = Engine::GetSystem<Engine::RenderSystem>("Render")->GetWindow()->GetSize();
 		for (int i = 0; i < c_maxSSAOBuffers; ++i)
@@ -133,6 +144,10 @@ namespace Engine
 			m_ssaoFb[i] = std::make_unique<Render::FrameBuffer>(windowSize);
 			m_ssaoFb[i]->AddColourAttachment(Render::FrameBuffer::ColourAttachmentFormat::RGBA_U8);
 			m_ssaoFb[i]->Create();
+
+			m_blurFb[i] = std::make_unique<Render::FrameBuffer>(windowSize);
+			m_blurFb[i]->AddColourAttachment(Render::FrameBuffer::ColourAttachmentFormat::RGBA_U8);
+			m_blurFb[i]->Create();
 		}
 		
 		return true;
@@ -189,7 +204,7 @@ namespace Engine
 
 			// add falloff to bias points towards origin
 			float biasScale = float(i) / float(c_totalHemisphereSamples);
-			biasScale = lerpVal(0.2f, 1.0f, biasScale * biasScale);
+			biasScale = lerpVal(0.1f, 1.0f, biasScale * biasScale);
 			sample = sample * biasScale;
 
 			samples[i] = glm::vec4(sample,0.0f);

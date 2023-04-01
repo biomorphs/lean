@@ -153,10 +153,10 @@ function UpdateCamera(deltaTime)
 	ct:SetPosition(camerapos.x,camerapos.y,camerapos.z)
 end
 
-local ModelDiffuseShader = Graphics.LoadShader("model_diffuse", "simplediffuse.vs", "simplediffuse.fs")
+local ModelDiffuseShader = Graphics.LoadShader("diffuse", "simplediffuse.vs", "simplediffuse.fs")
 local ModelShadowShader = Graphics.LoadShader("model_shadow", "simpleshadow.vs", "simpleshadow.fs");
 local ModelNoLighting = Graphics.LoadShader("model_nolight",  "basic.vs", "basic.fs")
-Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
+-- Graphics.SetShadowShader(ModelDiffuseShader, ModelShadowShader)
 
 local CubeModel = Graphics.LoadModel("cube2.fbx")
 local SphereModel = Graphics.LoadModel("sphere_low.fbx")
