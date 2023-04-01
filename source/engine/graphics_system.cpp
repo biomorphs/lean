@@ -15,6 +15,7 @@
 #include "engine/frustum.h"
 #include "engine/text_system.h"
 #include "engine/2d_render_context.h"
+#include "engine/ssao.h"
 #include "render/render_pass.h"
 #include "engine/file_picker_dialog.h"
 #include "render/window.h"
@@ -136,6 +137,9 @@ void GraphicsSystem::RegisterComponents()
 
 	m_entitySystem->RegisterComponentType<EnvironmentSettings>();
 	m_entitySystem->RegisterInspector<EnvironmentSettings>(EnvironmentSettings::MakeInspector());
+
+	m_entitySystem->RegisterComponentType<SSAOSettings>();
+	m_entitySystem->RegisterInspector<SSAOSettings>(SSAOSettings::MakeInspector());
 }
 
 void GraphicsSystem::RegisterScripts()
@@ -452,6 +456,10 @@ void GraphicsSystem::ProcessEntities()
 
 	world->ForEachComponent<EnvironmentSettings>([this](EnvironmentSettings& s, EntityHandle owner) {
 		m_renderer->SetClearColour(glm::vec4(s.GetClearColour(), 1.0f));
+	});
+
+	world->ForEachComponent<SSAOSettings>([this](SSAOSettings& s, EntityHandle owner) {
+		m_renderer->GetSSAO().ApplySettings(s);
 	});
 }
 

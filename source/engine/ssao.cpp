@@ -8,12 +8,49 @@
 #include "render/render_target_blitter.h"
 #include "system_manager.h"
 #include "render_system.h"
+#include "entity/component_inspector.h"
 #include <vector>
+
+COMPONENT_SCRIPTS(SSAOSettings,
+	"SetRadius", &SSAOSettings::SetRadius,
+	"SetDepthBias", &SSAOSettings::SetDepthBias,
+	"SetRangeCutoffMulti", &SSAOSettings::SetRangeCutoffMulti,
+	"SetPower", &SSAOSettings::SetPower
+)
+
+SERIALISE_BEGIN(SSAOSettings)
+SERIALISE_PROPERTY("Radius", m_aoRadius)
+SERIALISE_PROPERTY("Bias", m_aoBias)
+SERIALISE_PROPERTY("CutoffMulti", m_rangeCutoffMulti)
+SERIALISE_PROPERTY("Power", m_aoPower)
+SERIALISE_END()
+
+COMPONENT_INSPECTOR_IMPL(SSAOSettings)
+{
+	auto fn = [](ComponentInspector& i, ComponentStorage& cs, const EntityHandle& e)
+	{
+		auto c = static_cast<StorageType&>(cs).Find(e);
+		i.Inspect("Radius", c->GetRadius(), InspectFn(e, &SSAOSettings::SetRadius));
+		i.Inspect("Depth Bias", c->GetDepthBias(), InspectFn(e, &SSAOSettings::SetDepthBias));
+		i.Inspect("Range Cutoff Multi", c->GetRangeCutoffMulti(), InspectFn(e, &SSAOSettings::SetRangeCutoffMulti));
+		i.Inspect("Power", c->GetPower(), InspectFn(e, &SSAOSettings::SetPower));
+	};
+	return fn;
+}
 
 namespace Engine
 {
+	void SSAO::ApplySettings(const SSAOSettings& s)
+	{
+		m_aoRadius = s.GetRadius();
+		m_aoBias = s.GetDepthBias();
+		m_rangeCutoffMulti = s.GetRangeCutoffMulti();
+		m_aoPower = s.GetPower();
+	}
+
 	bool SSAO::Update(Render::Device& d, Render::RenderTargetBlitter& blitter, Render::FrameBuffer& gBuffer, Render::RenderBuffer& globals)
 	{
+		SDE_PROF_EVENT();
 		m_currentBuffer = m_currentBuffer + 1 >= c_maxSSAOBuffers ? 0 : m_currentBuffer + 1;
 
 		auto& ssaoFB = m_ssaoFb[m_currentBuffer];
@@ -38,14 +75,24 @@ namespace Engine
 			uint32_t noiseScaleHandle = ssaoShader->GetUniformHandle("SSAO_NoiseScale");
 			uint32_t gbufferPosHandle = ssaoShader->GetUniformHandle("GBuffer_Pos");
 			uint32_t gbufferNormHandle = ssaoShader->GetUniformHandle("GBuffer_NormalShininess");
-			
+			uint32_t radiusHandle = ssaoShader->GetUniformHandle("SSAO_Radius");
+			uint32_t biasHandle = ssaoShader->GetUniformHandle("SSAO_Bias");
+			uint32_t rangeMultiHandle = ssaoShader->GetUniformHandle("SSAO_RangeMulti");
+			uint32_t powerMultiHandle = ssaoShader->GetUniformHandle("SSAO_PowerMulti");
 			if (gbufferPosHandle != -1)
 				d.SetSampler(gbufferPosHandle, gBuffer.GetColourAttachment(0).GetResidentHandle());
 			if (gbufferNormHandle != -1)
 				d.SetSampler(gbufferNormHandle, gBuffer.GetColourAttachment(1).GetResidentHandle());
 			if (noiseHandle != -1)
 				d.SetSampler(noiseHandle, m_sampleNoiseTexture.GetResidentHandle());
-
+			if (radiusHandle != -1)
+				d.SetUniformValue(radiusHandle, m_aoRadius);
+			if (biasHandle != -1)
+				d.SetUniformValue(biasHandle, m_aoBias);
+			if (rangeMultiHandle != -1)
+				d.SetUniformValue(rangeMultiHandle, m_rangeCutoffMulti);
+			if (powerMultiHandle != -1)
+				d.SetUniformValue(powerMultiHandle, m_aoPower);
 			const auto windowSize = Engine::GetSystem<Engine::RenderSystem>("Render")->GetWindow()->GetSize();
 			glm::vec2 noiseScale = glm::vec2(windowSize) / float(c_sampleNoiseDimensions);
 			if (noiseScaleHandle != -1)
@@ -59,6 +106,7 @@ namespace Engine
 
 	bool SSAO::Init()
 	{
+		SDE_PROF_EVENT();
 		if (!GenerateHemisphereSamples())
 		{
 			SDE_LOG("Failed to create hemisphere samples");
@@ -99,6 +147,7 @@ namespace Engine
 	// this will be tiled over the screen and used to bias sample rotation
 	bool SSAO::GenerateSampleNoise()
 	{
+		SDE_PROF_EVENT();
 		constexpr int totalValues = c_sampleNoiseDimensions * c_sampleNoiseDimensions;
 		std::vector<glm::vec4> noiseValues(totalValues);
 		for (int i = 0; i < totalValues; ++i)
@@ -125,6 +174,7 @@ namespace Engine
 	// hemisphere oriented around +z
 	bool SSAO::GenerateHemisphereSamples()
 	{
+		SDE_PROF_EVENT();
 		std::vector<glm::vec4> samples(c_totalHemisphereSamples);
 		for (int i = 0; i < c_totalHemisphereSamples; ++i)
 		{
@@ -139,7 +189,7 @@ namespace Engine
 
 			// add falloff to bias points towards origin
 			float biasScale = float(i) / float(c_totalHemisphereSamples);
-			biasScale = lerpVal(0.1f, 1.0f, biasScale * biasScale);
+			biasScale = lerpVal(0.2f, 1.0f, biasScale * biasScale);
 			sample = sample * biasScale;
 
 			samples[i] = glm::vec4(sample,0.0f);

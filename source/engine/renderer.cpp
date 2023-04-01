@@ -144,6 +144,7 @@ namespace Engine
 
 	void Renderer::Reset() 
 	{ 
+		SDE_PROF_EVENT();
 		m_allInstances.Reset();
 		m_lights.clear();
 		m_nextInstance = 0;
@@ -949,6 +950,7 @@ namespace Engine
 
 	void Renderer::ForEachUsedRT(std::function<void(const char*, Render::FrameBuffer&)> rtFn)
 	{
+		SDE_PROF_EVENT();
 		if (m_drawDeferred)
 		{
 			rtFn("GBuffer", m_gBuffer);
@@ -1165,6 +1167,7 @@ namespace Engine
 
 	void Renderer::RenderTransparents(Render::Device& d)
 	{
+		SDE_PROF_EVENT();
 		d.SetDepthState(true, false);		// enable z-test, disable write
 		d.SetBlending(true);
 		d.SetWireframeDrawing(m_showWireframe);
@@ -1193,6 +1196,7 @@ namespace Engine
 
 	void Renderer::RenderPostFx(Render::Device& d, Render::FrameBuffer& src)
 	{
+		SDE_PROF_EVENT();
 		// bloom brightness pass
 		d.SetDepthState(false, false);
 		d.SetBlending(false);

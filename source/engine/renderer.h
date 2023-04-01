@@ -41,6 +41,7 @@ namespace Engine
 		uint64_t GetDefaultDiffuseTexture() const { return m_defaultDiffuseResidentHandle; }
 		uint64_t GetDefaultSpecularTexture() const { return m_defaultSpecularResidentHandle; }
 		uint64_t GetDefaultNormalsTexture() const { return m_defaultNormalResidentHandle; }
+		SSAO& GetSSAO() { return *m_ssao; }
 
 		void Reset();
 		void RenderAll(Render::Device&);

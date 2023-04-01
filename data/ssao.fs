@@ -12,6 +12,7 @@ const int SSAO_KernelSize = 32;
 uniform float SSAO_Radius = 8.0f;
 uniform float SSAO_Bias = 0.2;
 uniform float SSAO_RangeMulti = 0.5;
+uniform float SSAO_PowerMulti = 1.0;
 uniform sampler2D SSAO_Noise;
 uniform vec2 SSAO_NoiseScale;
 uniform sampler2D GBuffer_Pos;
@@ -34,9 +35,9 @@ void main()
 	}
 
 	// gramm-schmit to create tbn from jittered current normal
-	vec3 tangent   = normalize(randomNoise - viewSpaceNormal * dot(randomNoise, viewSpaceNormal));
-	vec3 bitangent = cross(viewSpaceNormal, tangent);
-	mat3 TBN       = mat3(tangent, bitangent, viewSpaceNormal);  
+	vec3 tangent   = normalize(randomNoise - wsNormal * dot(randomNoise, wsNormal));
+	vec3 bitangent = cross(wsNormal, tangent);
+	mat3 TBN       = mat3(tangent, bitangent, wsNormal);  
 	
 	float occlusionAmount = 0.0f;
 	for(int i=0; i < SSAO_KernelSize; i++)
@@ -60,6 +61,7 @@ void main()
 		}
 	}
 	occlusionAmount = 1.0 - (occlusionAmount / SSAO_KernelSize);
+	occlusionAmount = pow(occlusionAmount,SSAO_PowerMulti);
 	
 	fs_out_colour = vec4(vec3(occlusionAmount), 1);
 }
