@@ -417,6 +417,33 @@ target_include_directories(Graphs PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Graphs PRIVATE ${JSONIncludePaths})
 target_compile_options(Graphs PRIVATE ${CommonCompilerOptions})
 
+add_library(Behaviours STATIC)
+set(BEHAVIOURS_SOURCES
+	source/behaviours/blackboard.h
+	source/behaviours/blackboard.cpp
+	source/behaviours/node_editor.h
+	source/behaviours/node_editor.cpp
+	source/behaviours/node.h
+	source/behaviours/node.cpp
+	source/behaviours/basic_nodes.h
+	source/behaviours/basic_nodes.cpp
+	source/behaviours/behaviour_tree.h
+	source/behaviours/behaviour_tree.cpp
+	source/behaviours/behaviour_tree_editor.h
+	source/behaviours/behaviour_tree_editor.cpp
+	source/behaviours/behaviour_tree_renderer.h
+	source/behaviours/behaviour_tree_renderer.cpp
+	source/behaviours/behaviour_tree_system.h
+	source/behaviours/behaviour_tree_system.cpp
+	source/behaviours/behaviour_tree_instance.h
+	source/behaviours/behaviour_tree_instance.cpp
+)
+target_sources(Behaviours PRIVATE ${BEHAVIOURS_SOURCES})
+target_include_directories(Behaviours PRIVATE ${CommonIncludePaths})
+target_include_directories(Behaviours PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Behaviours PRIVATE ${JSONIncludePaths})
+target_compile_options(Behaviours PRIVATE ${CommonCompilerOptions})
+
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
 	source/playground/playground.h
@@ -494,6 +521,7 @@ target_link_libraries(Lean PRIVATE Editor)
 target_link_libraries(Lean PRIVATE Creatures)
 target_link_libraries(Lean PRIVATE Survivors)
 target_link_libraries(Lean PRIVATE Graphs)
+target_link_libraries(Lean PRIVATE Behaviours)
 
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysX_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCommon_64.lib)

@@ -71,6 +71,7 @@ namespace Engine
 		int32_t DragInt(const char* label, int32_t t, int32_t step = 1, int32_t min = INT_MIN, int32_t max = INT_MAX);
 		glm::vec4 DragVector(const char* label, glm::vec4 v, float step = 1.0f, float min = -FLT_MAX, float max = FLT_MAX);
 		glm::vec3 DragVector(const char* label, glm::vec3 v, float step = 1.0f, float min = -FLT_MAX, float max = FLT_MAX);
+		glm::vec2 DragVector(const char* label, glm::vec2 v, float step = 1.0f, float min = -FLT_MAX, float max = FLT_MAX);
 		void Image(Render::Texture& src, glm::vec2 size, glm::vec2 uv0 = glm::vec2(0.0f,0.0f), glm::vec2 uv1 = glm::vec2(1.0f,1.0f));
 		void GraphLines(const char* label, glm::vec2 size, const std::vector<float>& values);
 		void GraphLines(const char* label, glm::vec2 size, GraphDataBuffer& buffer);

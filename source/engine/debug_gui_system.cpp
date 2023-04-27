@@ -376,6 +376,13 @@ namespace Engine
 		return vv;
 	}
 
+	glm::vec2 DebugGuiSystem::DragVector(const char* label, glm::vec2 v, float step, float min, float max)
+	{
+		auto vv = v;
+		ImGui::DragFloat2(label, glm::value_ptr(vv), step, min, max);
+		return vv;
+	}
+
 	glm::vec3 DebugGuiSystem::DragVector(const char* label, glm::vec3 v, float step, float min, float max)
 	{
 		auto vv = v;

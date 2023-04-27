@@ -13,6 +13,8 @@
 
 #include "graphs/graph_system.h"
 
+#include "behaviours/behaviour_tree_system.h"
+
 #include "core/log.h"
 #include <algorithm>
 
@@ -32,6 +34,7 @@ void CreateSystems(const std::string& cmdLine)
 		sysManager.RegisterSystem("Editor", new Editor());
 		sysManager.RegisterSystem("EmitterEditor", new Particles::EmitterEditor());
 	}
+	sysManager.RegisterSystem("Behaviours", new Behaviours::BehaviourTreeSystem());
 }
 
 int main(int argc, char** args)
