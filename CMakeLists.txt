@@ -446,6 +446,17 @@ target_include_directories(Behaviours PRIVATE ${LuaAndSolIncludePaths})
 target_include_directories(Behaviours PRIVATE ${JSONIncludePaths})
 target_compile_options(Behaviours PRIVATE ${CommonCompilerOptions})
 
+add_library(Ants STATIC)
+set(ANTS_SOURCES
+	source/ants/ants.h
+	source/ants/ants.cpp
+)
+target_sources(Ants PRIVATE ${ANTS_SOURCES})
+target_include_directories(Ants PRIVATE ${CommonIncludePaths})
+target_include_directories(Ants PRIVATE ${LuaAndSolIncludePaths})
+target_include_directories(Ants PRIVATE ${JSONIncludePaths})
+target_compile_options(Ants PRIVATE ${CommonCompilerOptions})
+
 add_library(Playground STATIC)
 set(PLAYGROUND_SOURCES
 	source/playground/playground.h
@@ -524,6 +535,7 @@ target_link_libraries(Lean PRIVATE Creatures)
 target_link_libraries(Lean PRIVATE Survivors)
 target_link_libraries(Lean PRIVATE Graphs)
 target_link_libraries(Lean PRIVATE Behaviours)
+target_link_libraries(Lean PRIVATE Ants)
 
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysX_64.lib)
 target_link_libraries(Lean PRIVATE optimized ${PhysXLibPathRelease}/PhysXCommon_64.lib)

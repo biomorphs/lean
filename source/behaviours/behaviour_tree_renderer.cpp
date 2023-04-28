@@ -13,6 +13,7 @@ namespace Behaviours
 {
 	void BehaviourTreeRenderer::DrawTree(const BehaviourTree& t, const BehaviourTreeInstance* instance)
 	{
+		SDE_PROF_EVENT();
 		auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
 		auto textures = Engine::GetSystem<Engine::TextureManager>("Textures");
 		auto whiteTex = textures->LoadTexture("white.bmp");
@@ -51,7 +52,7 @@ namespace Behaviours
 			r2d.DrawQuad(node.m_editorPosition - border, -1, nodeDrawDimensions + (border * 2.0f), { 0,0 }, { 1,1 }, borderColour, whiteTex);
 			r2d.DrawQuad(node.m_editorPosition, 0, nodeDrawDimensions, { 0,0 }, { 1,1 }, glm::vec4(node.m_bgColour,1.0f), whiteTex);
 
-			const auto trd = textRender->GetRenderData(node.m_name, nodeHeaderFont);
+			const auto trd = textRender->GetRenderData(std::string(node.GetTypeName()) + ":" + node.m_name, nodeHeaderFont);
 			textRender->DrawText(r2d, trd, node.m_editorPosition + nameTextOffset, 1, { 1,1 }, glm::vec4(node.m_textColour,1.0f));
 			
 			if (instance != nullptr)

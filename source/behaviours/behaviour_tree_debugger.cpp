@@ -9,6 +9,7 @@ namespace Behaviours
 {
 	void ShowBlackboard(BehaviourTreeInstance* inst)
 	{
+		SDE_PROF_EVENT();
 		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 		auto entities = Engine::GetSystem<EntitySystem>("Entities");
 		bool openWindow = true;
@@ -35,6 +36,7 @@ namespace Behaviours
 
 	void BehaviourTreeDebugger::DebugTreeInstance(BehaviourTreeInstance* inst)
 	{
+		SDE_PROF_EVENT();
 		BehaviourTreeRenderer drawTreeInstance;
 		drawTreeInstance.DrawTree(*inst->m_tree, inst);
 		ShowBlackboard(inst);

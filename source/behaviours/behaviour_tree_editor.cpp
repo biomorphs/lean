@@ -11,6 +11,7 @@ namespace Behaviours
 {
 	BehaviourTreeEditor::BehaviourTreeEditor()
 	{
+		SDE_PROF_EVENT();
 		auto& fileMenu = m_menuBar.AddSubmenu("File");
 		fileMenu.AddItem("New Tree", [this]() {
 			m_currentEditingTree = std::make_unique<BehaviourTree>();
@@ -43,6 +44,7 @@ namespace Behaviours
 
 	void BehaviourTreeEditor::LoadTree(std::string_view path)
 	{
+		SDE_PROF_EVENT();
 		std::string fileText;
 		if (!Core::LoadTextFromFile(path.data(), fileText))
 		{
@@ -63,6 +65,7 @@ namespace Behaviours
 
 	void BehaviourTreeEditor::SaveTree(std::string_view path)
 	{
+		SDE_PROF_EVENT();
 		if (m_currentEditingTree != nullptr && path.size() > 0)
 		{
 			nlohmann::json treeJson;
@@ -84,6 +87,7 @@ namespace Behaviours
 
 	bool BehaviourTreeEditor::Tick(float timeDelta)
 	{
+		SDE_PROF_EVENT();
 		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 
 		Engine::MenuBar mainMenu;
@@ -109,6 +113,7 @@ namespace Behaviours
 
 	void BehaviourTreeEditor::ShowNodeEditor()
 	{
+		SDE_PROF_EVENT();
 		if (m_currentEditingTree != nullptr && m_currentEditingNode != -1 && m_currentEditingNode < m_currentEditingTree->m_allNodes.size())
 		{
 			NodeEditor ne;
@@ -121,6 +126,7 @@ namespace Behaviours
 
 	void BehaviourTreeEditor::ShowTreeEditor()
 	{
+		SDE_PROF_EVENT();
 		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 		auto behSys = Engine::GetSystem<Behaviours::BehaviourTreeSystem>("Behaviours");
 		dbgGui->BeginWindow(m_windowOpen, "Behaviour Tree Editor", Engine::GuiWindowFlags::HasMenuBar);
@@ -129,7 +135,8 @@ namespace Behaviours
 		{
 			for (int n = 0; n < m_currentEditingTree->m_allNodes.size(); ++n)
 			{
-				std::string editLbl = "Node #" + std::to_string(m_currentEditingTree->m_allNodes[n]->m_localID) + " - '" + m_currentEditingTree->m_allNodes[n]->m_name + "'##" + std::to_string(n);
+				std::string nodeType(m_currentEditingTree->m_allNodes[n]->GetTypeName());
+				std::string editLbl = nodeType + " #" + std::to_string(m_currentEditingTree->m_allNodes[n]->m_localID) + " - '" + m_currentEditingTree->m_allNodes[n]->m_name + "'##" + std::to_string(n);
 				if (dbgGui->Button(editLbl.c_str()))
 				{
 					m_currentEditingNode = n;

@@ -1,4 +1,4 @@
- #pragma once
+#pragma once
 #include "core/glm_headers.h"
 #include "engine/serialisation.h"
 #include <string>
@@ -44,11 +44,12 @@ namespace Behaviours
 		virtual std::unique_ptr<RunningNodeContext> PrepareContext() const { return nullptr; }	// called once when tree is reset
 		virtual void Init(RunningNodeContext*, BehaviourTreeInstance&) const { }	// called when a parent executes a child for the first time. State will be set to running
 		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance&) const { return RunningState::Failed; }
+		virtual std::string_view GetTypeName() const { return "Node"; }
 
-		SERIALISED_CLASS();
+		virtual SERIALISED_CLASS();
 		std::vector<PinProperties> m_outputPins;
 		uint16_t m_localID = -1;	// id is local to the behaviour tree containing this node
-		std::string m_name = "Node";
+		std::string m_name;
 		glm::vec3 m_bgColour = glm::vec3(0.8f,0.8f,0.8f);
 		glm::vec3 m_textColour = glm::vec3(0.0f,0.0f,0.0f);
 		glm::vec2 m_editorPosition = glm::vec2(0.0f, 0.0f);

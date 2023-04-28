@@ -16,6 +16,8 @@
 #include "behaviours/behaviour_tree_system.h"
 #include "behaviours/behaviour_tree_editor.h"
 
+#include "ants/ants.h"
+
 #include "core/log.h"
 #include <algorithm>
 
@@ -36,6 +38,7 @@ void CreateSystems(const std::string& cmdLine)
 		sysManager.RegisterSystem("EmitterEditor", new Particles::EmitterEditor());
 		sysManager.RegisterSystem("BehaviourEditor", new Behaviours::BehaviourTreeEditor());
 	}
+	sysManager.RegisterSystem("Ants", new AntsSystem());
 	sysManager.RegisterSystem("Behaviours", new Behaviours::BehaviourTreeSystem());
 }
 

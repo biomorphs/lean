@@ -12,8 +12,8 @@ namespace Behaviours
 		explicit BehaviourTreeInstance(const BehaviourTree* bt);
 		~BehaviourTreeInstance() = default;
 
-		void Reset();
-		void Tick();
+		void Reset(bool clearBlackboard = true);
+		void Tick(bool restartOnSuccessOrFail = true);
 		RunningState TickNode(Node* n);
 
 		struct NodeContextData {

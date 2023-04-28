@@ -7,6 +7,7 @@ namespace Behaviours
 {
 	void ShowPinEditor(int n, Engine::DebugGuiSystem& gui, PinProperties& p)
 	{
+		SDE_PROF_EVENT();
 		std::string postFix = "##" + std::to_string(n);
 		std::string txt = "Output Pin #" + std::to_string(n) + postFix;
 		gui.Text(txt.data());
@@ -20,6 +21,7 @@ namespace Behaviours
 
 	bool NodeEditor::ShowEditor(Node* n)
 	{
+		SDE_PROF_EVENT();
 		auto dbgGui = Engine::GetSystem<Engine::DebugGuiSystem>("DebugGui");
 		bool windowOpen = true;
 		if (dbgGui->BeginWindow(windowOpen, "Node Editor"))

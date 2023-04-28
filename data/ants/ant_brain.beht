@@ -1,0 +1,510 @@
+{
+  "AllNodes": [
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.0,
+        0.0
+      ],
+      "ClassName": "RootNode",
+      "EditorDimensions": [
+        104.0,
+        32.0
+      ],
+      "EditorPosition": [
+        772.0,
+        965.0
+      ],
+      "LocalID": 0,
+      "Name": "Node",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "ConnectedNodeID": 1
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.30000001192092896,
+        0.4000000059604645,
+        0.800000011920929
+      ],
+      "ClassName": "SelectorNode",
+      "EditorDimensions": [
+        222.0,
+        32.0
+      ],
+      "EditorPosition": [
+        714.0,
+        883.0
+      ],
+      "LocalID": 1,
+      "Name": "Top Level Tasks",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 7
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 3
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.30000001192092896,
+        0.4000000059604645,
+        0.800000011920929
+      ],
+      "ClassName": "SelectorNode",
+      "EditorDimensions": [
+        144.0,
+        32.0
+      ],
+      "EditorPosition": [
+        667.0,
+        128.0
+      ],
+      "LocalID": 2,
+      "Name": "Hunger",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 65535
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 65535
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 65535
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "ClassName": "SequenceNode",
+      "EditorDimensions": [
+        131.0,
+        32.0
+      ],
+      "EditorPosition": [
+        1061.0,
+        771.0
+      ],
+      "LocalID": 3,
+      "Name": "Idle",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 4
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        1.0,
+        0.4411763548851013,
+        0.0
+      ],
+      "ClassName": "AntIdleNode",
+      "EditorDimensions": [
+        176.0,
+        32.0
+      ],
+      "EditorPosition": [
+        1039.0,
+        673.0
+      ],
+      "LocalID": 4,
+      "Name": "DoIdle",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "ConnectedNodeID": 65535
+        }
+      ],
+      "TargetEntityInBB": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.1190645694732666,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "GetAntHungerNode",
+      "EditorDimensions": [
+        146.0,
+        32.0
+      ],
+      "EditorPosition": [
+        47.0,
+        489.0
+      ],
+      "LocalID": 5,
+      "Name": "",
+      "OutputPins": [],
+      "TargetEntityInBB": "@OwnerEntity",
+      "TargetHungerInBB": "@OwnerHungerLevel",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.0,
+        0.6000000238418579,
+        0.0
+      ],
+      "ClassName": "CompareFloatsNode",
+      "Comparison": 2,
+      "EditorDimensions": [
+        145.0,
+        32.0
+      ],
+      "EditorPosition": [
+        239.0,
+        490.0
+      ],
+      "LocalID": 6,
+      "Name": "",
+      "OutputPins": [],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Value0": "@OwnerHungerLevel",
+      "Value1": "0.0"
+    },
+    {
+      "BgColour": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "ClassName": "SequenceNode",
+      "EditorDimensions": [
+        230.0,
+        32.0
+      ],
+      "EditorPosition": [
+        419.0,
+        763.0
+      ],
+      "LocalID": 7,
+      "Name": "Process Hunger",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 10
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 11
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 65535
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 65535
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "FindClosestFood",
+      "EditorDimensions": [
+        200.0,
+        32.0
+      ],
+      "EditorPosition": [
+        457.0,
+        490.0
+      ],
+      "FoundEntity": "@NearbyFoodEntity",
+      "LocalID": 8,
+      "Name": "",
+      "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "WalkToEntity",
+      "EditorDimensions": [
+        168.0,
+        32.0
+      ],
+      "EditorPosition": [
+        693.0,
+        490.0
+      ],
+      "LocalID": 9,
+      "Name": "",
+      "OutputPins": [],
+      "TargetEntity": "@NearbyFoodEntity",
+      "TargetRadius": "4.0f",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "WalkerEntity": "@OwnerEntity",
+      "WalkerRadius": "6.0f"
+    },
+    {
+      "BgColour": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "ClassName": "SequenceNode",
+      "EditorDimensions": [
+        233.0,
+        32.0
+      ],
+      "EditorPosition": [
+        96.0,
+        616.0
+      ],
+      "LocalID": 10,
+      "Name": "Am I Hungry?",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 5
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 6
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "ClassName": "SequenceNode",
+      "EditorDimensions": [
+        240.0,
+        32.0
+      ],
+      "EditorPosition": [
+        610.0,
+        619.0
+      ],
+      "LocalID": 11,
+      "Name": "Eat Nearby Food",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 8
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 9
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 12
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "EatUntilFullNode",
+      "EditorDimensions": [
+        149.0,
+        32.0
+      ],
+      "EditorPosition": [
+        894.0,
+        490.0
+      ],
+      "FoodEntity": "@NearbyFoodEntity",
+      "LocalID": 12,
+      "Name": "",
+      "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "ClassName": "BehaviourTree",
+  "NextLocalID": 13
+}

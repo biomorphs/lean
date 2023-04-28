@@ -188,4 +188,54 @@ namespace Behaviours
 		}
 		return RunningState::Success;
 	}
+
+
+	SERIALISE_BEGIN_WITH_PARENT(CompareFloatsNode, Node)
+	SERIALISE_PROPERTY("Value0", m_value0)
+	SERIALISE_PROPERTY("Value1", m_value1)
+	SERIALISE_PROPERTY("Comparison", m_comparison)
+	SERIALISE_END();
+
+	void CompareFloatsNode::ShowEditorGui(Engine::DebugGuiSystem& dbgGui)
+	{
+		dbgGui.TextInput("Value 0", m_value0);
+		dbgGui.TextInput("Value 1", m_value1);
+		const std::vector<std::string> types = { 
+			"Less Than",
+			"Equal To",
+			"Greater Than",
+			"Less Than or Equal",
+			"Greater Than or Equal" 
+		};
+		int comparison = (int)m_comparison;
+		if (dbgGui.ComboBox("Comparison", types, comparison))
+		{
+			m_comparison = (ComparisonType)comparison;
+		}
+	}
+
+	RunningState CompareFloatsNode::Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const
+	{
+		if (m_value0 == "" || m_value1 == "")
+		{
+			return RunningState::Failed;
+		}
+		float v0 = bti.m_bb.GetOrParseFloat(m_value0.c_str());
+		float v1 = bti.m_bb.GetOrParseFloat(m_value1.c_str());
+		switch (m_comparison)
+		{
+		case ComparisonType::LessThan:
+			return v0 < v1 ? RunningState::Success : RunningState::Failed;
+		case ComparisonType::EqualTo:
+			return v0 == v1 ? RunningState::Success : RunningState::Failed;
+		case ComparisonType::GreaterThan:
+			return v0 > v1 ? RunningState::Success : RunningState::Failed;
+		case ComparisonType::LessThanEqual:
+			return v0 <= v1 ? RunningState::Success : RunningState::Failed;
+		case ComparisonType::GreaterThanEqual:
+			return v0 >= v1 ? RunningState::Success : RunningState::Failed;
+		default:
+			return RunningState::Failed;
+		}
+	}
 }

@@ -1,18 +1,13 @@
 #include "behaviour_tree_system.h"
 #include "behaviour_tree.h"
 #include "behaviour_tree_editor.h"
-#include "behaviour_tree_renderer.h"
 #include "behaviour_tree_instance.h"
 #include "behaviour_tree_debugger.h"
 #include "basic_nodes.h"
 #include "core/file_io.h"
 #include "core/log.h"
 #include "core/profiler.h"
-#include "engine/graphics_system.h"
-#include "engine/texture_manager.h"
-#include "engine/2d_render_context.h"
 #include "engine/system_manager.h"
-#include "engine/text_system.h"
 #include "engine/debug_gui_system.h"
 
 namespace Behaviours
@@ -23,6 +18,7 @@ namespace Behaviours
 
 	void BehaviourTreeSystem::OnTreeModified(std::string_view path)
 	{
+		SDE_PROF_EVENT();
 		std::string pathStr(path);
 		auto loadedTree = m_loadedTrees.find(pathStr);
 		if (loadedTree != m_loadedTrees.end())
@@ -58,6 +54,7 @@ namespace Behaviours
 
 	BehaviourTree* BehaviourTreeSystem::LoadTree(std::string_view path)
 	{
+		SDE_PROF_EVENT();
 		std::string pathStr(path);
 		auto loadedTree = m_loadedTrees.find(pathStr);
 		if (loadedTree == m_loadedTrees.end())
@@ -86,6 +83,7 @@ namespace Behaviours
 
 	BehaviourTreeInstance* BehaviourTreeSystem::CreateTreeInstance(std::string_view path)
 	{
+		SDE_PROF_EVENT();
 		BehaviourTree* tree = LoadTree(path);
 		if (tree)
 		{
@@ -100,6 +98,7 @@ namespace Behaviours
 
 	void BehaviourTreeSystem::DestroyInstance(BehaviourTreeInstance* instance)
 	{
+		SDE_PROF_EVENT();
 		auto found = std::find_if(m_activeInstances.begin(), m_activeInstances.end(), [instance](const std::unique_ptr<BehaviourTreeInstance>& ti) {
 			return ti.get() == instance;
 		});
@@ -115,6 +114,7 @@ namespace Behaviours
 
 	uint16_t BehaviourTreeSystem::AddNode(BehaviourTree& tree, std::string nodeTypeName)
 	{
+		SDE_PROF_EVENT();
 		auto foundFactory = std::find_if(m_nodeFactories.begin(), m_nodeFactories.end(), [&nodeTypeName](const NodeFactory& nf) {
 			return nf.m_nodeName == nodeTypeName;
 		});
@@ -128,7 +128,17 @@ namespace Behaviours
 		}
 	}
 
-	BehaviourTreeInstance* g_testInstance = nullptr;
+	void BehaviourTreeSystem::RegisterNodeType(std::string_view typestr, std::function<std::unique_ptr<Node>()> factory)
+	{
+		SDE_PROF_EVENT();
+		m_nodeFactories.push_back({	std::string(typestr), factory });
+
+		m_nodeFactoryNames.clear();
+		for (int f = 0; f < m_nodeFactories.size(); ++f)
+		{
+			m_nodeFactoryNames.push_back(m_nodeFactories[f].m_nodeName);
+		}
+	}
 
 	bool BehaviourTreeSystem::Initialise()
 	{
@@ -158,16 +168,16 @@ namespace Behaviours
 			}	
 		});
 
+		m_nodeFactories.push_back({
+			"FloatComparison", []() {
+				return std::make_unique<CompareFloatsNode>();
+			}
+		});
+
 		for (int f = 0; f < m_nodeFactories.size(); ++f)
 		{
 			m_nodeFactoryNames.push_back(m_nodeFactories[f].m_nodeName);
 		}
-
-		g_testInstance = CreateTreeInstance("test_tree1.beht");
-		g_testInstance->m_bb.SetFloat("CurrentHungerValue", 0.6f);
-		g_testInstance->m_bb.SetInt("MaxItemsHeld", 3);
-		g_testInstance->m_bb.SetInt("CurrentItemsHeld", 1);
-		g_testInstance->m_bb.SetVector("PlayerMoveTarget", { 1.0f,0.0f,3.0f });;
 
 		return true;
 	}

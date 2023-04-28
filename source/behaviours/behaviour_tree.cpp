@@ -1,5 +1,6 @@
 #include "behaviour_tree.h"
 #include "basic_nodes.h"
+#include "core/profiler.h"
 
 namespace Behaviours
 {
@@ -14,6 +15,7 @@ namespace Behaviours
 
 	BehaviourTree::BehaviourTree()
 	{
+		SDE_PROF_EVENT();
 		AddNode(std::make_unique<RootNode>());
 	}
 
@@ -24,6 +26,7 @@ namespace Behaviours
 
 	uint16_t BehaviourTree::AddNode(std::unique_ptr<Node>&& n)
 	{
+		SDE_PROF_EVENT();
 		uint16_t newID = m_nextLocalID++;
 		n->m_localID = newID;
 		m_allNodes.emplace_back(std::move(n));
@@ -32,6 +35,7 @@ namespace Behaviours
 
 	Node* BehaviourTree::FindNode(uint16_t localID) const
 	{
+		SDE_PROF_EVENT();
 		auto found = std::find_if(m_allNodes.begin(), m_allNodes.end(), [localID](const std::unique_ptr<Node>& n) {
 			return n->m_localID == localID;
 		});
@@ -47,6 +51,7 @@ namespace Behaviours
 
 	Node* BehaviourTree::FindConnectedNode(uint16_t localID) const
 	{
+		SDE_PROF_EVENT();
 		// find a node with a output connection to this one
 		Node* result = nullptr;
 		auto found = std::find_if(m_allNodes.begin(), m_allNodes.end(), [localID](const std::unique_ptr<Node>& n) {
@@ -67,6 +72,7 @@ namespace Behaviours
 
 	BehaviourTree::AddConnectionResult BehaviourTree::AddConnection(uint16_t outNodeID, uint16_t outPinIndex, uint16_t inNodeID)
 	{
+		SDE_PROF_EVENT();
 		Node* inNode = FindNode(inNodeID);
 		Node* outNode = FindNode(outNodeID);
 		if (inNode == nullptr || outNode == nullptr)

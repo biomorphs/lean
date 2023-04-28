@@ -1,3 +1,5 @@
+#pragma once
+
 #include "engine/system.h"
 #include "behaviour_tree_instance.h"
 #include <vector>
@@ -21,6 +23,7 @@ namespace Behaviours
 		BehaviourTreeInstance* CreateTreeInstance(std::string_view path);
 		void DestroyInstance(BehaviourTreeInstance* instance);
 		void OnTreeModified(std::string_view path);	// called from editor if a tree is saved
+		void RegisterNodeType(std::string_view typestr, std::function<std::unique_ptr<Node>()> factory);
 	private:
 		BehaviourTree* LoadTree(std::string_view path);
 		struct NodeFactory

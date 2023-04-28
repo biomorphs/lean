@@ -9,6 +9,8 @@ namespace Behaviours
 	SERIALISE_END()
 
 	SERIALISE_BEGIN(Node)
+		if (op == Engine::SerialiseType::Read)
+			m_outputPins.clear();
 		SERIALISE_PROPERTY("LocalID", m_localID)
 		SERIALISE_PROPERTY("Name", m_name)
 		SERIALISE_PROPERTY("BgColour", m_bgColour)
