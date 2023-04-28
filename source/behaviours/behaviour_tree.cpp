@@ -3,6 +3,15 @@
 
 namespace Behaviours
 {
+	SERIALISE_BEGIN(BehaviourTree)
+		if (op == Engine::SerialiseType::Read)
+		{
+			m_allNodes.clear();
+		}
+		SERIALISE_PROPERTY("AllNodes", m_allNodes);
+		SERIALISE_PROPERTY("NextLocalID", m_nextLocalID);
+	SERIALISE_END();
+
 	BehaviourTree::BehaviourTree()
 	{
 		AddNode(std::make_unique<RootNode>());

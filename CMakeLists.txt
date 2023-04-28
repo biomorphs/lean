@@ -437,6 +437,8 @@ set(BEHAVIOURS_SOURCES
 	source/behaviours/behaviour_tree_system.cpp
 	source/behaviours/behaviour_tree_instance.h
 	source/behaviours/behaviour_tree_instance.cpp
+	source/behaviours/behaviour_tree_debugger.h
+	source/behaviours/behaviour_tree_debugger.cpp
 )
 target_sources(Behaviours PRIVATE ${BEHAVIOURS_SOURCES})
 target_include_directories(Behaviours PRIVATE ${CommonIncludePaths})

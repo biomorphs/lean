@@ -17,7 +17,7 @@ namespace Behaviours
 		inline void SetInt(const Engine::Tag& tag, int v) { m_ints[tag] = v; }
 		inline int GetInt(const Engine::Tag& tag) { return m_ints[tag]; }
 		inline int TryGetInt(const Engine::Tag& tag, int defaultVal=-1) { auto f = m_ints.find(tag); if (f != m_ints.end())	return f->second; return defaultVal; }
-		inline const Ints& GetInts() const { return m_ints; }
+		inline Ints& GetInts() { return m_ints; }
 
 		using Floats = robin_hood::unordered_map<Engine::Tag, float>;
 		inline bool ContainsFloat(const Engine::Tag& t) { return m_floats.contains(t); }
@@ -25,7 +25,7 @@ namespace Behaviours
 		inline void SetFloat(const Engine::Tag& tag, float v) { m_floats[tag] = v; }
 		inline float GetFloat(const Engine::Tag& tag) { return m_floats[tag]; }
 		inline int TryGetFloat(const Engine::Tag& tag, float defaultVal = 0.0f) { auto f = m_floats.find(tag); if (f != m_floats.end())	return f->second; return defaultVal; }
-		inline const Floats& GetFloats() const { return m_floats; }
+		inline Floats& GetFloats() { return m_floats; }
 
 		using Entities = robin_hood::unordered_map<Engine::Tag, EntityHandle>;
 		inline bool ContainsEntity(const Engine::Tag& t) { return m_entities.contains(t); }
@@ -33,7 +33,7 @@ namespace Behaviours
 		inline void SetEntity(const Engine::Tag& tag, EntityHandle v) { m_entities[tag] = v; }
 		inline EntityHandle GetEntity(const Engine::Tag& tag) { return m_entities[tag]; }
 		inline EntityHandle TryGetEntity(const Engine::Tag& tag, EntityHandle defaultVal = EntityHandle(-1)) { auto f = m_entities.find(tag); if (f != m_entities.end())	return f->second; return defaultVal; }
-		inline const Entities& GetEntities() const { return m_entities; }
+		inline Entities& GetEntities() { return m_entities; }
 
 		using Vectors = robin_hood::unordered_map<Engine::Tag, glm::vec3>;
 		inline bool ContainsVector(const Engine::Tag& t) { return m_vectors.contains(t); }
@@ -42,7 +42,7 @@ namespace Behaviours
 		inline void SetVector(const Engine::Tag& tag, glm::vec3 v) { m_vectors[tag] = v; }
 		inline glm::vec3 GetVector(const Engine::Tag& tag) { return m_vectors[tag]; }
 		inline glm::vec3 TryGetVector(const Engine::Tag& tag, glm::vec3 defaultVal = glm::vec3(0.0f)) { auto f = m_vectors.find(tag); if (f != m_vectors.end())	return f->second; return defaultVal; }
-		inline const Vectors& GetVectors() const { return m_vectors; }
+		inline Vectors& GetVectors() { return m_vectors; }
 	private:
 		Ints m_ints;
 		Floats m_floats;

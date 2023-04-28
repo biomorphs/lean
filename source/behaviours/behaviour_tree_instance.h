@@ -27,5 +27,6 @@ namespace Behaviours
 		Blackboard m_bb;
 		const BehaviourTree* m_tree;
 		std::vector<NodeContextData> m_nodeContexts;
+		std::string m_name;
 	};
 }
