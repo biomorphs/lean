@@ -27,27 +27,48 @@ function SpawnMushrooms()
 		end
 		local newAntFood = World.AddComponent_AntFoodComponent(newEntity)
 		if(newAntFood ~= nil) then 
-			newAntFood.m_foodAmount = 10 + math.random(20)
+			newAntFood.m_foodAmount = 100 + math.random(100)
 		end
 		local newPickup = World.AddComponent_AntPickupComponent(newEntity)
 	end
 end
 
-function SpawnAnts()
+function SpawnCollectorAnts()
 	local template = World.GetFirstEntityWithTag(Tag.new("AntTemplate"))
-	for i=1,1 do 
+	for i=1,100 do 
 		local newEntity = World.CloneEntity(template)
 		local newTransform = World.GetComponent_Transform(newEntity)
 		local newTags = World.GetComponent_Tags(newEntity)
 		newTags:ClearTags()
 		newTags:AddTag(Tag.new("AntInstance"))
+		newTags:AddTag(Tag.new("Collector"))
 		if(newTransform ~= nil) then 
 			newTransform:SetPosition(-512 + math.random(1024), 0.0, -512 + math.random(1024))
 		end
 		local newAnt = World.AddComponent_AntComponent(newEntity)
 		if(newAnt ~= nil) then 
 			newAnt.m_behaviourTree = "ants/ant_brain.beht"
-			newAnt.m_minEnergyForHunger = 30 + math.random(40)
+			newAnt.m_minEnergyForHunger = 25 + math.random(25)
+		end
+	end
+end
+
+function SpawnBuilderAnts()
+	local template = World.GetFirstEntityWithTag(Tag.new("AntTemplate"))
+	for i=1,20 do 
+		local newEntity = World.CloneEntity(template)
+		local newTransform = World.GetComponent_Transform(newEntity)
+		local newTags = World.GetComponent_Tags(newEntity)
+		newTags:ClearTags()
+		newTags:AddTag(Tag.new("AntInstance"))
+		newTags:AddTag(Tag.new("Builder"))
+		if(newTransform ~= nil) then 
+			newTransform:SetPosition(-512 + math.random(1024), 0.0, -512 + math.random(1024))
+		end
+		local newAnt = World.AddComponent_AntComponent(newEntity)
+		if(newAnt ~= nil) then 
+			newAnt.m_behaviourTree = "ants/ant_brain_builder.beht"
+			newAnt.m_minEnergyForHunger = 25 + math.random(25)
 		end
 	end
 end
@@ -61,8 +82,11 @@ function AntsMain(entity)
 	if(DebugGui.Button('Spawn mushrooms')) then 
 		SpawnMushrooms()
 	end
-	if(DebugGui.Button('Spawn ants')) then 
-		SpawnAnts()
+	if(DebugGui.Button('Spawn collector ants')) then 
+		SpawnCollectorAnts()
+	end
+	if(DebugGui.Button('Spawn builder ants')) then 
+		SpawnBuilderAnts()
 	end
 	if(DebugGui.Button('Reset')) then 
 		local rockTag = Tag.new("RockInstance")

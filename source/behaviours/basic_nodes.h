@@ -99,6 +99,25 @@ namespace Behaviours
 		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const;
 	};
 
+	// Has 1 child, always returns opposite of child result (or running)
+	class InverterNode : public Node
+	{
+	public:
+		virtual SERIALISED_CLASS();
+		InverterNode()
+		{
+			m_bgColour = { 0.8f,0.0f,0.0f };
+			m_textColour = { 1,1,1 };
+			m_editorDimensions = { 80, 32 };
+			m_outputPins.push_back({
+				{1,1,1}, ""
+			});
+		}
+		virtual std::string_view GetTypeName() const { return "Inverter"; }
+		void Init(RunningNodeContext*, BehaviourTreeInstance&) const;
+		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const;
+	};
+
 	class CompareFloatsNode : public Node
 	{
 	public:

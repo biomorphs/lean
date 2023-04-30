@@ -5,12 +5,18 @@
 #include "entity/component.h"
 #include "entity/component_inspector.h"
 #include "engine/debug_gui_system.h"
+#include "engine/graphics_system.h"
+#include "engine/debug_render.h"
 #include "engine/system_manager.h"
+#include "engine/raycast_system.h"
 #include "engine/components/component_transform.h"
 #include "engine/components/component_physics.h"
 #include "engine/components/component_tags.h"
 #include "behaviours/behaviour_tree_instance.h"
 #include "behaviours/behaviour_tree_system.h"
+
+const float c_nestRadius = 64.0f;
+const float c_queenTowerRadius = 48.0f;
 
 class AntFoodComponent
 {
@@ -332,6 +338,11 @@ namespace Behaviours
 			dbg.TextInput("Target Ant", m_targetAnt);
 			dbg.TextInput("Found entity", m_foundEntity);
 			m_allowPickedUp = dbg.Checkbox("Allow picked up items", m_allowPickedUp);
+			m_allowCloseToNest = dbg.Checkbox("Allow items close to nest", m_allowCloseToNest);
+			if (!m_allowCloseToNest)
+			{
+				dbg.TextInput("Nest entity", m_antNestEntity);
+			}
 		}
 		virtual std::string_view GetTypeName() const { return "Ants.FindClosestTaggedEntity"; }
 		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const
@@ -343,33 +354,44 @@ namespace Behaviours
 			}
 			static auto entities = Engine::GetSystem<EntitySystem>("Entities");
 			EntityHandle targetAnt = bti.m_bb.TryGetEntity(m_targetAnt.c_str());
+			EntityHandle nestEntity = bti.m_bb.TryGetEntity(m_antNestEntity.c_str());
 			Transform* targetAntCmp = entities->GetWorld()->GetComponent<Transform>(targetAnt);
+			Transform* nestTransform = entities->GetWorld()->GetComponent<Transform>(nestEntity);
 			if (targetAntCmp && bti.m_bb.IsKey(m_foundEntity))
 			{
 				glm::vec3 antPos = targetAntCmp->GetPosition();
 				static auto tagIt = entities->GetWorld()->MakeIterator<Tags, Transform>();
 				EntityHandle closestFound;
 				float closestDistance = FLT_MAX;
+				const Engine::Tag searchTag(m_searchTag.c_str());
 				tagIt.ForEach([&](Tags& tags, Transform& t, EntityHandle owner) {
-					float distance = glm::distance(t.GetPosition(), antPos);
-					if (distance < closestDistance)
+					bool filteredByTag = (m_searchTag.size() > 0 && !tags.ContainsTag(searchTag));
+					if (filteredByTag)
 					{
-						bool filteredByTag = !(m_searchTag.size() > 0 && tags.ContainsTag(m_searchTag.c_str()));
-						bool filteredByPickup = false;
-						if (!m_allowPickedUp)
+						return;
+					}
+					float distance = glm::distance(t.GetPosition(), antPos);
+					if (distance >= closestDistance)
+					{
+						return;
+					}
+					if (!m_allowCloseToNest && nestTransform)
+					{
+						if (glm::distance(nestTransform->GetPosition(), t.GetPosition()) < (c_nestRadius * 1.8f))
 						{
-							auto pickupCmp = entities->GetWorld()->GetComponent<AntPickupComponent>(owner);
-							if (pickupCmp && pickupCmp->m_heldBy.IsValid())		// already held
-							{
-								filteredByPickup = true;
-							}
-						}
-						if (!filteredByTag && !filteredByPickup)
-						{
-							closestFound = owner;
-							closestDistance = distance;
+							return;
 						}
 					}
+					if (!m_allowPickedUp)
+					{
+						auto pickupCmp = entities->GetWorld()->GetComponent<AntPickupComponent>(owner);
+						if (pickupCmp && pickupCmp->m_heldBy.IsValid())		// already held
+						{
+							return;
+						}
+					}
+					closestFound = owner;
+					closestDistance = distance;
 				});
 				bti.m_bb.SetEntity(m_foundEntity.c_str(), closestFound);
 				return closestFound.GetID() != -1 ? RunningState::Success : RunningState::Failed;
@@ -380,13 +402,17 @@ namespace Behaviours
 		std::string m_targetAnt;
 		std::string m_foundEntity;
 		std::string m_searchTag;
+		std::string m_antNestEntity;
 		bool m_allowPickedUp = true;
+		bool m_allowCloseToNest = false;
 	};
 	SERIALISE_BEGIN_WITH_PARENT(FindClosestTaggedEntity, Node)
 		SERIALISE_PROPERTY("TargetAnt", m_targetAnt)
 		SERIALISE_PROPERTY("FoundEntity", m_foundEntity)
 		SERIALISE_PROPERTY("SearchTag", m_searchTag)
+		SERIALISE_PROPERTY("AntNestEntity", m_antNestEntity)
 		SERIALISE_PROPERTY("AllowPickedUp", m_allowPickedUp)
+		SERIALISE_PROPERTY("AllowCloseToNest", m_allowCloseToNest)
 	SERIALISE_END();
 
 	// returns failed if the entity is not found, success when within the radius
@@ -403,11 +429,13 @@ namespace Behaviours
 		virtual void ShowEditorGui(Engine::DebugGuiSystem& dbg)
 		{
 			dbg.TextInput("Walking entity", m_walker);
-			dbg.TextInput("Target entity", m_target);
+			dbg.TextInput("Target entity/vector", m_target);
 			dbg.TextInput("Walker Radius", m_walkerRadius);
 			dbg.TextInput("Target Radius", m_targetRadius);
+			m_cancelIfHungry = dbg.Checkbox("Cancel if hungry?", m_cancelIfHungry);
+			m_cancelIfTargetPickedUp = dbg.Checkbox("Cancel if target picked up?", m_cancelIfTargetPickedUp);
 		}
-		virtual std::string_view GetTypeName() const { return "Ants.WalkToEntity"; }
+		virtual std::string_view GetTypeName() const { return "Ants.WalkTo"; }
 		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const
 		{
 			SDE_PROF_EVENT();
@@ -416,20 +444,37 @@ namespace Behaviours
 				return RunningState::Failed;
 			}
 			static auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			static auto graphics = Engine::GetSystem<GraphicsSystem>("Graphics");
 			EntityHandle walker = bti.m_bb.TryGetEntity(m_walker.c_str());
 			EntityHandle target = bti.m_bb.TryGetEntity(m_target.c_str());
 			Transform* walkerCmp = entities->GetWorld()->GetComponent<Transform>(walker);
 			Transform* targetCmp = entities->GetWorld()->GetComponent<Transform>(target);
 			AntComponent* targetAntCmp = entities->GetWorld()->GetComponent<AntComponent>(walker);
-			if (walkerCmp && targetCmp && targetAntCmp)
+			glm::vec3 targetPosition = targetCmp ? glm::vec3(targetCmp->GetWorldspaceMatrix()[3]) : bti.m_bb.TryGetVector(m_target.c_str());
+			if (walkerCmp && targetAntCmp)
 			{
-				float distance = glm::distance(walkerCmp->GetPosition() * glm::vec3(1, 0, 1), targetCmp->GetPosition() * glm::vec3(1, 0, 1));
+				if (m_cancelIfHungry && targetAntCmp->GetIsHungry())
+				{
+					return RunningState::Failed;
+				}
+				if (m_cancelIfTargetPickedUp)
+				{
+					auto targetPickup = entities->GetWorld()->GetComponent<AntPickupComponent>(target);
+					if (targetPickup && targetPickup->m_heldBy.IsValid())
+					{
+						return RunningState::Failed;
+					}
+				}
+				float distance = glm::distance(walkerCmp->GetPosition() * glm::vec3(1, 0, 1), targetPosition * glm::vec3(1, 0, 1));
 				float walkerRadius = bti.m_bb.GetOrParseFloat(m_walkerRadius.c_str());
 				float targetRadius = bti.m_bb.GetOrParseFloat(m_targetRadius.c_str());
 				if (distance > (walkerRadius + targetRadius))
 				{
-					glm::vec3 dir = glm::normalize((targetCmp->GetPosition() - walkerCmp->GetPosition()) * glm::vec3(1, 0, 1));
-					walkerCmp->SetPosition(walkerCmp->GetPosition() + dir * 8.0f * 0.033f);		// todo walk speed and delta
+					// glm::vec4 lineColour = targetCmp != nullptr ? glm::vec4{ 1, 1, 0, 1 } : glm::vec4{ 0, 1,1,1};
+					// graphics->DebugRenderer().DrawLine(walkerCmp->GetPosition() + glm::vec3{0.0, 10.0f, 0.0}, targetPosition + glm::vec3{0.0, 10.0f, 0.0}, lineColour);
+					glm::vec3 dir = glm::normalize((targetPosition - walkerCmp->GetPosition()) * glm::vec3(1, 0, 1));
+					float weightSpeedMul = 1.0f - ((float)targetAntCmp->m_carriedItems.size() / (float)targetAntCmp->m_maxHeldItems);
+					walkerCmp->SetPosition(walkerCmp->GetPosition() + dir * (24.0f + weightSpeedMul * 32.0f) * 0.016f);		// todo walk speed and delta
 					targetAntCmp->m_energy = glm::max(0.0f, targetAntCmp->m_energy - targetAntCmp->m_walkingEnergyUsage);
 					return RunningState::Running;
 				}
@@ -445,12 +490,16 @@ namespace Behaviours
 		std::string m_target;
 		std::string m_walkerRadius = "1.0f";
 		std::string m_targetRadius = "1.0f";
+		bool m_cancelIfHungry = false;
+		bool m_cancelIfTargetPickedUp = false;
 	};
 	SERIALISE_BEGIN_WITH_PARENT(WalkToEntity, Node)
 		SERIALISE_PROPERTY("WalkerEntity", m_walker)
 		SERIALISE_PROPERTY("TargetEntity", m_target)
 		SERIALISE_PROPERTY("WalkerRadius", m_walkerRadius)
 		SERIALISE_PROPERTY("TargetRadius", m_targetRadius)
+		SERIALISE_PROPERTY("CancelIfHungry", m_cancelIfHungry)
+		SERIALISE_PROPERTY("CancelIfTargetPickedUp", m_cancelIfTargetPickedUp)
 	SERIALISE_END();
 
 	class EatUntilFullNode : public Node
@@ -494,7 +543,7 @@ namespace Behaviours
 					return RunningState::Failed;
 				}
 
-				float eatAmount = glm::min(1.0f * 0.033f, foodCmp->m_foodAmount);	// todo delta/eat speed
+				float eatAmount = glm::min(8.0f * 0.016f, foodCmp->m_foodAmount);	// todo delta/eat speed
 				foodCmp->m_foodAmount = glm::max(0.0f, foodCmp->m_foodAmount - eatAmount);
 				targetAntCmp->m_energy = targetAntCmp->m_energy + eatAmount;
 
@@ -576,6 +625,309 @@ namespace Behaviours
 		SERIALISE_PROPERTY("Ant", m_ant)
 		SERIALISE_PROPERTY("PickupItem", m_pickup)
 	SERIALISE_END();
+
+	class FindDropoffPosition : public Node
+	{
+	public:
+		virtual SERIALISED_CLASS();
+		FindDropoffPosition()
+		{
+			m_bgColour = { 0.8f,0.8f,0.0f };
+			m_textColour = { 0,0,1 };
+			m_editorDimensions = { 60, 32 };
+		}
+		virtual void ShowEditorGui(Engine::DebugGuiSystem& dbg)
+		{
+			dbg.TextInput("Target Ant", m_targetAnt);
+			dbg.TextInput("Ant Nest Entity", m_antNestEntity);
+			dbg.TextInput("Dropoff Target Vector", m_dropoffTarget);
+		}
+		virtual std::string_view GetTypeName() const { return "Ants.FindDropoffPosition"; }
+		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const
+		{
+			SDE_PROF_EVENT();
+			if (m_targetAnt == "" || m_dropoffTarget == "" || !bti.m_bb.IsKey(m_dropoffTarget))
+			{
+				return RunningState::Failed;
+			}
+			static auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			EntityHandle targetAnt = bti.m_bb.TryGetEntity(m_targetAnt.c_str());
+			EntityHandle nest = bti.m_bb.TryGetEntity(m_antNestEntity.c_str());
+			AntComponent* targetAntCmp = entities->GetWorld()->GetComponent<AntComponent>(targetAnt);
+			Transform* nestTransform = entities->GetWorld()->GetComponent<Transform>(nest);
+			Transform* antTransform = entities->GetWorld()->GetComponent<Transform>(targetAnt);
+			if (targetAntCmp)
+			{
+				if (nestTransform)
+				{
+					glm::vec3 nestToAnt = glm::normalize(antTransform->GetPosition() - nestTransform->GetPosition());
+					bti.m_bb.SetVector(m_dropoffTarget.c_str(), nestTransform->GetPosition() + nestToAnt * Core::Random::GetFloat(c_nestRadius * 1.0f, c_nestRadius* 1.5f));
+				}
+				else
+				{
+					float t = Core::Random::GetFloat(0.0f, glm::pi<float>() * 2.0f);
+					glm::vec3 randPosOnCircle = { sin(t), 0.0f, cos(t) };
+					randPosOnCircle *= c_nestRadius * 1.5f;
+					bti.m_bb.SetVector(m_dropoffTarget.c_str(), randPosOnCircle);
+				}
+				return RunningState::Success;
+			}
+			return RunningState::Failed;
+		}
+
+		std::string m_targetAnt;
+		std::string m_antNestEntity;
+		std::string m_dropoffTarget;
+	};
+	SERIALISE_BEGIN_WITH_PARENT(FindDropoffPosition, Node)
+		SERIALISE_PROPERTY("TargetAnt", m_targetAnt)
+		SERIALISE_PROPERTY("AntNest", m_antNestEntity)
+		SERIALISE_PROPERTY("DropoffTarget", m_dropoffTarget)
+	SERIALISE_END();
+
+	class FindBuildPosition : public Node
+	{
+	public:
+		virtual SERIALISED_CLASS();
+		FindBuildPosition()
+		{
+			m_bgColour = { 0.8f,0.8f,0.0f };
+			m_textColour = { 0,0,1 };
+			m_editorDimensions = { 60, 32 };
+		}
+		virtual void ShowEditorGui(Engine::DebugGuiSystem& dbg)
+		{
+			dbg.TextInput("Target Ant", m_targetAnt);
+			dbg.TextInput("Queen Entity", m_queenEntity);
+			dbg.TextInput("Build Target Vector", m_buildTarget);
+		}
+		virtual std::string_view GetTypeName() const { return "Ants.FindBuildPosition"; }
+		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const
+		{
+			SDE_PROF_EVENT();
+			if (m_targetAnt == "" || m_buildTarget == "" || !bti.m_bb.IsKey(m_buildTarget))
+			{
+				return RunningState::Failed;
+			}
+			static auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			EntityHandle targetAnt = bti.m_bb.TryGetEntity(m_targetAnt.c_str());
+			EntityHandle queen = bti.m_bb.TryGetEntity(m_queenEntity.c_str());
+			AntComponent* targetAntCmp = entities->GetWorld()->GetComponent<AntComponent>(targetAnt);
+			Transform* queenTransform = entities->GetWorld()->GetComponent<Transform>(queen);
+			Transform* antTransform = entities->GetWorld()->GetComponent<Transform>(targetAnt);
+			if (targetAntCmp && queenTransform)
+			{
+				float t = Core::Random::GetFloat(0.0f, glm::pi<float>() * 2.0f);
+				glm::vec3 randPosOnCircle = { sin(t), 0.0f, cos(t) };
+				randPosOnCircle *= c_queenTowerRadius * 1.5f;
+				bti.m_bb.SetVector(m_buildTarget.c_str(), glm::vec3(queenTransform->GetWorldspaceMatrix()[3]) + randPosOnCircle);
+				return RunningState::Success;
+			}
+			return RunningState::Failed;
+		}
+
+		std::string m_targetAnt;
+		std::string m_queenEntity;
+		std::string m_buildTarget;
+	};
+	SERIALISE_BEGIN_WITH_PARENT(FindBuildPosition, Node)
+		SERIALISE_PROPERTY("TargetAnt", m_targetAnt)
+		SERIALISE_PROPERTY("QueenEntity", m_queenEntity)
+		SERIALISE_PROPERTY("BuildTarget", m_buildTarget)
+	SERIALISE_END();
+
+	class DropItems : public Node
+	{
+	public:
+		virtual SERIALISED_CLASS();
+		DropItems()
+		{
+			m_bgColour = { 0.8f,0.8f,0.0f };
+			m_textColour = { 0,0,1 };
+			m_editorDimensions = { 60, 32 };
+		}
+		virtual void ShowEditorGui(Engine::DebugGuiSystem& dbg)
+		{
+			dbg.TextInput("Target Ant", m_targetAnt);
+		}
+		virtual std::string_view GetTypeName() const { return "Ants.DropItems"; }
+		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const
+		{
+			SDE_PROF_EVENT();
+			if (m_targetAnt == "")
+			{
+				return RunningState::Failed;
+			}
+			static auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			EntityHandle targetAnt = bti.m_bb.TryGetEntity(m_targetAnt.c_str());
+			AntComponent* targetAntCmp = entities->GetWorld()->GetComponent<AntComponent>(targetAnt);
+			if (targetAntCmp)
+			{
+				auto ants = Engine::GetSystem< AntsSystem>("Ants");
+				ants->DropAllItems(targetAnt);
+				return RunningState::Success;
+			}
+			return RunningState::Failed;
+		}
+
+		std::string m_targetAnt;
+	};
+	SERIALISE_BEGIN_WITH_PARENT(DropItems, Node)
+		SERIALISE_PROPERTY("TargetAnt", m_targetAnt)
+	SERIALISE_END();
+
+	// fires a raycast from the sky to determine build position for the held items
+	class BuildWithItems : public Node
+	{
+	public:
+		virtual SERIALISED_CLASS();
+		BuildWithItems()
+		{
+			m_bgColour = { 0.8f,0.8f,0.0f };
+			m_textColour = { 0,0,1 };
+			m_editorDimensions = { 60, 32 };
+		}
+		virtual void ShowEditorGui(Engine::DebugGuiSystem& dbg)
+		{
+			dbg.TextInput("Target Ant", m_targetAnt);
+			dbg.TextInput("Target Build Position", m_targetPosition);
+		}
+		struct BuildWithItemsContext : public RunningNodeContext {
+			Engine::RaycastSystem::RayResultsFn m_rayResultFn;
+			bool m_rayFired = false;
+			bool m_resultReady = false;
+			glm::vec3 m_rayStartPosition = glm::vec3(0, 0, 0);
+			glm::vec3 m_rayHitPosition = glm::vec3(0, 0, 0);
+		};
+		virtual std::unique_ptr<RunningNodeContext> PrepareContext() const
+		{
+			return std::make_unique<BuildWithItemsContext>();
+		}
+		void Init(RunningNodeContext* ctx, BehaviourTreeInstance& bti) const
+		{
+			BuildWithItemsContext* buildCtx = static_cast<BuildWithItemsContext*>(ctx);
+			buildCtx->m_rayFired = true;
+			buildCtx->m_resultReady = false;
+			buildCtx->m_rayHitPosition = { 0,0,0 };
+			buildCtx->m_rayResultFn = [buildCtx](const std::vector<Engine::RaycastSystem::RayHitResult>& hits, const std::vector<Engine::RaycastSystem::RayMissResult>& misses)
+			{
+				if (hits.size() == 0)
+				{
+					buildCtx->m_rayHitPosition = buildCtx->m_rayStartPosition * glm::vec3{ 1,0,1 };
+					buildCtx->m_rayHitPosition.y = Core::Random::GetFloat(4.0f, 32.0f);
+				}
+				else
+				{
+					buildCtx->m_rayHitPosition = hits[0].m_hitPos;
+				}
+				buildCtx->m_resultReady = true;
+			};
+
+			static auto entities = Engine::GetSystem<EntitySystem>("Entities");
+			glm::vec3 buildPos = bti.m_bb.TryGetVector(m_targetPosition.c_str());
+
+			static auto raycasts = Engine::GetSystem<Engine::RaycastSystem>("Raycasts");
+			std::vector<Engine::RaycastSystem::RayInput> rayToCast(1);
+			rayToCast[0].m_start = glm::vec3(buildPos) + glm::vec3(0.0f, 2000.0f, 0.0f);
+			rayToCast[0].m_end = glm::vec3(0.0f,-16.0f,0.0f) + (buildPos * glm::vec3(1, 0, 1));
+			buildCtx->m_rayStartPosition = rayToCast[0].m_start;
+			raycasts->RaycastAsyncMulti(rayToCast, buildCtx->m_rayResultFn);
+		}
+		virtual std::string_view GetTypeName() const { return "Ants.BuildWithItems"; }
+		virtual RunningState Tick(RunningNodeContext* ctx, BehaviourTreeInstance& bti) const
+		{
+			SDE_PROF_EVENT();
+			if (m_targetAnt == "" || m_targetPosition == "")
+			{
+				return RunningState::Failed;
+			}
+
+			BuildWithItemsContext* buildCtx = static_cast<BuildWithItemsContext*>(ctx);
+			if (buildCtx->m_rayFired && !buildCtx->m_resultReady)
+			{
+				return RunningState::Running;
+			}
+			if (buildCtx->m_rayFired && buildCtx->m_resultReady)
+			{
+				static auto entities = Engine::GetSystem<EntitySystem>("Entities");
+				EntityHandle targetAnt = bti.m_bb.TryGetEntity(m_targetAnt.c_str());
+				AntComponent* targetAntCmp = entities->GetWorld()->GetComponent<AntComponent>(targetAnt);
+				glm::vec3 buildPos = buildCtx->m_rayHitPosition;
+				for (auto heldEntity : targetAntCmp->m_carriedItems)
+				{
+					auto heldTrns = entities->GetWorld()->GetComponent<Transform>(heldEntity);
+					auto pickupCmp = entities->GetWorld()->GetComponent<AntPickupComponent>(heldEntity);
+					auto pickupPhysCmp = entities->GetWorld()->GetComponent<Physics>(heldEntity);
+					if (pickupPhysCmp)	// make it a static object
+					{
+						pickupPhysCmp->SetStatic(true);
+						pickupPhysCmp->Rebuild();
+					}
+					entities->GetWorld()->RemoveComponent<AntPickupComponent>(heldEntity);	// can't be picked up
+					auto pickupTags = entities->GetWorld()->GetComponent<Tags>(heldEntity);
+					if (pickupTags)
+					{
+						pickupTags->ClearTags();
+						pickupTags->AddTag("BuiltRockInstance");
+					}
+
+					// back to world space
+					glm::vec3 wsPos, wsScale;
+					glm::quat wsOrientation;
+					heldTrns->GetWorldSpaceTransform(wsPos, wsOrientation, wsScale);
+					heldTrns->SetParent(EntityHandle());
+					heldTrns->SetScale(wsScale);
+					heldTrns->SetOrientation(wsOrientation);
+					heldTrns->SetPosition(buildPos + glm::vec3(Core::Random::GetFloat(-1.0f, 1.0f), 0.0f, Core::Random::GetFloat(-1.0f, 1.0f)));
+					buildPos = buildPos + glm::vec3(0.0f, 3.0f, 0.0f);
+				}
+				targetAntCmp->m_carriedItems.clear();
+				return RunningState::Success;
+			}
+			return RunningState::Failed;
+		}
+
+		std::string m_targetAnt;
+		std::string m_targetPosition;
+	};
+	SERIALISE_BEGIN_WITH_PARENT(BuildWithItems, Node)
+		SERIALISE_PROPERTY("TargetAnt", m_targetAnt)
+		SERIALISE_PROPERTY("TargetPosition", m_targetPosition)
+	SERIALISE_END();
+}
+
+void AntsSystem::DropAllItems(const EntityHandle& ant)
+{
+	auto entities = Engine::GetSystem<EntitySystem>("Entities");
+	auto ac = entities->GetWorld()->GetComponent<AntComponent>(ant);
+	auto antTrans = entities->GetWorld()->GetComponent<Transform>(ant);
+	if (ac && antTrans)
+	{
+		for (int he = 0; he < ac->m_carriedItems.size(); he++)
+		{
+			EntityHandle heldEntity = ac->m_carriedItems[he];
+			auto heldTrns = entities->GetWorld()->GetComponent<Transform>(heldEntity);
+			auto pickupCmp = entities->GetWorld()->GetComponent<AntPickupComponent>(heldEntity);
+			auto pickupPhysCmp = entities->GetWorld()->GetComponent<Physics>(heldEntity);
+			if (pickupPhysCmp)
+			{
+				pickupPhysCmp->SetKinematic(false);
+				pickupPhysCmp->Rebuild();
+			}
+			if (pickupCmp)
+			{
+				pickupCmp->m_heldBy = EntityHandle();
+			}
+			glm::vec3 wsPos, wsScale;
+			glm::quat wsOrientation;
+			heldTrns->GetWorldSpaceTransform(wsPos, wsOrientation, wsScale);
+			heldTrns->SetParent(EntityHandle());
+			heldTrns->SetScale(wsScale);
+			heldTrns->SetPosition(wsPos);
+			heldTrns->SetOrientation(wsOrientation);
+		}
+		ac->m_carriedItems.clear();
+	}
 }
 
 bool AntsSystem::PostInit()
@@ -614,6 +966,19 @@ bool AntsSystem::PostInit()
 	behSys->RegisterNodeType("Ants.CanCarryMore", []() {
 		return std::make_unique<Behaviours::CanCarryMore>();
 	});
+	behSys->RegisterNodeType("Ants.FindDropoffPosition", []() {
+		return std::make_unique<Behaviours::FindDropoffPosition>();
+	});
+	behSys->RegisterNodeType("Ants.DropItems", []() {
+		return std::make_unique<Behaviours::DropItems>();
+	});
+	behSys->RegisterNodeType("Ants.BuildWithItems", []() {
+		return std::make_unique<Behaviours::BuildWithItems>();
+	});
+	behSys->RegisterNodeType("Ants.FindBuildPosition", []() {
+		return std::make_unique<Behaviours::FindBuildPosition>();
+	});
+
 	return true;
 }
 
@@ -621,39 +986,13 @@ void AntsSystem::KillAnt(const EntityHandle& e)
 {
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
 	auto behSys = Engine::GetSystem<Behaviours::BehaviourTreeSystem>("Behaviours");
+	DropAllItems(e);
 	auto ac = entities->GetWorld()->GetComponent<AntComponent>(e);
-	auto antTrans = entities->GetWorld()->GetComponent<Transform>(e);
-	if (ac && antTrans)
+	if (ac)
 	{
-		// drop all held items
-		for (int he = 0; he < ac->m_carriedItems.size(); he++)
-		{
-			EntityHandle heldEntity = ac->m_carriedItems[he];
-			auto heldTrns = entities->GetWorld()->GetComponent<Transform>(heldEntity);
-			auto pickupCmp = entities->GetWorld()->GetComponent<AntPickupComponent>(heldEntity);
-			auto pickupPhysCmp = entities->GetWorld()->GetComponent<Physics>(heldEntity);
-			if (pickupPhysCmp)
-			{
-				pickupPhysCmp->SetKinematic(false);
-				pickupPhysCmp->Rebuild();
-			}
-			if (pickupCmp)
-			{
-				pickupCmp->m_heldBy = EntityHandle();
-			}
-			glm::vec3 wsPos, wsScale;
-			glm::quat wsOrientation;
-			heldTrns->GetWorldSpaceTransform(wsPos, wsOrientation, wsScale);
-			heldTrns->SetParent(EntityHandle());
-			heldTrns->SetScale(wsScale);
-			heldTrns->SetPosition(wsPos);
-			heldTrns->SetOrientation(wsOrientation);
-		}
-
 		behSys->DestroyInstance(ac->m_treeInstance);
 		ac->m_treeInstance = nullptr;
 	}
-
 	entities->GetWorld()->RemoveEntity(e);
 }
 
@@ -662,13 +1001,17 @@ bool AntsSystem::Tick(float timeDelta)
 	SDE_PROF_EVENT();
 	auto entities = Engine::GetSystem<EntitySystem>("Entities");
 	auto behSys = Engine::GetSystem<Behaviours::BehaviourTreeSystem>("Behaviours");
+	auto nestEntity = entities->GetFirstEntityWithTag("Nest");
+	auto queenEntity = entities->GetFirstEntityWithTag("AntQueen");
 	entities->GetWorld()->ForEachComponent<AntComponent>([&](AntComponent& ac, EntityHandle e) {
 		if (ac.m_treeInstance == nullptr && ac.m_behaviourTree.size() > 0)
 		{
 			ac.m_treeInstance = behSys->CreateTreeInstance(ac.m_behaviourTree);
 			if (ac.m_treeInstance)
 			{
+				ac.m_treeInstance->m_bb.SetEntity("@AntQueenEntity", queenEntity);
 				ac.m_treeInstance->m_bb.SetEntity("@OwnerEntity", e);
+				ac.m_treeInstance->m_bb.SetEntity("@NestEntity", nestEntity);
 			}
 		}
 		if (ac.m_treeInstance)

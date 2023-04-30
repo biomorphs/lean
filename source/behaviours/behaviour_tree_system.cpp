@@ -166,6 +166,12 @@ namespace Behaviours
 		});
 
 		m_nodeFactories.push_back({
+			"Inverter", []() {
+				return std::make_unique<InverterNode>();
+			}
+		});
+
+		m_nodeFactories.push_back({
 			"FloatComparison", []() {
 				return std::make_unique<CompareFloatsNode>();
 			}

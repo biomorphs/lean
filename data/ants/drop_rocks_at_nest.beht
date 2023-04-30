@@ -8,15 +8,15 @@
       ],
       "ClassName": "RootNode",
       "EditorDimensions": [
-        104.0,
+        60.0,
         32.0
       ],
       "EditorPosition": [
-        772.0,
-        965.0
+        918.0,
+        880.0
       ],
       "LocalID": 0,
-      "Name": "Node",
+      "Name": "",
       "OutputPins": [
         {
           "Annotation": "",
@@ -37,22 +37,42 @@
     },
     {
       "BgColour": [
-        0.30000001192092896,
-        0.4000000059604645,
-        0.800000011920929
+        0.5,
+        0.5,
+        0.5
       ],
-      "ClassName": "SelectorNode",
+      "ClassName": "SequenceNode",
       "EditorDimensions": [
-        222.0,
+        100.0,
         32.0
       ],
       "EditorPosition": [
-        714.0,
-        883.0
+        898.0,
+        761.0
       ],
       "LocalID": 1,
-      "Name": "Top Level Tasks",
+      "Name": "",
       "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 3
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 4
+        },
         {
           "Annotation": "",
           "ClassName": "PinProperties",
@@ -71,17 +91,7 @@
             0.5,
             0.5
           ],
-          "ConnectedNodeID": 23
-        },
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 4
+          "ConnectedNodeID": 6
         }
       ],
       "TextColour": [
@@ -92,21 +102,46 @@
     },
     {
       "BgColour": [
-        1.0,
-        0.4411763548851013,
+        0.800000011920929,
+        0.800000011920929,
         0.0
       ],
-      "ClassName": "AntIdleNode",
+      "ClassName": "CanCarryMore",
       "EditorDimensions": [
-        176.0,
+        178.0,
         32.0
       ],
       "EditorPosition": [
-        1203.0,
-        757.0
+        438.0,
+        439.0
       ],
-      "LocalID": 4,
-      "Name": "DoIdle",
+      "LocalID": 2,
+      "Name": "",
+      "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.0,
+        0.0
+      ],
+      "ClassName": "InverterNode",
+      "EditorDimensions": [
+        80.0,
+        32.0
+      ],
+      "EditorPosition": [
+        488.0,
+        579.0
+      ],
+      "LocalID": 3,
+      "Name": "",
       "OutputPins": [
         {
           "Annotation": "",
@@ -116,13 +151,93 @@
             1.0,
             1.0
           ],
-          "ConnectedNodeID": 65535
+          "ConnectedNodeID": 2
         }
       ],
-      "TargetEntityInBB": "@OwnerEntity",
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "AntNest": "@NestEntity",
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "FindDropoffPosition",
+      "DropoffTarget": "@DropoffPosVector",
+      "EditorDimensions": [
+        216.0,
+        32.0
+      ],
+      "EditorPosition": [
+        670.0,
+        439.0
+      ],
+      "LocalID": 4,
+      "Name": "",
+      "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
       "TextColour": [
         0.0,
-        0.1190645694732666,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "CancelIfHungry": false,
+      "ClassName": "WalkToEntity",
+      "EditorDimensions": [
+        119.0,
+        32.0
+      ],
+      "EditorPosition": [
+        999.0,
+        287.0
+      ],
+      "LocalID": 5,
+      "Name": "",
+      "OutputPins": [],
+      "TargetEntity": "@DropoffPosVector",
+      "TargetRadius": "8",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "WalkerEntity": "@OwnerEntity",
+      "WalkerRadius": "8"
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "DropItems",
+      "EditorDimensions": [
+        147.0,
+        32.0
+      ],
+      "EditorPosition": [
+        1250.0,
+        437.0
+      ],
+      "LocalID": 6,
+      "Name": "",
+      "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.0,
         1.0
       ]
     },
@@ -134,15 +249,15 @@
       ],
       "ClassName": "SequenceNode",
       "EditorDimensions": [
-        230.0,
+        241.0,
         32.0
       ],
       "EditorPosition": [
-        243.0,
-        763.0
+        942.0,
+        441.0
       ],
       "LocalID": 7,
-      "Name": "Process Hunger",
+      "Name": "Walk home",
       "OutputPins": [
         {
           "Annotation": "",
@@ -152,16 +267,6 @@
             0.5,
             0.5
           ],
-          "ConnectedNodeID": 19
-        },
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
           "ConnectedNodeID": 65535
         },
         {
@@ -182,127 +287,7 @@
             0.5,
             0.5
           ],
-          "ConnectedNodeID": 65535
-        }
-      ],
-      "TextColour": [
-        1.0,
-        1.0,
-        1.0
-      ]
-    },
-    {
-      "BgColour": [
-        0.800000011920929,
-        0.800000011920929,
-        0.0
-      ],
-      "ClassName": "RunTreeNode",
-      "EditorDimensions": [
-        349.0,
-        32.0
-      ],
-      "EditorPosition": [
-        182.0,
-        649.0
-      ],
-      "LocalID": 19,
-      "Name": "ant_deal_with_hunger",
-      "OutputPins": [],
-      "TextColour": [
-        9.999999974752427e-07,
-        9.999899930335232e-07,
-        9.999899930335232e-07
-      ],
-      "Tree": "ants\\ant_deal_with_hunger.beht"
-    },
-    {
-      "BgColour": [
-        0.800000011920929,
-        0.800000011920929,
-        0.0
-      ],
-      "ClassName": "RunTreeNode",
-      "EditorDimensions": [
-        373.0,
-        32.0
-      ],
-      "EditorPosition": [
-        458.0,
-        484.0
-      ],
-      "LocalID": 21,
-      "Name": "ant_pickup_nearby_rocks",
-      "OutputPins": [],
-      "TextColour": [
-        9.999999974752427e-07,
-        5.098038968753826e-07,
-        5.098038968753826e-07
-      ],
-      "Tree": "ants/ant_pickup_nearby_rocks.beht"
-    },
-    {
-      "BgColour": [
-        0.800000011920929,
-        0.800000011920929,
-        0.0
-      ],
-      "ClassName": "RunTreeNode",
-      "EditorDimensions": [
-        333.0,
-        32.0
-      ],
-      "EditorPosition": [
-        883.0,
-        483.0
-      ],
-      "LocalID": 22,
-      "Name": "drop_rocks_at_nest",
-      "OutputPins": [],
-      "TextColour": [
-        9.999999974752427e-07,
-        9.656862403062405e-07,
-        9.656862403062405e-07
-      ],
-      "Tree": "ants/drop_rocks_at_nest.beht"
-    },
-    {
-      "BgColour": [
-        0.30000001192092896,
-        0.4000000059604645,
-        0.800000011920929
-      ],
-      "ClassName": "SelectorNode",
-      "EditorDimensions": [
-        240.0,
-        32.0
-      ],
-      "EditorPosition": [
-        710.0,
-        682.0
-      ],
-      "LocalID": 23,
-      "Name": "Carry Rocks Home",
-      "OutputPins": [
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 21
-        },
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 22
+          "ConnectedNodeID": 5
         }
       ],
       "TextColour": [
@@ -313,5 +298,5 @@
     }
   ],
   "ClassName": "BehaviourTree",
-  "NextLocalID": 24
+  "NextLocalID": 10
 }

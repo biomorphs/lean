@@ -12,8 +12,8 @@
         32.0
       ],
       "EditorPosition": [
-        953.0,
-        909.0
+        918.0,
+        880.0
       ],
       "LocalID": 0,
       "Name": "",
@@ -43,26 +43,16 @@
       ],
       "ClassName": "SequenceNode",
       "EditorDimensions": [
-        207.0,
+        100.0,
         32.0
       ],
       "EditorPosition": [
-        885.0,
-        813.0
+        898.0,
+        761.0
       ],
       "LocalID": 1,
-      "Name": "Pick up rocks",
+      "Name": "",
       "OutputPins": [
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 2
-        },
         {
           "Annotation": "",
           "ClassName": "PinProperties",
@@ -81,7 +71,7 @@
             0.5,
             0.5
           ],
-          "ConnectedNodeID": 4
+          "ConnectedNodeID": 10
         },
         {
           "Annotation": "",
@@ -92,6 +82,16 @@
             0.5
           ],
           "ConnectedNodeID": 5
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 11
         }
       ],
       "TextColour": [
@@ -108,12 +108,12 @@
       ],
       "ClassName": "CanCarryMore",
       "EditorDimensions": [
-        176.0,
+        178.0,
         32.0
       ],
       "EditorPosition": [
-        555.0,
-        704.0
+        438.0,
+        439.0
       ],
       "LocalID": 2,
       "Name": "",
@@ -126,28 +126,90 @@
       ]
     },
     {
-      "AllowCloseToNest": false,
-      "AllowPickedUp": false,
-      "AntNestEntity": "@NestEntity",
+      "BgColour": [
+        0.800000011920929,
+        0.0,
+        0.0
+      ],
+      "ClassName": "InverterNode",
+      "EditorDimensions": [
+        80.0,
+        32.0
+      ],
+      "EditorPosition": [
+        488.0,
+        579.0
+      ],
+      "LocalID": 3,
+      "Name": "",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "ConnectedNodeID": 2
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
       "BgColour": [
         0.800000011920929,
         0.800000011920929,
         0.0
       ],
-      "ClassName": "FindClosestTaggedEntity",
+      "CancelIfHungry": false,
+      "CancelIfTargetPickedUp": false,
+      "ClassName": "WalkToEntity",
       "EditorDimensions": [
-        259.0,
+        119.0,
         32.0
       ],
       "EditorPosition": [
-        756.0,
-        704.0
+        999.0,
+        446.0
       ],
-      "FoundEntity": "@NearbyRock",
-      "LocalID": 3,
+      "LocalID": 5,
       "Name": "",
       "OutputPins": [],
-      "SearchTag": "RockInstance",
+      "TargetEntity": "@BuildPosition",
+      "TargetRadius": "8",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "WalkerEntity": "@OwnerEntity",
+      "WalkerRadius": "8"
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "BuildTarget": "@BuildPosition",
+      "ClassName": "FindBuildPosition",
+      "EditorDimensions": [
+        195.0,
+        32.0
+      ],
+      "EditorPosition": [
+        676.0,
+        441.0
+      ],
+      "LocalID": 10,
+      "Name": "",
+      "OutputPins": [],
+      "QueenEntity": "@AntQueenEntity",
       "TargetAnt": "@OwnerEntity",
       "TextColour": [
         0.0,
@@ -161,50 +223,20 @@
         0.800000011920929,
         0.0
       ],
-      "CancelIfHungry": false,
-      "CancelIfTargetPickedUp": true,
-      "ClassName": "WalkToEntity",
+      "ClassName": "BuildWithItems",
       "EditorDimensions": [
-        163.0,
+        182.0,
         32.0
       ],
       "EditorPosition": [
-        1041.0,
-        704.0
+        1198.0,
+        442.0
       ],
-      "LocalID": 4,
+      "LocalID": 11,
       "Name": "",
       "OutputPins": [],
-      "TargetEntity": "@NearbyRock",
-      "TargetRadius": "10",
-      "TextColour": [
-        0.0,
-        0.0,
-        1.0
-      ],
-      "WalkerEntity": "@OwnerEntity",
-      "WalkerRadius": "10"
-    },
-    {
-      "Ant": "@OwnerEntity",
-      "BgColour": [
-        0.800000011920929,
-        0.800000011920929,
-        0.0
-      ],
-      "ClassName": "PickUpItemNode",
-      "EditorDimensions": [
-        147.0,
-        32.0
-      ],
-      "EditorPosition": [
-        1238.0,
-        704.0
-      ],
-      "LocalID": 5,
-      "Name": "",
-      "OutputPins": [],
-      "PickupItem": "@NearbyRock",
+      "TargetAnt": "@OwnerEntity",
+      "TargetPosition": "@BuildPosition",
       "TextColour": [
         0.0,
         0.0,
@@ -213,5 +245,5 @@
     }
   ],
   "ClassName": "BehaviourTree",
-  "NextLocalID": 9
+  "NextLocalID": 12
 }

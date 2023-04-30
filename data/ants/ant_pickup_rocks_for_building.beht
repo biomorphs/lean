@@ -126,7 +126,7 @@
       ]
     },
     {
-      "AllowCloseToNest": false,
+      "AllowCloseToNest": true,
       "AllowPickedUp": false,
       "AntNestEntity": "@NestEntity",
       "BgColour": [

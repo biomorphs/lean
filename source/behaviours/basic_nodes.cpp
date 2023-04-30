@@ -192,6 +192,33 @@ namespace Behaviours
 	}
 
 
+	SERIALISE_BEGIN_WITH_PARENT(InverterNode, Node)
+	SERIALISE_END();
+
+	void InverterNode::Init(RunningNodeContext*, BehaviourTreeInstance& bti) const
+	{
+		InitChildren(this, bti);
+	}
+
+	RunningState InverterNode::Tick(RunningNodeContext*, BehaviourTreeInstance& bti) const
+	{
+		Node* child = bti.m_tree->FindNode(m_outputPins[0].m_connectedNodeID);
+		if (child)
+		{
+			auto result = bti.ExecuteTick(child);
+			if (result == RunningState::Running)
+			{
+				return result;
+			}
+			else
+			{
+				return result == RunningState::Success ? RunningState::Failed : RunningState::Success;
+			}
+		}
+		return RunningState::Success;
+	}
+
+
 	SERIALISE_BEGIN_WITH_PARENT(CompareFloatsNode, Node)
 	SERIALISE_PROPERTY("Value0", m_value0)
 	SERIALISE_PROPERTY("Value1", m_value1)
