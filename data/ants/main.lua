@@ -9,6 +9,7 @@ function SpawnRocks()
 		if(newTransform ~= nil) then 
 			newTransform:SetPosition(-512 + math.random(1024), 2.0, -512 + math.random(1024))
 		end
+		local newPickup = World.AddComponent_AntPickupComponent(newEntity)
 	end
 end
 
@@ -28,6 +29,7 @@ function SpawnMushrooms()
 		if(newAntFood ~= nil) then 
 			newAntFood.m_foodAmount = 10 + math.random(20)
 		end
+		local newPickup = World.AddComponent_AntPickupComponent(newEntity)
 	end
 end
 
@@ -61,6 +63,14 @@ function AntsMain(entity)
 	end
 	if(DebugGui.Button('Spawn ants')) then 
 		SpawnAnts()
+	end
+	if(DebugGui.Button('Reset')) then 
+		local rockTag = Tag.new("RockInstance")
+		local antTag = Tag.new("AntInstance")
+		local foodTag = Tag.new("AntFood")
+		World.RemoveEntitiesWithTag(rockTag)
+		World.RemoveEntitiesWithTag(antTag)
+		World.RemoveEntitiesWithTag(foodTag)
 	end
 	DebugGui.EndWindow()
 end

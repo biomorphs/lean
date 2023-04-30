@@ -182,6 +182,12 @@ namespace Behaviours
 		return true;
 	}
 
+	void BehaviourTreeSystem::DebugInstance(BehaviourTreeInstance* ptr)
+	{
+		m_debuggingInstance = ptr;
+		m_debuggerEnabled = ptr != nullptr;
+	}
+
 	bool BehaviourTreeSystem::Tick(float timeDelta)
 	{
 		SDE_PROF_EVENT();

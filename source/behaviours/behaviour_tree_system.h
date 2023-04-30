@@ -24,6 +24,7 @@ namespace Behaviours
 		void DestroyInstance(BehaviourTreeInstance* instance);
 		void OnTreeModified(std::string_view path);	// called from editor if a tree is saved
 		void RegisterNodeType(std::string_view typestr, std::function<std::unique_ptr<Node>()> factory);
+		void DebugInstance(BehaviourTreeInstance* ptr);
 	private:
 		BehaviourTree* LoadTree(std::string_view path);
 		struct NodeFactory

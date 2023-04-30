@@ -256,6 +256,16 @@ uint32_t EntitySystem::ShowInspector(const std::vector<uint32_t>& entities, bool
 	return entityToDelete;
 }
 
+void EntitySystem::RemoveEntitiesWithTag(Engine::Tag tag)
+{
+	m_world->ForEachComponent<Tags>([&](Tags& tagCmp, EntityHandle e) {
+		if(tagCmp.ContainsTag(tag))
+		{
+			m_world->RemoveEntity(e);
+		}
+	});
+}
+
 EntityHandle EntitySystem::GetFirstEntityWithTag(Engine::Tag tag)
 {
 	// Todo, searches entire list each time, ForEachComponent needs early out support 
@@ -309,6 +319,9 @@ bool EntitySystem::PreInit()
 	};
 	world["CloneEntity"] = [this](EntityHandle e) {
 		return CloneEntity(e);
+	};
+	world["RemoveEntitiesWithTag"] = [this](Engine::Tag t) {
+		RemoveEntitiesWithTag(t);
 	};
 
 	return true;

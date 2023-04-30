@@ -40,6 +40,7 @@ public:
 
 	std::string GetEntityNameWithTags(EntityHandle e) const;
 	EntityHandle GetFirstEntityWithTag(Engine::Tag tag);
+	void RemoveEntitiesWithTag(Engine::Tag tag);
 
 private:
 	void ShowStats();

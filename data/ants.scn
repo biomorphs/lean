@@ -4,6 +4,18 @@
       "Components": [
         {
           "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Global Settings"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
             "ClassName": "EnvironmentSettings",
             "ClearColour": [
               0.034313738346099854,
@@ -17,44 +29,12 @@
             ]
           },
           "Type": "EnvironmentSettings"
-        },
-        {
-          "Data": {
-            "ClassName": "Tags",
-            "Tags": [
-              {
-                "ClassName": "Tag",
-                "String": "Global Settings"
-              }
-            ]
-          },
-          "Type": "Tags"
         }
       ],
       "ID": 0
     },
     {
       "Components": [
-        {
-          "Data": {
-            "ClassName": "Model",
-            "Model": {
-              "ClassName": "ModelHandle",
-              "Path": "cube2.fbx"
-            },
-            "PartMaterialsEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 1
-            },
-            "Shader": {
-              "ClassName": "ShaderHandle",
-              "FS": "simplediffuse.fs",
-              "Name": "diffuse",
-              "VSCS": "simplediffuse.vs"
-            }
-          },
-          "Type": "Model"
-        },
         {
           "Data": {
             "BoxColliders": [],
@@ -139,6 +119,26 @@
             ]
           },
           "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "cube2.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 1
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
         },
         {
           "Data": {
@@ -243,26 +243,6 @@
       "Components": [
         {
           "Data": {
-            "ClassName": "Model",
-            "Model": {
-              "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Ant_lowpoly.fbx"
-            },
-            "PartMaterialsEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4
-            },
-            "Shader": {
-              "ClassName": "ShaderHandle",
-              "FS": "simplediffuse.fs",
-              "Name": "diffuse",
-              "VSCS": "simplediffuse.vs"
-            }
-          },
-          "Type": "Model"
-        },
-        {
-          "Data": {
             "BoxColliders": [
               {
                 "ClassName": "BoxCollider",
@@ -348,6 +328,26 @@
         },
         {
           "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Ant_lowpoly.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
             "ClassName": "Transform",
             "Orientation": [
               0.0,
@@ -377,26 +377,6 @@
     },
     {
       "Components": [
-        {
-          "Data": {
-            "ClassName": "Model",
-            "Model": {
-              "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\mushroom_redTall.fbx"
-            },
-            "PartMaterialsEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 5
-            },
-            "Shader": {
-              "ClassName": "ShaderHandle",
-              "FS": "simplediffuse.fs",
-              "Name": "diffuse",
-              "VSCS": "simplediffuse.vs"
-            }
-          },
-          "Type": "Model"
-        },
         {
           "Data": {
             "ClassName": "ModelPartMaterials",
@@ -489,6 +469,26 @@
         },
         {
           "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\mushroom_redTall.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 5
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
             "ClassName": "Transform",
             "Orientation": [
               0.0,
@@ -518,26 +518,6 @@
     },
     {
       "Components": [
-        {
-          "Data": {
-            "ClassName": "Model",
-            "Model": {
-              "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\rock_smallC.fbx"
-            },
-            "PartMaterialsEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4294967295
-            },
-            "Shader": {
-              "ClassName": "ShaderHandle",
-              "FS": "simplediffuse.fs",
-              "Name": "diffuse",
-              "VSCS": "simplediffuse.vs"
-            }
-          },
-          "Type": "Model"
-        },
         {
           "Data": {
             "BoxColliders": [
@@ -582,21 +562,41 @@
         },
         {
           "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\kenney_natureKit_2.1\\Models\\FBX format\\rock_smallC.fbx"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4294967295
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
             "ClassName": "Transform",
             "Orientation": [
-              -2.8434297405510733e-07,
-              -2.5057148377527483e-05,
-              -6.457009362748067e-07,
-              1.0
+              0.039170511066913605,
+              -0.3648239076137543,
+              0.049130164086818695,
+              0.928954005241394
             ],
             "Parent": {
               "ClassName": "EntityHandle",
               "ID": 4294967295
             },
             "Position": [
-              -1000.0,
-              1.1149977445602417,
-              -0.00418439693748951
+              -1003.9515380859375,
+              0.04952947795391083,
+              -4.350151538848877
             ],
             "Scale": [
               2.0,
@@ -613,14 +613,6 @@
       "Components": [
         {
           "Data": {
-            "ClassName": "Script",
-            "ScriptFile": "E:\\Git\\lean\\data\\ants\\main.lua",
-            "ScriptText": ""
-          },
-          "Type": "Script"
-        },
-        {
-          "Data": {
             "ClassName": "Tags",
             "Tags": [
               {
@@ -630,6 +622,14 @@
             ]
           },
           "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Script",
+            "ScriptFile": "E:\\Git\\lean\\data\\ants\\main.lua",
+            "ScriptText": ""
+          },
+          "Type": "Script"
         }
       ],
       "ID": 7
