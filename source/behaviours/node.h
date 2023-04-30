@@ -29,6 +29,8 @@ namespace Behaviours
 
 	// used as a base to allow nodes to provide custom execution context
 	class RunningNodeContext {
+	public:
+		virtual ~RunningNodeContext() {}
 	};
 	class BehaviourTreeInstance;
 	class Blackboard;

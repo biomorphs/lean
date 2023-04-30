@@ -125,4 +125,23 @@ namespace Behaviours
 		std::string m_value1;
 		ComparisonType m_comparison = ComparisonType::LessThan;
 	};
+
+	class RunTreeNode : public Node
+	{
+	public:
+		virtual SERIALISED_CLASS();
+		RunTreeNode()
+		{
+			m_bgColour = { 0.8f,0.8f,0.0f };
+			m_textColour = { 1,1,1 };
+			m_editorDimensions = { 120, 32 };
+		}
+		virtual std::string_view GetTypeName() const { return "RunBehaviourTree"; }
+		virtual std::unique_ptr<RunningNodeContext> PrepareContext() const;
+		virtual void Init(RunningNodeContext*, BehaviourTreeInstance&) const;
+		virtual RunningState Tick(RunningNodeContext*, BehaviourTreeInstance&) const;
+		void ShowEditorGui(Engine::DebugGuiSystem&);
+
+		std::string m_treePath;
+	};
 }

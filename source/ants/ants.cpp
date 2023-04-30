@@ -40,6 +40,14 @@ COMPONENT_INSPECTOR_IMPL(AntFoodComponent)
 class AntComponent
 {
 public:
+	virtual ~AntComponent()
+	{
+		if (m_treeInstance != nullptr)
+		{
+			auto behSys = Engine::GetSystem<Behaviours::BehaviourTreeSystem>("Behaviours");
+			behSys->DestroyInstance(m_treeInstance);
+		}
+	}
 	COMPONENT(AntComponent);
 	COMPONENT_INSPECTOR();
 	void SetBehaviourTree(std::string p) { m_behaviourTree = p; }
@@ -60,7 +68,7 @@ public:
 	bool GetIsHungry() { return m_energy <= m_minEnergyForHunger; }
 
 	std::string m_behaviourTree = "";
-	Behaviours::BehaviourTreeInstance* m_treeInstance;
+	Behaviours::BehaviourTreeInstance* m_treeInstance = nullptr;
 	float m_energy = 100.0f;
 	float m_minEnergyForHunger = 50.0f;
 	float m_walkingEnergyUsage = 0.03f;

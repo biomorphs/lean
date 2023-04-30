@@ -17,6 +17,7 @@ namespace Behaviours
 		Node* FindNode(uint16_t localID) const;
 		Node* FindConnectedNode(uint16_t localID) const;	// find a node with a output connection to this one
 		Node* GetRoot() const;
+		void RemoveConnectionsToNode(uint16_t nodeToRemove);
 
 		enum class AddConnectionResult : int
 		{

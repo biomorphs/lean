@@ -1,6 +1,8 @@
 #include "basic_nodes.h"
 #include "behaviour_tree.h"
 #include "behaviour_tree_instance.h"
+#include "behaviour_tree_system.h"
+#include "engine/system_manager.h"
 #include "engine/debug_gui_system.h"
 
 namespace Behaviours
@@ -237,5 +239,62 @@ namespace Behaviours
 		default:
 			return RunningState::Failed;
 		}
+	}
+
+	SERIALISE_BEGIN_WITH_PARENT(RunTreeNode, Node)
+		SERIALISE_PROPERTY("Tree", m_treePath)
+	SERIALISE_END();
+
+	void RunTreeNode::ShowEditorGui(Engine::DebugGuiSystem& dbgGui)
+	{
+		dbgGui.TextInput("Tree Path", m_treePath);
+	}
+
+	struct RunTreeContext : public RunningNodeContext
+	{
+		virtual ~RunTreeContext() {
+			auto behSys = Engine::GetSystem<Behaviours::BehaviourTreeSystem>("Behaviours");
+			behSys->DestroyInstance(m_treeInstance);
+		}
+		BehaviourTreeInstance* m_treeInstance = nullptr;
+	};
+	std::unique_ptr<RunningNodeContext> RunTreeNode::PrepareContext() const
+	{
+		return std::make_unique<RunTreeContext>();
+	}
+
+	void RunTreeNode::Init(RunningNodeContext* ctx, BehaviourTreeInstance& bti) const
+	{
+		RunTreeContext* rtCtx = static_cast<RunTreeContext*>(ctx);
+		InitChildren(this, bti);
+		if (m_treePath != "")
+		{
+			if (rtCtx->m_treeInstance == nullptr)
+			{
+				auto behSys = Engine::GetSystem<Behaviours::BehaviourTreeSystem>("Behaviours");
+				rtCtx->m_treeInstance = behSys->CreateTreeInstance(m_treePath);
+			}
+		}
+		if (rtCtx->m_treeInstance != nullptr)
+		{
+			rtCtx->m_treeInstance->Reset(false);
+		}
+	}
+
+	RunningState RunTreeNode::Tick(RunningNodeContext* ctx, BehaviourTreeInstance& bti) const
+	{
+		if (m_treePath == "")
+		{
+			return RunningState::Failed;
+		}
+		RunTreeContext* rtCtx = static_cast<RunTreeContext*>(ctx);
+		if (rtCtx->m_treeInstance)
+		{
+			rtCtx->m_treeInstance->m_bb = bti.m_bb;
+			rtCtx->m_treeInstance->Tick(false);
+			bti.m_bb = rtCtx->m_treeInstance->m_bb;		// gross, do this properly
+			return rtCtx->m_treeInstance->m_nodeContexts[0].m_runningState;		// root node running state
+		}
+		return RunningState::Failed;
 	}
 }

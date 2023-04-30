@@ -8,7 +8,7 @@ namespace Behaviours
 		: m_tree(bt)
 	{
 		SDE_PROF_EVENT();
-		m_nodeContexts.resize(bt->m_allNodes.size());
+		Reset(false);
 	}
 
 	void BehaviourTreeInstance::Reset(bool clearBlackboard)
@@ -18,7 +18,10 @@ namespace Behaviours
 		for (int i = 0; i < m_nodeContexts.size(); i++)
 		{
 			m_nodeContexts[i].m_runningState = RunningState::NotRan;
-			m_nodeContexts[i].m_execContext = m_tree->m_allNodes[i]->PrepareContext();
+			if (m_nodeContexts[i].m_execContext == nullptr)
+			{
+				m_nodeContexts[i].m_execContext = m_tree->m_allNodes[i]->PrepareContext();
+			}
 			m_nodeContexts[i].m_initCount = 0;
 			m_nodeContexts[i].m_tickCount = 0;
 		}

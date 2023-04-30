@@ -232,7 +232,10 @@ void LinearComponentStorage<ComponentType>::Destroy(EntityHandle owner)
 
 		std::iter_swap(m_owners.begin() + currentIndex, m_owners.end() - 1);
 		m_owners.pop_back();
-		std::iter_swap(m_components.begin() + currentIndex, m_components.end() - 1);
+		if (m_components.begin() + currentIndex != m_components.end() - 1)
+		{
+			std::iter_swap(m_components.begin() + currentIndex, m_components.end() - 1);
+		}
 		m_components.pop_back();
 
 		// we may want to be more fancy and only invalidate particular handles, but for now this works

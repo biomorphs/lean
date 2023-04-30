@@ -49,6 +49,20 @@ namespace Behaviours
 		}
 	}
 
+	void BehaviourTree::RemoveConnectionsToNode(uint16_t nodeToRemove)
+	{
+		for (auto& n : m_allNodes)
+		{
+			for (int pin = 0; pin < n->m_outputPins.size(); ++pin)
+			{
+				if (n->m_outputPins[pin].m_connectedNodeID == nodeToRemove)
+				{
+					n->m_outputPins[pin].m_connectedNodeID = -1;
+				}
+			}
+		}
+	}
+
 	Node* BehaviourTree::FindConnectedNode(uint16_t localID) const
 	{
 		SDE_PROF_EVENT();

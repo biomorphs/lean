@@ -35,6 +35,7 @@ namespace Behaviours
 		bool m_debuggerEnabled = false;
 		BehaviourTreeInstance* m_debuggingInstance = nullptr;
 		std::vector<std::unique_ptr<BehaviourTreeInstance>> m_activeInstances;
+		std::vector<BehaviourTreeInstance*> m_instancesToDestroy;
 		std::vector<NodeFactory> m_nodeFactories;
 		std::vector<std::string> m_nodeFactoryNames;
 		std::unordered_map<std::string, std::unique_ptr<BehaviourTree>> m_loadedTrees;

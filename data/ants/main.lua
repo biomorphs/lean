@@ -35,7 +35,7 @@ end
 
 function SpawnAnts()
 	local template = World.GetFirstEntityWithTag(Tag.new("AntTemplate"))
-	for i=1,100 do 
+	for i=1,1 do 
 		local newEntity = World.CloneEntity(template)
 		local newTransform = World.GetComponent_Transform(newEntity)
 		local newTags = World.GetComponent_Tags(newEntity)

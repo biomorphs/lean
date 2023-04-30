@@ -141,6 +141,14 @@ namespace Behaviours
 				{
 					m_currentEditingNode = n;
 				}
+				dbgGui->SameLine();
+				std::string buttonStr = std::string("x##") + std::to_string(n);
+				if (dbgGui->Button(buttonStr.c_str()))
+				{
+					m_currentEditingTree->RemoveConnectionsToNode(m_currentEditingTree->m_allNodes[n]->m_localID);
+					m_currentEditingTree->m_allNodes.erase(m_currentEditingTree->m_allNodes.begin() + n);
+					break;
+				}
 			}
 			dbgGui->Separator();
 			int currentVal = 0;

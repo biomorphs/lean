@@ -99,16 +99,13 @@ namespace Behaviours
 	void BehaviourTreeSystem::DestroyInstance(BehaviourTreeInstance* instance)
 	{
 		SDE_PROF_EVENT();
-		auto found = std::find_if(m_activeInstances.begin(), m_activeInstances.end(), [instance](const std::unique_ptr<BehaviourTreeInstance>& ti) {
-			return ti.get() == instance;
-		});
-		if (found != m_activeInstances.end())
+		if (instance)
 		{
 			if (m_debuggingInstance == instance)
 			{
 				m_debuggingInstance = nullptr;
 			}
-			m_activeInstances.erase(found);
+			m_instancesToDestroy.push_back(instance);
 		}
 	}
 
@@ -174,6 +171,12 @@ namespace Behaviours
 			}
 		});
 
+		m_nodeFactories.push_back({
+			"RunTree", []() {
+				return std::make_unique<RunTreeNode>();
+			}
+		});
+
 		for (int f = 0; f < m_nodeFactories.size(); ++f)
 		{
 			m_nodeFactoryNames.push_back(m_nodeFactories[f].m_nodeName);
@@ -224,12 +227,26 @@ namespace Behaviours
 			}
 		}
 
+		auto toDestroy = std::move(m_instancesToDestroy);
+		for (auto& inst : toDestroy)
+		{
+			auto found = std::find_if(m_activeInstances.begin(), m_activeInstances.end(), [inst](const std::unique_ptr<BehaviourTreeInstance>& ti) {
+				return ti.get() == inst;
+				});
+			if (found != m_activeInstances.end())
+			{
+				m_activeInstances.erase(found);
+			}
+		}
+
 		return true;
 	}
 
 	void BehaviourTreeSystem::Shutdown()
 	{
 		SDE_PROF_EVENT();
+		m_activeInstances.clear();
+		m_loadedTrees.clear();
 	}
 
 }

@@ -8,15 +8,15 @@
       ],
       "ClassName": "RootNode",
       "EditorDimensions": [
-        104.0,
+        60.0,
         32.0
       ],
       "EditorPosition": [
-        772.0,
-        965.0
+        925.0,
+        910.0
       ],
       "LocalID": 0,
-      "Name": "Node",
+      "Name": "",
       "OutputPins": [
         {
           "Annotation": "",
@@ -37,21 +37,21 @@
     },
     {
       "BgColour": [
-        0.30000001192092896,
-        0.4000000059604645,
-        0.800000011920929
+        0.5,
+        0.5,
+        0.5
       ],
-      "ClassName": "SelectorNode",
+      "ClassName": "SequenceNode",
       "EditorDimensions": [
-        222.0,
+        228.0,
         32.0
       ],
       "EditorPosition": [
-        714.0,
-        883.0
+        843.0,
+        795.0
       ],
       "LocalID": 1,
-      "Name": "Top Level Tasks",
+      "Name": "ProcessHunger",
       "OutputPins": [
         {
           "Annotation": "",
@@ -61,7 +61,7 @@
             0.5,
             0.5
           ],
-          "ConnectedNodeID": 7
+          "ConnectedNodeID": 2
         },
         {
           "Annotation": "",
@@ -71,7 +71,42 @@
             0.5,
             0.5
           ],
-          "ConnectedNodeID": 20
+          "ConnectedNodeID": 5
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "ClassName": "SequenceNode",
+      "EditorDimensions": [
+        210.0,
+        32.0
+      ],
+      "EditorPosition": [
+        507.0,
+        667.0
+      ],
+      "LocalID": 2,
+      "Name": "Am I Hungry?",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 3
         },
         {
           "Annotation": "",
@@ -92,39 +127,56 @@
     },
     {
       "BgColour": [
-        1.0,
-        0.4411763548851013,
+        0.800000011920929,
+        0.800000011920929,
         0.0
       ],
-      "ClassName": "AntIdleNode",
+      "ClassName": "GetAntHungerNode",
       "EditorDimensions": [
-        176.0,
+        147.0,
         32.0
       ],
       "EditorPosition": [
-        1203.0,
-        757.0
+        408.0,
+        549.0
       ],
-      "LocalID": 4,
-      "Name": "DoIdle",
-      "OutputPins": [
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "ConnectedNodeID": 65535
-        }
-      ],
+      "LocalID": 3,
+      "Name": "",
+      "OutputPins": [],
       "TargetEntityInBB": "@OwnerEntity",
+      "TargetHungerInBB": "@CurrentHunger",
       "TextColour": [
         0.0,
-        0.1190645694732666,
+        0.0,
         1.0
       ]
+    },
+    {
+      "BgColour": [
+        0.0,
+        0.6000000238418579,
+        0.0
+      ],
+      "ClassName": "CompareFloatsNode",
+      "Comparison": 2,
+      "EditorDimensions": [
+        237.0,
+        32.0
+      ],
+      "EditorPosition": [
+        579.0,
+        549.0
+      ],
+      "LocalID": 4,
+      "Name": "Hunger > 0",
+      "OutputPins": [],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Value0": "@CurrentHunger",
+      "Value1": "0.0"
     },
     {
       "BgColour": [
@@ -134,62 +186,106 @@
       ],
       "ClassName": "SequenceNode",
       "EditorDimensions": [
-        230.0,
+        277.0,
         32.0
       ],
       "EditorPosition": [
-        243.0,
-        763.0
+        1146.0,
+        665.0
+      ],
+      "LocalID": 5,
+      "Name": "Eat something nearby",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 6
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 7
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 8
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "FindClosestFood",
+      "EditorDimensions": [
+        200.0,
+        32.0
+      ],
+      "EditorPosition": [
+        987.0,
+        551.0
+      ],
+      "FoundEntity": "@NearbyFood",
+      "LocalID": 6,
+      "Name": "",
+      "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "WalkToEntity",
+      "EditorDimensions": [
+        167.0,
+        32.0
+      ],
+      "EditorPosition": [
+        1236.0,
+        552.0
       ],
       "LocalID": 7,
-      "Name": "Process Hunger",
-      "OutputPins": [
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 19
-        },
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 65535
-        },
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 65535
-        },
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 65535
-        }
-      ],
+      "Name": "",
+      "OutputPins": [],
+      "TargetEntity": "@NearbyFood",
+      "TargetRadius": "4",
       "TextColour": [
-        1.0,
-        1.0,
+        0.0,
+        0.0,
         1.0
-      ]
+      ],
+      "WalkerEntity": "@OwnerEntity",
+      "WalkerRadius": "4"
     },
     {
       "BgColour": [
@@ -197,86 +293,27 @@
         0.800000011920929,
         0.0
       ],
-      "ClassName": "RunTreeNode",
+      "ClassName": "EatUntilFullNode",
       "EditorDimensions": [
-        349.0,
+        151.0,
         32.0
       ],
       "EditorPosition": [
-        182.0,
-        649.0
+        1457.0,
+        551.0
       ],
-      "LocalID": 19,
-      "Name": "ant_deal_with_hunter",
+      "FoodEntity": "@NearbyFood",
+      "LocalID": 8,
+      "Name": "",
       "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
       "TextColour": [
-        9.999999974752427e-07,
-        9.999899930335232e-07,
-        9.999899930335232e-07
-      ],
-      "Tree": "ants\\ant_deal_with_hunter.beht"
-    },
-    {
-      "BgColour": [
-        0.5,
-        0.5,
-        0.5
-      ],
-      "ClassName": "SequenceNode",
-      "EditorDimensions": [
-        211.0,
-        31.0
-      ],
-      "EditorPosition": [
-        719.0,
-        762.0
-      ],
-      "LocalID": 20,
-      "Name": "Carry Rocks",
-      "OutputPins": [
-        {
-          "Annotation": "",
-          "ClassName": "PinProperties",
-          "Colour": [
-            0.5,
-            0.5,
-            0.5
-          ],
-          "ConnectedNodeID": 21
-        }
-      ],
-      "TextColour": [
-        1.0,
-        1.0,
+        0.0,
+        0.0,
         1.0
       ]
-    },
-    {
-      "BgColour": [
-        0.800000011920929,
-        0.800000011920929,
-        0.0
-      ],
-      "ClassName": "RunTreeNode",
-      "EditorDimensions": [
-        373.0,
-        32.0
-      ],
-      "EditorPosition": [
-        639.0,
-        643.0
-      ],
-      "LocalID": 21,
-      "Name": "ant_pickup_nearby_rocks",
-      "OutputPins": [],
-      "TextColour": [
-        9.999999974752427e-07,
-        5.098038968753826e-07,
-        5.098038968753826e-07
-      ],
-      "Tree": "ants/ant_pickup_nearby_rocks.beht"
     }
   ],
   "ClassName": "BehaviourTree",
-  "NextLocalID": 22
+  "NextLocalID": 9
 }

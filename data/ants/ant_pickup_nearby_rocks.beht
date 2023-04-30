@@ -1,0 +1,213 @@
+{
+  "AllNodes": [
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.0,
+        0.0
+      ],
+      "ClassName": "RootNode",
+      "EditorDimensions": [
+        60.0,
+        32.0
+      ],
+      "EditorPosition": [
+        953.0,
+        909.0
+      ],
+      "LocalID": 0,
+      "Name": "",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "ConnectedNodeID": 1
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "ClassName": "SequenceNode",
+      "EditorDimensions": [
+        207.0,
+        32.0
+      ],
+      "EditorPosition": [
+        885.0,
+        813.0
+      ],
+      "LocalID": 1,
+      "Name": "Pick up rocks",
+      "OutputPins": [
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 2
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 3
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 4
+        },
+        {
+          "Annotation": "",
+          "ClassName": "PinProperties",
+          "Colour": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "ConnectedNodeID": 5
+        }
+      ],
+      "TextColour": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "CanCarryMore",
+      "EditorDimensions": [
+        176.0,
+        32.0
+      ],
+      "EditorPosition": [
+        555.0,
+        704.0
+      ],
+      "LocalID": 2,
+      "Name": "",
+      "OutputPins": [],
+      "TargetAnt": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "AllowPickedUp": false,
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "FindClosestTaggedEntity",
+      "EditorDimensions": [
+        259.0,
+        32.0
+      ],
+      "EditorPosition": [
+        756.0,
+        704.0
+      ],
+      "FoundEntity": "@NearbyRock",
+      "LocalID": 3,
+      "Name": "",
+      "OutputPins": [],
+      "SearchTag": "RockInstance",
+      "TargetAnt": "@OwnerEntity",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "WalkToEntity",
+      "EditorDimensions": [
+        163.0,
+        32.0
+      ],
+      "EditorPosition": [
+        1044.0,
+        705.0
+      ],
+      "LocalID": 4,
+      "Name": "",
+      "OutputPins": [],
+      "TargetEntity": "@NearbyRock",
+      "TargetRadius": "10",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "WalkerEntity": "@OwnerEntity",
+      "WalkerRadius": "10"
+    },
+    {
+      "Ant": "@OwnerEntity",
+      "BgColour": [
+        0.800000011920929,
+        0.800000011920929,
+        0.0
+      ],
+      "ClassName": "PickUpItemNode",
+      "EditorDimensions": [
+        147.0,
+        32.0
+      ],
+      "EditorPosition": [
+        1238.0,
+        704.0
+      ],
+      "LocalID": 5,
+      "Name": "",
+      "OutputPins": [],
+      "PickupItem": "@NearbyRock",
+      "TextColour": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "ClassName": "BehaviourTree",
+  "NextLocalID": 6
+}
