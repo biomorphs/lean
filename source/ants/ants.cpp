@@ -473,8 +473,10 @@ namespace Behaviours
 					// glm::vec4 lineColour = targetCmp != nullptr ? glm::vec4{ 1, 1, 0, 1 } : glm::vec4{ 0, 1,1,1};
 					// graphics->DebugRenderer().DrawLine(walkerCmp->GetPosition() + glm::vec3{0.0, 10.0f, 0.0}, targetPosition + glm::vec3{0.0, 10.0f, 0.0}, lineColour);
 					glm::vec3 dir = glm::normalize((targetPosition - walkerCmp->GetPosition()) * glm::vec3(1, 0, 1));
+					auto lookTransform = glm::quatLookAt(dir, glm::vec3(0.0f, 1.0f, 0.0f));
 					float weightSpeedMul = 1.0f - ((float)targetAntCmp->m_carriedItems.size() / (float)targetAntCmp->m_maxHeldItems);
 					walkerCmp->SetPosition(walkerCmp->GetPosition() + dir * (24.0f + weightSpeedMul * 32.0f) * 0.016f);		// todo walk speed and delta
+					walkerCmp->SetOrientation(lookTransform);
 					targetAntCmp->m_energy = glm::max(0.0f, targetAntCmp->m_energy - targetAntCmp->m_walkingEnergyUsage);
 					return RunningState::Running;
 				}

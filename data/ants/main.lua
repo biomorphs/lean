@@ -1,3 +1,10 @@
+-- todo 
+-- rocks should have a separate component
+-- (avoids searching all tagged objects)
+
+local collectorSpawnCount = 1
+local builderSpawnCount = 1
+
 function SpawnRocks()
 	local template = World.GetFirstEntityWithTag(Tag.new("RockSmall"))
 	for i=1,1000 do 
@@ -35,7 +42,7 @@ end
 
 function SpawnCollectorAnts()
 	local template = World.GetFirstEntityWithTag(Tag.new("AntTemplate"))
-	for i=1,100 do 
+	for i=1,collectorSpawnCount do 
 		local newEntity = World.CloneEntity(template)
 		local newTransform = World.GetComponent_Transform(newEntity)
 		local newTags = World.GetComponent_Tags(newEntity)
@@ -55,7 +62,7 @@ end
 
 function SpawnBuilderAnts()
 	local template = World.GetFirstEntityWithTag(Tag.new("AntTemplate"))
-	for i=1,20 do 
+	for i=1,builderSpawnCount do 
 		local newEntity = World.CloneEntity(template)
 		local newTransform = World.GetComponent_Transform(newEntity)
 		local newTags = World.GetComponent_Tags(newEntity)
@@ -82,9 +89,11 @@ function AntsMain(entity)
 	if(DebugGui.Button('Spawn mushrooms')) then 
 		SpawnMushrooms()
 	end
+	collectorSpawnCount = DebugGui.DragInt('Collector spawn count', collectorSpawnCount, 1, 1, 1000)
 	if(DebugGui.Button('Spawn collector ants')) then 
 		SpawnCollectorAnts()
 	end
+	builderSpawnCount = DebugGui.DragInt('Builder spawn count', builderSpawnCount, 1, 1, 1000)
 	if(DebugGui.Button('Spawn builder ants')) then 
 		SpawnBuilderAnts()
 	end

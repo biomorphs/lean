@@ -186,8 +186,8 @@
             "Distance": 1631.0,
             "ShadowBias": 0.0010000000474974513,
             "ShadowMapSize": [
-              2048,
-              2048
+              4096,
+              4096
             ],
             "ShadowOrthoScale": 1105.0,
             "SpotAngles": [
