@@ -6,9 +6,9 @@ in vec2 vs_out_position;
 
 layout(std140, binding = 1) uniform SSAO_HemisphereSamples
 {
-	vec3 Samples[32];
+	vec4 Samples[32];
 };
-const int SSAO_KernelSize = 16;
+const int SSAO_KernelSize = 32;
 uniform float SSAO_Radius = 8.0f;
 uniform float SSAO_Bias = 0.2;
 uniform float SSAO_RangeMulti = 0.5;
@@ -36,7 +36,7 @@ void main()
 	for(int i=0; i < SSAO_KernelSize; i++)
 	{
 		// jitter position on hemisphere around normal in world space
-		vec3 samplePosition = TBN * Samples[i];
+		vec3 samplePosition = TBN * Samples[i].xyz;
 		samplePosition = wsPos.xyz + samplePosition * SSAO_Radius;
 		
 		// transform pos to screen space
@@ -44,7 +44,7 @@ void main()
 		posScreenSpace.xyz /= posScreenSpace.w;
 		posScreenSpace.xyz = posScreenSpace.xyz * 0.5 + 0.5;	// back to 0-1 for sampling texture 
 		
-		if(posScreenSpace.x >= 0.0 && posScreenSpace.x <= 1.0f && posScreenSpace.y >= 0.0 && posScreenSpace.y < 1.0f)
+		if(posScreenSpace.x >= 0.0 && posScreenSpace.x <= 1.0f && posScreenSpace.y >= 0.0 && posScreenSpace.y <= 1.0f)
 		{
 			// calculate occlusion
 			float sampleDepth = texture(GBuffer_Pos, posScreenSpace.xy).w;
