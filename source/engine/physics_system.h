@@ -87,8 +87,6 @@ namespace Engine
 		DebugGuiSystem* m_debugGuiSystem = nullptr;
 		Engine::ScriptSystem* m_scriptSystem = nullptr;
 
-		float m_timeAccumulator = 0.0f;
-		float m_timeStep = 1.0f / 60.0f;	// fixed time step for now
 		bool m_hasTicked = false;
 		bool m_simEnabled = true;
 		glm::vec3 m_globalGravity = { 0,-9.81f,0 };	// keep track of the global gravity value

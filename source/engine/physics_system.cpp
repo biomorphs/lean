@@ -2,6 +2,7 @@
 #include "debug_gui_system.h"
 #include "job_system.h"
 #include "graphics_system.h"
+#include "time_system.h"
 #include "debug_render.h"
 #include "components/component_physics.h"
 #include "components/component_transform.h"
@@ -474,12 +475,11 @@ namespace Engine
 			}
 		});
 
-		m_timeAccumulator += timeDelta;
-		if (m_timeAccumulator >= m_timeStep && m_simEnabled)
+		if (m_simEnabled)
 		{
+			// Do not write to any physics objects until UpdateEntities has ticked!
 			SDE_PROF_EVENT("Simulate");
-			m_timeAccumulator -= m_timeStep;
-			m_scene->simulate(m_timeStep);	// Do not write to any physics objects until UpdateEntities has ticked!
+			m_scene->simulate(Engine::GetSystem<Engine::TimeSystem>("Time")->GetFixedUpdateDelta());	
 			m_hasTicked = true;
 		}
 
