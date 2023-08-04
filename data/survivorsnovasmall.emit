@@ -43,7 +43,7 @@
     {
       "AttachToParticle": true,
       "ClassName": "GenerateSpawnEmitter",
-      "EmitterFile": "E:\\Git\\lean\\data\\survivorsnovasmalltrail.emit"
+      "EmitterFile": "survivorsnovasmalltrail.emit"
     }
   ],
   "LifetimeBehaviours": [],

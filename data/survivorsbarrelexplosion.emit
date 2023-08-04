@@ -48,7 +48,7 @@
       "ClassName": "MeshRenderer",
       "Model": {
         "ClassName": "ModelHandle",
-        "Path": "E:\\Git\\lean\\data\\cube2.fbx"
+        "Path": "cube2.fbx"
       },
       "Shader": {
         "ClassName": "ShaderHandle",

@@ -216,7 +216,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+              "Path": "buddha\\buddha.obj"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -237,7 +237,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+                "String": "buddha\\buddha.obj"
               }
             ]
           },
@@ -279,7 +279,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+              "Path": "buddha\\buddha.obj"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -300,7 +300,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+                "String": "buddha\\buddha.obj"
               }
             ]
           },
@@ -342,7 +342,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+              "Path": "buddha\\buddha.obj"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -363,7 +363,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+                "String": "buddha\\buddha.obj"
               }
             ]
           },
@@ -405,7 +405,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+              "Path": "buddha\\buddha.obj"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -426,7 +426,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+                "String": "buddha\\buddha.obj"
               }
             ]
           },
@@ -468,7 +468,7 @@
             "ClassName": "Model",
             "Model": {
               "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+              "Path": "buddha\\buddha.obj"
             },
             "PartMaterialsEntity": {
               "ClassName": "EntityHandle",
@@ -489,7 +489,7 @@
             "Tags": [
               {
                 "ClassName": "Tag",
-                "String": "E:\\Git\\lean\\data\\buddha\\buddha.obj"
+                "String": "buddha\\buddha.obj"
               }
             ]
           },
@@ -529,7 +529,7 @@
         {
           "Data": {
             "ClassName": "ComponentParticleEmitter",
-            "EmitterFile": "E:\\Git\\lean\\data\\test1multi.emit"
+            "EmitterFile": "test1multi.emit"
           },
           "Type": "ComponentParticleEmitter"
         },

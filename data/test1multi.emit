@@ -25,7 +25,7 @@
     {
       "AttachToParticle": false,
       "ClassName": "GenerateSpawnEmitter",
-      "EmitterFile": "E:\\Git\\lean\\data\\test1firework.emit"
+      "EmitterFile": "test1firework.emit"
     },
     {
       "ClassName": "GenerateRandomLifetime",

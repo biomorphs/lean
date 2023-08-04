@@ -41,7 +41,7 @@
     {
       "AttachToParticle": true,
       "ClassName": "GenerateSpawnEmitter",
-      "EmitterFile": "E:\\Git\\lean\\data\\test1trail.emit"
+      "EmitterFile": "test1trail.emit"
     }
   ],
   "LifetimeBehaviours": [
@@ -90,7 +90,7 @@
       "AttachToParticle": false,
       "ClassName": "UpdateSpawnEmitter",
       "EmitterCount": 1,
-      "EmitterFile": "E:\\Git\\lean\\data\\test1explode.emit",
+      "EmitterFile": "test1explode.emit",
       "SpawnEndAge": 4.0320000648498535,
       "SpawnFrequency": 0.01600000075995922,
       "SpawnStartAge": 4.0
