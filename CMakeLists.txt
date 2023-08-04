@@ -135,6 +135,8 @@ target_compile_options(ImguiLib PRIVATE ${CommonCompilerOptions})
 
 add_library(Engine STATIC)
 set(ENGINE_SOURCES
+	source/engine/frame_graph.h
+	source/engine/frame_graph.cpp
 	source/engine/2d_render_context.h
 	source/engine/2d_render_context.cpp
 	source/engine/material_helpers.h

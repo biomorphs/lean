@@ -55,7 +55,7 @@ namespace Engine
 	private:
 		bool GenerateHemisphereSamples();
 		bool GenerateSampleNoise();
-		static constexpr int c_totalHemisphereSamples = 16;
+		static constexpr int c_totalHemisphereSamples = 32;
 		static constexpr int c_sampleNoiseDimensions = 4;
 		static constexpr int c_maxSSAOBuffers = 2;
 		float m_aoRadius = 8.0f;

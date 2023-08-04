@@ -23,9 +23,12 @@ namespace Engine
 		return s_instance;
 	}
 
-	static SystemManager* SetInstance()
+	void SystemManager::RegisterTickFn(std::string_view name, std::function<bool()> fn)
 	{
-
+		TickFnRecord newRecord;
+		newRecord.m_name = name;
+		newRecord.m_fn = fn;
+		m_tickFns.insert({ Core::StringHashing::GetHash(newRecord.m_name.c_str()), newRecord });
 	}
 
 	void SystemManager::RegisterSystem(const char* systemName, System* theSystem)
@@ -35,6 +38,10 @@ namespace Engine
 		assert(m_systemMap.find(nameHash) == m_systemMap.end());
 		m_systems.push_back({ systemName, theSystem });
 		m_systemMap.insert(SystemPair(nameHash, theSystem));
+		std::string tickFnName = std::string(systemName) + "::Tick";
+		RegisterTickFn(tickFnName, [theSystem]() {
+			return theSystem->Tick(1.0/120.0);
+		});
 	}
 
 	System* SystemManager::GetSystem(const char* systemName)
@@ -84,6 +91,24 @@ namespace Engine
 		}
 
 		return true;
+	}
+
+	std::function<bool()> SystemManager::GetTickFn(std::string name)
+	{
+		std::function<bool()> foundFn = []() {
+			SDE_LOG("Tick fn not found");
+			return true;
+		};
+		auto found = m_tickFns.find(Core::StringHashing::GetHash(name.c_str()));
+		if (found != m_tickFns.end())
+		{
+			foundFn = found->second.m_fn;
+		}
+		else
+		{
+			SDE_LOG("Tick fn '%s' not found", name.c_str());
+		}
+		return foundFn;
 	}
 	
 	bool SystemManager::Tick(float timeDelta)

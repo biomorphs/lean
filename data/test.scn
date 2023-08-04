@@ -4,6 +4,18 @@
       "Components": [
         {
           "Data": {
+            "ClassName": "Tags",
+            "Tags": [
+              {
+                "ClassName": "Tag",
+                "String": "Global Settings"
+              }
+            ]
+          },
+          "Type": "Tags"
+        },
+        {
+          "Data": {
             "ClassName": "EnvironmentSettings",
             "ClearColour": [
               0.034313738346099854,
@@ -17,18 +29,6 @@
             ]
           },
           "Type": "EnvironmentSettings"
-        },
-        {
-          "Data": {
-            "ClassName": "Tags",
-            "Tags": [
-              {
-                "ClassName": "Tag",
-                "String": "Global Settings"
-              }
-            ]
-          },
-          "Type": "Tags"
         }
       ],
       "ID": 0
@@ -105,26 +105,6 @@
     },
     {
       "Components": [
-        {
-          "Data": {
-            "ClassName": "Model",
-            "Model": {
-              "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Exterior\\exterior.obj"
-            },
-            "PartMaterialsEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 3
-            },
-            "Shader": {
-              "ClassName": "ShaderHandle",
-              "FS": "simplediffuse.fs",
-              "Name": "diffuse",
-              "VSCS": "simplediffuse.vs"
-            }
-          },
-          "Type": "Model"
-        },
         {
           "Data": {
             "ClassName": "ModelPartMaterials",
@@ -798,16 +778,16 @@
                 "CastShadows": true,
                 "ClassName": "ModelPartMaterialOverride",
                 "DiffuseOpacity": [
-                  0.10000000149011612,
-                  0.10000000149011612,
-                  0.10000000149011612,
-                  1.0
+                  0.10196078568696976,
+                  0.10196078568696976,
+                  0.10196078568696976,
+                  0.7764706015586853
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
                   "Path": "BuildingTextures\\Glass_Dirty_01_spec.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -1466,13 +1446,13 @@
                   1.0,
                   1.0,
                   1.0,
-                  1.0
+                  0.7921568751335144
                 ],
                 "DiffuseTexture": {
                   "ClassName": "TextureHandle",
                   "Path": "BuildingTextures\\Paris_Building01_Window_01_diff.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -1484,9 +1464,9 @@
                   0.0
                 ],
                 "Specular": [
-                  0.5,
-                  0.5,
-                  0.5,
+                  0.501960813999176,
+                  0.501960813999176,
+                  0.501960813999176,
                   1.0
                 ],
                 "SpecularTexture": {
@@ -1682,7 +1662,7 @@
                   "ClassName": "TextureHandle",
                   "Path": ""
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -2067,7 +2047,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "BuildingTextures\\frosted_glass_diff.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -2767,7 +2747,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "PropTextures\\Street\\Paris_StreetLight_01\\Paris_StreetLight_Glass_01_diff.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -2802,7 +2782,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "PropTextures\\Street\\Paris_StreetLight_01\\Paris_StreetLight_Glass_01_diff.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -3257,7 +3237,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "PropTextures\\Street\\Paris_BistroExteriorSpotLight_01\\Paris_BistroExteriorSpotLightGlass_01_diff.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -4587,7 +4567,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "PropTextures\\Bistro\\Paris_LiquorBottle_01\\Paris_LiquorBottle_01_Cap_Diff.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -4622,7 +4602,7 @@
                   "ClassName": "TextureHandle",
                   "Path": "PropTextures\\Bistro\\Paris_LiquorBottle_01\\Paris_LiquorBottle_labels_01_Diff.png"
                 },
-                "IsTransparent": false,
+                "IsTransparent": true,
                 "NormalTexture": {
                   "ClassName": "TextureHandle",
                   "Path": ""
@@ -4662,6 +4642,26 @@
         },
         {
           "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Exterior\\exterior.obj"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 3
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
+        },
+        {
+          "Data": {
             "ClassName": "Transform",
             "Orientation": [
               0.0,
@@ -4691,26 +4691,6 @@
     },
     {
       "Components": [
-        {
-          "Data": {
-            "ClassName": "Model",
-            "Model": {
-              "ClassName": "ModelHandle",
-              "Path": "E:\\Git\\lean\\data\\Interior\\interior.obj"
-            },
-            "PartMaterialsEntity": {
-              "ClassName": "EntityHandle",
-              "ID": 4
-            },
-            "Shader": {
-              "ClassName": "ShaderHandle",
-              "FS": "simplediffuse.fs",
-              "Name": "diffuse",
-              "VSCS": "simplediffuse.vs"
-            }
-          },
-          "Type": "Model"
-        },
         {
           "Data": {
             "ClassName": "ModelPartMaterials",
@@ -6970,6 +6950,26 @@
             ]
           },
           "Type": "Tags"
+        },
+        {
+          "Data": {
+            "ClassName": "Model",
+            "Model": {
+              "ClassName": "ModelHandle",
+              "Path": "E:\\Git\\lean\\data\\Interior\\interior.obj"
+            },
+            "PartMaterialsEntity": {
+              "ClassName": "EntityHandle",
+              "ID": 4
+            },
+            "Shader": {
+              "ClassName": "ShaderHandle",
+              "FS": "simplediffuse.fs",
+              "Name": "diffuse",
+              "VSCS": "simplediffuse.vs"
+            }
+          },
+          "Type": "Model"
         },
         {
           "Data": {

@@ -14,7 +14,6 @@
 #include "sdf_mesh_system.h"
 #include "camera_system.h"
 #include "raycast_system.h"
-#include "character_controller_system.h"
 #include "time_system.h"
 #include "text_system.h"
 #include "entity/entity_system.h"
@@ -24,12 +23,72 @@
 #include "core/timer.h"
 #include "core/random.h"
 #include "core/file_io.h"
+#include "frame_graph.h"
 #include <cassert>
 
 namespace Engine
 {
+	std::unique_ptr<Engine::FrameGraph> MakeDefaultFrameGraph()
+	{
+		auto fg = std::make_unique<Engine::FrameGraph>();
+		auto& root = fg->m_root;
+		auto& mainThread = fg->m_root.AddSequence("Main");
+
+		auto& frameStart = mainThread.AddSequence("FrameStart");
+		{
+			frameStart.AddFn("Time::Tick");
+			frameStart.AddFn("Events::Tick");
+			frameStart.AddFn("Jobs::Tick");
+			frameStart.AddFn("Input::Tick");
+			frameStart.AddFn("DebugGui::Tick");
+		}
+
+		auto& update = mainThread.AddSequence("Update");
+		auto& fixedUpdate = update.AddFixedUpdateSequence("FixedUpdate");
+		{
+			fixedUpdate.AddFn("Physics::Tick");
+			fixedUpdate.AddFn("Raycasts::Tick");
+			fixedUpdate.AddFn("PhysicsEntities::Tick");
+			fixedUpdate.AddFn("RaycastResults::Tick");
+			fixedUpdate.AddSequence("UserFixedUpdate");
+		}
+		auto& variableUpdate = update.AddSequence("VariableUpdate");
+		{
+			variableUpdate.AddSequence("UserVariableUpdate");
+			variableUpdate.AddFn("Script::Tick");
+			variableUpdate.AddFn("Entities::Tick");
+			variableUpdate.AddFn("Cameras::Tick");
+		}
+
+		auto& render = mainThread.AddSequence("RenderSubmit");
+		{
+			render.AddFn("Text::Tick");
+			render.AddFn("Particles::Tick");
+			render.AddFn("SDFMeshes::Tick");
+			render.AddFn("Graphics::Tick");
+			render.AddFn("Textures::Tick");
+			render.AddFn("Models::Tick");
+			render.AddFn("Shaders::Tick");
+			render.AddFn("PhysicsGui::Tick");
+			render.AddFn("Time::UpdateGui");
+			render.AddFn("Render::Tick");
+			render.AddFn("RenderPresent::Tick");
+			render.AddFn("ShaderHotreload::Tick");
+		}
+
+		return std::move(fg);
+	}
+
+	bool RunUpdateGraph(Engine::FrameGraph& graph)
+	{
+		SDE_PROF_FRAME("Main Thread");
+		SDE_PROF_EVENT();
+		Engine::FrameGraph::Node* current = &graph.m_root;
+		return current->Run();
+	}
+
 	// Application entry point
-	int Run(std::function<void()> systemCreation, int argc, char* args[])
+	int Run(std::function<void()> systemCreation, std::function<void(FrameGraph&)> frameGraphBuildCb, int argc, char* args[])
 	{
 		// Initialise platform stuff
 		Platform::InitResult result = Platform::Initialise(argc, args);
@@ -57,11 +116,9 @@ namespace Engine
 		sysManager.RegisterSystem("DebugGui", new DebugGuiSystem);
 		sysManager.RegisterSystem("Script", new ScriptSystem);
 		sysManager.RegisterSystem("Text", new TextSystem);
-		systemCreation();
 		sysManager.RegisterSystem("Particles", new Particles::ParticleSystem());
 		sysManager.RegisterSystem("PhysicsEntities", physics->MakeUpdater());
 		sysManager.RegisterSystem("RaycastResults", raycaster->MakeResultProcessor());
-		sysManager.RegisterSystem("CharacterControllers", new CharacterControllerSystem());
 		sysManager.RegisterSystem("Entities", new EntitySystem);
 		sysManager.RegisterSystem("SDFMeshes", new SDFMeshSystem);
 		sysManager.RegisterSystem("Graphics", new GraphicsSystem);
@@ -75,6 +132,10 @@ namespace Engine
 		sysManager.RegisterSystem("Physics", physics);
 		sysManager.RegisterSystem("RenderPresent", render->MakePresenter());
 		sysManager.RegisterSystem("ShaderHotreload", new ShaderManager::HotReloader);
+		systemCreation();
+
+		auto frameGraph = MakeDefaultFrameGraph();
+		frameGraphBuildCb(*frameGraph);
 
 		// Run the engine
 		SDE_LOGC(Engine, "Initialising systems...");
@@ -92,7 +153,7 @@ namespace Engine
 				double thisTime = engineTime.GetSeconds();
 				double deltaTime = glm::clamp(thisTime - lastTickTime, 0.0047, 0.033);
 				lastTickTime = thisTime;
-				running = sysManager.Tick(deltaTime);
+				running = RunUpdateGraph(*frameGraph);
 			}
 		}
 

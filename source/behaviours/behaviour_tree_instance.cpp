@@ -50,7 +50,6 @@ namespace Behaviours
 
 	RunningState BehaviourTreeInstance::ExecuteTick(Node* n)
 	{
-		SDE_PROF_EVENT();
 		NodeContextData* ncd = FindContextData(n);
 		if (ncd->m_runningState == RunningState::NotRan)
 		{
@@ -68,7 +67,6 @@ namespace Behaviours
 
 	void BehaviourTreeInstance::Tick(bool restartOnSuccessOrFail)
 	{
-		SDE_PROF_EVENT();
 		Node* rootNodePtr = m_tree->GetRoot();
 		if (rootNodePtr != nullptr)
 		{
